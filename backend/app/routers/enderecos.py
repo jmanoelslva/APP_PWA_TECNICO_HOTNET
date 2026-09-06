@@ -29,6 +29,12 @@ class EnderecoPayload(BaseModel):
     address_default: int | None = None
     address_completation: str | None = None
     address_identification: str | None = None
+    # Localização do PRÓPRIO endereço (diferente de cpe_latitude/
+    # cpe_longitude, que é a localização do equipamento — ver
+    # atualizar_localizacao_cpe abaixo). Campos opcionais confirmados em
+    # /controllrctl/addresses/update na doc oficial.
+    address_latitude: str | None = None
+    address_longitude: str | None = None
 
 
 def _corpo(payload: EnderecoPayload, extras: dict[str, Any] | None = None) -> str:

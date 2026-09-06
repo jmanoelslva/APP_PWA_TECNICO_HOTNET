@@ -244,6 +244,8 @@ export interface EnderecoPayload {
   address_default?: number
   address_completation?: string
   address_identification?: string
+  address_latitude?: string
+  address_longitude?: string
 }
 
 export function criarEndereco(payload: EnderecoPayload): Promise<{ success: boolean; results: unknown }> {

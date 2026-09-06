@@ -237,7 +237,30 @@ function ModalEditarEndereco({
 }) {
   const [form, setForm] = useState<EnderecoDto>(endereco)
   const [salvando, setSalvando] = useState(false)
+  const [capturandoLocalizacao, setCapturandoLocalizacao] = useState(false)
   const { toast } = useToast()
+
+  function capturarLocalizacaoAtual() {
+    if (!navigator.geolocation) {
+      toast('Este navegador não suporta captura de localização.')
+      return
+    }
+    setCapturandoLocalizacao(true)
+    navigator.geolocation.getCurrentPosition(
+      (posicao) => {
+        setForm((atual) => ({
+          ...atual,
+          address_latitude: String(posicao.coords.latitude),
+          address_longitude: String(posicao.coords.longitude),
+        }))
+        setCapturandoLocalizacao(false)
+      },
+      () => {
+        setCapturandoLocalizacao(false)
+        toast('Não foi possível obter a localização. Verifique a permissão do navegador.')
+      },
+    )
+  }
 
   async function salvar() {
     if (!endereco.address_pk) return
@@ -259,6 +282,8 @@ function ModalEditarEndereco({
         address_state: form.address_state,
         address_completation: form.address_completation,
         address_identification: form.address_identification,
+        address_latitude: form.address_latitude,
+        address_longitude: form.address_longitude,
       })
       onSalvo(form)
     } catch (excecao) {
@@ -313,6 +338,23 @@ function ModalEditarEndereco({
 
         <label>Complemento</label>
         <input {...campo('address_completation')} />
+
+        <label>Localização</label>
+        <div className="detalhe-cliente-modal-localizacao">
+          <span>
+            {form.address_latitude && form.address_longitude
+              ? `${form.address_latitude}, ${form.address_longitude}`
+              : 'Ainda não capturada'}
+          </span>
+          <button
+            type="button"
+            className="detalhe-cliente-chip detalhe-cliente-chip-botao"
+            disabled={capturandoLocalizacao}
+            onClick={capturarLocalizacaoAtual}
+          >
+            <MdLocationOn size={14} /> {capturandoLocalizacao ? 'Capturando…' : 'Capturar localização atual'}
+          </button>
+        </div>
 
         <div className="detalhe-cliente-modal-acoes">
           <button onClick={onFechar}>Cancelar</button>
