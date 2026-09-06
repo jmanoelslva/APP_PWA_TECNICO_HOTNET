@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
+from ..http_errors import detalhe_erro
 from ..where import where_eq
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
@@ -25,19 +26,28 @@ async def buscar_clientes(
     client_pks: set[int] = set()
 
     if doc:
-        resposta = await ctx.controllr.client_list(f"where={where_eq('client_doc1', _somente_digitos(doc))}&limit=10")
+        resposta = await ctx.controllr.client_list(
+            f"action=list&start=0&where={where_eq('client_doc1', _somente_digitos(doc))}&limit=10"
+        )
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
     if contrato:
-        resposta = await ctx.controllr.contract_list(f"where={where_eq('contract_number', contrato)}&limit=10")
+        resposta = await ctx.controllr.contract_list(
+            f"action=list&start=0&where={where_eq('contract_number', contrato)}&limit=10"
+        )
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
     if nome:
         # Sem operador "LIKE" confirmado na API (ver app/where.py) — traz
-        # uma página e filtra em memória pelo nome.
-        resposta = await ctx.controllr.client_list("limit=200")
+        # uma página e filtra em memória pelo nome. "action=list&start=0"
+        # aqui é OBRIGATÓRIO mesmo sem "where" (confirmado: uma chamada só
+        # com "limit" e sem esses dois campos voltava vazia mesmo
+        # existindo cliente cadastrado) — mesmo padrão usado pelo app
+        # cliente de referência (src/api/client.ts) em toda chamada a
+        # controllrctl/*/list.
+        resposta = await ctx.controllr.client_list("action=list&start=0&limit=200")
         if resposta.success:
             alvo = nome.strip().lower()
             for registro in resposta.results:
@@ -50,7 +60,9 @@ async def buscar_clientes(
 
     resultados = []
     for client_pk in client_pks:
-        cliente_resp = await ctx.controllr.client_list(f"where={where_eq('client_pk', client_pk)}&limit=1")
+        cliente_resp = await ctx.controllr.client_list(
+            f"action=list&start=0&where={where_eq('client.client_pk', client_pk)}&limit=1"
+        )
         cpes_resp = await ctx.controllr.cpe_list_combo(f"where={where_eq('client_pk', client_pk)}&limit=20")
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
         resultados.append({
@@ -64,11 +76,22 @@ async def buscar_clientes(
 
 @router.get("/{client_pk}")
 async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
-    cliente_resp = await ctx.controllr.client_list(f"where={where_eq('client_pk', client_pk)}&limit=1")
+    # "client.client_pk" (com prefixo da tabela), não "client_pk" puro —
+    # confirmado no próprio pacote brbyteapi
+    # (controllr/client.py::set_client_category_pk), provavelmente porque
+    # "client_pk" sozinho é ambíguo numa query com joins. Bare "client_pk"
+    # aqui devolvia sempre vazio (bug real reportado: busca por CPF achava
+    # o client_pk certo, mas abrir o detalhe dava "cliente não
+    # encontrado").
+    cliente_resp = await ctx.controllr.client_list(
+        f"action=list&start=0&where={where_eq('client.client_pk', client_pk)}&limit=1"
+    )
     if not cliente_resp.success or not cliente_resp.results:
-        raise HTTPException(status_code=404, detail="Cliente não encontrado.")
+        raise HTTPException(status_code=404, detail=detalhe_erro("Cliente não encontrado.", cliente_resp))
 
-    contratos_resp = await ctx.controllr.contract_list(f"where={where_eq('client_pk', client_pk)}")
+    contratos_resp = await ctx.controllr.contract_list(
+        f"action=list&start=0&where={where_eq('client_pk', client_pk)}"
+    )
     enderecos_resp = await ctx.controllr.address_list_combo(f"where={where_eq('client_pk', client_pk)}")
     cpes_resp = await ctx.controllr.cpe_list_combo(f"where={where_eq('client_pk', client_pk)}&limit=20")
 
