@@ -62,14 +62,11 @@ async def buscar_clientes(
         cliente_resp = await ctx.controllr.client_list(
             corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)
         )
-        # "cpe.client_pk" (com prefixo), não "client_pk" puro — mesmo
-        # padrão de ambiguidade já confirmado em client_list
-        # ("client.client_pk") e addresses/list ("addresses.client_pk"):
-        # cpe_list_combo também traz campos via join (client_complete_name,
-        # dp_name, nas_name), então "client_pk" sozinho é ambíguo. Bare
-        # "client_pk" aqui era o motivo do CPE nunca aparecer no detalhe
-        # do cliente.
-        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("cpe.client_pk", client_pk), limit=20))
+        # "aaa_cpe.client_pk" (nome real da tabela é "aaa_cpe", não "cpe"
+        # — confirmado no app cliente de referência, que filtra
+        # aaa_ctl/connection/session por "aaa_cpe.cpe_pk") — "cpe.client_pk"
+        # (tentativa anterior) e "client_pk" puro davam ambos vazio.
+        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
         resultados.append({
             "client_pk": client_pk,

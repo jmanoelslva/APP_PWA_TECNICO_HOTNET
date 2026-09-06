@@ -19,13 +19,12 @@ async def buscar_cpe(
     if not client_pk and not contract_pk and not cpe_pk:
         raise HTTPException(status_code=400, detail="Informe client_pk, contract_pk ou cpe_pk.")
 
-    # "cpe.client_pk" com prefixo (não "client_pk" puro) — mesma
-    # ambiguidade já confirmada em client_list/addresses_list/
-    # cpe_list_combo: aaa_ctl/cpe/list também traz client_complete_name
-    # etc via join. cpe_pk/contract_pk não têm esse problema (colunas
-    # próprias da tabela cpe, sem ambiguidade).
+    # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe", não "cpe"
+    # (confirmado no app cliente de referência, que filtra
+    # aaa_ctl/connection/session por "aaa_cpe.cpe_pk"). cpe_pk/contract_pk
+    # não têm esse problema (colunas próprias, sem ambiguidade de join).
     campo, valor = (
-        ("cpe_pk", cpe_pk) if cpe_pk else ("contract_pk", contract_pk) if contract_pk else ("cpe.client_pk", client_pk)
+        ("cpe_pk", cpe_pk) if cpe_pk else ("contract_pk", contract_pk) if contract_pk else ("aaa_cpe.client_pk", client_pk)
     )
     resposta = await ctx.controllr.cpe_list(corpo(where_eq(campo, valor), limit=20), model_return=True, model_extended=True)
     if not resposta.success:
