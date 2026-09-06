@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import where_eq
+from ..where import OPER_EQ, OPER_LIKE, where_and, where_eq
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
@@ -40,22 +40,21 @@ async def buscar_clientes(
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
     if nome:
-        # Sem operador "LIKE" confirmado na API (ver app/where.py) — traz
-        # uma página e filtra em memória pelo nome. "action=list&start=0"
-        # aqui é OBRIGATÓRIO mesmo sem "where" (confirmado: uma chamada só
-        # com "limit" e sem esses dois campos voltava vazia mesmo
-        # existindo cliente cadastrado) — mesmo padrão usado pelo app
-        # cliente de referência (src/api/client.ts) em toda chamada a
-        # controllrctl/*/list.
-        resposta = await ctx.controllr.client_list("action=list&start=0&limit=200")
+        # Formato confirmado capturando uma busca por nome real no painel
+        # web do próprio Controllr (DevTools): oper 10 = LIKE, valor com
+        # "%" embutido, combinado com client_status=0 (só ativos) via
+        # "AND" explícito — sem isso (só "limit" sem "where" nenhum) a
+        # chamada voltava vazia mesmo com cliente cadastrado.
+        condicoes = where_and(
+            {"field": "client_status", "oper": OPER_EQ, "value": 0},
+            {"field": "client_complete_name", "oper": OPER_LIKE, "value": f"%{nome.strip()}%"},
+        )
+        resposta = await ctx.controllr.client_list(
+            f"where={condicoes}&page=1&start=0&limit=15&sort=client_complete_name&dir=ASC"
+        )
         if resposta.success:
-            alvo = nome.strip().lower()
             for registro in resposta.results:
-                candidatos = " ".join(
-                    str(registro.get(campo, ""))
-                    for campo in ("client_name", "client_lastname", "client_complete_name")
-                ).lower()
-                if alvo in candidatos and registro.get("client_pk"):
+                if registro.get("client_pk"):
                     client_pks.add(int(registro["client_pk"]))
 
     resultados = []
