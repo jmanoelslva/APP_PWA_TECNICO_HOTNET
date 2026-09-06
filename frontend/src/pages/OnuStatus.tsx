@@ -244,6 +244,35 @@ export default function OnuStatus() {
             </div>
           )}
 
+          {onu.wificfg_name && (
+            <div className="onu-card">
+              <h2>Wi-Fi</h2>
+              <div className="onu-campo">
+                <span>Rede (SSID)</span>
+                <div className="onu-campo-valor">
+                  <strong>{onu.wificfg_name}</strong>
+                  <button onClick={() => copiar(onu.wificfg_name, 'Nome da rede')} aria-label="Copiar nome da rede">
+                    <MdContentCopy size={16} />
+                  </button>
+                </div>
+              </div>
+              {onu.wificfg_password && (
+                <div className="onu-campo">
+                  <span>Senha</span>
+                  <div className="onu-campo-valor">
+                    <strong>{mostrarSenha ? onu.wificfg_password : '••••••••'}</strong>
+                    <button onClick={() => setMostrarSenha((v) => !v)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
+                      {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                    </button>
+                    <button onClick={() => copiar(onu.wificfg_password, 'Senha da rede')} aria-label="Copiar senha da rede">
+                      <MdContentCopy size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="onu-card">
             <div className="onu-linha">
               <span>Cliente</span>

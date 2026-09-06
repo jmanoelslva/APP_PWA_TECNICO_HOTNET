@@ -120,12 +120,12 @@ export default function Conexao() {
             </div>
 
             <div className="conexao-card">
-              <h2>Acesso PPPoE</h2>
+              <h2>Acesso PPPoE (login do cliente)</h2>
               <div className="conexao-campo">
                 <span>Usuário</span>
                 <div className="conexao-campo-valor">
-                  <strong>{cpe.username ?? cpe.access_login ?? '—'}</strong>
-                  <button onClick={() => copiar(cpe.username ?? cpe.access_login, 'Usuário')} aria-label="Copiar usuário">
+                  <strong>{cpe.username ?? '—'}</strong>
+                  <button onClick={() => copiar(cpe.username, 'Usuário')} aria-label="Copiar usuário">
                     <MdContentCopy size={16} />
                   </button>
                 </div>
@@ -133,16 +133,43 @@ export default function Conexao() {
               <div className="conexao-campo">
                 <span>Senha</span>
                 <div className="conexao-campo-valor">
-                  <strong>{mostrarSenha ? cpe.access_password ?? '—' : '••••••••'}</strong>
+                  <strong>{mostrarSenha ? cpe.password ?? '—' : '••••••••'}</strong>
                   <button onClick={() => setMostrarSenha((v) => !v)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
                     {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
                   </button>
-                  <button onClick={() => copiar(cpe.access_password, 'Senha')} aria-label="Copiar senha">
+                  <button onClick={() => copiar(cpe.password, 'Senha')} aria-label="Copiar senha">
                     <MdContentCopy size={16} />
                   </button>
                 </div>
               </div>
             </div>
+
+            {(cpe.access_login || cpe.access_password) && (
+              <div className="conexao-card">
+                {/* Credencial DIFERENTE do PPPoE acima — acesso administrativo
+                    ao próprio roteador/CPE, não o login de internet do
+                    cliente (confirmado na doc oficial do Controllr). */}
+                <h2>Acesso ao roteador (admin)</h2>
+                <div className="conexao-campo">
+                  <span>Usuário</span>
+                  <div className="conexao-campo-valor">
+                    <strong>{cpe.access_login ?? '—'}</strong>
+                    <button onClick={() => copiar(cpe.access_login, 'Usuário')} aria-label="Copiar usuário do roteador">
+                      <MdContentCopy size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div className="conexao-campo">
+                  <span>Senha</span>
+                  <div className="conexao-campo-valor">
+                    <strong>{mostrarSenha ? cpe.access_password ?? '—' : '••••••••'}</strong>
+                    <button onClick={() => copiar(cpe.access_password, 'Senha do roteador')} aria-label="Copiar senha do roteador">
+                      <MdContentCopy size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="conexao-card">
               <h2>Rede</h2>

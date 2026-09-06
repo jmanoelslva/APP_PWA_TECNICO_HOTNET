@@ -71,10 +71,15 @@ class LocalizacaoPayload(BaseModel):
 async def atualizar_localizacao_cpe(
     cpe_pk: int, payload: LocalizacaoPayload, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
+    # Campo certo é cpe_latitude/cpe_longitude — confirmado na doc oficial
+    # (apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). "address_latitude"/
+    # "address_longitude" (usado antes) não existe nesse endpoint — o
+    # Controllr provavelmente ignorava o campo desconhecido, então a
+    # localização nunca era salva de verdade, sem erro nenhum pra avisar.
     corpo = urlencode({
         "cpe_pk": cpe_pk,
-        "address_latitude": payload.address_latitude,
-        "address_longitude": payload.address_longitude,
+        "cpe_latitude": payload.address_latitude,
+        "cpe_longitude": payload.address_longitude,
     })
     resposta = await ctx.controllr.cpe_update(corpo)
     if not resposta.success:

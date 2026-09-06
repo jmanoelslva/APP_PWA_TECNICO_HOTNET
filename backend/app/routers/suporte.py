@@ -19,12 +19,18 @@ router = APIRouter(prefix="/suporte", tags=["suporte"])
 @router.get("/os")
 async def listar_os(
     minhas: bool = Query(default=True),
+    client_pk: int | None = Query(default=None, description="Filtra pelos chamados de um cliente específico"),
     start: int = Query(default=0),
     limit: int = Query(default=20),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     where = None
-    if minhas and ctx.session.user_pk is not None:
+    if client_pk is not None:
+        # Usado pela tela de detalhe do cliente, pra mostrar o histórico
+        # de chamados/OS junto com cadastro/contratos/endereços — client_pk
+        # é campo confirmado na resposta de ticket_list (doc oficial).
+        where = where_eq("client_pk", client_pk)
+    elif minhas and ctx.session.user_pk is not None:
         # oper 21 = "IN" (confirmado no README do brbyteapi, exemplo de
         # ticket_list) — precisa ser esse, não "=" (oper 5), já que o
         # valor é uma LISTA de um item, não um escalar. Se user_pk ainda

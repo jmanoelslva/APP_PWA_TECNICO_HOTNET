@@ -49,6 +49,14 @@ class CPEExtended(CPE):
     address_completation        : str   | Empty = Field(default_factory=Empty, alias='address_completation')
     address_latitude            : str   | Empty = Field(default_factory=Empty, alias='address_latitude')
     address_longitude           : str   | Empty = Field(default_factory=Empty, alias='address_longitude')
+    # Localização do PRÓPRIO cpe (onde o equipamento foi instalado, ex:
+    # capturada via GPS pelo técnico) — campo distinto de
+    # address_latitude/longitude (que é do endereço cadastral vinculado,
+    # via join). Confirmado como campo de verdade em /aaa_ctl/cpe/list e
+    # aceito em /aaa_ctl/cpe/update (doc oficial); faltava no pacote
+    # original, então uma localização recém-salva nunca voltava na leitura.
+    cpe_latitude                : str   | Empty = Field(default_factory=Empty, alias='cpe_latitude')
+    cpe_longitude               : str   | Empty = Field(default_factory=Empty, alias='cpe_longitude')
     address_neighborhood        : str   | Empty = Field(default_factory=Empty, alias='address_neighborhood')
     address_number              : str   | Empty = Field(default_factory=Empty, alias='address_number')
     address_province            : str   | Empty = Field(default_factory=Empty, alias='address_province')
@@ -86,7 +94,13 @@ class CPEExtended(CPE):
     nas_name                    : Any   | Empty = Field(default_factory=Empty, alias='nas_name')
     notice                      : Any   | Empty = Field(default_factory=Empty, alias='notice')
     offices_pk                  : Any   | Empty = Field(default_factory=Empty, alias='offices_pk')
-    password                    : Any   | Empty = Field(default_factory=Empty, alias='password')
+    # Alias correto é "cpe_password" (senha PPPoE real, pareada com
+    # "cpe_username") — confirmado na doc oficial
+    # (apidoc.brbyte.com/#post-/aaa_ctl/cpe/list). O pacote original vinha
+    # com alias="password" (bare), que nunca bate com a chave de verdade
+    # da resposta ("cpe_password"), então este campo nunca era
+    # preenchido — sempre Empty, mesmo com o dado presente na resposta.
+    password                    : Any   | Empty = Field(default_factory=Empty, alias='cpe_password')
     plan_name                   : Any   | Empty = Field(default_factory=Empty, alias='plan_name')
     pool_v4_family              : int   | Empty = Field(default_factory=Empty, alias='pool_v4_family')
     pool_v4_name                : str   | Empty = Field(default_factory=Empty, alias='pool_v4_name')

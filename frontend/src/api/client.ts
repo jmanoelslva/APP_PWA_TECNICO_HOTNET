@@ -276,6 +276,12 @@ export function atualizarLocalizacaoCpe(
 export interface CpeDto {
   pk?: number
   username?: string
+  // Senha PPPoE real (cpe_password na API) — é o que o cliente usa pra
+  // conectar. access_login/access_password é uma credencial DIFERENTE
+  // (acesso administrativo ao próprio roteador/CPE), confirmado na doc
+  // oficial (apidoc.brbyte.com/#post-/aaa_ctl/cpe/list) — os dois
+  // existem separados, não são a mesma coisa com nomes diferentes.
+  password?: string
   access_login?: string
   access_password?: string
   v4_ip?: string
@@ -354,6 +360,12 @@ export interface OnuDto {
   // populado em produção via /fiber_ctl/onu/list.
   wancfg_pppoe_username?: string
   wancfg_pppoe_passwd?: string
+  // Wi-Fi e acesso web da própria ONU — confirmados na doc oficial
+  // (apidoc.brbyte.com/#post-/fiber_ctl/onu/list).
+  wificfg_name?: string
+  wificfg_password?: string
+  webcfg_login?: string
+  webcfg_password?: string
 }
 
 export interface BuscaOnuResponse {
@@ -390,6 +402,10 @@ export interface TicketDto {
   ticket_date_close?: string
   category_name?: string
   contract_number?: number
+  // Confirmados na doc oficial (apidoc.brbyte.com/#post-/support_ctl/ticket/list)
+  client_pk?: number
+  client_complete_name?: string
+  address_pk?: number
 }
 
 export interface ListarOSResponse {
@@ -398,8 +414,15 @@ export interface ListarOSResponse {
   total: number
 }
 
-export function listarOS(opcoes: { minhas: boolean; start?: number; limit?: number }): Promise<ListarOSResponse> {
-  return get<ListarOSResponse>('suporte/os', { minhas: opcoes.minhas, start: opcoes.start ?? 0, limit: opcoes.limit ?? 20 })
+export function listarOS(
+  opcoes: { minhas: boolean; clientPk?: number; start?: number; limit?: number },
+): Promise<ListarOSResponse> {
+  return get<ListarOSResponse>('suporte/os', {
+    minhas: opcoes.minhas,
+    client_pk: opcoes.clientPk,
+    start: opcoes.start ?? 0,
+    limit: opcoes.limit ?? 20,
+  })
 }
 
 export function detalheOS(ticketPk: number): Promise<{ success: boolean; ticket: TicketDto }> {

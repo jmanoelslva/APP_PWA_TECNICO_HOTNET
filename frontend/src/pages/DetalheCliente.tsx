@@ -1,19 +1,22 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { MdEdit, MdLocationOn, MdPeopleAlt, MdRouter, MdWifi } from 'react-icons/md'
+import { MdBuild, MdEdit, MdLocationOn, MdPeopleAlt, MdRouter, MdWifi } from 'react-icons/md'
 import {
   ApiError,
   atualizarEndereco,
   atualizarLocalizacaoCpe,
   buscarDetalheCliente,
+  listarOS,
   type ContratoDto,
   type CpeComboDto,
   type EnderecoDto,
+  type TicketDto,
 } from '../api/client'
 import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
+import { formatarData } from '../utils/formatacao'
 import './DetalheCliente.css'
 
 export default function DetalheCliente() {
@@ -28,6 +31,7 @@ export default function DetalheCliente() {
   const [contratos, setContratos] = useState<ContratoDto[]>([])
   const [enderecos, setEnderecos] = useState<EnderecoDto[]>([])
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
+  const [chamados, setChamados] = useState<TicketDto[]>([])
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   const [capturandoLocalizacao, setCapturandoLocalizacao] = useState<number | null>(null)
 
@@ -47,6 +51,12 @@ export default function DetalheCliente() {
       setContratos(resposta.contratos)
       setEnderecos(resposta.enderecos)
       setCpes(resposta.cpes)
+      // Histórico de chamados/OS do cliente — carregado à parte (endpoint
+      // diferente) e sem travar o resto da tela se falhar, já que é
+      // informação complementar, não o cadastro em si.
+      listarOS({ minhas: false, clientPk: pk, limit: 10 })
+        .then((r) => setChamados(r.results))
+        .catch(() => setChamados([]))
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados do cliente.')
     } finally {
@@ -169,6 +179,34 @@ export default function DetalheCliente() {
                 </div>
               </div>
             ))}
+          </section>
+
+          <section className="detalhe-cliente-secao">
+            <h2>Chamados / OS</h2>
+            {chamados.length === 0 && <p className="detalhe-cliente-vazio">Nenhum chamado encontrado.</p>}
+            {chamados.map((chamado) => (
+              <Link
+                key={chamado.ticket_pk}
+                to={`/suporte/${chamado.ticket_pk}`}
+                state={{ chamado }}
+                viewTransition
+                className="detalhe-cliente-item detalhe-cliente-item-link"
+              >
+                <div className="detalhe-cliente-item-topo">
+                  <strong>{chamado.ticket_title ?? `OS #${chamado.ticket_pk}`}</strong>
+                  <span className={`detalhe-cliente-chamado-badge ${chamado.ticket_date_close ? 'fechado' : 'aberto'}`}>
+                    {chamado.ticket_date_close ? 'Fechada' : 'Aberta'}
+                  </span>
+                </div>
+                {chamado.category_name && <p>{chamado.category_name}</p>}
+                <p>Aberta em {formatarData(chamado.ticket_date_create) ?? 'data não informada'}</p>
+              </Link>
+            ))}
+            {chamados.length > 0 && (
+              <Link to="/suporte" className="detalhe-cliente-chip" viewTransition>
+                <MdBuild size={14} /> Ver todas as OS
+              </Link>
+            )}
           </section>
         </>
       )}

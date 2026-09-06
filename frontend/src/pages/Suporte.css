@@ -93,6 +93,13 @@
   background: var(--cor-sucesso);
 }
 
+.ticket-cliente {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
 .ticket-protocolo,
 .ticket-data {
   margin: 6px 0 0;

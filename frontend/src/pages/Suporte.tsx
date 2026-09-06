@@ -120,6 +120,7 @@ export default function Suporte() {
                       {fechada ? 'Fechada' : 'Aberta'}
                     </span>
                   </div>
+                  {chamado.client_complete_name && <p className="ticket-cliente">{chamado.client_complete_name}</p>}
                   {chamado.ticket_protocol && <p className="ticket-protocolo">Protocolo: {chamado.ticket_protocol}</p>}
                   {chamado.category_name && <p className="ticket-protocolo">{chamado.category_name}</p>}
                   {chamado.contract_number != null && <p className="ticket-protocolo">Contrato: {chamado.contract_number}</p>}
