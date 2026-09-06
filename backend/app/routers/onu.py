@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any
 from urllib.parse import urlencode
 
@@ -8,6 +9,16 @@ from ..http_errors import detalhe_erro
 from ..where import corpo, where_eq
 
 router = APIRouter(prefix="/onu", tags=["onu"])
+
+# Tempos de espera confirmados num script de monitoramento já em uso
+# interno na empresa (bot Telegram): a OLT precisa desse intervalo pra
+# de fato recarregar antes que reler a ONU traga dado novo — pedir os
+# dados imediatamente depois do reconnect ainda devolveria o valor
+# antigo. Ajustar o `deploy/nginx.conf.example`/`apache-vhost.conf.example`
+# (proxy_read_timeout/ProxyTimeout) se esses valores mudarem, senão o
+# reverse proxy pode cortar a requisição antes do backend responder.
+ESPERA_APOS_RECONECTAR_OLT_S = 15
+ESPERA_APOS_ATUALIZAR_ONU_S = 30
 
 
 def _corpo_busca_serial(serial: str) -> str:
@@ -76,15 +87,21 @@ async def atualizar_info_onu(
     frame_id: int = Query(default=1),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
-    # Deliberadamente SEM reconectar a OLT antes de atualizar (um script
-    # interno da empresa faz isso via /fiber_ctl/olt/reconnect antes de
-    # ler a ONU) — reconectar a OLT reinicia a comunicação com TODAS as
-    # ONUs conectadas a ela, não só a consultada, o que causaria queda de
-    # conexão em outros clientes a cada consulta feita por um técnico em
-    # campo. Só o refresh pontual da ONU em si (list_info).
+    # Reconecta a OLT antes de atualizar — confirmado pelo time de rede:
+    # isso só força o sistema a reler a OLT (não derruba as ONUs
+    # conectadas), e é o que garante que a atualização abaixo traga o
+    # dado mais recente de verdade, não um valor em cache. Mesmo fluxo e
+    # tempos de espera do script de monitoramento já usado internamente
+    # (reconectar → aguardar a OLT recarregar → atualizar a ONU →
+    # aguardar refletir → devolver os dados novos pro chamador reler).
+    await ctx.controllr.call_api_post("/fiber_ctl/olt/reconnect", urlencode({"olt_pk": olt_pk}))
+    await asyncio.sleep(ESPERA_APOS_RECONECTAR_OLT_S)
+
     resposta = await ctx.controllr.onu_update_info(
         olt_pk=olt_pk, onu_serial=onu_serial, slot_id=slot_id, port_id=port_id, onu_id=onu_id, frame_id=frame_id
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar a ONU.", resposta))
+
+    await asyncio.sleep(ESPERA_APOS_ATUALIZAR_ONU_S)
     return {"success": True, "results": resposta.results}

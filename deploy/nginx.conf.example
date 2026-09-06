@@ -87,5 +87,14 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+
+        # "Atualizar agora" na tela de ONU reconecta a OLT e espera ela
+        # recarregar antes de reler (~45s de espera de propósito, ver
+        # backend/app/routers/onu.py) — sem aumentar o timeout padrão do
+        # Nginx (60s já seria justo, e outros proxies/CDNs na frente
+        # podem ter um padrão bem menor), essa chamada específica corre
+        # risco de ser cortada antes do backend responder.
+        proxy_read_timeout 90s;
+        proxy_send_timeout 90s;
     }
 }

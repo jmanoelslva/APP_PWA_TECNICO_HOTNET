@@ -96,6 +96,9 @@ export default function OnuStatus() {
       return
     }
     setAtualizando(true)
+    // Reconecta a OLT antes de reler (força ela a recarregar os dados) —
+    // demora de propósito (~45s), ver backend/app/routers/onu.py.
+    toast('Reconectando a OLT e aguardando atualizar — isso leva cerca de 1 minuto.', 'info')
     try {
       await atualizarInfoOnu(onu.pk, {
         olt_pk: onu.olt_pk,
@@ -285,7 +288,7 @@ export default function OnuStatus() {
           </div>
 
           <button className="onu-btn-atualizar" onClick={atualizarAgora} disabled={atualizando}>
-            <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Atualizando…' : 'Atualizar agora'}
+            <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
           </button>
         </>
       )}

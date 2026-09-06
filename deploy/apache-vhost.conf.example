@@ -97,6 +97,10 @@
     ProxyPreserveHost off
     RequestHeader set X-Real-IP "%{REMOTE_ADDR}e"
 
-    ProxyPass        /api/ http://127.0.0.1:8000/
+    # "Atualizar agora" na tela de ONU reconecta a OLT e espera ela
+    # recarregar antes de reler (~45s de espera de propósito, ver
+    # backend/app/routers/onu.py) — timeout maior que o padrão do Apache
+    # (60s) pra essa chamada não ser cortada antes do backend responder.
+    ProxyPass        /api/ http://127.0.0.1:8000/ timeout=90
     ProxyPassReverse /api/ http://127.0.0.1:8000/
 </VirtualHost>
