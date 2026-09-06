@@ -18,10 +18,12 @@
 # Uso:
 #   sudo bash install.sh
 #
-# Rodar de novo (mesmo servidor, mesmo domínio) atualiza tudo: git pull,
-# reinstala dependências Python/Node, rebuilda o frontend, reinicia o
-# serviço do backend e republica o build — sem reemitir certificado nem
-# reconfigurar o que já está pronto.
+# Rodar de novo (mesmo servidor) atualiza tudo: git pull, reinstala
+# dependências Python/Node, rebuilda o frontend, reinicia o serviço do
+# backend e republica o build — sem reemitir certificado nem reconfigurar
+# o que já está pronto. Domínio e porta escolhidos na primeira vez ficam
+# salvos em /etc/hotnet-tecnico/install.conf — só aparecem como sugestão
+# (Enter aceita), não precisa redigitar toda vez.
 
 set -euo pipefail
 
@@ -35,8 +37,19 @@ ACME_WEBROOT="/var/www/certbot-acme"
 SERVICE_USER="hotnet-tecnico"
 SERVICE_NAME="hotnet-tecnico-api"
 ENV_FILE="/etc/hotnet-tecnico/backend.env"
+# Guarda o domínio/porta escolhidos na primeira instalação, pra rodar de
+# novo (atualização) não pedir de novo nem arriscar "esquecer" e voltar
+# pro padrão — sem isso, quem escolheu uma porta não-padrão (ex: 8517)
+# teria que digitá-la de cabeça em toda atualização futura.
+STATE_FILE="/etc/hotnet-tecnico/install.conf"
 DEFAULT_DOMAIN="tecnico.hotnet.net.br"
 DEFAULT_PORT="8000"
+if [ -f "$STATE_FILE" ]; then
+  # shellcheck source=/dev/null
+  source "$STATE_FILE"
+  DEFAULT_DOMAIN="${DOMINIO_SALVO:-$DEFAULT_DOMAIN}"
+  DEFAULT_PORT="${BACKEND_PORT_SALVO:-$DEFAULT_PORT}"
+fi
 # jsdom (devDependency do frontend, só usado por "npm test" — nunca em
 # produção) exige Node 22.22.2+/24.15+/26+; Node 24 é a LTS "Active" atual
 # e evita o aviso EBADENGINE do "npm ci" no passo de build abaixo (mesmo
@@ -101,6 +114,10 @@ fi
 # --------------------------------------------------------------------------
 DOMAIN_REGEX='^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$'
 
+if [ -f "$STATE_FILE" ]; then
+  ok "Instalação existente detectada (domínio '$DEFAULT_DOMAIN', porta '$DEFAULT_PORT') — Enter mantém, ou digite um novo valor pra mudar."
+fi
+
 read -rp "Domínio deste portal (Enter pra usar '$DEFAULT_DOMAIN'): " DOMINIO
 DOMINIO="${DOMINIO:-$DEFAULT_DOMAIN}"
 if [[ ! "$DOMINIO" =~ $DOMAIN_REGEX ]]; then
@@ -112,9 +129,25 @@ BACKEND_PORT="${BACKEND_PORT:-$DEFAULT_PORT}"
 if [[ ! "$BACKEND_PORT" =~ ^[0-9]+$ ]]; then
   err "Porta inválida: '$BACKEND_PORT'."
 fi
+
+# Numa atualização, o serviço já pode estar ouvindo nessa mesma porta —
+# para ele ANTES de checar disponibilidade, senão a checagem abaixo
+# sempre falharia achando que a porta está "ocupada por outro processo"
+# quando na verdade é o nosso próprio serviço de uma instalação anterior.
+if systemctl list-unit-files "$SERVICE_NAME.service" 2>/dev/null | grep -q "$SERVICE_NAME.service"; then
+  info "Parando $SERVICE_NAME temporariamente pra liberar a porta durante a atualização..."
+  systemctl stop "$SERVICE_NAME" || true
+fi
+
 if ss -ltn "( sport = :$BACKEND_PORT )" 2>/dev/null | grep -q LISTEN; then
   err "A porta $BACKEND_PORT já está em uso por outro processo neste servidor. Rode de novo escolhendo outra porta."
 fi
+
+mkdir -p "$(dirname "$STATE_FILE")"
+cat > "$STATE_FILE" <<EOF
+DOMINIO_SALVO=$DOMINIO
+BACKEND_PORT_SALVO=$BACKEND_PORT
+EOF
 
 read -rp "E-mail pra avisos do Let's Encrypt (opcional, Enter pra pular): " EMAIL
 

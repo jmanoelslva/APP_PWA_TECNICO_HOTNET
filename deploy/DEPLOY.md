@@ -29,11 +29,16 @@ servidor (ex: por causa do app cliente já instalado) e usa o mesmo — só
 pergunta qual usar se nenhum dos dois estiver ativo ainda. Não mexe em
 nenhum vhost/serviço já existente, só adiciona os deste app.
 
-Rodar de novo (mesmo servidor, mesmo domínio) atualiza tudo: `git pull`,
-reinstala dependências Python (`pip install -r requirements.txt`) e Node
-(`npm ci`), reconstrói o frontend, reinicia o serviço do backend e
-republica o `dist/` — sem reemitir certificado nem reconfigurar o que já
-está pronto.
+Rodar de novo (mesmo servidor) **atualiza** tudo: `git pull`, reinstala
+dependências Python (`pip install -r requirements.txt`) e Node (`npm
+ci`), reconstrói o frontend, reinicia o serviço do backend e republica o
+`dist/` — sem reemitir certificado nem reconfigurar o que já está pronto.
+Domínio e porta escolhidos na primeira instalação ficam salvos em
+`/etc/hotnet-tecnico/install.conf` e voltam como sugestão (Enter aceita)
+— se você definiu uma porta diferente da 8000 (ex: 8517), não precisa
+redigitar; o script já para o serviço antigo sozinho antes de checar se
+a porta está livre, senão a checagem sempre acusaria "em uso" contra o
+próprio serviço da instalação anterior.
 
 O passo a passo manual abaixo continua válido pra quem preferir controle
 fino, outro sistema operacional, ou não usar Debian.
