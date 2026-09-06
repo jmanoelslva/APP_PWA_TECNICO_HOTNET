@@ -9,6 +9,7 @@ real no próprio painel web do Controllr via DevTools), 21 = "IN".
 
 import json
 from typing import Any
+from urllib.parse import urlencode
 
 OPER_EQ = 5
 OPER_LIKE = 10
@@ -16,7 +17,15 @@ OPER_IN = 21
 
 
 def where_json(condicoes: list[dict[str, Any]]) -> str:
-    return json.dumps(condicoes)
+    # separators sem espaço — igual ao que o próprio navegador gera via
+    # JSON.stringify (formato exato confirmado capturando um request real
+    # do painel web do Controllr no DevTools). json.dumps por padrão
+    # insere espaço depois de ":" e "," — inofensivo pra um parser JSON
+    # de verdade (espaço é insignificante no JSON), mas sem necessidade
+    # já que agora tudo passa por urlencode() de qualquer forma (ver
+    # corpo() abaixo) — só reduz o tamanho do corpo e bate 1:1 com o
+    # formato já confirmado funcionar.
+    return json.dumps(condicoes, separators=(",", ":"))
 
 
 def where_eq(field: str, value: Any) -> str:
@@ -39,3 +48,22 @@ def where_and(*condicoes: dict[str, Any]) -> str:
             combinado.append({"field": "AND"})
         combinado.append(condicao)
     return where_json(combinado)
+
+
+def corpo(where: str | None = None, **campos: Any) -> str:
+    """
+    Monta o corpo application/x-www-form-urlencoded de uma chamada ao
+    Controllr, com "where" (JSON) devidamente percent-encoded via
+    urlencode() — NUNCA colar um "where={json}" cru dentro de um f-string
+    de corpo. Bug real confirmado: um valor de LIKE como "%eronildes%"
+    colado sem encode faz o "%er" (não é hex válido) corromper o parsing
+    do corpo no servidor, que aí ignora o "where" inteiro e devolve uma
+    lista sem filtro nenhum (sintoma: busca por nome trazendo OUTROS
+    cadastros, nunca o procurado). Aspas, chaves e colchetes do JSON
+    também não são seguros crus num corpo desse tipo, mesmo quando "por
+    sorte" não quebravam antes (valores só numéricos, sem "%"/"&"/"=").
+    """
+    partes: dict[str, Any] = dict(campos)
+    if where is not None:
+        partes["where"] = where
+    return urlencode(partes)

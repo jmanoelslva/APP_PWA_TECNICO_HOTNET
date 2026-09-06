@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import where_eq
+from ..where import corpo, where_eq
 
 router = APIRouter(prefix="/cpe", tags=["conexao"])
 
@@ -22,7 +22,7 @@ async def buscar_cpe(
     campo, valor = (
         ("cpe_pk", cpe_pk) if cpe_pk else ("contract_pk", contract_pk) if contract_pk else ("client_pk", client_pk)
     )
-    resposta = await ctx.controllr.cpe_list(f"where={where_eq(campo, valor)}&limit=20", model_return=True, model_extended=True)
+    resposta = await ctx.controllr.cpe_list(corpo(where_eq(campo, valor), limit=20), model_return=True, model_extended=True)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível buscar os CPEs.", resposta))
     return {"success": True, "results": [cpe.model_dump(mode="json") for cpe in resposta.results]}

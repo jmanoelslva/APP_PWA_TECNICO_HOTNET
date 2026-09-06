@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_LIKE, where_and, where_eq
+from ..where import OPER_EQ, OPER_LIKE, corpo, where_and, where_eq
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
@@ -27,14 +27,14 @@ async def buscar_clientes(
 
     if doc:
         resposta = await ctx.controllr.client_list(
-            f"action=list&start=0&where={where_eq('client_doc1', _somente_digitos(doc))}&limit=10"
+            corpo(where_eq("client_doc1", _somente_digitos(doc)), action="list", start=0, limit=10)
         )
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
     if contrato:
         resposta = await ctx.controllr.contract_list(
-            f"action=list&start=0&where={where_eq('contract_number', contrato)}&limit=10"
+            corpo(where_eq("contract_number", contrato), action="list", start=0, limit=10)
         )
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
@@ -50,7 +50,7 @@ async def buscar_clientes(
             {"field": "client_complete_name", "oper": OPER_LIKE, "value": f"%{nome.strip()}%"},
         )
         resposta = await ctx.controllr.client_list(
-            f"where={condicoes}&page=1&start=0&limit=15&sort=client_complete_name&dir=ASC"
+            corpo(condicoes, page=1, start=0, limit=15, sort="client_complete_name", dir="ASC")
         )
         if resposta.success:
             for registro in resposta.results:
@@ -60,9 +60,9 @@ async def buscar_clientes(
     resultados = []
     for client_pk in client_pks:
         cliente_resp = await ctx.controllr.client_list(
-            f"action=list&start=0&where={where_eq('client.client_pk', client_pk)}&limit=1"
+            corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)
         )
-        cpes_resp = await ctx.controllr.cpe_list_combo(f"where={where_eq('client_pk', client_pk)}&limit=20")
+        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("client_pk", client_pk), limit=20))
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
         resultados.append({
             "client_pk": client_pk,
@@ -78,21 +78,18 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     # "client.client_pk" (com prefixo da tabela), não "client_pk" puro —
     # confirmado no próprio pacote brbyteapi
     # (controllr/client.py::set_client_category_pk), provavelmente porque
-    # "client_pk" sozinho é ambíguo numa query com joins. Bare "client_pk"
-    # aqui devolvia sempre vazio (bug real reportado: busca por CPF achava
-    # o client_pk certo, mas abrir o detalhe dava "cliente não
-    # encontrado").
+    # "client_pk" sozinho é ambíguo numa query com joins.
     cliente_resp = await ctx.controllr.client_list(
-        f"action=list&start=0&where={where_eq('client.client_pk', client_pk)}&limit=1"
+        corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)
     )
     if not cliente_resp.success or not cliente_resp.results:
         raise HTTPException(status_code=404, detail=detalhe_erro("Cliente não encontrado.", cliente_resp))
 
     contratos_resp = await ctx.controllr.contract_list(
-        f"action=list&start=0&where={where_eq('client_pk', client_pk)}"
+        corpo(where_eq("client_pk", client_pk), action="list", start=0)
     )
-    enderecos_resp = await ctx.controllr.address_list_combo(f"where={where_eq('client_pk', client_pk)}")
-    cpes_resp = await ctx.controllr.cpe_list_combo(f"where={where_eq('client_pk', client_pk)}&limit=20")
+    enderecos_resp = await ctx.controllr.address_list_combo(corpo(where_eq("client_pk", client_pk)))
+    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("client_pk", client_pk), limit=20))
 
     return {
         "success": True,
