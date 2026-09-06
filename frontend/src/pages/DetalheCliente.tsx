@@ -1,0 +1,281 @@
+import { useEffect, useState, type ChangeEvent } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { MdEdit, MdLocationOn, MdPeopleAlt, MdRouter, MdWifi } from 'react-icons/md'
+import {
+  ApiError,
+  atualizarEndereco,
+  atualizarLocalizacaoCpe,
+  buscarDetalheCliente,
+  type ContratoDto,
+  type CpeComboDto,
+  type EnderecoDto,
+} from '../api/client'
+import VoltarInicio from '../components/VoltarInicio'
+import Skeleton from '../components/Skeleton'
+import { useToast } from '../components/Toast/useToast'
+import { CORES } from '../utils/cores'
+import './DetalheCliente.css'
+
+export default function DetalheCliente() {
+  const { clientPk } = useParams<{ clientPk: string }>()
+  const pk = Number(clientPk)
+  const { toast } = useToast()
+
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState<string | null>(null)
+  const [nome, setNome] = useState<string | null>(null)
+  const [doc, setDoc] = useState<string | null>(null)
+  const [contratos, setContratos] = useState<ContratoDto[]>([])
+  const [enderecos, setEnderecos] = useState<EnderecoDto[]>([])
+  const [cpes, setCpes] = useState<CpeComboDto[]>([])
+  const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
+  const [capturandoLocalizacao, setCapturandoLocalizacao] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!Number.isFinite(pk)) return
+    carregar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pk])
+
+  async function carregar() {
+    setCarregando(true)
+    setErro(null)
+    try {
+      const resposta = await buscarDetalheCliente(pk)
+      setNome(resposta.cliente.client_complete_name ?? resposta.cliente.client_name ?? null)
+      setDoc(resposta.cliente.client_doc1 ?? null)
+      setContratos(resposta.contratos)
+      setEnderecos(resposta.enderecos)
+      setCpes(resposta.cpes)
+    } catch (excecao) {
+      setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados do cliente.')
+    } finally {
+      setCarregando(false)
+    }
+  }
+
+  async function usarLocalizacaoAtual(cpePk: number) {
+    if (!navigator.geolocation) {
+      toast('Este navegador não suporta captura de localização.')
+      return
+    }
+    setCapturandoLocalizacao(cpePk)
+    navigator.geolocation.getCurrentPosition(
+      async (posicao) => {
+        try {
+          await atualizarLocalizacaoCpe(cpePk, String(posicao.coords.latitude), String(posicao.coords.longitude))
+          toast('Localização atualizada com sucesso.', 'sucesso')
+        } catch (excecao) {
+          toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível salvar a localização.')
+        } finally {
+          setCapturandoLocalizacao(null)
+        }
+      },
+      () => {
+        setCapturandoLocalizacao(null)
+        toast('Não foi possível obter a localização. Verifique a permissão do navegador.')
+      },
+    )
+  }
+
+  if (!Number.isFinite(pk)) {
+    return <p className="detalhe-cliente-status">Cliente não encontrado.</p>
+  }
+
+  return (
+    <div className="detalhe-cliente-tela tela-entrada">
+      <VoltarInicio to="/clientes" label="Clientes" />
+
+      {carregando && (
+        <div className="detalhe-cliente-card">
+          <Skeleton width="50%" height={18} />
+          <Skeleton width="30%" height={13} />
+        </div>
+      )}
+
+      {!carregando && erro && (
+        <div className="detalhe-cliente-status">
+          <p>{erro}</p>
+          <button onClick={carregar}>Tentar novamente</button>
+        </div>
+      )}
+
+      {!carregando && !erro && (
+        <>
+          <div className="detalhe-cliente-card">
+            <span className="detalhe-cliente-icone" style={{ background: CORES.cliente }}>
+              <MdPeopleAlt size={22} color={CORES.branco} />
+            </span>
+            <div>
+              <strong>{nome ?? `Cliente #${pk}`}</strong>
+              {doc && <p>Documento: {doc}</p>}
+            </div>
+          </div>
+
+          <section className="detalhe-cliente-secao">
+            <h2>Contratos</h2>
+            {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
+            {contratos.map((contrato) => (
+              <div key={contrato.contract_pk} className="detalhe-cliente-item">
+                <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
+                {contrato.contract_status != null && <p>Status: {contrato.contract_status}</p>}
+                {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
+              </div>
+            ))}
+          </section>
+
+          <section className="detalhe-cliente-secao">
+            <h2>Endereços</h2>
+            {enderecos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum endereço cadastrado.</p>}
+            {enderecos.map((endereco) => (
+              <div key={endereco.address_pk} className="detalhe-cliente-item">
+                <div className="detalhe-cliente-item-topo">
+                  <strong>{endereco.address_identification ?? 'Endereço'}</strong>
+                  <button className="detalhe-cliente-btn-icone" onClick={() => setEnderecoEditando(endereco)} aria-label="Editar endereço">
+                    <MdEdit size={18} />
+                  </button>
+                </div>
+                <p>
+                  {[endereco.address, endereco.address_number, endereco.address_neighborhood]
+                    .filter(Boolean)
+                    .join(', ') || 'Endereço não informado'}
+                </p>
+                {endereco.address_zipcode && <p>CEP: {endereco.address_zipcode}</p>}
+              </div>
+            ))}
+          </section>
+
+          <section className="detalhe-cliente-secao">
+            <h2>Conexões (CPE)</h2>
+            {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
+            {cpes.map((cpe) => (
+              <div key={cpe.cpe_pk} className="detalhe-cliente-item">
+                <strong>{cpe.username ?? `CPE #${cpe.cpe_pk}`}</strong>
+                {cpe.contract_pk && <p>Contrato: {cpe.contract_pk}</p>}
+                <div className="detalhe-cliente-item-acoes">
+                  <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
+                    <MdWifi size={14} /> Conexão
+                  </Link>
+                  <Link to={`/onu?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
+                    <MdRouter size={14} /> ONU
+                  </Link>
+                  <button
+                    className="detalhe-cliente-chip detalhe-cliente-chip-botao"
+                    disabled={capturandoLocalizacao === cpe.cpe_pk}
+                    onClick={() => cpe.cpe_pk && usarLocalizacaoAtual(cpe.cpe_pk)}
+                  >
+                    <MdLocationOn size={14} /> {capturandoLocalizacao === cpe.cpe_pk ? 'Capturando…' : 'Usar minha localização'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </section>
+        </>
+      )}
+
+      {enderecoEditando && (
+        <ModalEditarEndereco
+          endereco={enderecoEditando}
+          onFechar={() => setEnderecoEditando(null)}
+          onSalvo={(atualizado) => {
+            setEnderecos((atual) => atual.map((e) => (e.address_pk === atualizado.address_pk ? atualizado : e)))
+            setEnderecoEditando(null)
+            toast('Endereço atualizado com sucesso.', 'sucesso')
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+function ModalEditarEndereco({
+  endereco,
+  onFechar,
+  onSalvo,
+}: {
+  endereco: EnderecoDto
+  onFechar: () => void
+  onSalvo: (endereco: EnderecoDto) => void
+}) {
+  const [form, setForm] = useState<EnderecoDto>(endereco)
+  const [salvando, setSalvando] = useState(false)
+  const { toast } = useToast()
+
+  async function salvar() {
+    if (!endereco.address_pk) return
+    setSalvando(true)
+    try {
+      await atualizarEndereco(endereco.address_pk, {
+        address: form.address,
+        address_number: form.address_number,
+        address_neighborhood: form.address_neighborhood,
+        address_zipcode: form.address_zipcode,
+        address_province: form.address_province,
+        address_state: form.address_state,
+        address_completation: form.address_completation,
+        address_identification: form.address_identification,
+      })
+      onSalvo(form)
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível salvar o endereço.')
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  function campo<K extends keyof EnderecoDto>(chave: K) {
+    return {
+      value: (form[chave] as string) ?? '',
+      onChange: (e: ChangeEvent<HTMLInputElement>) => setForm((atual) => ({ ...atual, [chave]: e.target.value })),
+    }
+  }
+
+  return (
+    <div className="detalhe-cliente-modal-fundo" onClick={onFechar}>
+      <div className="detalhe-cliente-modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Editar endereço</h2>
+
+        <label>Identificação</label>
+        <input {...campo('address_identification')} placeholder="Ex: Endereço padrão" />
+
+        <label>Logradouro</label>
+        <input {...campo('address')} placeholder="Rua, avenida…" />
+
+        <div className="detalhe-cliente-modal-linha">
+          <div>
+            <label>Número</label>
+            <input {...campo('address_number')} />
+          </div>
+          <div>
+            <label>CEP</label>
+            <input {...campo('address_zipcode')} />
+          </div>
+        </div>
+
+        <label>Bairro</label>
+        <input {...campo('address_neighborhood')} />
+
+        <div className="detalhe-cliente-modal-linha">
+          <div>
+            <label>Cidade</label>
+            <input {...campo('address_province')} />
+          </div>
+          <div>
+            <label>UF</label>
+            <input {...campo('address_state')} maxLength={2} />
+          </div>
+        </div>
+
+        <label>Complemento</label>
+        <input {...campo('address_completation')} />
+
+        <div className="detalhe-cliente-modal-acoes">
+          <button onClick={onFechar}>Cancelar</button>
+          <button className="detalhe-cliente-modal-btn-primario" disabled={salvando} onClick={salvar}>
+            {salvando ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

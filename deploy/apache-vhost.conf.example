@@ -1,0 +1,102 @@
+# Exemplo de VirtualHost Apache para tecnico.hotnet.net.br
+#
+# Serve o build estático do Vite (npm run build -> frontend/dist) e faz o
+# reverse proxy de /api/* para o BACKEND PRÓPRIO (FastAPI/uvicorn, rodando
+# como serviço systemd em 127.0.0.1:8000 — ver deploy/install.sh), não
+# pro Controllr direto. Requer os módulos: proxy, proxy_http, headers,
+# rewrite, ssl (a2enmod proxy proxy_http headers rewrite ssl).
+#
+# Diferente do vhost do app cliente (cliente.hotnet.net.br): não precisa
+# reescrever domínio de cookie nem repassar /public, /common, /assets pro
+# Controllr — o cookie de sessão (TECSESSION) já nasce com o domínio
+# certo (é o nosso backend quem emite, sem domínio fixo) e não existe
+# HTML do Controllr sendo repassado direto pro navegador aqui, só JSON.
+#
+# Ajuste os caminhos de certificado, o DocumentRoot e a porta do backend
+# (127.0.0.1:8000) pros valores reais — install.sh já faz essas
+# substituições sozinho a partir deste arquivo.
+
+<VirtualHost *:80>
+    ServerName tecnico.hotnet.net.br
+    Redirect permanent / https://tecnico.hotnet.net.br/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName tecnico.hotnet.net.br
+
+    SSLEngine on
+    SSLCertificateFile      /etc/letsencrypt/live/tecnico.hotnet.net.br/fullchain.pem
+    SSLCertificateKeyFile   /etc/letsencrypt/live/tecnico.hotnet.net.br/privkey.pem
+
+    DocumentRoot /var/www/hotnet-tecnico/dist
+
+    # OBRIGATÓRIO: o pacote apache2 do Debian já vem com um
+    # "Alias /icons/ ..." global (mods-enabled/alias.conf, usado pros
+    # ícones de listagem de diretório) que intercepta /icons/* antes de
+    # chegar na pasta do próprio app — sem isso, os ícones do manifest do
+    # PWA (frontend/public/icons/) dão 404 e o navegador nunca oferece
+    # "Instalar app". Este Alias mais específico sobrepõe o padrão do
+    # sistema (mesmo ajuste feito no vhost do app cliente).
+    Alias /icons /var/www/hotnet-tecnico/dist/icons
+
+    <Directory /var/www/hotnet-tecnico/dist>
+        Options -Indexes
+        AllowOverride None
+        Require all granted
+
+        # 'unsafe-inline' NÃO é necessário em style-src: o React seta
+        # estilo inline via propriedade do DOM (CSSOM), não via atributo
+        # "style=" no HTML nem <style> — isso não é bloqueado por CSP.
+        Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        Header always set X-Frame-Options "DENY"
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+        # geolocation=(self): usado na captura de localização do CPE em
+        # Endereço/Localização (navigator.geolocation, DetalheCliente.tsx).
+        # O resto vai desligado — o anexo de foto da OS usa
+        # <input type="file" capture="environment"> (DetalheOS.tsx), que
+        # abre o app de câmera do sistema sem precisar de permissão via
+        # API do navegador, mesmo critério do app cliente.
+        Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
+        Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+        # NUNCA cachear o que vem daqui (index.html, sw.js, workbox-*.js,
+        # manifest.webmanifest) — é assim que o navegador descobre que
+        # existe uma versão nova pra instalar (mesmo motivo documentado
+        # no README do app cliente, "Aviso de nova versão"). O
+        # <Directory dist/assets> abaixo sobrescreve isso pros arquivos
+        # com hash no nome, que sim podem — e devem — cachear por muito
+        # tempo.
+        Header always set Cache-Control "no-cache"
+
+        RewriteEngine On
+        RewriteBase /
+
+        # SPA: qualquer rota que não bata em um arquivo real cai no
+        # index.html (o roteamento de fato acontece no react-router-dom)
+        # — exceto /api/*, que precisa continuar pro ProxyPass abaixo.
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} !^/api/
+        RewriteRule . /index.html [L]
+    </Directory>
+
+    # Sobrescreve o "no-cache" do <Directory> acima só pros arquivos do
+    # build com hash no nome (ex: index-D4VyL3qq.js) — o nome muda sempre
+    # que o conteúdo muda, então "immutable" por 1 ano é seguro de
+    # verdade aqui. Precisa vir DEPOIS do <Directory dist> acima — o
+    # Apache mescla configuração de diretório do menos pro mais
+    # específico.
+    <Directory /var/www/hotnet-tecnico/dist/assets>
+        Header always set Cache-Control "public, max-age=31536000, immutable"
+    </Directory>
+
+    # Reverse proxy pro backend PRÓPRIO (FastAPI local, via systemd) —
+    # não pro Controllr. "/api" some da URL antes de chegar no backend
+    # (as rotas lá são tipo /auth/login, não /api/auth/login).
+    ProxyPreserveHost off
+    RequestHeader set X-Real-IP "%{REMOTE_ADDR}e"
+
+    ProxyPass        /api/ http://127.0.0.1:8000/
+    ProxyPassReverse /api/ http://127.0.0.1:8000/
+</VirtualHost>

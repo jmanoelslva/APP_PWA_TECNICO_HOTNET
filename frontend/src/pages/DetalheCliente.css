@@ -1,0 +1,227 @@
+.detalhe-cliente-tela {
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.detalhe-cliente-status {
+  color: var(--cor-texto-secundario);
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.detalhe-cliente-card {
+  background: var(--cor-superficie);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--sombra-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.detalhe-cliente-icone {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detalhe-cliente-card strong {
+  display: block;
+  font-size: 15px;
+  color: var(--cor-texto);
+}
+
+.detalhe-cliente-card p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
+.detalhe-cliente-secao {
+  margin-bottom: 24px;
+}
+
+.detalhe-cliente-secao h2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--cor-texto-secundario);
+  margin: 0 0 10px;
+}
+
+.detalhe-cliente-vazio {
+  font-size: 13px;
+  color: var(--cor-texto-terciario);
+}
+
+.detalhe-cliente-item {
+  background: var(--cor-superficie);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: var(--sombra-card);
+  margin-bottom: 10px;
+}
+
+.detalhe-cliente-item strong {
+  font-size: 14px;
+  color: var(--cor-texto);
+}
+
+.detalhe-cliente-item p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
+.detalhe-cliente-item-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detalhe-cliente-btn-icone {
+  border: none;
+  background: transparent;
+  color: var(--cor-texto-terciario);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+}
+
+.detalhe-cliente-item-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.detalhe-cliente-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto-secundario);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.detalhe-cliente-chip-botao {
+  font-family: inherit;
+}
+
+.detalhe-cliente-chip-botao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.detalhe-cliente-modal-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+.detalhe-cliente-modal {
+  background: var(--cor-superficie);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 24px 28px;
+  max-width: 460px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: detalhe-cliente-modal-subir 0.2s ease;
+}
+
+.detalhe-cliente-modal::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cor-borda);
+  margin: 0 auto 16px;
+}
+
+@keyframes detalhe-cliente-modal-subir {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.detalhe-cliente-modal h2 {
+  margin: 0 0 16px;
+  font-size: 17px;
+  color: var(--cor-texto);
+}
+
+.detalhe-cliente-modal label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+  margin-top: 12px;
+  display: block;
+}
+
+.detalhe-cliente-modal input {
+  margin-top: 6px;
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--cor-texto);
+}
+
+.detalhe-cliente-modal-linha {
+  display: flex;
+  gap: 12px;
+}
+
+.detalhe-cliente-modal-linha > div {
+  flex: 1;
+}
+
+.detalhe-cliente-modal-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.detalhe-cliente-modal-acoes button {
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detalhe-cliente-modal-btn-primario {
+  border: none !important;
+  color: var(--cor-branco-fixo) !important;
+  background: linear-gradient(135deg, var(--cor-cliente), var(--cor-primaria-escura)) !important;
+}

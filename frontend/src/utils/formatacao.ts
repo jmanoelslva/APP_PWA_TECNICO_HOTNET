@@ -1,0 +1,27 @@
+/** "YYYY-MM-DD" ou "YYYY-MM-DD HH:mm:ss" (formato do Controllr) → "DD/MM/YYYY". */
+export function formatarData(data: string | null | undefined): string | null {
+  if (!data) return null
+  const soData = data.split(' ')[0]
+  const partes = soData.split('-')
+  if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`
+  return soData
+}
+
+/** "YYYY-MM-DD HH:mm:ss" → "DD/MM/YYYY HH:mm". */
+export function formatarDataHora(data: string | null | undefined): string {
+  if (!data) return ''
+  const partes = data.split(' ')
+  const dataParte = partes[0]?.split('-')
+  const horaParte = partes[1]?.slice(0, 5)
+  if (dataParte?.length === 3) {
+    return `${dataParte[2]}/${dataParte[1]}/${dataParte[0]}${horaParte ? ` ${horaParte}` : ''}`
+  }
+  return data
+}
+
+/** "YYYY-MM-DD HH:mm:ss", mesmo formato usado pelo Controllr — pra carimbar mensagens otimistas. */
+export function agoraNoFormatoDoServidor(): string {
+  const agora = new Date()
+  const par = (n: number) => String(n).padStart(2, '0')
+  return `${agora.getFullYear()}-${par(agora.getMonth() + 1)}-${par(agora.getDate())} ${par(agora.getHours())}:${par(agora.getMinutes())}:${par(agora.getSeconds())}`
+}

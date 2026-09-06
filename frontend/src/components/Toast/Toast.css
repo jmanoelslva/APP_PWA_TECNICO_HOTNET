@@ -1,0 +1,49 @@
+.toast-pilha {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  pointer-events: none;
+}
+
+.toast {
+  max-width: 420px;
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-branco-fixo);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: toast-entrar 0.2s ease;
+}
+
+@keyframes toast-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-info {
+  background: var(--cor-endereco);
+}
+
+.toast-sucesso {
+  background: var(--cor-sucesso-vivo);
+}
+
+.toast-erro {
+  background: var(--cor-primaria-escura);
+}

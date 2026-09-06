@@ -1,0 +1,20 @@
+.skeleton {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--cor-borda-suave) 25%, var(--cor-borda) 37%, var(--cor-borda-suave) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-onda 1.4s ease infinite;
+}
+
+.skeleton + .skeleton {
+  margin-top: 10px;
+}
+
+@keyframes skeleton-onda {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}

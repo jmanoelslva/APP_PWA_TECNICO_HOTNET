@@ -1,0 +1,91 @@
+# Exemplo de vhost Nginx para tecnico.hotnet.net.br
+#
+# Serve o build estático do Vite (npm run build -> frontend/dist) e faz o
+# reverse proxy de /api/* para o BACKEND PRÓPRIO (FastAPI/uvicorn, rodando
+# como serviço systemd em 127.0.0.1:8000 — ver deploy/install.sh) — não
+# pro Controllr direto (quem fala com o Controllr é o backend, com HTTP
+# Basic Auth do técnico logado, nunca o navegador).
+#
+# Diferente do vhost do app cliente (cliente.hotnet.net.br): não precisa
+# de "proxy_cookie_domain" nem de proxiar /public, /common, /assets pro
+# Controllr — o cookie de sessão (TECSESSION) é emitido pelo NOSSO
+# backend sem domínio fixo, então já nasce com o domínio certo
+# (tecnico.hotnet.net.br) por vir da mesma origem; e não existe HTML do
+# Controllr sendo repassado direto pro navegador aqui, só JSON.
+#
+# Ajuste os caminhos de certificado (ssl_certificate/ssl_certificate_key),
+# o "root" e a porta do backend (127.0.0.1:8000) pros valores reais —
+# install.sh já faz essas substituições sozinho a partir deste arquivo.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name tecnico.hotnet.net.br;
+
+    # Redireciona tudo pra HTTPS.
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name tecnico.hotnet.net.br;
+
+    ssl_certificate     /etc/letsencrypt/live/tecnico.hotnet.net.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tecnico.hotnet.net.br/privkey.pem;
+
+    root /var/www/hotnet-tecnico/dist;
+    index index.html;
+
+    # SPA: qualquer rota que não bata em um arquivo real cai no
+    # index.html (o roteamento de fato acontece no react-router-dom, no
+    # navegador) — sem isso, recarregar a página numa rota interna (ex:
+    # /suporte/123) dá 404.
+    location / {
+        try_files $uri /index.html;
+
+        # 'unsafe-inline' NÃO é necessário em style-src: o React seta
+        # estilo inline via propriedade do DOM (CSSOM), não via atributo
+        # "style=" no HTML nem <style> — isso não é bloqueado por CSP.
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        # geolocation=(self): usado na captura de localização do CPE em
+        # Endereço/Localização (navigator.geolocation) e no
+        # compartilhamento de localização da OS. O resto vai desligado —
+        # o anexo de foto da OS usa <input type="file" capture="environment">
+        # (DetalheOS.tsx), que abre o app de câmera do sistema sem
+        # precisar de permissão via API do navegador, mesmo critério do
+        # app cliente.
+        add_header Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), usb=()" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+        # NUNCA cachear o que passa por aqui (index.html, sw.js,
+        # workbox-*.js, manifest.webmanifest) — é assim que o navegador
+        # descobre que existe uma versão nova pra instalar (mesmo motivo
+        # documentado no README do app cliente, "Aviso de nova versão").
+        # Os arquivos em /assets/ têm hash no nome, então esses sim podem
+        # — e devem — cachear por muito tempo (ver location abaixo).
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # Arquivos com hash no nome (ex: index-D4VyL3qq.js) — o nome muda
+    # sempre que o conteúdo muda, então "immutable" por 1 ano é seguro.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+    }
+
+    # Reverse proxy pro backend PRÓPRIO (FastAPI local) — não pro
+    # Controllr. "/api" some da URL antes de chegar no backend (as rotas
+    # lá são tipo /auth/login, não /api/auth/login — mesma reescrita que
+    # o vite.config.ts faz em desenvolvimento).
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

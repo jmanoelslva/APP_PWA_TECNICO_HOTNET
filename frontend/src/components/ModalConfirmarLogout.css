@@ -1,0 +1,77 @@
+.modal-confirmar-logout-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-confirmar-logout {
+  background: var(--cor-superficie);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 24px 28px;
+  max-width: 420px;
+  width: 100%;
+  animation: modal-confirmar-logout-subir 0.2s ease;
+}
+
+.modal-confirmar-logout::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cor-borda);
+  margin: 0 auto 16px;
+}
+
+@keyframes modal-confirmar-logout-subir {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.modal-confirmar-logout h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  color: var(--cor-texto);
+  text-align: center;
+}
+
+.modal-confirmar-logout p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.modal-confirmar-logout-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.modal-confirmar-logout-acoes button {
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal-confirmar-logout-acoes button.modal-confirmar-logout-sair {
+  border: none;
+  color: var(--cor-branco-fixo);
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+}

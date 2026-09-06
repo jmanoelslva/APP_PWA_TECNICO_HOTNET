@@ -1,0 +1,31 @@
+.cabecalho-tela {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+}
+
+.cabecalho-tela-icone {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cabecalho-tela h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.cabecalho-tela p {
+  margin: 2px 0 0;
+  color: var(--cor-texto-terciario);
+  font-size: 13px;
+}

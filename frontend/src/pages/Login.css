@@ -1,0 +1,160 @@
+.login-tela {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--cor-fundo), color-mix(in srgb, var(--cor-primaria) 6%, var(--cor-fundo)));
+  padding: 24px;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  background: var(--cor-superficie);
+  border-radius: 24px;
+  padding: 32px 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.login-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.login-marca-icone {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cor-branco-fixo);
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+}
+
+.login-marca div {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.login-marca strong {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--cor-texto);
+}
+
+.login-marca span {
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.login-card label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-texto);
+  margin-top: 12px;
+}
+
+.login-label-icone {
+  font-size: 14px;
+}
+
+.login-card input {
+  margin-top: 6px;
+  height: 48px;
+  width: 100%;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: var(--cor-primaria);
+}
+
+.login-campo-senha {
+  position: relative;
+}
+
+.login-campo-senha input {
+  padding-right: 44px;
+}
+
+.login-toggle-senha {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  height: 48px;
+  width: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--cor-texto-terciario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-erro {
+  margin-top: 12px;
+  color: var(--cor-erro);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-btn-entrar {
+  margin-top: 24px;
+  height: 52px;
+  border: none;
+  border-radius: 12px;
+  color: var(--cor-branco-fixo);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+}
+
+.login-btn-entrar:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.login-btn-instalar {
+  margin-top: 16px;
+  height: 44px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto-secundario);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}

@@ -1,0 +1,20 @@
+.pull-to-refresh-indicador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--cor-primaria);
+}
+
+.pull-to-refresh-girando {
+  animation: pull-to-refresh-girar 0.7s linear infinite;
+}
+
+@keyframes pull-to-refresh-girar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
