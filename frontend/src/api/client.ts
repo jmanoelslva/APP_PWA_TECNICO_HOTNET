@@ -323,6 +323,8 @@ export interface OnuDto {
   dp_name?: string
   olt_pk?: number
   olt_name?: string
+  olt_omddm_rx_power?: number
+  olt_omddm_tx_power?: number
   model?: string
   vendor?: string
   frame?: number
@@ -330,6 +332,15 @@ export interface OnuDto {
   pon?: number
   id?: number
   cpe_pk?: number
+  cpe_v4_ip_last?: string
+  client_name?: string
+  client_pk?: number
+  contract_pk?: number
+  contract_number?: number
+  // Acesso PPPoE configurado na própria ONU (não no CPE) — confirmado
+  // populado em produção via /fiber_ctl/onu/list.
+  wancfg_pppoe_username?: string
+  wancfg_pppoe_passwd?: string
 }
 
 export interface BuscaOnuResponse {
@@ -337,7 +348,7 @@ export interface BuscaOnuResponse {
   results: OnuDto[]
 }
 
-export function buscarOnu(filtro: { cpe_pk?: number; olt_pk?: number }): Promise<BuscaOnuResponse> {
+export function buscarOnu(filtro: { serial?: string; cpe_pk?: number; olt_pk?: number }): Promise<BuscaOnuResponse> {
   return get<BuscaOnuResponse>('onu/busca', filtro)
 }
 
