@@ -103,7 +103,11 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     enderecos_resp = await ctx.controllr.call_api_post(
         "/controllrctl/addresses/list", corpo(where_eq("addresses.client_pk", client_pk), action="list", start=0)
     )
-    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("client_pk", client_pk), limit=20))
+    # "aaa_cpe.client_pk" — mesmo fix já aplicado em buscar_clientes acima
+    # (nome real da tabela é "aaa_cpe", confirmado no app cliente de
+    # referência). Esta segunda ocorrência tinha ficado pra trás na
+    # correção anterior — só a de buscar_clientes tinha sido trocada.
+    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
 
     return {
         "success": True,
