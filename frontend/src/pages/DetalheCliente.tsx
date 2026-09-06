@@ -134,14 +134,18 @@ export default function DetalheCliente() {
             {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
             {cpes.map((cpe) => (
               <div key={cpe.cpe_pk} className="detalhe-cliente-item">
-                <strong>{cpe.username ?? `CPE #${cpe.cpe_pk}`}</strong>
+                <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
                 {cpe.contract_pk && <p>Contrato: {cpe.contract_pk}</p>}
                 <div className="detalhe-cliente-item-acoes">
                   <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
                     <MdWifi size={14} /> Conexão
                   </Link>
                   <Link
-                    to={cpe.username ? `/onu?username=${encodeURIComponent(cpe.username)}` : `/onu?cpe_pk=${cpe.cpe_pk}`}
+                    to={
+                      cpe.cpe_username
+                        ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
+                        : `/onu?cpe_pk=${cpe.cpe_pk}`
+                    }
                     className="detalhe-cliente-chip"
                     viewTransition
                   >

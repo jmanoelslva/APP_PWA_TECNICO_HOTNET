@@ -153,18 +153,25 @@ export interface ClienteDto {
   client_type?: number
 }
 
+// Vem de /aaa_ctl/cpe/list_combo SEM passar pelo modelo Python (o
+// backend não faz o cast — ver clientes.py) — os nomes de campo aqui são
+// os NOMES CRUS do Controllr (confirmados na doc oficial:
+// apidoc.brbyte.com/#post-/aaa_ctl/cpe/list_combo), não os nomes
+// "bonitos" que o pacote brbyteapi usaria se passasse pelo modelo
+// (ex: aqui é "cpe_username", não "username" — diferente de CpeDto,
+// que vem de /cpe/busca já cast pelo modelo, ver Conexao.tsx).
 export interface CpeComboDto {
   cpe_pk?: number
   client_pk?: number
   contract_pk?: number
-  circuit_id?: string
+  cpe_circuit_id?: string
   client_complete_name?: string
   dp_name?: string
   dp_pk?: number
-  mac?: string
+  cpe_mac?: string
   nas_name?: string
   plan_pk?: number
-  username?: string
+  cpe_username?: string
 }
 
 export interface ContratoDto {
