@@ -140,7 +140,11 @@ export default function DetalheCliente() {
                   <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
                     <MdWifi size={14} /> Conexão
                   </Link>
-                  <Link to={`/onu?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
+                  <Link
+                    to={cpe.username ? `/onu?username=${encodeURIComponent(cpe.username)}` : `/onu?cpe_pk=${cpe.cpe_pk}`}
+                    className="detalhe-cliente-chip"
+                    viewTransition
+                  >
                     <MdRouter size={14} /> ONU
                   </Link>
                 </div>

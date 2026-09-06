@@ -375,7 +375,9 @@ export interface BuscaOnuResponse {
   results: OnuDto[]
 }
 
-export function buscarOnu(filtro: { serial?: string; cpe_pk?: number; olt_pk?: number }): Promise<BuscaOnuResponse> {
+export function buscarOnu(
+  filtro: { serial?: string; username?: string; cpe_pk?: number; olt_pk?: number },
+): Promise<BuscaOnuResponse> {
   return get<BuscaOnuResponse>('onu/busca', filtro)
 }
 

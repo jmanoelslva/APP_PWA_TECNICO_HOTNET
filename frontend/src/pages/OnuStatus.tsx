@@ -43,7 +43,18 @@ const TEXTO_SINAL: Record<NivelSinal, string> = {
 export default function OnuStatus() {
   const [params] = useSearchParams()
   const cpePkParam = params.get('cpe_pk')
+  const usernameParam = params.get('username')
+  // Usuário PPPoE do CPE é o jeito confiável de achar a ONU de um
+  // cliente (ver backend/app/routers/onu.py) — cpe_pk sozinho é
+  // ambíguo em /fiber_ctl/onu/list e já causou mostrar a ONU de outro
+  // cliente. Prioriza username quando os dois vierem informados.
+  const temParametroInicial = !!usernameParam || !!cpePkParam
   const { toast } = useToast()
+
+  function buscarInicial() {
+    if (usernameParam) return buscarOnu({ username: usernameParam })
+    return buscarOnu({ cpe_pk: Number(cpePkParam) })
+  }
 
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
@@ -53,13 +64,13 @@ export default function OnuStatus() {
   const [serialBusca, setSerialBusca] = useState('')
 
   useEffect(() => {
-    if (!cpePkParam) {
+    if (!temParametroInicial) {
       setCarregando(false)
       return
     }
-    carregar(() => buscarOnu({ cpe_pk: Number(cpePkParam) }))
+    carregar(buscarInicial)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cpePkParam])
+  }, [cpePkParam, usernameParam])
 
   async function carregar(chamada: () => ReturnType<typeof buscarOnu>) {
     setCarregando(true)
@@ -86,7 +97,7 @@ export default function OnuStatus() {
   }
 
   function tentarNovamente() {
-    if (cpePkParam) carregar(() => buscarOnu({ cpe_pk: Number(cpePkParam) }))
+    if (temParametroInicial) carregar(buscarInicial)
     else buscarPorSerialAtual()
   }
 
@@ -108,7 +119,7 @@ export default function OnuStatus() {
         onu_id: onu.id,
         frame_id: onu.frame ?? 1,
       })
-      if (cpePkParam) await carregar(() => buscarOnu({ cpe_pk: Number(cpePkParam) }))
+      if (temParametroInicial) await carregar(buscarInicial)
       else if (onu.sn) await carregar(() => buscarOnu({ serial: onu.sn }))
       toast('ONU atualizada.', 'sucesso')
     } catch (excecao) {
@@ -130,7 +141,7 @@ export default function OnuStatus() {
 
   const statusOnu = nivelSinalOnu(onu?.omddm_rx_power)
   const statusOlt = nivelSinalOlt(onu?.olt_omddm_rx_power)
-  const semSelecao = !cpePkParam && !onu && !carregando
+  const semSelecao = !temParametroInicial && !onu && !carregando
 
   return (
     <div className="onu-tela tela-entrada">
@@ -179,7 +190,7 @@ export default function OnuStatus() {
         </div>
       )}
 
-      {cpePkParam && !carregando && !erro && !onu && (
+      {temParametroInicial && !carregando && !erro && !onu && (
         <EstadoVazio icone={MdRouter} titulo="Nenhuma ONU encontrada para esta conexão." />
       )}
 
