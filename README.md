@@ -50,8 +50,9 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 Variáveis de ambiente (opcional, ver `.env.example`): `CONTROLLR_URL`
-(padrão `https://controllr.hotnet.net.br`), `SESSION_TTL_SECONDS`,
-`CORS_ALLOW_ORIGINS`.
+(padrão `https://controllr.hotnet.net.br:8443` — painel administrativo/
+ACL de staff, porta própria e diferente da usada pelo app cliente),
+`SESSION_TTL_SECONDS`, `CORS_ALLOW_ORIGINS`.
 
 ### Frontend
 

@@ -1,6 +1,11 @@
 import os
 
-CONTROLLR_URL = os.environ.get("CONTROLLR_URL", "https://controllr.hotnet.net.br")
+# Acesso de staff/técnico (ACL) ao Controllr acontece pelo painel
+# administrativo, numa porta própria (8443) — diferente do endpoint
+# público em 443 que o app cliente usa para login de assinante. Todo
+# endpoint chamado por este backend (login, clientes, endereços, cpe,
+# onu, tickets) vive atrás dessa mesma porta administrativa.
+CONTROLLR_URL = os.environ.get("CONTROLLR_URL", "https://controllr.hotnet.net.br:8443")
 
 # Tempo de vida da sessão do técnico neste backend (não é o lease do
 # Controllr, que é por requisição via Basic Auth — este TTL é só pra

@@ -29,7 +29,7 @@ set -euo pipefail
 # Configuração fixa
 # --------------------------------------------------------------------------
 REPO_URL="${REPO_URL:-https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET.git}"
-CONTROLLR_URL="${CONTROLLR_URL:-https://controllr.hotnet.net.br}"
+CONTROLLR_URL="${CONTROLLR_URL:-https://controllr.hotnet.net.br:8443}"
 INSTALL_DIR="/opt/hotnet-tecnico"
 ACME_WEBROOT="/var/www/certbot-acme"
 SERVICE_USER="hotnet-tecnico"

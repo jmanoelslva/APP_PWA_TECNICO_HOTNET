@@ -50,10 +50,16 @@ Crie `/etc/hotnet-tecnico/backend.env` (fora do diretório de deploy, pra
 sobreviver a um `git pull`):
 
 ```env
-CONTROLLR_URL=https://controllr.hotnet.net.br
+CONTROLLR_URL=https://controllr.hotnet.net.br:8443
 SESSION_TTL_SECONDS=43200
 CORS_ALLOW_ORIGINS=https://tecnico.hotnet.net.br
 ```
+
+`CONTROLLR_URL` aponta pro **painel administrativo** do Controllr (porta
+`8443`), não pro endpoint público em 443 que o app cliente usa — acesso
+de staff/ACL (usuário do técnico) só existe ali. O servidor onde este
+backend roda precisa ter saída liberada (firewall) para
+`controllr.hotnet.net.br:8443`.
 
 Rode como serviço persistente (systemd, dedicado a um usuário sem login
 — **nunca como root**), reiniciando sozinho em caso de queda. O
@@ -114,6 +120,11 @@ não seriam nem enviados pelo navegador.
       estiver).
 - [ ] `curl -s http://127.0.0.1:8000/health` no próprio servidor —
       `{"ok":true}` (confirma o backend de pé antes de testar via HTTPS).
+- [ ] `curl -skI https://controllr.hotnet.net.br:8443/` no próprio
+      servidor — confirma que o firewall deixa este servidor alcançar o
+      painel administrativo na porta 8443 antes mesmo de tentar logar
+      pelo app (se travar/der timeout aqui, o login vai falhar por
+      timeout, não por credencial errada — sintomas bem diferentes).
 - [ ] Abrir `https://tecnico.hotnet.net.br/suporte` diretamente (sem
       passar pela home antes) — deve cair na tela de login (fallback de
       SPA funcionando) e, depois de logado, recarregar a página em
