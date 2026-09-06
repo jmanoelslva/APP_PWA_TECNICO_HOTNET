@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import CORS_ALLOW_ORIGINS
-from .routers import auth, clientes, conexao, enderecos, onu, suporte
+from .routers import auth, clientes, conexao, enderecos, onu, ordens_servico, suporte
 
 app = FastAPI(title="HOTNET Técnico API")
 
@@ -19,6 +19,7 @@ app.include_router(clientes.router)
 app.include_router(enderecos.router)
 app.include_router(conexao.router)
 app.include_router(onu.router)
+app.include_router(ordens_servico.router)
 app.include_router(suporte.router)
 
 

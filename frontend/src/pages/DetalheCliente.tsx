@@ -6,7 +6,7 @@ import {
   atualizarEndereco,
   atualizarLocalizacaoCpe,
   buscarDetalheCliente,
-  listarOS,
+  listarTickets,
   type ContratoDto,
   type CpeComboDto,
   type EnderecoDto,
@@ -54,7 +54,7 @@ export default function DetalheCliente() {
       // Histórico de chamados/OS do cliente — carregado à parte (endpoint
       // diferente) e sem travar o resto da tela se falhar, já que é
       // informação complementar, não o cadastro em si.
-      listarOS({ minhas: false, clientPk: pk, limit: 10 })
+      listarTickets({ minhas: false, clientPk: pk, limit: 10 })
         .then((r) => setChamados(r.results))
         .catch(() => setChamados([]))
     } catch (excecao) {

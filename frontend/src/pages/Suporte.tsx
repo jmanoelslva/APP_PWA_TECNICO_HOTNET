@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MdBuild } from 'react-icons/md'
-import { ApiError, listarOS, type TicketDto } from '../api/client'
+import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import PullToRefresh from '../components/PullToRefresh'
 import { useToast } from '../components/Toast/useToast'
-import { formatarData } from '../utils/formatacao'
+import { formatarDataHora } from '../utils/formatacao'
 import { CORES } from '../utils/cores'
 import './Suporte.css'
 
@@ -15,8 +15,8 @@ const TAMANHO_PAGINA = 20
 
 type Aba = 'minhas' | 'todas'
 
-function osFechada(ticket: TicketDto): boolean {
-  return !!ticket.ticket_date_close
+function osFechada(os: OrdemServicoDto): boolean {
+  return !!os.op_date_close || !!os.op_date_cancel
 }
 
 export default function Suporte() {
@@ -24,7 +24,7 @@ export default function Suporte() {
   const { toast } = useToast()
 
   const [aba, setAba] = useState<Aba>('minhas')
-  const [chamados, setChamados] = useState<TicketDto[]>([])
+  const [ordens, setOrdens] = useState<OrdemServicoDto[]>([])
   const [total, setTotal] = useState(0)
   const [carregando, setCarregando] = useState(true)
   const [carregandoMais, setCarregandoMais] = useState(false)
@@ -39,8 +39,8 @@ export default function Suporte() {
     setCarregando(true)
     setErro(null)
     try {
-      const resposta = await listarOS({ minhas: aba === 'minhas', start: 0, limit: TAMANHO_PAGINA })
-      setChamados(resposta.results)
+      const resposta = await listarOrdensServico({ minhas: aba === 'minhas', abertas: true, start: 0, limit: TAMANHO_PAGINA })
+      setOrdens(resposta.results)
       setTotal(resposta.total)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar as OS.')
@@ -52,8 +52,13 @@ export default function Suporte() {
   async function carregarMais() {
     setCarregandoMais(true)
     try {
-      const resposta = await listarOS({ minhas: aba === 'minhas', start: chamados.length, limit: TAMANHO_PAGINA })
-      setChamados((atual) => [...atual, ...resposta.results])
+      const resposta = await listarOrdensServico({
+        minhas: aba === 'minhas',
+        abertas: true,
+        start: ordens.length,
+        limit: TAMANHO_PAGINA,
+      })
+      setOrdens((atual) => [...atual, ...resposta.results])
       setTotal(resposta.total)
     } catch {
       toast('Não foi possível carregar mais OS.')
@@ -62,12 +67,12 @@ export default function Suporte() {
     }
   }
 
-  const haMaisParaCarregar = chamados.length < total
+  const haMaisParaCarregar = ordens.length < total
 
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="suporte-tela tela-entrada">
-        <CabecalhoTela icone={MdBuild} cor={CORES.suporte} titulo="OS / Suporte" subtitulo="Ordens de serviço e chamados." />
+        <CabecalhoTela icone={MdBuild} cor={CORES.suporte} titulo="OS / Suporte" subtitulo="Ordens de serviço agendadas." />
 
         <div className="suporte-abas">
           <button className={`aba-chip ${aba === 'minhas' ? 'ativa' : ''}`} onClick={() => setAba('minhas')}>
@@ -97,35 +102,31 @@ export default function Suporte() {
           </div>
         )}
 
-        {!carregando && !erro && chamados.length === 0 && (
-          <EstadoVazio
-            icone={MdBuild}
-            titulo={aba === 'minhas' ? 'Nenhuma OS atribuída a você' : 'Nenhuma OS encontrada'}
-          />
+        {!carregando && !erro && ordens.length === 0 && (
+          <EstadoVazio icone={MdBuild} titulo={aba === 'minhas' ? 'Nenhuma OS atribuída a você' : 'Nenhuma OS aberta'} />
         )}
 
-        {!carregando && !erro && chamados.length > 0 && (
+        {!carregando && !erro && ordens.length > 0 && (
           <ul className="suporte-lista">
-            {chamados.map((chamado) => {
-              const fechada = osFechada(chamado)
+            {ordens.map((os) => {
+              const fechada = osFechada(os)
               return (
                 <li
-                  key={chamado.ticket_pk}
+                  key={os.op_pk ?? os.op_os_pk}
                   className="ticket-card"
-                  onClick={() => navigate(`/suporte/${chamado.ticket_pk}`, { state: { chamado }, viewTransition: true })}
+                  onClick={() => os.ticket_pk && navigate(`/suporte/${os.ticket_pk}`, { state: { os }, viewTransition: true })}
                 >
                   <div className="ticket-topo">
-                    <span className="ticket-assunto">{chamado.ticket_title ?? `OS #${chamado.ticket_pk ?? '-'}`}</span>
+                    <span className="ticket-assunto">{os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`}</span>
                     <span className={`ticket-status-badge ${fechada ? 'badge-fechado' : 'badge-aberto'}`}>
-                      {fechada ? 'Fechada' : 'Aberta'}
+                      {os.op_date_cancel ? 'Cancelada' : fechada ? 'Fechada' : 'Aberta'}
                     </span>
                   </div>
-                  {chamado.client_complete_name && <p className="ticket-cliente">{chamado.client_complete_name}</p>}
-                  {chamado.ticket_protocol && <p className="ticket-protocolo">Protocolo: {chamado.ticket_protocol}</p>}
-                  {chamado.category_name && <p className="ticket-protocolo">{chamado.category_name}</p>}
-                  {chamado.contract_number != null && <p className="ticket-protocolo">Contrato: {chamado.contract_number}</p>}
-                  <p className="ticket-data">Aberta em {formatarData(chamado.ticket_date_create) ?? 'data não informada'}</p>
-                  {chamado.ticket_desc && <p className="ticket-descricao">{chamado.ticket_desc}</p>}
+                  <p className="ticket-protocolo">Chamado #{os.ticket_pk ?? '—'}</p>
+                  {os.op_priority != null && <p className="ticket-protocolo">Prioridade: {os.op_priority}</p>}
+                  <p className="ticket-data">
+                    {os.op_date_sched ? `Agendada para ${formatarDataHora(os.op_date_sched)}` : 'Sem data agendada'}
+                  </p>
                 </li>
               )
             })}

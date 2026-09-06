@@ -15,12 +15,14 @@ import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import {
   ApiError,
-  criarMensagemOS,
-  detalheOS,
-  enviarAnexoOS,
-  fecharOS,
-  listarMensagensOS,
+  criarMensagemTicket,
+  detalheTicket,
+  enviarAnexoTicket,
+  fecharOrdemServico,
+  listarMensagensTicket,
+  listarOrdensServico,
   type OperacaoDto,
+  type OrdemServicoDto,
   type TicketDto,
 } from '../api/client'
 import { agoraNoFormatoDoServidor, formatarDataHora } from '../utils/formatacao'
@@ -83,8 +85,14 @@ export default function DetalheOS() {
   const location = useLocation()
   const { toast } = useToast()
 
-  const [ticket, setTicket] = useState<TicketDto | null>((location.state as { chamado?: TicketDto } | null)?.chamado ?? null)
-  const fechada = !!ticket?.ticket_date_close
+  const estadoNavegacao = location.state as { chamado?: TicketDto; os?: OrdemServicoDto } | null
+  const [ticket, setTicket] = useState<TicketDto | null>(estadoNavegacao?.chamado ?? null)
+  // A OS (Ordem de Serviço) é quem tem o ciclo de vida fechar/cancelar/
+  // reabrir de verdade — o ticket em si (acima) é só o caso/chat. Uma OS
+  // pode não existir ainda pra este ticket (ex: chamado recém-aberto,
+  // sem visita técnica agendada) — nesse caso não há o que fechar.
+  const [osAtual, setOsAtual] = useState<OrdemServicoDto | null>(estadoNavegacao?.os ?? null)
+  const fechada = osAtual ? !!osAtual.op_date_close || !!osAtual.op_date_cancel : false
 
   const [mensagens, setMensagens] = useState<Mensagem[]>([])
   const [pendentes, setPendentes] = useState<Mensagem[]>([])
@@ -107,8 +115,19 @@ export default function DetalheOS() {
   useEffect(() => {
     if (!Number.isFinite(pk)) return
     if (!ticket) {
-      detalheOS(pk)
+      detalheTicket(pk)
         .then((resposta) => setTicket(resposta.ticket))
+        .catch(() => {})
+    }
+    if (!osAtual) {
+      listarOrdensServico({ ticketPk: pk, minhas: false, abertas: false, limit: 5 })
+        .then((resposta) => {
+          // Prefere uma OS ainda aberta (sem data de fechamento/
+          // cancelamento); se todas já estiverem fechadas, mostra a mais
+          // recente mesmo assim (histórico), só sem o botão de fechar.
+          const aberta = resposta.results.find((os) => !os.op_date_close && !os.op_date_cancel)
+          setOsAtual(aberta ?? resposta.results[0] ?? null)
+        })
         .catch(() => {})
     }
     carregar(true)
@@ -138,7 +157,7 @@ export default function DetalheOS() {
   async function carregar(mostrarCarregando: boolean) {
     if (mostrarCarregando) setCarregando(true)
     try {
-      const resposta = await listarMensagensOS(pk)
+      const resposta = await listarMensagensTicket(pk)
       const dados = resposta.results
         .map(converterOperacao)
         .filter((m): m is Mensagem => m != null)
@@ -170,7 +189,7 @@ export default function DetalheOS() {
     setPendentes((atual) => [...atual, otimista])
     setTimeout(() => fimDaListaRef.current?.scrollIntoView({ block: 'end' }), 0)
     try {
-      await criarMensagemOS(pk, valor)
+      await criarMensagemTicket(pk, valor)
       await carregar(false)
     } catch (excecao) {
       setPendentes((atual) => atual.filter((p) => p.opPk !== otimista.opPk))
@@ -196,7 +215,7 @@ export default function DetalheOS() {
     if (!arquivo) return
     setEnviando(true)
     try {
-      await enviarAnexoOS(pk, arquivo)
+      await enviarAnexoTicket(pk, arquivo)
       await carregar(false)
     } catch (excecao) {
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível enviar o anexo.')
@@ -206,12 +225,17 @@ export default function DetalheOS() {
   }
 
   async function confirmarFechamento() {
+    if (!osAtual?.op_os_pk) {
+      toast('Nenhuma OS aberta encontrada pra este chamado.')
+      setConfirmandoFechar(false)
+      return
+    }
     setFechando(true)
     try {
-      await fecharOS(pk, observacaoFechar.trim() || undefined)
+      await fecharOrdemServico(pk, { opOsPk: osAtual.op_os_pk, opDesc: observacaoFechar.trim() || undefined })
       toast('OS fechada com sucesso.', 'sucesso')
       setConfirmandoFechar(false)
-      setTicket((atual) => (atual ? { ...atual, ticket_date_close: agoraNoFormatoDoServidor() } : atual))
+      setOsAtual((atual) => (atual ? { ...atual, op_date_close: agoraNoFormatoDoServidor() } : atual))
     } catch (excecao) {
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível fechar a OS.')
     } finally {
@@ -239,12 +263,18 @@ export default function DetalheOS() {
             </div>
             {ticket.ticket_protocol && <p className="detalhe-os-linha-resumo">Protocolo: {ticket.ticket_protocol}</p>}
             <p className="detalhe-os-linha-resumo">{ticket.category_name ?? 'Categoria não informada'}</p>
+            {osAtual?.op_date_sched && (
+              <p className="detalhe-os-linha-resumo">OS agendada para {formatarDataHora(osAtual.op_date_sched)}</p>
+            )}
           </div>
         )}
-        {!fechada && (
+        {!fechada && osAtual?.op_os_pk && (
           <button className="detalhe-os-btn-fechar" onClick={() => setConfirmandoFechar(true)}>
             <MdCheckCircle size={16} /> Fechar OS
           </button>
+        )}
+        {!fechada && ticket && !osAtual?.op_os_pk && (
+          <p className="detalhe-os-linha-resumo">Nenhuma OS aberta pra este chamado ainda.</p>
         )}
       </header>
 
@@ -277,14 +307,14 @@ export default function DetalheOS() {
                 {op.texto && <p className="balao-texto">{op.texto}</p>}
 
                 {op.arquivo && ehImagem(op.arquivo) && (
-                  <img src={`/api/suporte/os/${pk}/anexos/${op.arquivo}`} alt="Anexo" className="balao-anexo-imagem" />
+                  <img src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} alt="Anexo" className="balao-anexo-imagem" />
                 )}
                 {op.arquivo && ehVideo(op.arquivo) && (
-                  <video src={`/api/suporte/os/${pk}/anexos/${op.arquivo}`} controls className="balao-anexo-imagem" />
+                  <video src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} controls className="balao-anexo-imagem" />
                 )}
                 {op.arquivo && !ehImagem(op.arquivo) && !ehVideo(op.arquivo) && (
                   <a
-                    href={`/api/suporte/os/${pk}/anexos/${op.arquivo}`}
+                    href={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`}
                     target="_blank"
                     rel="noreferrer"
                     className={`balao-anexo-documento ${ehPdf(op.arquivo) ? 'balao-anexo-pdf' : ''}`}

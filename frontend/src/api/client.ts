@@ -388,7 +388,10 @@ export function atualizarInfoOnu(
 }
 
 // ---------------------------------------------------------------------
-// Suporte / OS
+// Suporte / Tickets — o CASO aberto pelo cliente (título, descrição,
+// categoria, chat). Diferente de Ordem de Serviço (ver seção abaixo):
+// um ticket pode ter uma ou mais OS vinculadas, mas quem se fecha aqui é
+// a OS, nunca o ticket em si (ver fecharOrdemServico).
 // ---------------------------------------------------------------------
 
 export interface TicketDto {
@@ -408,16 +411,16 @@ export interface TicketDto {
   address_pk?: number
 }
 
-export interface ListarOSResponse {
+export interface ListarTicketsResponse {
   success: boolean
   results: TicketDto[]
   total: number
 }
 
-export function listarOS(
+export function listarTickets(
   opcoes: { minhas: boolean; clientPk?: number; start?: number; limit?: number },
-): Promise<ListarOSResponse> {
-  return get<ListarOSResponse>('suporte/os', {
+): Promise<ListarTicketsResponse> {
+  return get<ListarTicketsResponse>('suporte/tickets', {
     minhas: opcoes.minhas,
     client_pk: opcoes.clientPk,
     start: opcoes.start ?? 0,
@@ -425,8 +428,8 @@ export function listarOS(
   })
 }
 
-export function detalheOS(ticketPk: number): Promise<{ success: boolean; ticket: TicketDto }> {
-  return get(`suporte/os/${ticketPk}`)
+export function detalheTicket(ticketPk: number): Promise<{ success: boolean; ticket: TicketDto }> {
+  return get(`suporte/tickets/${ticketPk}`)
 }
 
 export interface OperacaoDto {
@@ -439,20 +442,89 @@ export interface OperacaoDto {
   op_client?: boolean
 }
 
-export function listarMensagensOS(ticketPk: number): Promise<{ success: boolean; results: OperacaoDto[] }> {
-  return get(`suporte/os/${ticketPk}/mensagens`)
+export function listarMensagensTicket(ticketPk: number): Promise<{ success: boolean; results: OperacaoDto[] }> {
+  return get(`suporte/tickets/${ticketPk}/mensagens`)
 }
 
-export function criarMensagemOS(ticketPk: number, opDesc: string): Promise<{ success: boolean; results: unknown }> {
-  return post(`suporte/os/${ticketPk}/mensagens`, { op_desc: opDesc })
+export function criarMensagemTicket(ticketPk: number, opDesc: string): Promise<{ success: boolean; results: unknown }> {
+  return post(`suporte/tickets/${ticketPk}/mensagens`, { op_desc: opDesc })
 }
 
-export async function enviarAnexoOS(ticketPk: number, arquivo: File): Promise<{ success: boolean; results: unknown }> {
+export async function enviarAnexoTicket(ticketPk: number, arquivo: File): Promise<{ success: boolean; results: unknown }> {
   const form = new FormData()
   form.append('file', arquivo)
-  return postForm(`suporte/os/${ticketPk}/anexos`, form)
+  return postForm(`suporte/tickets/${ticketPk}/anexos`, form)
 }
 
-export function fecharOS(ticketPk: number, observacao?: string): Promise<{ success: boolean; results: unknown }> {
-  return post(`suporte/os/${ticketPk}/fechar`, { observacao })
+// ---------------------------------------------------------------------
+// Ordem de Serviço (OS) — recurso PRÓPRIO do Controllr, diferente de
+// Ticket (confirmado na doc oficial, tag "Ordem de Serviço"): é a OS,
+// não o ticket, que representa o trabalho de campo agendado/atribuído
+// ao técnico (op_date_sched, user_pk) e que de fato se fecha/cancela/
+// reabre via /os/*.
+// ---------------------------------------------------------------------
+
+export interface OrdemServicoDto {
+  op_pk?: number
+  op_os_pk?: number
+  ticket_pk?: number
+  op_date_sched?: string
+  op_date_create?: string
+  op_date_answer?: string
+  op_date_start?: string
+  op_date_finish?: string
+  op_date_close?: string
+  op_date_cancel?: string
+  op_status?: number
+  op_priority?: number
+  op_desc?: string
+  op_obs?: string
+  op_client_show?: boolean
+  address_pk?: number
+  user_pk?: number
+  staff_pk?: number
+  task_pk?: number
+}
+
+export interface ListarOrdensServicoResponse {
+  success: boolean
+  results: OrdemServicoDto[]
+  total: number
+}
+
+export function listarOrdensServico(
+  opcoes: { minhas?: boolean; abertas?: boolean; ticketPk?: number; start?: number; limit?: number },
+): Promise<ListarOrdensServicoResponse> {
+  return get<ListarOrdensServicoResponse>('os', {
+    minhas: opcoes.minhas ?? true,
+    abertas: opcoes.abertas ?? true,
+    ticket_pk: opcoes.ticketPk,
+    start: opcoes.start ?? 0,
+    limit: opcoes.limit ?? 20,
+  })
+}
+
+export function fecharOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc?: string; opClientShow?: boolean },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/fechar`, {
+    op_os_pk: parametros.opOsPk,
+    op_desc: parametros.opDesc,
+    op_client_show: parametros.opClientShow ?? true,
+  })
+}
+
+export function cancelarOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc?: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/cancelar`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+}
+
+export function reabrirOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc?: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/reabrir`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
 }
