@@ -187,6 +187,12 @@ export interface EnderecoDto {
   address_state?: string
   address_completation?: string
   address_default?: number
+  // Código SIAFI do município — obrigatório pro Controllr aceitar criar/
+  // atualizar o endereço (confirmado na doc oficial), mas não é algo que
+  // o técnico deva digitar: sempre reenviar o valor já carregado.
+  address_siafi?: number
+  address_latitude?: string
+  address_longitude?: string
   client_pk?: number
 }
 
@@ -222,6 +228,11 @@ export function buscarDetalheCliente(clientPk: number): Promise<DetalheClienteRe
 // ---------------------------------------------------------------------
 
 export interface EnderecoPayload {
+  // client_pk, address_zipcode, address_siafi, address e address_default
+  // são obrigatórios pro Controllr (confirmado na doc oficial) — ao
+  // editar um endereço já existente, sempre reenviar os valores já
+  // carregados (ver ModalEditarEndereco em DetalheCliente.tsx), nunca
+  // pedir isso de novo pro técnico.
   client_pk?: number
   address?: string
   address_number?: string
@@ -229,6 +240,8 @@ export interface EnderecoPayload {
   address_zipcode?: string
   address_province?: string
   address_state?: string
+  address_siafi?: number
+  address_default?: number
   address_completation?: string
   address_identification?: string
 }

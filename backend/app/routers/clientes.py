@@ -88,7 +88,17 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     contratos_resp = await ctx.controllr.contract_list(
         corpo(where_eq("client_pk", client_pk), action="list", start=0)
     )
-    enderecos_resp = await ctx.controllr.address_list_combo(corpo(where_eq("client_pk", client_pk)))
+    # /controllrctl/addresses/list (NÃO list_combo) — confirmado na doc
+    # oficial (apidoc.brbyte.com/#post-/controllrctl/addresses/list): só
+    # esse endpoint completo traz address_siafi/latitude/longitude, que
+    # o técnico precisa pra editar endereço/localização. list_combo
+    # devolve só 5 campos (sem esses). Sem wrapper no brbyteapi vendorizado
+    # (só tem list_combo) — chamada direta. Campo do "where" tem prefixo
+    # "addresses." aqui (diferente de list_combo, que usa "client_pk" puro
+    # — confirmado comparando os dois exemplos da doc oficial).
+    enderecos_resp = await ctx.controllr.call_api_post(
+        "/controllrctl/addresses/list", corpo(where_eq("addresses.client_pk", client_pk), action="list", start=0)
+    )
     cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("client_pk", client_pk), limit=20))
 
     return {

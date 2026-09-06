@@ -206,6 +206,13 @@ function ModalEditarEndereco({
     setSalvando(true)
     try {
       await atualizarEndereco(endereco.address_pk, {
+        // client_pk, address_zipcode, address_siafi e address_default são
+        // obrigatórios pro Controllr aceitar a atualização (confirmado na
+        // doc oficial) — não são editáveis nesta tela, então sempre
+        // reenvia o valor já carregado (form == endereco nesses campos).
+        client_pk: form.client_pk,
+        address_siafi: form.address_siafi,
+        address_default: form.address_default,
         address: form.address,
         address_number: form.address_number,
         address_neighborhood: form.address_neighborhood,

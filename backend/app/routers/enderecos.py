@@ -11,6 +11,13 @@ router = APIRouter(tags=["enderecos"])
 
 
 class EnderecoPayload(BaseModel):
+    # client_pk, address_zipcode, address_siafi, address e address_default
+    # são obrigatórios pra criar/atualizar no Controllr de verdade
+    # (confirmado na doc oficial, apidoc.brbyte.com/#post-/controllrctl/addresses/update
+    # e /create) — sem "address_siafi" especificamente a chamada falha;
+    # como o técnico normalmente está EDITANDO um endereço já existente,
+    # o frontend deve sempre reenviar o valor já carregado (não editável
+    # na tela), não pedir isso de novo pro técnico.
     client_pk: int | None = None
     address: str | None = None
     address_number: str | None = None
@@ -18,6 +25,8 @@ class EnderecoPayload(BaseModel):
     address_zipcode: str | None = None
     address_province: str | None = None
     address_state: str | None = None
+    address_siafi: int | None = None
+    address_default: int | None = None
     address_completation: str | None = None
     address_identification: str | None = None
 
