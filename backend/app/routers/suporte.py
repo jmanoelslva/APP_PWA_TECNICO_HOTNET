@@ -35,9 +35,14 @@ async def listar_tickets(
     where = None
     if client_pk is not None:
         # Usado pela tela de detalhe do cliente, pra mostrar o histórico
-        # de chamados junto com cadastro/contratos/endereços — client_pk
-        # é campo confirmado na resposta de ticket_list (doc oficial).
-        where = where_eq("client_pk", client_pk)
+        # de chamados junto com cadastro/contratos/endereços. "ticket.
+        # client_pk" (com prefixo), não "client_pk" puro — mesmo padrão de
+        # ambiguidade já confirmado em client_list ("client.client_pk") e
+        # addresses/list ("addresses.client_pk"): ticket_list também traz
+        # campos via join (client_complete_name, category_name, etc.), o
+        # que torna "client_pk" sozinho ambíguo. Bare "client_pk" aqui era
+        # o motivo dos chamados nunca aparecerem no detalhe do cliente.
+        where = where_eq("ticket.client_pk", client_pk)
     elif minhas and ctx.session.user_pk is not None:
         # oper 21 = "IN" (confirmado no README do brbyteapi, exemplo de
         # ticket_list) — precisa ser esse, não "=" (oper 5), já que o

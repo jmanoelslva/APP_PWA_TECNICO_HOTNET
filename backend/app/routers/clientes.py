@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_LIKE, corpo, where_and, where_eq
+from ..where import OPER_EQ, OPER_ILIKE, corpo, where_and, where_eq
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
@@ -47,7 +47,7 @@ async def buscar_clientes(
         # chamada voltava vazia mesmo com cliente cadastrado.
         condicoes = where_and(
             {"field": "client_status", "oper": OPER_EQ, "value": 0},
-            {"field": "client_complete_name", "oper": OPER_LIKE, "value": f"%{nome.strip()}%"},
+            {"field": "client_complete_name", "oper": OPER_ILIKE, "value": f"%{nome.strip()}%"},
         )
         resposta = await ctx.controllr.client_list(
             corpo(condicoes, page=1, start=0, limit=15, sort="client_complete_name", dir="ASC")
@@ -62,7 +62,14 @@ async def buscar_clientes(
         cliente_resp = await ctx.controllr.client_list(
             corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)
         )
-        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("client_pk", client_pk), limit=20))
+        # "cpe.client_pk" (com prefixo), não "client_pk" puro — mesmo
+        # padrão de ambiguidade já confirmado em client_list
+        # ("client.client_pk") e addresses/list ("addresses.client_pk"):
+        # cpe_list_combo também traz campos via join (client_complete_name,
+        # dp_name, nas_name), então "client_pk" sozinho é ambíguo. Bare
+        # "client_pk" aqui era o motivo do CPE nunca aparecer no detalhe
+        # do cliente.
+        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("cpe.client_pk", client_pk), limit=20))
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
         resultados.append({
             "client_pk": client_pk,
