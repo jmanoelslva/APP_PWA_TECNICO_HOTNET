@@ -9,7 +9,8 @@ from pydantic import BaseModel
 
 from ..config import CONTROLLR_URL
 from ..deps import AuthContext, get_auth_context
-from ..where import where_eq
+from ..http_errors import detalhe_erro as _detalhe_erro
+from ..where import where_eq, where_in
 
 router = APIRouter(prefix="/suporte", tags=["suporte"])
 
@@ -29,11 +30,15 @@ async def listar_os(
             # uma lista vazia enganosa.
             pass
         else:
-            corpo += f"&where={where_eq('user_pk', [ctx.session.user_pk])}"
+            # oper 21 = "IN" (confirmado no README do brbyteapi, exemplo
+            # de ticket_list) — precisa ser esse, não "=" (oper 5), já
+            # que o valor é uma LISTA de um item, não um escalar; usar
+            # oper 5 com array causava erro no Controllr (400 daqui).
+            corpo += f"&where={where_in('user_pk', [ctx.session.user_pk])}"
 
     resposta = await ctx.controllr.ticket_list(corpo)
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível listar as OS.")
+        raise HTTPException(status_code=400, detail=_detalhe_erro("Não foi possível listar as OS.", resposta))
     return {"success": True, "results": resposta.results, "total": resposta.total}
 
 
@@ -53,7 +58,7 @@ async def listar_mensagens_os(ticket_pk: int, ctx: AuthContext = Depends(get_aut
         "/support_ctl/op/list", f"where={where_eq('ticket_pk', ticket_pk)}"
     )
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível listar as mensagens da OS.")
+        raise HTTPException(status_code=400, detail=_detalhe_erro("Não foi possível listar as mensagens da OS.", resposta))
     return {"success": True, "results": resposta.results}
 
 
@@ -68,7 +73,7 @@ async def criar_mensagem_os(
     corpo = urlencode({"ticket_pk": ticket_pk, "op_type": 0, "op_code": 0, "op_desc": payload.op_desc})
     resposta = await ctx.controllr.support_op_create(corpo)
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível enviar a mensagem.")
+        raise HTTPException(status_code=400, detail=_detalhe_erro("Não foi possível enviar a mensagem.", resposta))
     return {"success": True, "results": resposta.results}
 
 
@@ -83,7 +88,7 @@ async def enviar_anexo_os(
 
     resposta = await ctx.controllr.support_annex_upload(form)
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível enviar o anexo.")
+        raise HTTPException(status_code=400, detail=_detalhe_erro("Não foi possível enviar o anexo.", resposta))
     return {"success": True, "results": resposta.results}
 
 
@@ -114,6 +119,8 @@ async def fechar_os(
     ticket_pk: int, payload: FecharOSPayload, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     resposta = await ctx.controllr.ticket_close(ticket_pk=str(ticket_pk), op_desc=payload.observacao)
-    if resposta is None or not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível fechar a OS.")
+    if resposta is None:
+        raise HTTPException(status_code=404, detail="OS não encontrada.")
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=_detalhe_erro("Não foi possível fechar a OS.", resposta))
     return {"success": True, "results": resposta.results}

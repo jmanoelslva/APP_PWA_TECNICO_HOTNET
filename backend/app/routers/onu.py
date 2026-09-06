@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
+from ..http_errors import detalhe_erro
 from ..where import where_eq
 
 router = APIRouter(prefix="/onu", tags=["onu"])
@@ -20,7 +21,7 @@ async def buscar_onu(
     campo, valor = ("cpe_pk", cpe_pk) if cpe_pk else ("olt_pk", olt_pk)
     resposta = await ctx.controllr.onu_list(f"where={where_eq(campo, valor)}&limit=20", model_return=True, model_extended=True)
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível consultar a ONU.")
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível consultar a ONU.", resposta))
     return {"success": True, "results": [onu.model_dump(mode="json") for onu in resposta.results]}
 
 
@@ -39,5 +40,5 @@ async def atualizar_info_onu(
         olt_pk=olt_pk, onu_serial=onu_serial, slot_id=slot_id, port_id=port_id, onu_id=onu_id, frame_id=frame_id
     )
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível atualizar a ONU.")
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar a ONU.", resposta))
     return {"success": True, "results": resposta.results}

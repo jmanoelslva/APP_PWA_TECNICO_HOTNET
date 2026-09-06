@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from ..deps import AuthContext, get_auth_context
+from ..http_errors import detalhe_erro
 
 router = APIRouter(tags=["enderecos"])
 
@@ -32,7 +33,7 @@ def _corpo(payload: EnderecoPayload, extras: dict[str, Any] | None = None) -> st
 async def criar_endereco(payload: EnderecoPayload, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
     resposta = await ctx.controllr.address_create(_corpo(payload))
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível criar o endereço.")
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível criar o endereço.", resposta))
     return {"success": True, "results": resposta.results}
 
 
@@ -42,7 +43,7 @@ async def atualizar_endereco(
 ) -> dict[str, Any]:
     resposta = await ctx.controllr.address_update(_corpo(payload, {"address_pk": address_pk}))
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível atualizar o endereço.")
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o endereço.", resposta))
     return {"success": True, "results": resposta.results}
 
 
@@ -68,5 +69,5 @@ async def atualizar_localizacao_cpe(
     })
     resposta = await ctx.controllr.cpe_update(corpo)
     if not resposta.success:
-        raise HTTPException(status_code=400, detail="Não foi possível atualizar a localização.")
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar a localização.", resposta))
     return {"success": True, "results": resposta.results}
