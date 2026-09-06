@@ -4,7 +4,6 @@ import { MdBuild, MdEdit, MdLocationOn, MdPeopleAlt, MdRouter, MdWifi } from 're
 import {
   ApiError,
   atualizarEndereco,
-  atualizarLocalizacaoCpe,
   buscarDetalheCliente,
   listarTickets,
   type ContratoDto,
@@ -33,7 +32,6 @@ export default function DetalheCliente() {
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
   const [chamados, setChamados] = useState<TicketDto[]>([])
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
-  const [capturandoLocalizacao, setCapturandoLocalizacao] = useState<number | null>(null)
 
   useEffect(() => {
     if (!Number.isFinite(pk)) return
@@ -62,30 +60,6 @@ export default function DetalheCliente() {
     } finally {
       setCarregando(false)
     }
-  }
-
-  async function usarLocalizacaoAtual(cpePk: number) {
-    if (!navigator.geolocation) {
-      toast('Este navegador não suporta captura de localização.')
-      return
-    }
-    setCapturandoLocalizacao(cpePk)
-    navigator.geolocation.getCurrentPosition(
-      async (posicao) => {
-        try {
-          await atualizarLocalizacaoCpe(cpePk, String(posicao.coords.latitude), String(posicao.coords.longitude))
-          toast('Localização atualizada com sucesso.', 'sucesso')
-        } catch (excecao) {
-          toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível salvar a localização.')
-        } finally {
-          setCapturandoLocalizacao(null)
-        }
-      },
-      () => {
-        setCapturandoLocalizacao(null)
-        toast('Não foi possível obter a localização. Verifique a permissão do navegador.')
-      },
-    )
   }
 
   if (!Number.isFinite(pk)) {
@@ -169,13 +143,6 @@ export default function DetalheCliente() {
                   <Link to={`/onu?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
                     <MdRouter size={14} /> ONU
                   </Link>
-                  <button
-                    className="detalhe-cliente-chip detalhe-cliente-chip-botao"
-                    disabled={capturandoLocalizacao === cpe.cpe_pk}
-                    onClick={() => cpe.cpe_pk && usarLocalizacaoAtual(cpe.cpe_pk)}
-                  >
-                    <MdLocationOn size={14} /> {capturandoLocalizacao === cpe.cpe_pk ? 'Capturando…' : 'Usar minha localização'}
-                  </button>
                 </div>
               </div>
             ))}

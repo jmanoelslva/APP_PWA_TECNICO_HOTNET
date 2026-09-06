@@ -67,13 +67,27 @@ async def buscar_onu(
     if serial:
         corpo_requisicao = _corpo_busca_serial(serial)
     else:
-        campo, valor = ("cpe_pk", cpe_pk) if cpe_pk else ("olt_pk", olt_pk)
+        # "cpe_pk" puro é ambíguo aqui — /fiber_ctl/onu/list também traz
+        # client_pk/contract_number/cpe_username via join (mesmo problema
+        # já visto em cpe_list_combo/ticket_list). Tentativa de prefixo
+        # não confirmada por falta de exemplo na doc oficial pra este
+        # endpoint específico — por isso o filtro client-side logo abaixo,
+        # que é o que garante de verdade nunca mostrar a ONU errada
+        # mesmo que esse prefixo esteja errado ou o Controllr ignore o
+        # "where" (foi exatamente esse silêncio que causava aparecer a
+        # ONU de OUTRO cliente em vez de um erro).
+        campo, valor = ("fiber_onu.cpe_pk", cpe_pk) if cpe_pk else ("olt_pk", olt_pk)
         corpo_requisicao = corpo(where_eq(campo, valor), limit=20)
 
     resposta = await ctx.controllr.onu_list(corpo_requisicao, model_return=True, model_extended=True)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível consultar a ONU.", resposta))
-    return {"success": True, "results": [onu.model_dump(mode="json") for onu in resposta.results]}
+
+    resultados = resposta.results
+    if cpe_pk is not None:
+        resultados = [onu for onu in resultados if onu.cpe_pk == cpe_pk]
+
+    return {"success": True, "results": [onu.model_dump(mode="json") for onu in resultados]}
 
 
 @router.post("/{onu_pk}/atualizar")
