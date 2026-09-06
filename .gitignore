@@ -2,6 +2,10 @@
 backend/.venv/
 backend/**/__pycache__/
 backend/.env
+# $HOME do usuário de sistema do serviço (deploy/install.sh) aponta pra
+# backend/ — pip cria esse cache aí; sem isso, "git status --porcelain"
+# no install.sh acusaria "alteração local" a cada atualização.
+backend/.cache/
 
 # Frontend (Node/Vite)
 frontend/node_modules/

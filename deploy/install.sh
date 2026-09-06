@@ -247,14 +247,25 @@ instalar_node() {
 instalar_node
 
 # --------------------------------------------------------------------------
-# 7. Usuário de sistema dedicado pro backend (sem login, sem home) — nunca
-#    roda o uvicorn como root nem reaproveita o www-data do servidor web.
+# 7. Usuário de sistema dedicado pro backend (sem login, sem home de
+#    verdade) — nunca roda o uvicorn como root nem reaproveita o
+#    www-data do servidor web.
+#    --home-dir aponta pro diretório backend/ do próprio projeto (que já
+#    existe e vai ficar de propriedade deste usuário logo abaixo, ver
+#    chown) em vez do padrão "/home/$SERVICE_USER" que o
+#    --no-create-home NUNCA cria — sem isso, o $HOME do usuário aponta
+#    pra um diretório inexistente/sem permissão e "pip install" (rodado
+#    como esse usuário, ver passo 8) desliga o próprio cache sozinho com
+#    um warning (~/.cache/pip sem onde escrever). "usermod" cobre quem
+#    já tinha o usuário criado antes dessa correção — sem ele, uma
+#    atualização não corrigiria o HOME de uma instalação já feita.
 # --------------------------------------------------------------------------
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
   info "Criando usuário de sistema '$SERVICE_USER'..."
-  useradd --system --no-create-home --shell /usr/sbin/nologin "$SERVICE_USER"
+  useradd --system --no-create-home --home-dir "$INSTALL_DIR/backend" --shell /usr/sbin/nologin "$SERVICE_USER"
 else
   ok "Usuário '$SERVICE_USER' já existe."
+  usermod --home "$INSTALL_DIR/backend" "$SERVICE_USER" 2>/dev/null || true
 fi
 chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR/backend"
 
@@ -263,10 +274,10 @@ chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR/backend"
 # --------------------------------------------------------------------------
 info "Preparando o ambiente Python do backend..."
 if [ ! -d "$INSTALL_DIR/backend/.venv" ]; then
-  sudo -u "$SERVICE_USER" "$PYTHON_BIN" -m venv "$INSTALL_DIR/backend/.venv"
+  sudo -H -u "$SERVICE_USER" "$PYTHON_BIN" -m venv "$INSTALL_DIR/backend/.venv"
 fi
-sudo -u "$SERVICE_USER" "$INSTALL_DIR/backend/.venv/bin/pip" install --quiet --upgrade pip
-sudo -u "$SERVICE_USER" "$INSTALL_DIR/backend/.venv/bin/pip" install --quiet -r "$INSTALL_DIR/backend/requirements.txt"
+sudo -H -u "$SERVICE_USER" "$INSTALL_DIR/backend/.venv/bin/pip" install --quiet --upgrade pip
+sudo -H -u "$SERVICE_USER" "$INSTALL_DIR/backend/.venv/bin/pip" install --quiet -r "$INSTALL_DIR/backend/requirements.txt"
 ok "Dependências Python instaladas."
 
 # --------------------------------------------------------------------------
