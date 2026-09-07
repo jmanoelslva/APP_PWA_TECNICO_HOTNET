@@ -167,7 +167,10 @@ export default function OnuStatus() {
   }
 
   async function atualizarAgora() {
-    if (!onu?.pk || onu.olt_pk == null || !onu.sn || onu.slot == null || onu.pon == null || onu.id == null) {
+    // onu.pk (onu_pk) vem 0 pra ONU registrada na OLT mas ainda sem
+    // cliente vinculado — 0 é um pk válido aqui, não "faltando". Usar
+    // "!onu.pk" (falsy) tratava esse caso real como dado insuficiente.
+    if (!onu || onu.pk == null || onu.olt_pk == null || !onu.sn || onu.slot == null || onu.pon == null || onu.id == null) {
       toast('Dados insuficientes para atualizar esta ONU.')
       return
     }
@@ -257,7 +260,9 @@ export default function OnuStatus() {
   async function executarAcao() {
     const acao = confirmandoAcao
     const ospo = dadosOspo()
-    if (!acao || !onu?.pk || !ospo) {
+    // onu.pk (onu_pk) vem 0 pra ONU sem cliente vinculado — válido aqui,
+    // não "faltando" (ver comentário em atualizarAgora).
+    if (!acao || !onu || onu.pk == null || !ospo) {
       toast('Dados insuficientes para executar esta ação.')
       setConfirmandoAcao(null)
       return
@@ -656,10 +661,14 @@ function ModalRegistrarCliente({
   }, [busca])
 
   async function confirmar() {
+    // onu.pk (onu_pk) vem 0 pra ONU sem cliente vinculado — exatamente o
+    // caso mais comum de usar este modal — válido aqui, não "faltando"
+    // (confirmado ao vivo: uma ONU recém-instalada tem pk=0 até ser
+    // associada a um cliente pela primeira vez).
     if (
       !selecionado ||
       !cpeEscolhida?.cpe_pk ||
-      !onu.pk ||
+      onu.pk == null ||
       !onu.sn ||
       onu.olt_pk == null ||
       onu.slot == null ||

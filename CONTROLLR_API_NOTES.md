@@ -307,6 +307,15 @@ não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
   - O ícone "editar" (lápis) da lista é só **renomear** a ONU
     (`fiber_onu_rename`) — não tem nada a ver com cliente/CPE, apesar do
     nome sugestivo.
+  - **`onu_pk` vem `0`** para uma ONU já registrada na OLT mas ainda sem
+    cliente vinculado (`client_pk`/`cpe_pk`/`contract_pk` também vêm `0`
+    nesse caso) — confirmado ao vivo numa ONU real de instalação nova.
+    `0` aqui é um valor **válido**, não "faltando": qualquer checagem no
+    frontend do tipo `!onu.pk` (falsy) trata esse caso como dado
+    insuficiente e bloqueia a ação sem nem chamar o backend — precisa
+    ser `onu.pk == null`. Isso não quebra nada de verdade porque as
+    rotas de reiniciar/remover/associar nem usam o `onu_pk` da URL pra
+    montar a chamada ao Controllr (usam olt_pk/frame/slot/pon/onu_id).
   - Módulo `fiber_onu_add` (`/fiber_ctl/onu/add`, botão "Cadastrar" da
     tela "Não Registrado") é só para dar entrada na ONU na rede
     (name/line_profile/service_profile/model/slot/port/serial) — **sem
