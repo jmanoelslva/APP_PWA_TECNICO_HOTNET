@@ -1,18 +1,18 @@
 # Deploy em produção — tecnico.hotnet.net.br
 
-Pensado pra rodar **em paralelo** com o portal do cliente
+Pensado para rodar **em paralelo** com o portal do cliente
 (`HOTNET_WEB_APP`, em `cliente.hotnet.net.br`), no mesmo servidor ou em
 outro — nenhum dos dois instaladores mexe no site/vhost/serviço do outro.
 
 Diferença de fundo em relação ao app cliente: lá é só um site estático
-fazendo reverse proxy **direto** pro Controllr (nenhum processo próprio
+fazendo reverse proxy **direto** para o Controllr (nenhum processo próprio
 rodando em produção). Aqui tem duas partes:
 
 1. O build estático do frontend (Vite) — igual ao app cliente.
 2. Um **backend próprio** (FastAPI/uvicorn) que fica rodando o tempo todo
    como serviço systemd, na porta 8000 (só em `127.0.0.1`, nunca exposto
    direto) — é ele quem fala com o Controllr (HTTP Basic Auth do técnico
-   logado), não o navegador. O servidor web faz proxy de `/api/*` pra
+   logado), não o navegador. O servidor web faz proxy de `/api/*` para
    esse processo LOCAL.
 
 ## Instalação automatizada (servidor Debian novo ou já em uso)
@@ -40,7 +40,7 @@ redigitar; o script já para o serviço antigo sozinho antes de checar se
 a porta está livre, senão a checagem sempre acusaria "em uso" contra o
 próprio serviço da instalação anterior.
 
-O passo a passo manual abaixo continua válido pra quem preferir controle
+O passo a passo manual abaixo continua válido para quem preferir controle
 fino, outro sistema operacional, ou não usar Debian.
 
 ## 1. Backend — venv, dependências e serviço
@@ -51,7 +51,7 @@ python3 -m venv .venv
 ./.venv/bin/pip install -r requirements.txt
 ```
 
-Crie `/etc/hotnet-tecnico/backend.env` (fora do diretório de deploy, pra
+Crie `/etc/hotnet-tecnico/backend.env` (fora do diretório de deploy, para
 sobreviver a um `git pull`):
 
 ```env
@@ -60,15 +60,15 @@ SESSION_TTL_SECONDS=43200
 CORS_ALLOW_ORIGINS=https://tecnico.hotnet.net.br
 ```
 
-`CONTROLLR_URL` aponta pro **painel administrativo** do Controllr (porta
-`8443`), não pro endpoint público em 443 que o app cliente usa — acesso
+`CONTROLLR_URL` aponta para o **painel administrativo** do Controllr (porta
+`8443`), não para o endpoint público em 443 que o app cliente usa — acesso
 de staff/ACL (usuário do técnico) só existe ali. O servidor onde este
 backend roda precisa ter saída liberada (firewall) para
 `controllr.hotnet.net.br:8443`.
 
 Rode como serviço persistente (systemd, dedicado a um usuário sem login
 — **nunca como root**), reiniciando sozinho em caso de queda. O
-`install.sh` gera esse unit sozinho; pra fazer à mão, veja o bloco
+`install.sh` gera esse unit sozinho; para fazer à mão, veja o bloco
 `[Service]` que ele escreve em `/etc/systemd/system/hotnet-tecnico-api.service`
 (comando `ExecStart`: `.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000`).
 
@@ -84,7 +84,7 @@ npm install
 npm run build
 ```
 
-Isso gera `frontend/dist/` — só o conteúdo dela precisa ir pro diretório
+Isso gera `frontend/dist/` — só o conteúdo dela precisa ir para o diretório
 que o servidor web serve (ex: `/var/www/hotnet-tecnico/dist`). Nada de
 Node roda em produção (só o Python do backend).
 
@@ -97,18 +97,18 @@ Dois exemplos prontos nesta pasta:
 
 Ambos fazem as mesmas duas coisas obrigatórias:
 
-1. Servem o conteúdo estático de `dist/`, com fallback pro `index.html`
-   em qualquer rota que não seja um arquivo real (necessário pro
+1. Servem o conteúdo estático de `dist/`, com fallback para o `index.html`
+   em qualquer rota que não seja um arquivo real (necessário para o
    react-router-dom — sem isso, recarregar a página numa rota interna
    como `/suporte/123` dá 404).
-2. Fazem reverse proxy de `/api/*` pro **backend local**
-   (`127.0.0.1:8000`) — **não** pro Controllr direto, diferente do app
+2. Fazem reverse proxy de `/api/*` para o **backend local**
+   (`127.0.0.1:8000`) — **não** para o Controllr direto, diferente do app
    cliente. Não precisa reescrever domínio de cookie: o cookie de sessão
    (`TECSESSION`) é emitido pelo nosso próprio backend, sem domínio
-   fixo, então já nasce certo pra `tecnico.hotnet.net.br`.
+   fixo, então já nasce certo para `tecnico.hotnet.net.br`.
 
 Ajuste nos dois exemplos: os caminhos do certificado TLS, o `root`/
-`DocumentRoot` pro local real onde `dist/` for publicado, e a porta do
+`DocumentRoot` para o local real onde `dist/` for publicado, e a porta do
 backend se não for a 8000.
 
 ## 4. Certificado TLS
@@ -118,7 +118,7 @@ Certbot/Let's Encrypt) — os exemplos assumem esse caminho padrão. Sem
 HTTPS, cookies com `Secure` (se o backend um dia passar a marcar assim)
 não seriam nem enviados pelo navegador.
 
-## 5. Checklist pra validar depois de publicar
+## 5. Checklist para validar depois de publicar
 
 - [ ] `systemctl status hotnet-tecnico-api` — serviço ativo, sem
       reiniciar em loop (`journalctl -u hotnet-tecnico-api -n 50` se não

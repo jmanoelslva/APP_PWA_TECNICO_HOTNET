@@ -20,9 +20,9 @@ completo da arquitetura.
 
 ## Deploy em produção
 
-Pensado pra rodar em paralelo com o portal do cliente (`HOTNET_WEB_APP`,
+Pensado para rodar em paralelo com o portal do cliente (`HOTNET_WEB_APP`,
 `cliente.hotnet.net.br`), sem mexer no site/vhost dele: outro diretório,
-outro domínio (`tecnico.hotnet.net.br`), outro serviço systemd pro
+outro domínio (`tecnico.hotnet.net.br`), outro serviço systemd para o
 backend. Ver [`deploy/DEPLOY.md`](deploy/DEPLOY.md) para o passo a passo
 manual e o checklist de validação, ou rode direto:
 
@@ -33,7 +33,7 @@ sudo bash APP_PWA_TECNICO_HOTNET/deploy/install.sh
 
 `deploy/install.sh` detecta sozinho se Apache ou Nginx já está rodando
 no servidor e usa o mesmo, cria um usuário de sistema dedicado e um
-serviço systemd pro backend (nunca root, nunca exposto direto à
+serviço systemd para o backend (nunca root, nunca exposto direto à
 internet), builda o frontend e configura o reverse proxy — sem tocar em
 nada que já esteja instalado.
 
@@ -62,7 +62,7 @@ npm install
 npm run dev
 ```
 
-Abre em `http://localhost:5173`; o Vite repassa `/api/*` pro backend em
+Abre em `http://localhost:5173`; o Vite repassa `/api/*` para o backend em
 `http://localhost:8000` (ver `vite.config.ts`).
 
 ## Limitações conhecidas (v1)

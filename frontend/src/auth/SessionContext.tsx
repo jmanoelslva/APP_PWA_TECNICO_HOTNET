@@ -7,7 +7,7 @@ import { SessionContext, type TecnicoLogado } from './session-context'
  * Estado de sessão em memória — o cookie de sessão (TECSESSION) em si é do
  * navegador, não da nossa memória, então sobrevive a um F5. Por isso, ao
  * montar, confirmamos com o backend (GET /auth/me) se a sessão ainda vale
- * antes de mandar pro login.
+ * antes de mandar para o login.
  */
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [logado, setLogado] = useState(false)
@@ -32,7 +32,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setLogado(true)
       })
       .catch(() => {
-        // Sem sessão válida (401) — segue pro login normalmente.
+        // Sem sessão válida (401) — segue para o login normalmente.
       })
       .finally(() => setVerificando(false))
   }, [])

@@ -11,10 +11,10 @@ interface Props {
 }
 
 /**
- * Puxar a tela pra baixo com a rolagem já no topo dispara uma atualização
+ * Puxar a tela para baixo com a rolagem já no topo dispara uma atualização
  * — feito na mão (sem lib): só reage quando o toque começa com a página
  * no topo, usa listener nativo (preventDefault durante o arrasto exige
- * passive:false, que o React não oferece direto pra eventos de toque).
+ * passive:false, que o React não oferece direto para eventos de toque).
  */
 export default function PullToRefresh({ aoAtualizar, children }: Props) {
   const [distancia, setDistancia] = useState(0)

@@ -36,9 +36,9 @@ import { formatarData, formatarStatusContrato, nivelSinalOnu, TEXTO_SINAL_ONU } 
 import './DetalheCliente.css'
 
 // Resumo de conexão + ONU de um CPE, carregado à parte (endpoints
-// diferentes de /clientes/{pk}) pra já mostrar aqui na tela do cliente
+// diferentes de /clientes/{pk}) para já mostrar aqui na tela do cliente
 // o que o técnico normalmente só via depois de entrar em Conexão/ONU —
-// os links pra essas telas continuam existindo, pra ações (revelar
+// os links para essas telas continuam existindo, para ações (revelar
 // senha, forçar atualização da ONU etc).
 interface ResumoConexao {
   carregando: boolean
@@ -49,7 +49,7 @@ interface ResumoConexao {
 // contract_sign_code/info/draw/ip/hash — vistos numa captura real da API,
 // mas sem descrição na doc oficial (só sign_date/sign_doc_link têm
 // significado confirmado, tratados à parte). Mostra os demais de forma
-// genérica em vez de inventar um rótulo/tradução que não dá pra confirmar.
+// genérica em vez de inventar um rótulo/tradução que não dá para confirmar.
 function rotuloCampoAssinatura(chave: string): string {
   return chave
     .replace(/^contract_sign_/, '')
@@ -90,7 +90,7 @@ export default function DetalheCliente() {
   const [adicionandoTelefone, setAdicionandoTelefone] = useState(false)
   // Contrato traz bastante informação (assinatura, itens...) que só
   // interessa quando o técnico realmente precisa dela — fica recolhido
-  // por padrão pra não ocupar a tela à toa, expande sob demanda.
+  // por padrão para não ocupar a tela à toa, expande sob demanda.
   const [contratosExpandidos, setContratosExpandidos] = useState<Set<number>>(new Set())
 
   function alternarContrato(chave: number) {
@@ -387,8 +387,8 @@ export default function DetalheCliente() {
                       )}
                       {/* Contrato ainda não assinado: destaca a assinatura como
                           ação principal — é o que o técnico faz na visita,
-                          entregando o aparelho pro cliente assinar ali mesmo
-                          nesse link. Já assinado, "Ver contrato" some pra um
+                          entregando o aparelho para o cliente assinar ali mesmo
+                          nesse link. Já assinado, "Ver contrato" some para um
                           chip discreto (só consulta). */}
                       {!contrato.contract_sign_date && contrato.contract_sign_doc_link && (
                         <a
@@ -401,7 +401,7 @@ export default function DetalheCliente() {
                         </a>
                       )}
                       {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
-                        <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível pra este contrato.</p>
+                        <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível para este contrato.</p>
                       )}
                       {(contrato.contract_pk || (contrato.contract_sign_date && contrato.contract_sign_doc_link)) && (
                         <div className="detalhe-cliente-item-acoes">

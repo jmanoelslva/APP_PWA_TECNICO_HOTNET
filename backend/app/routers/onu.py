@@ -12,7 +12,7 @@ from ..where import corpo, where_eq
 router = APIRouter(prefix="/onu", tags=["onu"])
 
 # Tempos de espera confirmados num script de monitoramento já em uso
-# interno na empresa (bot Telegram): a OLT precisa desse intervalo pra
+# interno na empresa (bot Telegram): a OLT precisa desse intervalo para
 # de fato recarregar antes que reler a ONU traga dado novo — pedir os
 # dados imediatamente depois do reconnect ainda devolveria o valor
 # antigo. Ajustar o `deploy/nginx.conf.example`/`apache-vhost.conf.example`
@@ -71,7 +71,7 @@ async def buscar_onu(
         corpo_requisicao = _corpo_busca_wizard("onu_wancfg_pppoe_username", username.strip(), sort="onu_pk")
     else:
         # "cpe_pk" puro é ambíguo aqui (ver docstring acima) — mantido só
-        # como opção de baixo nível; prefira "username" pra achar a ONU
+        # como opção de baixo nível; prefira "username" para achar a ONU
         # de um cliente específico. Filtro client-side de segurança
         # abaixo garante nunca devolver a ONU de outro cpe_pk mesmo que
         # esse "where" seja ignorado.
@@ -106,7 +106,7 @@ async def atualizar_info_onu(
     # dado mais recente de verdade, não um valor em cache. Mesmo fluxo e
     # tempos de espera do script de monitoramento já usado internamente
     # (reconectar → aguardar a OLT recarregar → atualizar a ONU →
-    # aguardar refletir → devolver os dados novos pro chamador reler).
+    # aguardar refletir → devolver os dados novos para o chamador reler).
     await ctx.controllr.call_api_post("/fiber_ctl/olt/reconnect", urlencode({"olt_pk": olt_pk}))
     await asyncio.sleep(ESPERA_APOS_RECONECTAR_OLT_S)
 
@@ -166,6 +166,10 @@ async def remover_onu(
 
 class AssociarClientePayload(BaseModel):
     client_pk: int
+    # O cliente pode ter mais de uma conexão (CPE) cadastrada — o técnico
+    # escolhe explicitamente qual usuário PPPoE vincular a esta ONU
+    # (pedido explícito: não presumir a primeira automaticamente).
+    cpe_pk: int
     olt_pk: int
     slot_id: int
     port_id: int
@@ -200,16 +204,14 @@ async def associar_cliente_onu(
 ) -> dict[str, Any]:
     # Achado ao vivo na tela "Informações" da ONU do painel (janela aberta
     # pelo ícone "i" da lista "ONU - Registrado", sem documentação
-    # oficial): selecionar um Cliente ali carrega o Contrato dele e busca
-    # a CPE correspondente via /aaa_ctl/cpe/list_combo, preenchendo
-    # usuário/senha PPPoE automaticamente a partir dela — não existe
-    # cadastro de PPPoE "solto" aqui, é sempre o acesso que já existe no
-    # cadastro do cliente. Por isso a associação depende do cliente já ter
-    # uma CPE cadastrada.
-    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", payload.client_pk), limit=5))
+    # oficial): selecionar um Cliente ali carrega as CPEs dele via
+    # /aaa_ctl/cpe/list_combo e preenche usuário/senha PPPoE a partir da
+    # CPE escolhida — não existe cadastro de PPPoE "solto" aqui, é sempre
+    # o acesso que já existe no cadastro do cliente.
+    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.cpe_pk", payload.cpe_pk), limit=1))
     cpes = cpes_resp.results if cpes_resp.success else []
     if not cpes:
-        raise HTTPException(status_code=400, detail="Este cliente não tem nenhuma conexão (CPE) cadastrada.")
+        raise HTTPException(status_code=404, detail="Conexão (CPE) não encontrada para este cliente.")
     cpe = cpes[0]
 
     campos = {

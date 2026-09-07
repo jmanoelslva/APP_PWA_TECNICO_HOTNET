@@ -38,7 +38,7 @@ class BrByteAPIBase():
         # resposta é {"success": false, "code": N, "message": "..."}, sem
         # "errors" nenhum. Sem isso, esse "message"/"code" era descartado
         # silenciosamente aqui (nunca guardado em lugar nenhum), e todo
-        # erro assim virava um "não foi possível..." genérico pro
+        # erro assim virava um "não foi possível..." genérico para o
         # técnico, sem pista nenhuma do motivo real.
         errors = response_json.get('errors', [])
         if not errors and response_json.get('message') is not None:
@@ -47,7 +47,7 @@ class BrByteAPIBase():
         # Confirmado ao vivo: pelo menos um endpoint (support_ctl/os/
         # undo_finish) devolve {"success": false, ...} com STATUS HTTP
         # 200 — decidir sucesso só pelo status HTTP (como era antes)
-        # tratava essa falha como sucesso, sem erro nenhum pro técnico.
+        # tratava essa falha como sucesso, sem erro nenhum para o técnico.
         # Prioriza o "success" do próprio corpo quando presente.
         sucesso_http = 200 <= response.status <= 299
         sucesso = response_json.get('success', sucesso_http)

@@ -6,7 +6,7 @@ interface Props {
   onFechar: () => void
 }
 
-/** Passo a passo manual de instalação pro iOS — Safari nunca dispara beforeinstallprompt. */
+/** Passo a passo manual de instalação para o iOS — Safari nunca dispara beforeinstallprompt. */
 export default function ModalInstalarIos({ aberto, onFechar }: Props) {
   if (!aberto) return null
 

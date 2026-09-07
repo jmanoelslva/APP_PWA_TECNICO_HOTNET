@@ -29,7 +29,7 @@ function saudacaoPorHorario(nome: string): string {
 
 // "Clientes" saiu daqui de propósito — virou o campo de busca direto no
 // topo da tela (ver <form> abaixo), como primeira opção, em vez de mais
-// um botão que só leva pra outra tela pra então buscar.
+// um botão que só leva para outra tela para então buscar.
 const ITENS_MENU = [
   { to: '/suporte', Icone: MdBuild, cor: CORES.suporte, label: 'OS / Suporte' },
   { to: '/conexao', Icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
@@ -48,10 +48,10 @@ export default function Home() {
   // Mesmo combobox de busca ao vivo já usado em Conexão (usuário PPPoE) e
   // ONU/CTO: digita um pedaço do nome/contrato/documento e a lista vai
   // filtrando no backend com debounce, sem precisar apertar buscar nem
-  // sair da Home pra ver o resultado — clicar num item já leva direto
-  // pro cliente. Sem botão de buscar (lupa): o combobox já cobre a busca
-  // sozinho; Enter no campo ainda leva pra tela de busca completa, útil
-  // quando há muitos resultados pra rolar.
+  // sair da Home para ver o resultado — clicar num item já leva direto
+  // para o cliente. Sem botão de buscar (lupa): o combobox já cobre a busca
+  // sozinho; Enter no campo ainda leva para tela de busca completa, útil
+  // quando há muitos resultados para rolar.
   const [busca, setBusca] = useState('')
   const [resultadosBusca, setResultadosBusca] = useState<BuscaClienteResultado[]>([])
   const [buscando, setBuscando] = useState(false)

@@ -15,7 +15,7 @@ def _somente_digitos(valor: str) -> str:
 
 async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[int, dict[str, Any]]:
     # /controllrctl/contract/list filtrado por "client_pk" pode voltar
-    # VAZIO mesmo pra cliente com contrato de verdade — bug de backend já
+    # VAZIO mesmo para cliente com contrato de verdade — bug de backend já
     # confirmado (comentário em src/api/client.ts do app cliente de
     # referência, D:\Desktop\WEB_APPS\HOTNET_WEB_APP). Único filtro
     # confiável ali é por "contract_pk" (oper 5, "="), então busca cada
@@ -109,7 +109,7 @@ async def buscar_clientes(
         # aaa_ctl/connection/session por "aaa_cpe.cpe_pk") — "cpe.client_pk"
         # (tentativa anterior) e "client_pk" puro davam ambos vazio.
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
-        # Filtro final de "só habilitados", válido pra qualquer caminho de
+        # Filtro final de "só habilitados", válido para qualquer caminho de
         # busca (doc/contrato/nome) — a busca por número de contrato não
         # tem como filtrar client_status direto na query (contract_list
         # não tem esse campo), então garante aqui, depois de já ter o
@@ -153,7 +153,7 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     # /controllrctl/addresses/list (NÃO list_combo) — confirmado na doc
     # oficial (apidoc.brbyte.com/#post-/controllrctl/addresses/list): só
     # esse endpoint completo traz address_siafi/latitude/longitude, que
-    # o técnico precisa pra editar endereço/localização. list_combo
+    # o técnico precisa para editar endereço/localização. list_combo
     # devolve só 5 campos (sem esses). Sem wrapper no brbyteapi vendorizado
     # (só tem list_combo) — chamada direta. Campo do "where" tem prefixo
     # "addresses." aqui (diferente de list_combo, que usa "client_pk" puro
@@ -163,7 +163,7 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     )
     # "aaa_cpe.client_pk" — mesmo fix já aplicado em buscar_clientes acima
     # (nome real da tabela é "aaa_cpe", confirmado no app cliente de
-    # referência). Esta segunda ocorrência tinha ficado pra trás na
+    # referência). Esta segunda ocorrência tinha ficado para trás na
     # correção anterior — só a de buscar_clientes tinha sido trocada.
     cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
     cpes = cpes_resp.results if cpes_resp.success else []
@@ -182,14 +182,14 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
             cpe["contract_number"] = contrato.get("contract_number")
 
     # Itens do contrato (planos/equipamentos cobrados) — o técnico pediu
-    # pra ver tudo, não só o resumo. Anexa em cada contrato como "itens".
+    # para ver tudo, não só o resumo. Anexa em cada contrato como "itens".
     for contract_pk, contrato in contratos_por_pk.items():
         contrato["itens"] = await _itens_contrato(ctx, contract_pk)
 
     # Telefone é recurso PRÓPRIO do Controllr (/controllrctl/phone/*), não
     # um campo solto do cliente — client_phones (client/list, usado antes)
     # é só um resumo "Rótulo#-#número" sem phone_pk nenhum, então não dava
-    # pra editar a partir dele. Busca os registros de verdade aqui pra
+    # para editar a partir dele. Busca os registros de verdade aqui para
     # poder editar o número (ver routers/telefones.py). Nome real da
     # tabela é "client_phone" (singular) — confirmado ao vivo testando
     # candidatos: "phone.client_pk" dá 42P01 (tabela errada), "client_pk"
@@ -206,7 +206,7 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
         # busca acima (um por contract_pk distinto entre as CPEs do
         # cliente) — não há um jeito confiável de listar TODOS os
         # contratos do cliente direto (ver comentário acima); na prática,
-        # um contrato sem nenhuma CPE vinculada não interessa muito pro
+        # um contrato sem nenhuma CPE vinculada não interessa muito para o
         # técnico de campo mesmo (ele trabalha em cima da conexão).
         "contratos": list(contratos_por_pk.values()),
         "enderecos": enderecos_resp.results if enderecos_resp.success else [],

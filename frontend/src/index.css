@@ -4,7 +4,7 @@
   font-family: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   color-scheme: light dark;
 
-  /* Marca — paleta azul/operacional, pra diferenciar visualmente do
+  /* Marca — paleta azul/operacional, para diferenciar visualmente do
      portal do cliente (laranja/vermelho). */
   --cor-primaria: #2a72b8;
   --cor-primaria-escura: #1d5487;
@@ -17,7 +17,7 @@
   --cor-borda: #e0e0e0;
   --cor-borda-suave: #eeeeee;
   --cor-borda-clara: #f0f0f0;
-  /* Branco fixo — pra texto/ícone sobre um fundo de cor sólida (botão
+  /* Branco fixo — para texto/ícone sobre um fundo de cor sólida (botão
      gradiente, badge, cabeçalho). NUNCA redefinido no bloco escuro. */
   --cor-branco-fixo: #ffffff;
 
@@ -94,7 +94,7 @@ body {
   color: var(--cor-texto);
 }
 
-/* Reserva espaço pro conteúdo não ficar escondido atrás da barra de
+/* Reserva espaço para o conteúdo não ficar escondido atrás da barra de
    navegação fixa no rodapé, quando ela está presente na página. */
 body:has(.bottom-nav) {
   padding-bottom: 64px;

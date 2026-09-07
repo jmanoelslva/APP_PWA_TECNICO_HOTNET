@@ -86,7 +86,7 @@ export default function Conexao() {
     listarDps()
       .then((resposta) => setDps(resposta.results))
       .catch(() => {
-        /* lista de CTOs é só conveniência pro seletor — se falhar, o técnico ainda pode digitar o pk em outro lugar */
+        /* lista de CTOs é só conveniência para o seletor — se falhar, o técnico ainda pode digitar o pk em outro lugar */
       })
   }, [])
 
@@ -136,7 +136,7 @@ export default function Conexao() {
       const cpeCarregado = resposta.results[0] ?? null
       setCpe(cpeCarregado)
       // Sem "não informado" no seletor — assume Nenhum (0) até o técnico
-      // escolher outra coisa, pra manter o estado igual ao que a tela mostra.
+      // escolher outra coisa, para manter o estado igual ao que a tela mostra.
       setWifiTipo(cpeCarregado?.wifi_encryption_type != null ? String(cpeCarregado.wifi_encryption_type) : '0')
       setWifiSenha(cpeCarregado?.wifi_encryption_password ?? '')
       setObs(cpeCarregado?.obs ?? '')
@@ -157,7 +157,7 @@ export default function Conexao() {
     const usuario = buscaUsuario.trim()
     if (!usuario) return
     // Guarda na URL (?username=...) — mesmo motivo da busca de cliente:
-    // sair pra outra tela e voltar não deve perder a busca.
+    // sair para outra tela e voltar não deve perder a busca.
     setParams({ username: usuario })
   }
 
@@ -545,7 +545,7 @@ export default function Conexao() {
                   ao próprio roteador/CPE, não o login de internet do
                   cliente (confirmado na doc oficial do Controllr:
                   cpe_access_login/password/port). Editável — antes só dava
-                  pra ver o que já vinha cadastrado. */}
+                  para ver o que já vinha cadastrado. */}
               <h2>Acesso ao roteador (admin)</h2>
               <div className="conexao-campo">
                 <span>Usuário</span>
@@ -604,7 +604,7 @@ export default function Conexao() {
             <div className="conexao-card">
               {/* dp_pk e cpe_dp_port (CTO/porta da CTO) — confirmados na doc
                   oficial de /aaa_ctl/cpe/update. A lista de CTOs vem do
-                  próprio sistema (GET /dp/lista), pra selecionar em vez de
+                  próprio sistema (GET /dp/lista), para selecionar em vez de
                   digitar um pk cru. */}
               <h2>CTO</h2>
               <div className="conexao-campo conexao-combobox">
@@ -613,7 +613,7 @@ export default function Conexao() {
                   className="conexao-input"
                   type="text"
                   value={dpBusca}
-                  placeholder="Digite pra buscar a CTO"
+                  placeholder="Digite para buscar a CTO"
                   onChange={(e) => {
                     setDpBusca(e.target.value)
                     setDpPk('')
@@ -737,7 +737,7 @@ export default function Conexao() {
                     <strong>{valor}</strong>
                   </div>
                 ))}
-              {!sessao && <p className="conexao-sessao-vazio">Toque em "Ver sessão online agora" pra consultar em tempo real.</p>}
+              {!sessao && <p className="conexao-sessao-vazio">Toque em "Ver sessão online agora" para consultar em tempo real.</p>}
             </div>
           </>
         )}

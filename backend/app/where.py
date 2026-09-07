@@ -1,12 +1,12 @@
 """
-Helper pro formato de filtro "where" do Controllr (mesmo formato usado
+Helper para o formato de filtro "where" do Controllr (mesmo formato usado
 pelo app cliente, ver src/api/client.ts::whereJson do HOTNET_WEB_APP).
 
 Tabela de operadores confirmada na doc oficial (apidoc.brbyte.com,
 seção "Parâmetro where" — vem embutida na descrição do openapi.yaml, não
 numa página própria): 5 = OPER_EQUAL ("="), 7 = OPER_IS ("IS NULL/TRUE"),
 8 = OPER_IS_NOT ("IS NOT NULL/TRUE"), 9 = OPER_LIKE ("valor%", sensível a
-maiúsculas), 10 = OPER_ILIKE ("%valor%", NÃO sensível — usamos este pra
+maiúsculas), 10 = OPER_ILIKE ("%valor%", NÃO sensível — usamos este para
 busca por nome, valor já vem com "%" montado pelo chamador), 21 = OPER_IN.
 """
 
@@ -23,7 +23,7 @@ def where_json(condicoes: list[dict[str, Any]]) -> str:
     # separators sem espaço — igual ao que o próprio navegador gera via
     # JSON.stringify (formato exato confirmado capturando um request real
     # do painel web do Controllr no DevTools). json.dumps por padrão
-    # insere espaço depois de ":" e "," — inofensivo pra um parser JSON
+    # insere espaço depois de ":" e "," — inofensivo para um parser JSON
     # de verdade (espaço é insignificante no JSON), mas sem necessidade
     # já que agora tudo passa por urlencode() de qualquer forma (ver
     # corpo() abaixo) — só reduz o tamanho do corpo e bate 1:1 com o

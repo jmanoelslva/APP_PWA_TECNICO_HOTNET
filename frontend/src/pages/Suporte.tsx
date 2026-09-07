@@ -16,9 +16,9 @@ import './Suporte.css'
 const TAMANHO_PAGINA = 100
 
 // Uma tela só, sem aba "Minhas OS"/"Todas" — o backend já tira da lista
-// qualquer OS que o técnico já finalizou, então não sobra motivo pra
+// qualquer OS que o técnico já finalizou, então não sobra motivo para
 // separar "minhas" do resto: o que aparece aqui é sempre trabalho em
-// aberto pra qualquer técnico ver e pegar.
+// aberto para qualquer técnico ver e pegar.
 function osFechada(os: OrdemServicoDto): boolean {
   return !!os.op_date_close || !!os.op_date_cancel
 }

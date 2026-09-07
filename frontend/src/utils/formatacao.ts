@@ -19,7 +19,7 @@ export function formatarDataHora(data: string | null | undefined): string {
   return data
 }
 
-/** "YYYY-MM-DD HH:mm:ss", mesmo formato usado pelo Controllr — pra carimbar mensagens otimistas. */
+/** "YYYY-MM-DD HH:mm:ss", mesmo formato usado pelo Controllr — para carimbar mensagens otimistas. */
 export function agoraNoFormatoDoServidor(): string {
   const agora = new Date()
   const par = (n: number) => String(n).padStart(2, '0')
@@ -68,7 +68,7 @@ export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> 
 ]
 
 /**
- * Um campo só decide sozinho o que foi digitado, em vez de pedir pro
+ * Um campo só decide sozinho o que foi digitado, em vez de pedir para o
  * técnico escolher entre nome/contrato/documento: CPF tem 11 dígitos,
  * CNPJ tem 14 — só números com uma dessas contagens vira busca por
  * documento; outra quantidade de dígitos vira busca por contrato;
@@ -90,8 +90,8 @@ export type NivelSinal = 'boa' | 'alerta' | 'critica' | 'desconhecida'
 /**
  * Faixas de sinal óptico (dBm) da ONU — confirmadas contra um script de
  * monitoramento (bot de Telegram) já em uso interno na empresa, que usa
- * exatamente esses cortes pra classificar RX de ONU (ver também
- * OnuStatus.tsx, que usa a mesma faixa pra OLT com cortes diferentes).
+ * exatamente esses cortes para classificar RX de ONU (ver também
+ * OnuStatus.tsx, que usa a mesma faixa para OLT com cortes diferentes).
  * Não é uma norma GPON genérica — é o critério já calibrado e adotado
  * por esta operação.
  */

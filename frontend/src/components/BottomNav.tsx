@@ -7,7 +7,7 @@ import ModalConfirmarLogout from './ModalConfirmarLogout'
 import './BottomNav.css'
 
 // "Clientes" saiu daqui de propósito — a busca combobox da Home já leva
-// direto pra tela do cliente, então essa aba virou um caminho redundante
+// direto para tela do cliente, então essa aba virou um caminho redundante
 // (ver Home.tsx).
 const ITENS = [
   { to: '/', icone: MdHome, cor: CORES.primaria, label: 'Início', fim: true },
@@ -16,7 +16,7 @@ const ITENS = [
   { to: '/onu', icone: MdRouter, cor: CORES.onu, label: 'ONU' },
 ]
 // +1 pelo botão "Sair", que ocupa o mesmo espaço dos itens acima mas não
-// tem indicador/rota própria — a pill precisa saber o total pra calcular
+// tem indicador/rota própria — a pill precisa saber o total para calcular
 // a largura certa (ver BottomNav.css).
 const TOTAL_SLOTS = ITENS.length + 1
 

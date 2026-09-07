@@ -11,10 +11,10 @@ from ..base import BrByteAPIBase
 class ControllrLoginResult:
     success: bool
     # Cookie de sessão que o próprio POST /login devolve (mesmo mecanismo
-    # do painel administrativo) — capturado só pra poder encerrar essa
+    # do painel administrativo) — capturado só para poder encerrar essa
     # sessão de verdade depois (POST /session/logout), já que as demais
     # chamadas deste backend usam Basic Auth por requisição, sem sessão
-    # nenhuma no Controllr pra esse cookie ser necessário.
+    # nenhuma no Controllr para esse cookie ser necessário.
     cookie_header: str | None = None
 
 

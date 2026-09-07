@@ -1,5 +1,5 @@
 /**
- * Cliente HTTP pro backend próprio (FastAPI, ver ../../backend) — não fala
+ * Cliente HTTP para o backend próprio (FastAPI, ver ../../backend) — não fala
  * direto com o Controllr (diferente do portal do cliente): todo dado
  * sensível de técnico (Basic Auth, ACL) fica só no backend. Sessão mantida
  * por cookie httpOnly (TECSESSION), por isso todo request usa
@@ -23,8 +23,8 @@ export class ApiError extends Error {
 }
 
 /**
- * Aviso de sessão expirada pro resto do app — este módulo é código comum
- * (fora de componente React), não dá pra chamar useSessao()/useToast()
+ * Aviso de sessão expirada para o resto do app — este módulo é código comum
+ * (fora de componente React), não dá para chamar useSessao()/useToast()
  * diretamente daqui. SessionProvider (SessionContext.tsx) se registra
  * como ouvinte ao montar, e é quem realmente desloga (sair()) e mostra o
  * toast.
@@ -51,7 +51,7 @@ function querystring(params?: Record<string, string | number | boolean | undefin
 
 async function tratarResposta<T>(response: Response, path: string): Promise<T> {
   // Diferente do Controllr direto, aqui não existe o quirk do /login
-  // responder 401 pra senha errada — POST /auth/login sempre devolve 200
+  // responder 401 para senha errada — POST /auth/login sempre devolve 200
   // com {success:false} nesse caso (ver backend/app/routers/auth.py). Um
   // 401 de verdade em QUALQUER rota aqui significa sessão ausente/expirada.
   if (response.status === 401) {
@@ -200,7 +200,7 @@ export interface ContratoDto {
   // Assinatura do contrato (confirmado na doc oficial,
   // apidoc.brbyte.com/#post-/controllrctl/contract/list): sign_date vem
   // vazio/null enquanto o contrato não foi assinado — é o indicador de
-  // status. sign_doc_link é o link pra ver/assinar o documento. Os demais
+  // status. sign_doc_link é o link para ver/assinar o documento. Os demais
   // contract_sign_* (code/info/draw/ip/hash — vistos numa captura real,
   // mas sem descrição na doc) chegam soltos via o índice abaixo e são
   // mostrados de forma genérica (ver DetalheCliente.tsx).
@@ -221,7 +221,7 @@ export interface EnderecoDto {
   address_state?: string
   address_completation?: string
   address_default?: number
-  // Código SIAFI do município — obrigatório pro Controllr aceitar criar/
+  // Código SIAFI do município — obrigatório para o Controllr aceitar criar/
   // atualizar o endereço (confirmado na doc oficial), mas não é algo que
   // o técnico deva digitar: sempre reenviar o valor já carregado.
   address_siafi?: number
@@ -247,7 +247,7 @@ export function buscarClientes(filtros: { doc?: string; contrato?: number; nome?
 
 // Telefone é recurso próprio do Controllr (/controllrctl/phone/*), não um
 // campo solto do cliente — client_phones (ClienteDto) é só um resumo
-// "Rótulo#-#número" sem phone_pk, então não dá pra editar a partir dele.
+// "Rótulo#-#número" sem phone_pk, então não dá para editar a partir dele.
 // Estes campos vêm crus da API (sem cast por model no backend), por isso
 // os nomes batem 1:1 com o Controllr.
 export interface TelefoneDto {
@@ -277,7 +277,7 @@ export function buscarDetalheCliente(clientPk: number): Promise<DetalheClienteRe
 }
 
 // Reenvia o registro inteiro (não só phone_number) — confirmado ao vivo
-// que o Controllr espera o telefone completo no update, mesmo pra trocar
+// que o Controllr espera o telefone completo no update, mesmo para trocar
 // só o número (ver backend/app/routers/telefones.py).
 export function atualizarTelefone(phonePk: number, dados: TelefoneDto): Promise<{ success: boolean; results: unknown }> {
   return put(`telefones/${phonePk}`, dados)
@@ -300,10 +300,10 @@ export function criarTelefone(dados: {
 
 export interface EnderecoPayload {
   // client_pk, address_zipcode, address_siafi, address e address_default
-  // são obrigatórios pro Controllr (confirmado na doc oficial) — ao
+  // são obrigatórios para o Controllr (confirmado na doc oficial) — ao
   // editar um endereço já existente, sempre reenviar os valores já
   // carregados (ver ModalEditarEndereco em DetalheCliente.tsx), nunca
-  // pedir isso de novo pro técnico.
+  // pedir isso de novo para o técnico.
   client_pk?: number
   address?: string
   address_number?: string
@@ -349,7 +349,7 @@ export function atualizarLocalizacaoCpe(
 export interface CpeDto {
   pk?: number
   username?: string
-  // Senha PPPoE real (cpe_password na API) — é o que o cliente usa pra
+  // Senha PPPoE real (cpe_password na API) — é o que o cliente usa para
   // conectar. access_login/access_password é uma credencial DIFERENTE
   // (acesso administrativo ao próprio roteador/CPE), confirmado na doc
   // oficial (apidoc.brbyte.com/#post-/aaa_ctl/cpe/list) — os dois
@@ -384,8 +384,8 @@ export interface CpeDto {
   obs?: string
   // Criptografia do Wi-Fi do próprio CPE/roteador (cpe_wifi_encryption_type/
   // password na API — confirmado na doc oficial, apidoc.brbyte.com/#post-
-  // /aaa_ctl/cpe/update). Não há enum documentado pro "type" (a doc só diz
-  // que é number), por isso o app não tenta traduzir o código pra um nome
+  // /aaa_ctl/cpe/update). Não há enum documentado para o "type" (a doc só diz
+  // que é number), por isso o app não tenta traduzir o código para um nome
   // de protocolo — mostra e edita o valor cru que o sistema fornecer.
   wifi_encryption_type?: number
   wifi_encryption_password?: string
@@ -550,6 +550,9 @@ export function removerOnu(onuPk: number, parametros: OspoOnu): Promise<{ succes
 
 export interface AssociarClienteOnuPayload extends OspoOnu {
   client_pk: number
+  // O cliente pode ter mais de uma conexão (CPE) cadastrada — o técnico
+  // escolhe explicitamente qual usuário PPPoE vincular a esta ONU.
+  cpe_pk: number
   onu_serial: string
   wancfg_conntype?: number
   wan_tpl_pk?: number
@@ -628,10 +631,10 @@ export interface OperacaoDto {
   op_code?: number
   op_client?: boolean
   // Confirmados capturando ao vivo — o mesmo /support_ctl/op/list usado
-  // pro chat também traz os eventos de responder/iniciar/finalizar/
-  // desfazer da OS (op_os_pk aponta pro op_pk do registro raiz da OS).
+  // para o chat também traz os eventos de responder/iniciar/finalizar/
+  // desfazer da OS (op_os_pk aponta para o op_pk do registro raiz da OS).
   // Um "set" grava esse evento com a data preenchida; um "undo" grava
-  // outro evento do MESMO op_type com a data nula — por isso pra saber
+  // outro evento do MESMO op_type com a data nula — por isso para saber
   // o estágio atual é preciso olhar o evento mais recente de cada tipo,
   // não um campo fixo (ver DetalheOrdemServico.tsx).
   op_os_pk?: number
@@ -695,7 +698,7 @@ export interface OrdemServicoDto {
   task_name?: string
   // Confirmados na doc oficial (apidoc.brbyte.com/#post-/support_ctl/os/list)
   // — client_pk/contrato/endereço vêm prontos no próprio registro da OS,
-  // sem precisar buscar o cliente à parte pra mostrar isso na tela da OS.
+  // sem precisar buscar o cliente à parte para mostrar isso na tela da OS.
   client_pk?: number
   client_complete_name?: string
   contract_pk?: number
@@ -732,7 +735,7 @@ export function listarOrdensServico(
 // Os 4 estágios reais de uma OS (confirmado com o dono da operação):
 // Agendada (feita pelo escritório) -> Respondida -> Iniciada ->
 // Finalizada, todas pelo técnico. Fechar é etapa à parte, só do
-// escritório (ACL do Controllr não libera pro técnico) — por isso não
+// escritório (ACL do Controllr não libera para o técnico) — por isso não
 // tem função de fechar aqui, só as 3 de progresso do técnico.
 export function responderOrdemServico(
   ticketPk: number,

@@ -26,7 +26,7 @@ export function definirTema(tema: Tema): void {
  * Aplica o tema assim que o app carrega e mantém sincronizado com o
  * sistema operacional enquanto o técnico não tiver escolhido nada
  * manualmente — chamado uma vez em main.tsx, antes do primeiro render,
- * pra não piscar no tema errado.
+ * para não piscar no tema errado.
  */
 export function iniciarTema(): void {
   aplicar(temaAtual())

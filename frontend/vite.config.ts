@@ -39,13 +39,13 @@ export default defineConfig({
     }),
   ],
   server: {
-    // Escuta em todas as interfaces de rede — dá pra abrir o app a partir
+    // Escuta em todas as interfaces de rede — dá para abrir o app a partir
     // do celular do técnico na mesma Wi-Fi usando o IP local da máquina.
     host: true,
     proxy: {
       // Em desenvolvimento, o navegador só fala com o Vite — ele repassa
-      // pro backend FastAPI local. Sem cookieDomainRewrite/xfwd: aqui é
-      // proxy simples pro NOSSO backend (não o Controllr direto), que já
+      // para o backend FastAPI local. Sem cookieDomainRewrite/xfwd: aqui é
+      // proxy simples para o NOSSO backend (não o Controllr direto), que já
       // roda na mesma máquina.
       '/api': {
         target: 'http://localhost:8000',

@@ -47,7 +47,7 @@ import './DetalheOrdemServico.css'
 // oficialmente): Agendada (feita pelo escritório, já vem pronta) ->
 // Respondida -> Iniciada -> Finalizada, as 3 últimas marcadas (e
 // desmarcadas) pelo técnico aqui. Fechar é etapa À PARTE, só do
-// escritório (ACL do Controllr não libera pro técnico) — por isso não
+// escritório (ACL do Controllr não libera para o técnico) — por isso não
 // tem botão de fechar nesta tela.
 //
 // IMPORTANTE: os campos op_date_answer/start/finish do registro RAIZ da
@@ -125,9 +125,9 @@ function etapaConcluida(eventos: OperacaoDto[], osRaizPk: number, etapa: ConfigE
 
 /**
  * As 3 etapas do técnico seguem sequência obrigatória, nos dois sentidos
- * (pedido explícito): não dá pra pular direto pra "Finalizada" sem
- * "Respondida"/"Iniciada" antes, e pra desfazer uma etapa é preciso
- * desfazer as posteriores primeiro (não dá pra desfazer "Respondida"
+ * (pedido explícito): não dá para pular direto para "Finalizada" sem
+ * "Respondida"/"Iniciada" antes, e para desfazer uma etapa é preciso
+ * desfazer as posteriores primeiro (não dá para desfazer "Respondida"
  * com "Iniciada" ainda de pé). Cada etapa só tem UMA ação disponível
  * por vez: "confirmar" se é a próxima pendente, "desfazer" se é a
  * última concluída — nunca as duas, nunca nenhuma no meio da lista.
@@ -144,7 +144,7 @@ function situacaoEtapa(concluidas: boolean[], indice: number): 'confirmar' | 'de
   return anterioresProntas ? 'confirmar' : 'bloqueada'
 }
 
-/** Rótulo resumido pro cabeçalho — a última das 3 etapas que estiver concluída, ou "Agendada". */
+/** Rótulo resumido para o cabeçalho — a última das 3 etapas que estiver concluída, ou "Agendada". */
 function estagioResumo(eventos: OperacaoDto[], os: OrdemServicoDto): string {
   if (os.op_date_cancel) return 'Cancelada'
   if (os.op_date_close) return 'Fechada'
@@ -217,13 +217,13 @@ export default function DetalheOrdemServico() {
             const contratoDaOs = resposta.contratos.find((c) => c.contract_pk === os.contract_pk)
             setContrato(contratoDaOs ?? resposta.contratos[0] ?? null)
             // Mesmos dados do endereço mostrados no Detalhe do Cliente
-            // (cidade/UF, coordenadas pro Google Maps) — a OS em si só traz
+            // (cidade/UF, coordenadas para o Google Maps) — a OS em si só traz
             // um resumo (address/number/neighborhood), sem isso.
             const enderecoDaOs = resposta.enderecos.find((e) => e.address_pk === os.address_pk)
             setEndereco(enderecoDaOs ?? resposta.enderecos[0] ?? null)
           })
           .catch(() => {})
-        // Prioriza o contrato específico desta OS pra achar a CPE certa —
+        // Prioriza o contrato específico desta OS para achar a CPE certa —
         // client_pk sozinho poderia trazer a CPE de outro contrato do
         // mesmo cliente, se ele tiver mais de uma conexão.
         buscarCpe(os.contract_pk ? { contract_pk: os.contract_pk } : { client_pk: os.client_pk })
@@ -266,7 +266,7 @@ export default function DetalheOrdemServico() {
     // op_os_pk vem null, já que ele não referencia "outra" OS, é a
     // própria — só os EVENTOS que ela gera têm op_os_pk preenchido).
     if (!etapa || !acaoConfirmando || !osAtual?.op_pk) {
-      toast('Nenhuma OS aberta encontrada pra este chamado.')
+      toast('Nenhuma OS aberta encontrada para este chamado.')
       setAcaoConfirmando(null)
       return
     }
@@ -280,8 +280,8 @@ export default function DetalheOrdemServico() {
     if (situacao !== acaoEsperada) {
       toast(
         acaoConfirmando.desfazer
-          ? `Não dá pra desfazer "${etapa.rotulo}" agora — desfaça as etapas seguintes primeiro.`
-          : `Não dá pra confirmar "${etapa.rotulo}" agora — confirme as etapas anteriores primeiro.`,
+          ? `Não dá para desfazer "${etapa.rotulo}" agora — desfaça as etapas seguintes primeiro.`
+          : `Não dá para confirmar "${etapa.rotulo}" agora — confirme as etapas anteriores primeiro.`,
       )
       setAcaoConfirmando(null)
       setObservacaoEtapa('')
@@ -290,7 +290,7 @@ export default function DetalheOrdemServico() {
     }
     const observacao = observacaoEtapa.trim()
     // Só "Finalizar" exige descrição (pedido explícito) — "Responder" e
-    // "Iniciar" ficam com o campo opcional, pro técnico usar se quiser.
+    // "Iniciar" ficam com o campo opcional, para o técnico usar se quiser.
     // Desfazer nunca exige (o motivo de desfazer é sempre opcional).
     const exigeObservacao = etapa.chave === 'finalizar' && !acaoConfirmando.desfazer
     if (exigeObservacao && !observacao) {
@@ -327,7 +327,7 @@ export default function DetalheOrdemServico() {
     if (!arquivo) return
     setEnviandoAnexo(true)
     try {
-      // O anexo vai pro chamado (ticket) — é o mesmo endpoint/local onde
+      // O anexo vai para o chamado (ticket) — é o mesmo endpoint/local onde
       // ele aparece na tela de chat do Suporte, mesmo sendo anexado aqui
       // na tela da OS.
       await enviarAnexoTicket(pk, arquivo)
@@ -363,7 +363,7 @@ export default function DetalheOrdemServico() {
 
       {!carregando && !erro && !osAtual && (
         <div className="detalhe-ordem-card">
-          <p className="detalhe-ordem-vazio">Nenhuma OS encontrada pra este chamado.</p>
+          <p className="detalhe-ordem-vazio">Nenhuma OS encontrada para este chamado.</p>
           <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
             <MdChatBubbleOutline size={14} /> Ver chamado
           </Link>

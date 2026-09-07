@@ -26,7 +26,7 @@ class NovoTelefonePayload(BaseModel):
 @router.post("/telefones")
 async def criar_telefone(payload: NovoTelefonePayload, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
     # Defaults confirmados ao vivo no formulário "Nova Entrada" do painel
-    # real (criei e apaguei um telefone de teste pra capturar): SVA
+    # real (criei e apaguei um telefone de teste para capturar): SVA
     # habilitado, status habilitado, válido, e os 4 tipos de contato
     # marcados (bitmask 15) — mesmos valores que um telefone novo recebe
     # lá. O técnico só informa identificação e número; o resto seria só

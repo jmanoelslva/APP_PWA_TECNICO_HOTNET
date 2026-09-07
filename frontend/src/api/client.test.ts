@@ -18,9 +18,9 @@ afterEach(() => {
 })
 
 // Diferente do Controllr direto, aqui POST /auth/login nunca devolve 401
-// pra senha errada — sempre 200 com {success:false} (ver backend). Um 401
+// para senha errada — sempre 200 com {success:false} (ver backend). Um 401
 // em QUALQUER rota (login incluso, já que o backend não usa esse status
-// pra credencial inválida) significa sessão ausente/expirada de verdade.
+// para credencial inválida) significa sessão ausente/expirada de verdade.
 describe('login — nunca trata credencial errada como sessão expirada', () => {
   it('resposta 200 com success:false é só falha de login normal', async () => {
     mockFetchUmaVez({ status: 200, ok: true, json: { success: false, message: 'Usuário ou senha incorretos.' } })

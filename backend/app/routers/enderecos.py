@@ -12,12 +12,12 @@ router = APIRouter(tags=["enderecos"])
 
 class EnderecoPayload(BaseModel):
     # client_pk, address_zipcode, address_siafi, address e address_default
-    # são obrigatórios pra criar/atualizar no Controllr de verdade
+    # são obrigatórios para criar/atualizar no Controllr de verdade
     # (confirmado na doc oficial, apidoc.brbyte.com/#post-/controllrctl/addresses/update
     # e /create) — sem "address_siafi" especificamente a chamada falha;
     # como o técnico normalmente está EDITANDO um endereço já existente,
     # o frontend deve sempre reenviar o valor já carregado (não editável
-    # na tela), não pedir isso de novo pro técnico.
+    # na tela), não pedir isso de novo para o técnico.
     client_pk: int | None = None
     address: str | None = None
     address_number: str | None = None
@@ -81,7 +81,7 @@ async def atualizar_localizacao_cpe(
     # (apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). "address_latitude"/
     # "address_longitude" (usado antes) não existe nesse endpoint — o
     # Controllr provavelmente ignorava o campo desconhecido, então a
-    # localização nunca era salva de verdade, sem erro nenhum pra avisar.
+    # localização nunca era salva de verdade, sem erro nenhum para avisar.
     corpo = urlencode({
         "cpe_pk": cpe_pk,
         "cpe_latitude": payload.address_latitude,

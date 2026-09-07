@@ -34,7 +34,7 @@ async def listar_tickets(
 ) -> dict[str, Any]:
     where = None
     if client_pk is not None:
-        # Usado pela tela de detalhe do cliente, pra mostrar o histórico
+        # Usado pela tela de detalhe do cliente, para mostrar o histórico
         # de chamados junto com cadastro/contratos/endereços. "ticket.
         # client_pk" (com prefixo), não "client_pk" puro — mesmo padrão de
         # ambiguidade já confirmado em client_list ("client.client_pk") e
@@ -47,7 +47,7 @@ async def listar_tickets(
         # oper 21 = "IN" (confirmado no README do brbyteapi, exemplo de
         # ticket_list) — precisa ser esse, não "=" (oper 5), já que o
         # valor é uma LISTA de um item, não um escalar. Se user_pk ainda
-        # não foi resolvido (ver auth.py::_find_user_pk), cai pra "todos"
+        # não foi resolvido (ver auth.py::_find_user_pk), cai para "todos"
         # em vez de mostrar uma lista vazia enganosa.
         where = where_in("user_pk", [ctx.session.user_pk])
 

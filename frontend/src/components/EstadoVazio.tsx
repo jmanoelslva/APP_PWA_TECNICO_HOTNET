@@ -7,7 +7,7 @@ interface Props {
   subtitulo?: string
 }
 
-/** Estado vazio com ícone — usado quando uma lista não tem nada pra mostrar. */
+/** Estado vazio com ícone — usado quando uma lista não tem nada para mostrar. */
 export default function EstadoVazio({ icone: Icone, titulo, subtitulo }: Props) {
   return (
     <div className="estado-vazio">

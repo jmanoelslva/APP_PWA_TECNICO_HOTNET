@@ -9,7 +9,7 @@ próxima vez que um bug parecido aparecer.
 
 Convenção: "confirmado ao vivo" = testado de verdade contra o servidor
 real (não é suposição). Quando um nome de campo/endpoint não tem link
-pra doc oficial, é porque ele **não existe** na doc.
+para doc oficial, é porque ele **não existe** na doc.
 
 ---
 
@@ -20,7 +20,7 @@ mais de uma. Exemplo: `[{"field":"a","oper":5,"value":1},{"field":"AND"},{"field
 
 **IMPORTANTE**: o corpo inteiro (`where=...` incluído) precisa passar
 por `urlencode()` antes de virar o body da requisição. Colar o JSON cru
-num f-string funciona por sorte pra valores só numéricos, mas quebra na
+num f-string funciona por sorte para valores só numéricos, mas quebra na
 hora que aparece um `%` (ex: ILIKE `%termo%`) — um `%te` não é hex
 válido, corrompe o parsing do corpo no servidor, que aí **ignora o
 `where` inteiro sem erro nenhum** (sintoma: filtro nunca funciona,
@@ -51,7 +51,7 @@ busca sempre traz tudo ou nada errado).
 ## 2. Colunas ambíguas (bug recorrente — mesma causa, vários endpoints)
 
 Vários endpoints de listagem fazem JOIN internamente, e um nome de
-coluna sem prefixo de tabela vira ambíguo pro Postgres por trás. O
+coluna sem prefixo de tabela vira ambíguo para o Postgres por trás. O
 Controllr às vezes **rejeita com erro** (código `42702`,
 "ambiguous_column") e às vezes **silenciosamente ignora o filtro
 inteiro** (sintoma bem mais traiçoeiro: a busca "funciona" mas sempre
@@ -84,7 +84,7 @@ traz resultado errado/não filtrado). Prefixos confirmados:
 ## 3. Ordem de Serviço (OS) — o maior achado desta sessão
 
 A doc oficial só documenta `/support_ctl/os/list`, `/create`, `/close`,
-`/cancel`, `/reopen`. Só isso não é suficiente pro ciclo de vida real
+`/cancel`, `/reopen`. Só isso não é suficiente para o ciclo de vida real
 que o Controllr usa.
 
 ### 3.1. Os 4 estágios reais (confirmado com o dono da operação)
@@ -96,7 +96,7 @@ que o Controllr usa.
 
 **Fechar** a OS é uma etapa à parte, só do escritório — confirmado que
 o ACL do Controllr nega (403 `{"code":-2,"message":"Access Denied"}`)
-pra uma conta de técnico de verdade em `/support_ctl/os/close`.
+para uma conta de técnico de verdade em `/support_ctl/os/close`.
 
 ### 3.2. Endpoints não documentados, achados capturando ao vivo os botões do painel
 
@@ -111,11 +111,11 @@ obrigatórios — confirmado sondando com corpo vazio, que devolve
 Diferente de `close`/`cancel`/`reopen`, que também levam `ticket_pk`.
 
 **Cuidado**: nomes de ação inventados (`/support_ctl/os/isso_nao_existe`)
-devolvem o **mesmo** 403 `Access Denied` genérico do servidor pra rota
+devolvem o **mesmo** 403 `Access Denied` genérico do servidor para rota
 desconhecida — não confie em "deu 403" sozinho como prova de que um
 endpoint existe. Confirme testando com corpo vazio: se vier
 `"Required Field"` (validação de verdade), o endpoint existe; se vier
-`Access Denied` até pra um nome claramente inventado, é só o fallback.
+`Access Denied` até para um nome claramente inventado, é só o fallback.
 
 ### 3.3. O detalhe que mais confundiu: onde mora o estado de cada etapa
 
@@ -126,7 +126,7 @@ vezes, mesmo depois de marcar todas as 3 etapas.
 
 O que acontece de verdade: cada `set_*`/`undo_*` cria um **novo
 registro de evento** (`op_type` 3=respondida, 4=iniciada, 5=finalizada),
-visível só em `/support_ctl/op/list` (o **mesmo endpoint usado pro chat
+visível só em `/support_ctl/op/list` (o **mesmo endpoint usado para o chat
 do chamado**), vinculado à OS via `op_os_pk = op_pk do registro raiz`.
 
 - Um `set_*` grava esse evento com a data correspondente **preenchida**.
@@ -134,11 +134,11 @@ do chamado**), vinculado à OS via `op_os_pk = op_pk do registro raiz`.
   a data **nula** (confirmado comparando os dois registros criados ao
   vivo, campo a campo — só a data e a descrição diferem).
 
-**Conclusão**: pra saber se uma etapa está marcada, é preciso pegar o
+**Conclusão**: para saber se uma etapa está marcada, é preciso pegar o
 evento **mais recente** (maior `op_pk`) daquele `op_type`, vinculado à
 OS certa, e olhar a data DELE — nunca um campo fixo da OS. Ver
 `backend/app/routers/ordens_servico.py` e
-`frontend/src/pages/DetalheOrdemServico.tsx` pra implementação.
+`frontend/src/pages/DetalheOrdemServico.tsx` para implementação.
 
 Isso também significa que **`/support_ctl/os/list` não retorna os
 eventos** — filtrar esse endpoint por `op_os_pk` de uma OS específica
@@ -155,7 +155,7 @@ sempre volta vazio. Os eventos só aparecem via `/support_ctl/op/list`
   `address`/`address_number`/`address_neighborhood`/`address_province`/
   `address_state`/`address_zipcode`/`address_completation`/
   `address_identification` já vêm prontos no próprio registro de
-  `/support_ctl/os/list` — não precisa buscar o cliente à parte só pra
+  `/support_ctl/os/list` — não precisa buscar o cliente à parte só para
   mostrar isso.
 - **Não vêm prontos**: telefone do cliente, status/vencimento do
   contrato, dados de conexão (usuário/senha/IP/MAC/CTO) — precisa
@@ -171,7 +171,7 @@ painel, coluna "Tarefa": valores reais vistos — `"Viabilidade"` (pk 1),
 diferente de `op_desc` (nota de texto livre que só existe depois que o
 técnico confirma uma etapa, pode nem existir numa OS recém-agendada) e
 de `ticket_title` (assunto que o CLIENTE deu ao abrir o chamado). Não
-precisa de endpoint extra pra buscar isso — já vem no mesmo list.
+precisa de endpoint extra para buscar isso — já vem no mesmo list.
 
 ### 3.5. "Minhas OS abertas" — filtro combinado confirmado
 
@@ -211,7 +211,7 @@ precisa de endpoint extra pra buscar isso — já vem no mesmo list.
   number). **Confirmado pelo usuário**: `0` = Nenhum, `1` = WEP,
   `2` = WPA, `3` = EAP. Com `0` (Nenhum) não faz sentido mandar senha.
 - `/aaa_ctl/cpe/list_combo` só traz um subconjunto reduzido de campos
-  (sem `contract_number`, só `contract_pk`) — pra mostrar o número de
+  (sem `contract_number`, só `contract_pk`) — para mostrar o número de
   contrato de verdade é preciso cruzar com `/controllrctl/contract/list`
   filtrado por `contract_pk` (ver seção 6).
 
@@ -224,24 +224,24 @@ precisa de endpoint extra pra buscar isso — já vem no mesmo list.
   `search_value` (não é o formato `where` normal):
   - `search_term=onu_serial` — busca por serial do equipamento.
   - `search_term=onu_wancfg_pppoe_username` — busca pelo usuário PPPoE
-    do cliente (mais confiável pra achar a ONU certa; confirmado
+    do cliente (mais confiável para achar a ONU certa; confirmado
     capturando a busca real do painel de fibra).
   - Payload completo confirmado (sentinelas `-1`/`0`/`128` = "não
     filtrar"): `olt_pk=0&dp_pk=-1&search_term=...&search_value=...&frame_id=-1&slot_id=-1&port_id=-1&onu_id=-1&duplicate_serial=-1&signal_min_limit=128&signal_max_limit=128&page=1&start=0&limit=15&sort=...&dir=ASC`.
   - `search_term=onu_serial` filtra por **PREFIXO** (não precisa do
     serial completo nem é match exato) — confirmado ao vivo na própria
     tela "ONU - Registrado" do painel: digitar `ZTEG` na busca por
-    Serial já filtrou de 2550 pra 764 resultados, todos começando com
-    esse prefixo. Por isso dá pra usar esse mesmo endpoint (via
+    Serial já filtrou de 2550 para 764 resultados, todos começando com
+    esse prefixo. Por isso dá para usar esse mesmo endpoint (via
     `buscarOnu({serial})`) num combobox de busca ao vivo, sem precisar
     de outro endpoint — diferente da busca por usuário PPPoE, que exige
     match exato aqui e por isso usa `/aaa_ctl/cpe/list` (ILIKE) à parte
-    pra sugestão, só resolvendo a ONU de fato depois que o técnico
+    para sugestão, só resolvendo a ONU de fato depois que o técnico
     escolhe um usuário exato.
 - `onu_distance` — a doc diz só "string", sem unidade. **É em
   quilômetros, não metros** (confirmado pelo usuário — um valor real de
   ~10.58 corresponde a ~10,5km; bate também com o exemplo da doc,
-  `"0.931"`, que só faz sentido como km pra alcance de GPON).
+  `"0.931"`, que só faz sentido como km para alcance de GPON).
 - `/fiber_ctl/olt/reconnect` — **confirmado seguro pelo usuário**: só
   força reler os dados da OLT, não derruba conexão de ninguém. Usado
   no fluxo de "Atualizar agora": reconnect → espera 15s →
@@ -252,9 +252,9 @@ precisa de endpoint extra pra buscar isso — já vem no mesmo list.
 Técnica usada (nova nesta sessão): em vez de clicar o botão de verdade
 (reiniciar/remover uma ONU real derrubaria a conexão de um cliente de
 verdade), os ícones de ação da tela "ONU - Registrado" são componentes
-ExtJS — dá pra pegar o handler de cada um **sem clicar** via
+ExtJS — dá para pegar o handler de cada um **sem clicar** via
 `Ext.ComponentQuery.query('actioncolumn')`, e ler `item.handler.toString()`
-pra extrair a URL e os campos do corpo. Confirmado que só ABRIR a janela
+para extrair a URL e os campos do corpo. Confirmado que só ABRIR a janela
 de confirmação ("Fibra Onu": "Reiniciar ONU, `<nome>`?" / clicar "Não")
 não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
 `apply_reboot`/`delete`/`apply_wan` até o fechamento).
@@ -284,7 +284,7 @@ não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
   3. Preenche "PPPoE Usuário"/"Senha" com o `cpe_username`/`cpe_password`
      achado — **não existe PPPoE "solto"**, é sempre o acesso que já
      existe no cadastro do cliente. Cliente sem CPE cadastrada não dá
-     pra associar por aqui.
+     para associar por aqui.
   4. "Salvar" chama `POST /fiber_ctl/onu/apply_wan` com **o registro
      inteiro da config de WAN da ONU** (mesmo padrão "registro completo"
      já visto em `phone/update` — confirmado lendo o handler do botão
@@ -301,14 +301,14 @@ não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
   - **Boa notícia**: o modelo vendorizado `ONU`/`ONUExtended`
     (`brbyteapi/controllr/models/onu.py`) **já mapeia todos esses campos
     de WAN** (`wancfg_conntype`, `wan_tpl_pk`, `wancfg_vlanid` etc.) —
-    `buscarOnu()` já traz tudo que é preciso reenviar pra não zerar a
+    `buscarOnu()` já traz tudo que é preciso reenviar para não zerar a
     config de rede da própria ONU ao associar um cliente; não precisou
     editar o pacote vendorizado nem fazer fetch adicional no backend.
   - O ícone "editar" (lápis) da lista é só **renomear** a ONU
     (`fiber_onu_rename`) — não tem nada a ver com cliente/CPE, apesar do
     nome sugestivo.
   - Módulo `fiber_onu_add` (`/fiber_ctl/onu/add`, botão "Cadastrar" da
-    tela "Não Registrado") é só pra dar entrada na ONU na rede
+    tela "Não Registrado") é só para dar entrada na ONU na rede
     (name/line_profile/service_profile/model/slot/port/serial) — **sem
     nenhum campo de cliente**. Confirma que associar cliente é sempre
     via a janela de Informações de uma ONU já registrada, nunca no
@@ -325,7 +325,7 @@ não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
   **vazio mesmo com contrato de verdade existindo**. Único filtro
   confiável: `contract_pk` (oper 5, `=`), um de cada vez.
 - **`sign_url=true`** — parâmetro extra (não documentado) que precisa
-  ir junto no corpo pra `contract_sign_doc_link` aparecer na resposta.
+  ir junto no corpo para `contract_sign_doc_link` aparecer na resposta.
   Sem ele, o campo simplesmente **some** da resposta (não vem `null`,
   não aparece a chave). Confirmado comparando ao vivo a chamada real do
   painel (`where` por `contract.contract_pk` + `sign_url=true`) contra
@@ -337,7 +337,7 @@ não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
 - `contract_sign_code` / `contract_sign_info` / `contract_sign_draw` /
   `contract_sign_ip` / `contract_sign_hash` — existem na resposta
   (vistos ao vivo), mas sem descrição nenhuma na doc oficial. Não
-  inventamos rótulo/tradução pra eles — mostrados crus quando presentes.
+  inventamos rótulo/tradução para eles — mostrados crus quando presentes.
 - Itens do contrato: `/controllrctl/contract/svclist`, sem wrapper no
   pacote vendorizado (chamada direta). Filtro confirmado (no app
   cliente de referência): `item.contract_pk` (com prefixo).
@@ -365,7 +365,7 @@ Online" do próprio painel:
   mostrado na tela real do Controllr). E são do ponto de vista do
   **NAS** (convenção RADIUS accounting), não do cliente:
   `rx_byte` = recebido PELO NAS vindo do cliente = **upload** do
-  cliente; `tx_byte` = enviado PELO NAS pro cliente = **download** do
+  cliente; `tx_byte` = enviado PELO NAS para o cliente = **download** do
   cliente. Fácil de inverter por engano se pensar do ponto de vista do
   cliente.
 
@@ -384,9 +384,9 @@ Online" do próprio painel:
 - **Telefone é recurso PRÓPRIO do Controllr** (`/controllrctl/phone/*`
   — list, list_combo, create, update, delete), não um campo solto do
   cliente. `client_phones` (`client/list`) é só um resumo
-  `"Rótulo#-#valor"` montado a partir desses registros pra exibição —
-  não tem `phone_pk`, então não dá pra editar a partir dele.
-  - Nome real da tabela pro `where`: **`client_phone`** (singular) —
+  `"Rótulo#-#valor"` montado a partir desses registros para exibição —
+  não tem `phone_pk`, então não dá para editar a partir dele.
+  - Nome real da tabela para o `where`: **`client_phone`** (singular) —
     confirmado ao vivo testando candidatos: `client_pk` puro dá `42702`
     (ambíguo, mesmo padrão de outros endpoints), `phone.client_pk` dá
     `42P01` (tabela errada), `client_phone.client_pk` funciona.
@@ -433,7 +433,7 @@ Isso importa porque este backend autentica as DEMAIS chamadas por
 — e Basic Auth **não cria sessão nenhuma** no Controllr. Ou seja, chamar
 `/session/logout` mandando só o header `Authorization: Basic ...` (sem o
 cookie) não derruba nada, porque não existe sessão associada a esse
-header pra derrubar — foi exatamente o bug do primeiro logout
+header para derrubar — foi exatamente o bug do primeiro logout
 implementado aqui (parecia funcionar, mas era um no-op do lado do
 Controllr).
 
@@ -441,7 +441,7 @@ Corrigido guardando o cookie devolvido pelo `/login` (agora
 `ControllrLogin.login` retorna `ControllrLoginResult{success,
 cookie_header}` em vez de só `bool`) junto da sessão do técnico
 (`TechnicianSession.controllr_cookie`), e usando **esse cookie
-específico** — não o Basic Auth — pra chamar `/session/logout` no
+específico** — não o Basic Auth — para chamar `/session/logout` no
 `/auth/logout` deste backend.
 
 ---
@@ -476,17 +476,17 @@ mesmo com o dado presente. Todos corrigidos em
 
 ## 10. Como investigar um novo caso (técnica que funcionou repetidas vezes)
 
-1. Pedir pro usuário logar no painel real do Controllr (nunca eu digito
+1. Pedir para o usuário logar no painel real do Controllr (nunca eu digito
    credencial).
 2. Injetar via `javascript_tool` um patch em `window.fetch`/
    `XMLHttpRequest.prototype.send` que guarda `{url, body, resposta}`
    de toda chamada que bater num padrão de URL.
-3. Pedir pro usuário clicar na ação real na tela (ex: botão
+3. Pedir para o usuário clicar na ação real na tela (ex: botão
    "Respondida").
 4. Ler o corpo/resposta capturados — geralmente revela o endpoint e os
    campos exatos, sem chute nenhum.
 5. Pra descobrir se um endpoint existe sem efeito colateral: mandar
-   corpo **vazio** — se vier `"Required Field"` pra algum campo, o
+   corpo **vazio** — se vier `"Required Field"` para algum campo, o
    endpoint existe de verdade; se vier o erro genérico de rota
    desconhecida do servidor (ver seção 3.2), não existe.
 6. Pra descobrir o prefixo certo de uma coluna ambígua: testar

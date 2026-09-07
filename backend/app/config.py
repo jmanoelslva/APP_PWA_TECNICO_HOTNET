@@ -8,7 +8,7 @@ import os
 CONTROLLR_URL = os.environ.get("CONTROLLR_URL", "https://controllr.hotnet.net.br:8443")
 
 # Tempo de vida da sessão do técnico neste backend (não é o lease do
-# Controllr, que é por requisição via Basic Auth — este TTL é só pra
+# Controllr, que é por requisição via Basic Auth — este TTL é só para
 # forçar um novo login depois de um período de inatividade).
 SESSION_TTL_SECONDS = int(os.environ.get("SESSION_TTL_SECONDS", str(12 * 60 * 60)))
 

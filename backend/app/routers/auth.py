@@ -67,7 +67,7 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
             user_pk = _find_user_pk(resultado.results, payload.username)
     except Exception:
         # Login já foi validado acima; falha aqui só significa que "Minhas
-        # OS" vai cair pra "Todas" até resolvermos o campo certo do ACL.
+        # OS" vai cair para "Todas" até resolvermos o campo certo do ACL.
         user_pk = None
 
     sessao = create_session(
@@ -101,7 +101,7 @@ async def logout(
         # sentido com o COOKIE dessa sessão específica — chamar isso com
         # o Basic Auth do técnico (usado nas outras chamadas deste
         # backend) não derruba nada, porque Basic Auth não cria sessão
-        # nenhuma no Controllr pra existir algo a encerrar. Best-effort:
+        # nenhuma no Controllr para existir algo a encerrar. Best-effort:
         # falhar aqui não pode impedir o logout local, que é o que de
         # fato protege a conta (apaga a sessão deste backend e o cookie
         # do navegador).

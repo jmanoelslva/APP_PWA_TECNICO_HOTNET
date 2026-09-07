@@ -22,6 +22,7 @@ import {
   reiniciarOnu,
   removerOnu,
   type BuscaClienteResultado,
+  type CpeComboDto,
   type CpeDto,
   type OnuDto,
 } from '../api/client'
@@ -87,7 +88,7 @@ export default function OnuStatus() {
   const [registrandoCliente, setRegistrandoCliente] = useState(false)
   // Combobox único — busca por serial (/fiber_ctl/onu/list no formato
   // "wizard", confirmado ao vivo que filtra por PREFIXO: "ZTEG" já
-  // filtrou de 2550 pra 764 resultados) e por usuário PPPoE (/cpe/busca,
+  // filtrou de 2550 para 764 resultados) e por usuário PPPoE (/cpe/busca,
   // que suporta ILIKE parcial) em paralelo, e mistura os dois num só
   // dropdown — o técnico não precisa saber de antemão se tem o serial ou
   // o usuário em mãos. Selecionar um item de serial já é a própria ONU;
@@ -167,7 +168,7 @@ export default function OnuStatus() {
 
   async function atualizarAgora() {
     if (!onu?.pk || onu.olt_pk == null || !onu.sn || onu.slot == null || onu.pon == null || onu.id == null) {
-      toast('Dados insuficientes pra atualizar esta ONU.')
+      toast('Dados insuficientes para atualizar esta ONU.')
       return
     }
     setAtualizando(true)
@@ -198,11 +199,66 @@ export default function OnuStatus() {
     return { olt_pk: onu.olt_pk, slot_id: onu.slot, port_id: onu.pon, onu_id: onu.id, frame_id: onu.frame ?? 1 }
   }
 
+  // Antes de reiniciar/remover/associar, releem a ONU do zero — mesmo
+  // efeito que o técnico buscar de novo manualmente (contornava um bug
+  // observado em produção: os identificadores olt_pk/slot/port/onu_id
+  // às vezes vêm incompletos na primeira leitura da ONU, e uma segunda
+  // busca sempre trazia os dados corretos).
+  const [atualizandoAntesDaAcao, setAtualizandoAntesDaAcao] = useState(false)
+
+  async function recarregarOnuAtual(): Promise<OnuDto | null> {
+    if (temParametroInicial) {
+      const resposta = await buscarInicial()
+      const atualizada = resposta.results[0] ?? null
+      setOnu(atualizada)
+      return atualizada
+    }
+    if (onu?.sn) {
+      const resposta = await buscarOnu({ serial: onu.sn })
+      const atualizada = resposta.results[0] ?? null
+      setOnu(atualizada)
+      return atualizada
+    }
+    return onu
+  }
+
+  async function abrirAcao(acao: 'reiniciar' | 'remover') {
+    setAtualizandoAntesDaAcao(true)
+    try {
+      const atualizada = await recarregarOnuAtual()
+      if (!atualizada) {
+        toast('Não foi possível atualizar os dados da ONU.')
+        return
+      }
+      setConfirmandoAcao(acao)
+    } catch {
+      toast('Não foi possível atualizar os dados da ONU.')
+    } finally {
+      setAtualizandoAntesDaAcao(false)
+    }
+  }
+
+  async function abrirRegistrarCliente() {
+    setAtualizandoAntesDaAcao(true)
+    try {
+      const atualizada = await recarregarOnuAtual()
+      if (!atualizada) {
+        toast('Não foi possível atualizar os dados da ONU.')
+        return
+      }
+      setRegistrandoCliente(true)
+    } catch {
+      toast('Não foi possível atualizar os dados da ONU.')
+    } finally {
+      setAtualizandoAntesDaAcao(false)
+    }
+  }
+
   async function executarAcao() {
     const acao = confirmandoAcao
     const ospo = dadosOspo()
     if (!acao || !onu?.pk || !ospo) {
-      toast('Dados insuficientes pra executar esta ação.')
+      toast('Dados insuficientes para executar esta ação.')
       setConfirmandoAcao(null)
       return
     }
@@ -421,7 +477,12 @@ export default function OnuStatus() {
                   <MdPeopleAlt size={14} /> {onu.client_name ?? '—'}
                 </Link>
               ) : (
-                <button type="button" className="onu-btn-registrar-cliente" onClick={() => setRegistrandoCliente(true)}>
+                <button
+                  type="button"
+                  className="onu-btn-registrar-cliente"
+                  onClick={abrirRegistrarCliente}
+                  disabled={atualizandoAntesDaAcao}
+                >
                   <MdPersonAdd size={14} /> Registrar cliente
                 </button>
               )}
@@ -456,7 +517,7 @@ export default function OnuStatus() {
             </div>
             <div className="onu-linha">
               {/* onu_distance vem em KM, não metros (confirmado: exemplo
-                  "0.931" na doc oficial só faz sentido pra alcance de
+                  "0.931" na doc oficial só faz sentido para alcance de
                   GPON como km — 0.931 m seria o cliente colado na OLT). */}
               <span>Distância</span>
               <strong>{onu.distance != null ? `${onu.distance} km` : '—'}</strong>
@@ -491,16 +552,16 @@ export default function OnuStatus() {
             <button
               type="button"
               className="onu-btn-secundario"
-              onClick={() => setConfirmandoAcao('reiniciar')}
-              disabled={executandoAcao}
+              onClick={() => abrirAcao('reiniciar')}
+              disabled={executandoAcao || atualizandoAntesDaAcao}
             >
               <MdPowerSettingsNew size={16} /> Reiniciar ONU
             </button>
             <button
               type="button"
               className="onu-btn-secundario onu-btn-perigo"
-              onClick={() => setConfirmandoAcao('remover')}
-              disabled={executandoAcao}
+              onClick={() => abrirAcao('remover')}
+              disabled={executandoAcao || atualizandoAntesDaAcao}
             >
               <MdDeleteForever size={16} /> Remover ONU
             </button>
@@ -561,6 +622,10 @@ function ModalRegistrarCliente({
   const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
   const [buscando, setBuscando] = useState(false)
   const [selecionado, setSelecionado] = useState<BuscaClienteResultado | null>(null)
+  // Depois de escolher o cliente, o técnico ainda escolhe qual PPPoE
+  // vincular (pedido explícito — o cliente pode ter mais de uma conexão
+  // cadastrada, e nunca deve ser presumido automaticamente qual delas).
+  const [cpeEscolhida, setCpeEscolhida] = useState<CpeComboDto | null>(null)
   const [associando, setAssociando] = useState(false)
   const { toast } = useToast()
 
@@ -591,14 +656,24 @@ function ModalRegistrarCliente({
   }, [busca])
 
   async function confirmar() {
-    if (!selecionado || !onu.pk || !onu.sn || onu.olt_pk == null || onu.slot == null || onu.pon == null || onu.id == null) {
-      toast('Dados insuficientes pra associar esta ONU.')
+    if (
+      !selecionado ||
+      !cpeEscolhida?.cpe_pk ||
+      !onu.pk ||
+      !onu.sn ||
+      onu.olt_pk == null ||
+      onu.slot == null ||
+      onu.pon == null ||
+      onu.id == null
+    ) {
+      toast('Dados insuficientes para associar esta ONU.')
       return
     }
     setAssociando(true)
     try {
       await associarClienteOnu(onu.pk, {
         client_pk: selecionado.client_pk,
+        cpe_pk: cpeEscolhida.cpe_pk,
         olt_pk: onu.olt_pk,
         slot_id: onu.slot,
         port_id: onu.pon,
@@ -631,10 +706,11 @@ function ModalRegistrarCliente({
     <div className="onu-modal-fundo" onClick={onFechar}>
       <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
         <h2>Registrar cliente nesta ONU</h2>
-        {!selecionado ? (
+        {!selecionado && (
           <>
             <p className="onu-modal-texto">
-              Busque o cliente pelo nome — o usuário e a senha PPPoE já cadastrados dele serão aplicados nesta ONU.
+              Busque o cliente pelo nome. Depois de escolher, será possível selecionar qual conexão (PPPoE) dele
+              vincular a esta ONU.
             </p>
             <input
               type="text"
@@ -662,14 +738,42 @@ function ModalRegistrarCliente({
               <button onClick={onFechar}>Cancelar</button>
             </div>
           </>
-        ) : (
+        )}
+
+        {selecionado && !cpeEscolhida && (
           <>
             <p className="onu-modal-texto">
-              Associar esta ONU a <strong>{selecionado.cliente.client_complete_name}</strong>? O usuário e a senha PPPoE
-              já cadastrados dele serão aplicados nesta ONU.
+              Qual conexão (usuário PPPoE) de <strong>{selecionado.cliente.client_complete_name}</strong> deseja
+              vincular a esta ONU?
+            </p>
+            {selecionado.cpes.length === 0 ? (
+              <p className="onu-modal-texto">Este cliente não tem nenhuma conexão (CPE) cadastrada.</p>
+            ) : (
+              <ul className="onu-modal-lista">
+                {selecionado.cpes.map((cpe) => (
+                  <li key={cpe.cpe_pk}>
+                    <button type="button" onClick={() => setCpeEscolhida(cpe)}>
+                      <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
+                      {cpe.contract_number != null && ` — Contrato ${cpe.contract_number}`}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="onu-modal-acoes">
+              <button onClick={() => setSelecionado(null)}>Voltar</button>
+            </div>
+          </>
+        )}
+
+        {selecionado && cpeEscolhida && (
+          <>
+            <p className="onu-modal-texto">
+              Associar esta ONU a <strong>{selecionado.cliente.client_complete_name}</strong>, usando o PPPoE{' '}
+              <strong>{cpeEscolhida.cpe_username}</strong>?
             </p>
             <div className="onu-modal-acoes">
-              <button onClick={() => setSelecionado(null)} disabled={associando}>
+              <button onClick={() => setCpeEscolhida(null)} disabled={associando}>
                 Voltar
               </button>
               <button className="onu-btn-primario" disabled={associando} onClick={confirmar}>

@@ -1,7 +1,7 @@
 /**
- * Paleta de cores da marca — cada valor aponta pra uma CSS custom property
- * definida em src/index.css (nunca hex fixo), pra reagir automaticamente
- * ao modo escuro e continuar em um só lugar pra trocar a paleta inteira.
+ * Paleta de cores da marca — cada valor aponta para uma CSS custom property
+ * definida em src/index.css (nunca hex fixo), para reagir automaticamente
+ * ao modo escuro e continuar em um só lugar para trocar a paleta inteira.
  */
 export const CORES = {
   primaria: 'var(--cor-primaria)',
@@ -12,7 +12,7 @@ export const CORES = {
   fundo: 'var(--cor-fundo)',
   superficie: 'var(--cor-superficie)',
   borda: 'var(--cor-borda)',
-  // Branco fixo — pros ícones dentro de um badge de cor sólida (o badge já
+  // Branco fixo — para os ícones dentro de um badge de cor sólida (o badge já
   // dá o contraste; não deve escurecer junto com o tema).
   branco: '#ffffff',
 

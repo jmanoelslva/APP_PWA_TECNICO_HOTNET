@@ -8,7 +8,7 @@ import { iniciarTema } from './utils/tema.ts'
 import './index.css'
 import App from './App.tsx'
 
-// Antes do primeiro render, pra não piscar no tema errado.
+// Antes do primeiro render, para não piscar no tema errado.
 iniciarTema()
 
 createRoot(document.getElementById('root')!).render(

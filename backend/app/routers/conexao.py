@@ -76,7 +76,7 @@ async def atualizar_wifi_cpe(
 ) -> dict[str, Any]:
     # cpe_wifi_encryption_type/cpe_wifi_encryption_password — confirmado na
     # doc oficial (apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). Não há
-    # enum documentado pro "type" (a doc só diz que é number), então o
+    # enum documentado para o "type" (a doc só diz que é number), então o
     # técnico edita o valor cru mesmo, sem tradução inventada por nós.
     campos: dict[str, Any] = {"cpe_pk": cpe_pk}
     if payload.wifi_encryption_type is not None:
@@ -91,7 +91,7 @@ async def atualizar_wifi_cpe(
 
 class CpeDetalhesPayload(BaseModel):
     # Todos confirmados como campos de verdade em /aaa_ctl/cpe/update na
-    # doc oficial. None aqui significa "não mexe nesse campo" — pra
+    # doc oficial. None aqui significa "não mexe nesse campo" — para
     # limpar um valor (ex: observação), o front manda string vazia, não
     # None (mesmo padrão já usado em EnderecoPayload).
     cpe_obs: str | None = None

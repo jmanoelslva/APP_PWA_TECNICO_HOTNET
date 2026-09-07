@@ -11,14 +11,14 @@ router = APIRouter(prefix="/dp", tags=["dp"])
 
 @router.get("/lista")
 async def listar_dps(ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
-    # CTOs (Distribution Points) cadastradas no sistema, pra selecionar na
+    # CTOs (Distribution Points) cadastradas no sistema, para selecionar na
     # tela de detalhes do CPE (campo dp_pk) — só as ativas (dp_status=1).
     #
     # NÃO usa model_return=True aqui: Response.cast() faz
     # `[DP.model_validate(r) for r in results]` numa lista só — se UMA
     # CTO qualquer não tiver dp_lat/dp_lng/dp_limit (campos obrigatórios
     # no modelo DP, mas nem toda CTO cadastrada tem coordenada), a
-    # validação de TODA a lista falha e a lista inteira vem vazia pro
+    # validação de TODA a lista falha e a lista inteira vem vazia para o
     # técnico, sem erro visível (o front só ignora a falha do combo).
     # Como só precisamos de pk/nome, pega o dado cru e não passa pelo
     # modelo rígido.

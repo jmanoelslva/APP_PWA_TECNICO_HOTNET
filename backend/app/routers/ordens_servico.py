@@ -14,7 +14,7 @@ painel do Controllr, já que não estão na doc oficial):
 3. Iniciada — técnico marca que começou o atendimento (/iniciar, desfaz em /desfazer-inicio).
 4. Finalizada — técnico marca que terminou o atendimento (/finalizar, desfaz em /desfazer-finalizacao).
 Fechar a OS é uma etapa À PARTE, feita só pelo escritório — o ACL do
-Controllr não libera essa permissão pro técnico, por isso não existe
+Controllr não libera essa permissão para o técnico, por isso não existe
 rota de fechar aqui. Cancelar/reabrir continuam disponíveis (não
 mencionados como restritos).
 
@@ -26,10 +26,10 @@ responder/iniciar/finalizar/desfazer cria um novo registro de EVENTO
 chamado — ver suporte.py::listar_mensagens_ticket) vinculado à OS via
 op_os_pk = op_pk do registro raiz. Um "set" grava o evento com a data
 correspondente preenchida; um "undo" grava outro evento do MESMO
-op_type só que com a data nula. Ou seja: pra saber se uma etapa está
+op_type só que com a data nula. Ou seja: para saber se uma etapa está
 marcada, o frontend precisa olhar o evento MAIS RECENTE daquele tipo
 entre os registros da OS, não um campo fixo — não tem endpoint próprio
-aqui pra isso porque dá pra reaproveitar listarMensagensTicket.
+aqui para isso porque dá para reaproveitar listarMensagensTicket.
 
 Nome do arquivo evita "os.py" de propósito — colidiria com o módulo
 "os" da biblioteca padrão do Python dentro deste mesmo pacote.
@@ -124,7 +124,7 @@ async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> li
     if not resposta.success:
         return ordens  # falhar aberto: melhor mostrar demais do que sumir com OS por engano
 
-    # Ordenado por op_pk ASC — o último write pra cada op_os_pk vence.
+    # Ordenado por op_pk ASC — o último write para cada op_os_pk vence.
     ultimo_finish_por_os: dict[int, dict[str, Any]] = {}
     for evento in resposta.results:
         if evento.get("op_type") == 5 and evento.get("op_os_pk") is not None:
@@ -148,7 +148,7 @@ class AcaoOSPayload(BaseModel):
 # 3. Iniciada — o técnico começou o atendimento (op_date_start).
 # 4. Finalizada — o técnico terminou o atendimento (op_date_finish).
 # Fechar a OS (op_date_close) é feito SÓ pelo escritório — essa permissão
-# não é liberada pro técnico via ACL do Controllr, por isso não existe
+# não é liberada para o técnico via ACL do Controllr, por isso não existe
 # rota de "fechar" aqui (nem botão no app): tentar chamar
 # /support_ctl/os/close com a conta de um técnico de verdade daria 403
 # "Access Denied" no próprio Controllr.
@@ -203,12 +203,12 @@ class DesfazerEtapaPayload(BaseModel):
 # (confirmado sondando o endpoint com corpo vazio: os dois vêm como
 # "Required Field"). O jeito de saber se uma etapa está marcada ou não
 # NÃO é o op_date_* do registro raiz da OS (que fica sempre nulo!) — é
-# olhar pro evento mais recente daquele tipo (respondida/iniciada/
+# olhar para o evento mais recente daquele tipo (respondida/iniciada/
 # finalizada) entre os registros de /support_ctl/op/list dessa OS: um
 # set_* grava esse evento com a data preenchida, um undo_* grava outro
 # evento do MESMO tipo só que com a data nula (confirmado comparando os
 # dois registros criados ao vivo). Por isso o front usa
-# listarMensagensTicket (mesmo endpoint do chat) pra calcular o estágio
+# listarMensagensTicket (mesmo endpoint do chat) para calcular o estágio
 # de cada etapa, em vez de confiar em campo nenhum da OS em si.
 @router.post("/{ticket_pk}/desfazer-resposta")
 async def desfazer_resposta_ordem_servico(

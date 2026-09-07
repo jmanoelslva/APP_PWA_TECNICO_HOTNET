@@ -33,7 +33,7 @@ export default function BuscaCliente() {
 
   useEffect(() => {
     // Refaz a busca sozinho quando a tela é montada com o termo já na
-    // URL — sem isso, sair pra ver Conexão/ONU/detalhe de um resultado e
+    // URL — sem isso, sair para ver Conexão/ONU/detalhe de um resultado e
     // voltar perdia a busca inteira, obrigando o técnico a buscar de novo.
     const termoInicial = params.get('busca')
     if (termoInicial) buscar(termoInicial)
