@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MdBuild, MdConstruction, MdHome, MdLogout, MdPeopleAlt, MdWifi } from 'react-icons/md'
+import { MdBuild, MdHome, MdLogout, MdPeopleAlt, MdWifi } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import ModalConfirmarLogout from './ModalConfirmarLogout'
@@ -11,7 +11,6 @@ const ITENS = [
   { to: '/clientes', icone: MdPeopleAlt, cor: CORES.cliente, label: 'Clientes' },
   { to: '/suporte', icone: MdBuild, cor: CORES.suporte, label: 'OS' },
   { to: '/conexao', icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
-  { to: '/ferramentas', icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
 // +1 pelo botão "Sair", que ocupa o mesmo espaço dos itens acima mas não
 // tem indicador/rota própria — a pill precisa saber o total pra calcular
