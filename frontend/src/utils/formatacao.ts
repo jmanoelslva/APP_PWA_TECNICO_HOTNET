@@ -40,3 +40,11 @@ export function formatarStatusContrato(valor: number | string | null | undefined
   if (valor == null) return '—'
   return ROTULOS_STATUS_CONTRATO[Number(valor)] ?? String(valor)
 }
+
+/** Tipos de criptografia Wi-Fi do CPE (cpe_wifi_encryption_type), confirmado pelo usuário. */
+export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> = [
+  { valor: 0, rotulo: 'Nenhum' },
+  { valor: 1, rotulo: 'WEP' },
+  { valor: 2, rotulo: 'WPA' },
+  { valor: 3, rotulo: 'EAP' },
+]

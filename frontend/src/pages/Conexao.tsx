@@ -9,7 +9,7 @@ import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarStatusContrato } from '../utils/formatacao'
+import { formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/formatacao'
 import './Conexao.css'
 
 export default function Conexao() {
@@ -59,16 +59,24 @@ export default function Conexao() {
     }
   }
 
+  const wifiSemCriptografia = wifiTipo === '0'
+
   async function salvarWifi() {
     if (!cpe?.pk) return
     setSalvandoWifi(true)
     try {
+      // Tipo 0 (Nenhum) não tem senha — confirmado pelo usuário: se a
+      // criptografia é "Nenhum", o Controllr não deve receber senha nenhuma.
+      const senhaParaEnviar = wifiSemCriptografia ? '' : wifiSenha
       await atualizarWifiCpe(cpe.pk, {
         wifi_encryption_type: wifiTipo.trim() ? Number(wifiTipo.trim()) : undefined,
-        wifi_encryption_password: wifiSenha,
+        wifi_encryption_password: senhaParaEnviar,
       })
+      setWifiSenha(senhaParaEnviar)
       setCpe((atual) =>
-        atual ? { ...atual, wifi_encryption_type: wifiTipo.trim() ? Number(wifiTipo.trim()) : undefined, wifi_encryption_password: wifiSenha } : atual,
+        atual
+          ? { ...atual, wifi_encryption_type: wifiTipo.trim() ? Number(wifiTipo.trim()) : undefined, wifi_encryption_password: senhaParaEnviar }
+          : atual,
       )
       toast('Wi-Fi do CPE atualizado.', 'sucesso')
     } catch (excecao) {
@@ -329,21 +337,29 @@ export default function Conexao() {
 
             <div className="conexao-card">
               {/* cpe_wifi_encryption_type/password (confirmado na doc oficial
-                  do Controllr) — não há enum documentado pro "type", então
-                  o campo fica editável como número cru, sem tradução
-                  inventada por nós. Pré-preenchido com o que o sistema
-                  fornecer; só é enviado ao Controllr quando o técnico
-                  clicar em Salvar. */}
+                  do Controllr, valores confirmados pelo usuário: 0 Nenhum,
+                  1 WEP, 2 WPA, 3 EAP). Com "Nenhum" não faz sentido ter
+                  senha — o campo fica desabilitado e é limpo nesse caso.
+                  Pré-preenchido com o que o sistema fornecer; só é enviado
+                  ao Controllr quando o técnico clicar em Salvar. */}
               <h2>Wi-Fi do CPE (criptografia)</h2>
               <div className="conexao-campo">
-                <span>Tipo de criptografia (código)</span>
-                <input
+                <span>Tipo de criptografia</span>
+                <select
                   className="conexao-input"
-                  type="number"
                   value={wifiTipo}
-                  onChange={(e) => setWifiTipo(e.target.value)}
-                  placeholder="Não informado"
-                />
+                  onChange={(e) => {
+                    setWifiTipo(e.target.value)
+                    if (e.target.value === '0') setWifiSenha('')
+                  }}
+                >
+                  <option value="">Não informado</option>
+                  {OPCOES_CRIPTOGRAFIA_WIFI.map((opcao) => (
+                    <option key={opcao.valor} value={opcao.valor}>
+                      {opcao.rotulo}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="conexao-campo">
                 <span>Senha do Wi-Fi</span>
@@ -351,12 +367,14 @@ export default function Conexao() {
                   <input
                     className="conexao-input"
                     type={mostrarSenhaWifi ? 'text' : 'password'}
-                    value={wifiSenha}
+                    value={wifiSemCriptografia ? '' : wifiSenha}
                     onChange={(e) => setWifiSenha(e.target.value)}
-                    placeholder="Não informado"
+                    disabled={wifiSemCriptografia}
+                    placeholder={wifiSemCriptografia ? 'Sem criptografia — sem senha' : 'Não informado'}
                   />
                   <button
                     onClick={() => setMostrarSenhaWifi((v) => !v)}
+                    disabled={wifiSemCriptografia}
                     aria-label={mostrarSenhaWifi ? 'Ocultar senha do Wi-Fi' : 'Mostrar senha do Wi-Fi'}
                   >
                     {mostrarSenhaWifi ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
