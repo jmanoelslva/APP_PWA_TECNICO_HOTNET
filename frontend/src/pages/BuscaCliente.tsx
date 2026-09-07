@@ -6,22 +6,8 @@ import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { CORES } from '../utils/cores'
+import { detectarTipoBusca } from '../utils/formatacao'
 import './BuscaCliente.css'
-
-// Um campo só decide sozinho o que foi digitado, em vez de pedir pro
-// técnico escolher entre nome/contrato/documento: CPF tem 11 dígitos,
-// CNPJ tem 14 — só números com uma dessas contagens vira busca por
-// documento; outra quantidade de dígitos vira busca por contrato;
-// qualquer coisa com letra vira busca por nome.
-function detectarTipoBusca(valor: string): { doc?: string; contrato?: number; nome?: string } {
-  const termo = valor.trim()
-  const somenteDigitos = termo.replace(/\D/g, '')
-  if (somenteDigitos && somenteDigitos.length === termo.length) {
-    if (somenteDigitos.length === 11 || somenteDigitos.length === 14) return { doc: somenteDigitos }
-    return { contrato: Number(somenteDigitos) }
-  }
-  return { nome: termo }
-}
 
 export default function BuscaCliente() {
   const [params, setParams] = useSearchParams()

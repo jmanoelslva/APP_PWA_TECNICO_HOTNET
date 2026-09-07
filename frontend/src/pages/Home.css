@@ -109,12 +109,19 @@
 }
 
 .home-busca {
-  display: flex;
-  gap: 8px;
   margin-bottom: 16px;
 }
 
-.home-busca input {
+.home-combobox {
+  position: relative;
+}
+
+.home-busca-campo {
+  display: flex;
+  gap: 8px;
+}
+
+.home-busca-campo input {
   flex: 1;
   min-width: 0;
   height: 48px;
@@ -127,12 +134,12 @@
   font-size: 14px;
 }
 
-.home-busca input:focus {
+.home-busca-campo input:focus {
   outline: none;
   border-color: var(--cor-primaria);
 }
 
-.home-busca button {
+.home-busca-campo button {
   flex-shrink: 0;
   width: 48px;
   height: 48px;
@@ -144,6 +151,46 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.home-combobox-lista {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--cor-superficie);
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 14px;
+  box-shadow: var(--sombra-card);
+}
+
+.home-combobox-lista li button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--cor-texto);
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.home-combobox-lista li button:hover {
+  background: var(--cor-fundo);
+}
+
+.home-combobox-vazio {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
 }
 
 .home-menu {

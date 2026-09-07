@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   MdAccountCircle,
@@ -18,6 +18,8 @@ import { usePwaInstall } from '../hooks/usePwaInstall'
 import { useTema } from '../hooks/useTema'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
+import { buscarClientes, type BuscaClienteResultado } from '../api/client'
+import { detectarTipoBusca } from '../utils/formatacao'
 import './Home.css'
 
 function saudacaoPorHorario(nome: string): string {
@@ -43,7 +45,42 @@ export default function Home() {
   const { tema, alternarTema } = useTema()
   const [menuAvatarAberto, setMenuAvatarAberto] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
+
+  // Mesmo combobox de busca ao vivo já usado em Conexão (usuário PPPoE) e
+  // ONU/CTO: digita um pedaço do nome/contrato/documento e a lista vai
+  // filtrando no backend com debounce, sem precisar apertar buscar nem
+  // sair da Home pra ver o resultado — clicar num item já leva direto
+  // pro cliente. O botão de buscar continua levando pra tela de busca
+  // completa (útil quando há muitos resultados).
   const [busca, setBusca] = useState('')
+  const [resultadosBusca, setResultadosBusca] = useState<BuscaClienteResultado[]>([])
+  const [buscando, setBuscando] = useState(false)
+  const [listaAberta, setListaAberta] = useState(false)
+
+  useEffect(() => {
+    if (busca.trim().length < 2) {
+      setResultadosBusca([])
+      return
+    }
+    let cancelado = false
+    setBuscando(true)
+    const temporizador = setTimeout(() => {
+      buscarClientes(detectarTipoBusca(busca))
+        .then((resposta) => {
+          if (!cancelado) setResultadosBusca(resposta.results)
+        })
+        .catch(() => {
+          if (!cancelado) setResultadosBusca([])
+        })
+        .finally(() => {
+          if (!cancelado) setBuscando(false)
+        })
+    }, 350)
+    return () => {
+      cancelado = true
+      clearTimeout(temporizador)
+    }
+  }, [busca])
 
   async function aoClicarInstalarMenu() {
     setMenuAvatarAberto(false)
@@ -107,15 +144,45 @@ export default function Home() {
           </div>
         </header>
 
-        <form className="home-busca" onSubmit={aoBuscar}>
-          <input
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar cliente por nome, contrato ou CPF/CNPJ"
-          />
-          <button type="submit" aria-label="Buscar">
-            <MdSearch size={20} />
-          </button>
+        <form className="home-busca home-combobox" onSubmit={aoBuscar}>
+          <div className="home-busca-campo">
+            <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              onFocus={() => setListaAberta(true)}
+              onBlur={() => setTimeout(() => setListaAberta(false), 150)}
+              placeholder="Buscar cliente por nome, contrato ou CPF/CNPJ"
+            />
+            <button type="submit" aria-label="Buscar">
+              <MdSearch size={20} />
+            </button>
+          </div>
+          {listaAberta && busca.trim().length >= 2 && (
+            <ul className="home-combobox-lista">
+              {buscando && <li className="home-combobox-vazio">Buscando…</li>}
+              {!buscando && resultadosBusca.length === 0 && (
+                <li className="home-combobox-vazio">Nenhum cliente encontrado.</li>
+              )}
+              {!buscando &&
+                resultadosBusca.map((resultado) => (
+                  <li key={resultado.client_pk}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setListaAberta(false)
+                        navigate(`/clientes/${resultado.client_pk}`, { viewTransition: true })
+                      }}
+                    >
+                      <strong>
+                        {resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}
+                      </strong>
+                      {resultado.cliente.client_doc1 && ` — ${resultado.cliente.client_doc1}`}
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          )}
         </form>
 
         <div className="home-menu">

@@ -67,6 +67,24 @@ export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> 
   { valor: 3, rotulo: 'EAP' },
 ]
 
+/**
+ * Um campo só decide sozinho o que foi digitado, em vez de pedir pro
+ * técnico escolher entre nome/contrato/documento: CPF tem 11 dígitos,
+ * CNPJ tem 14 — só números com uma dessas contagens vira busca por
+ * documento; outra quantidade de dígitos vira busca por contrato;
+ * qualquer coisa com letra vira busca por nome. Usado tanto na busca
+ * completa (BuscaCliente.tsx) quanto no combobox rápido da Home.
+ */
+export function detectarTipoBusca(valor: string): { doc?: string; contrato?: number; nome?: string } {
+  const termo = valor.trim()
+  const somenteDigitos = termo.replace(/\D/g, '')
+  if (somenteDigitos && somenteDigitos.length === termo.length) {
+    if (somenteDigitos.length === 11 || somenteDigitos.length === 14) return { doc: somenteDigitos }
+    return { contrato: Number(somenteDigitos) }
+  }
+  return { nome: termo }
+}
+
 export type NivelSinal = 'boa' | 'alerta' | 'critica' | 'desconhecida'
 
 /**
