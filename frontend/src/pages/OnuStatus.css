@@ -83,8 +83,10 @@
 }
 
 /* Usuário PPPoE não deve ficar forçado em maiúsculas (diferente do
-   serial, que é convencionalmente maiúsculo). */
-.onu-combobox .onu-busca-campo input {
+   serial, que é convencionalmente maiúsculo) — por isso essa classe
+   própria em vez de reaproveitar ".onu-combobox" genérico (usado pelos
+   DOIS formulários, serial incluso, só pra posicionar o dropdown). */
+.onu-busca-usuario .onu-busca-campo input {
   text-transform: none;
 }
 

@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { MdContentCopy, MdPeopleAlt, MdRefresh, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
 import { ApiError, atualizarInfoOnu, buscarCpe, buscarOnu, type CpeDto, type OnuDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
-import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
@@ -34,15 +33,17 @@ export default function OnuStatus() {
   const [params, setParams] = useSearchParams()
   const cpePkParam = params.get('cpe_pk')
   const usernameParam = params.get('username')
+  const serialParam = params.get('serial')
   // Usuário PPPoE do CPE é o jeito confiável de achar a ONU de um
   // cliente (ver backend/app/routers/onu.py) — cpe_pk sozinho é
   // ambíguo em /fiber_ctl/onu/list e já causou mostrar a ONU de outro
   // cliente. Prioriza username quando os dois vierem informados.
-  const temParametroInicial = !!usernameParam || !!cpePkParam
+  const temParametroInicial = !!usernameParam || !!serialParam || !!cpePkParam
   const { toast } = useToast()
 
   function buscarInicial() {
     if (usernameParam) return buscarOnu({ username: usernameParam })
+    if (serialParam) return buscarOnu({ serial: serialParam })
     return buscarOnu({ cpe_pk: Number(cpePkParam) })
   }
 
@@ -51,7 +52,18 @@ export default function OnuStatus() {
   const [onu, setOnu] = useState<OnuDto | null>(null)
   const [atualizando, setAtualizando] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  // Combobox de busca por serial — confirmado ao vivo (aba de rede da
+  // própria tela "ONU - Registrado" do painel) que /fiber_ctl/onu/list
+  // no formato "wizard" (search_term=onu_serial) filtra por PREFIXO, não
+  // só match exato: digitar "ZTEG" já filtrou de 2550 pra 764 resultados,
+  // todos começando com esse prefixo. Mesmo endpoint que buscarOnu({serial})
+  // já chama, então dá pra usar direto aqui, sem precisar de outro
+  // endpoint (diferente do combobox de usuário PPPoE, ver comentário
+  // abaixo).
   const [serialBusca, setSerialBusca] = useState('')
+  const [resultadosSerial, setResultadosSerial] = useState<OnuDto[]>([])
+  const [buscandoSerial, setBuscandoSerial] = useState(false)
+  const [listaSerialAberta, setListaSerialAberta] = useState(false)
   // Busca por usuário PPPoE — mesmo combobox com filtro parcial da tela
   // de Conexão: a busca em si é feita em /cpe/busca (que suporta ILIKE
   // parcial), não em /onu/busca (que só acha por usuário exato); ao
@@ -68,7 +80,32 @@ export default function OnuStatus() {
     }
     carregar(buscarInicial)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cpePkParam, usernameParam])
+  }, [cpePkParam, usernameParam, serialParam])
+
+  useEffect(() => {
+    if (temParametroInicial || serialBusca.trim().length < 2) {
+      setResultadosSerial([])
+      return
+    }
+    let cancelado = false
+    setBuscandoSerial(true)
+    const temporizador = setTimeout(() => {
+      buscarOnu({ serial: serialBusca.trim() })
+        .then((resposta) => {
+          if (!cancelado) setResultadosSerial(resposta.results)
+        })
+        .catch(() => {
+          if (!cancelado) setResultadosSerial([])
+        })
+        .finally(() => {
+          if (!cancelado) setBuscandoSerial(false)
+        })
+    }, 350)
+    return () => {
+      cancelado = true
+      clearTimeout(temporizador)
+    }
+  }, [serialBusca, temParametroInicial])
 
   useEffect(() => {
     if (temParametroInicial || usuarioBusca.trim().length < 2) {
@@ -168,12 +205,11 @@ export default function OnuStatus() {
 
   return (
     <div className="onu-tela tela-entrada">
-      <VoltarInicio />
       <CabecalhoTela icone={MdRouter} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
 
       {semSelecao && (
         <>
-          <form className="onu-card onu-busca" onSubmit={aoBuscarSerial}>
+          <form className="onu-card onu-busca onu-combobox" onSubmit={aoBuscarSerial}>
             <label htmlFor="onu-serial-input">Serial da ONU</label>
             <div className="onu-busca-campo">
               <input
@@ -182,15 +218,41 @@ export default function OnuStatus() {
                 placeholder="Ex: ZTEGCEC2A8EF"
                 value={serialBusca}
                 onChange={(e) => setSerialBusca(e.target.value)}
+                onFocus={() => setListaSerialAberta(true)}
+                onBlur={() => setTimeout(() => setListaSerialAberta(false), 150)}
                 autoCapitalize="characters"
               />
               <button type="submit" aria-label="Buscar">
                 <MdSearch size={20} />
               </button>
             </div>
+            {listaSerialAberta && serialBusca.trim().length >= 2 && (
+              <ul className="onu-combobox-lista">
+                {buscandoSerial && <li className="onu-combobox-vazio">Buscando…</li>}
+                {!buscandoSerial && resultadosSerial.length === 0 && (
+                  <li className="onu-combobox-vazio">Nenhuma ONU encontrada.</li>
+                )}
+                {!buscandoSerial &&
+                  resultadosSerial.map((resultado) => (
+                    <li key={resultado.pk}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setListaSerialAberta(false)
+                          if (resultado.sn) setParams({ serial: resultado.sn })
+                        }}
+                      >
+                        <strong>{resultado.sn}</strong>
+                        {resultado.client_name && ` — ${resultado.client_name}`}
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+            )}
           </form>
 
-          <div className="onu-card onu-busca onu-combobox">
+          <div className="onu-card onu-busca onu-combobox onu-busca-usuario">
             <label htmlFor="onu-usuario-input">Usuário PPPoE</label>
             <div className="onu-busca-campo">
               <input

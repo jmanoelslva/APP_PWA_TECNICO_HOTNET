@@ -216,6 +216,16 @@ sempre volta vazio. Os eventos só aparecem via `/support_ctl/op/list`
     capturando a busca real do painel de fibra).
   - Payload completo confirmado (sentinelas `-1`/`0`/`128` = "não
     filtrar"): `olt_pk=0&dp_pk=-1&search_term=...&search_value=...&frame_id=-1&slot_id=-1&port_id=-1&onu_id=-1&duplicate_serial=-1&signal_min_limit=128&signal_max_limit=128&page=1&start=0&limit=15&sort=...&dir=ASC`.
+  - `search_term=onu_serial` filtra por **PREFIXO** (não precisa do
+    serial completo nem é match exato) — confirmado ao vivo na própria
+    tela "ONU - Registrado" do painel: digitar `ZTEG` na busca por
+    Serial já filtrou de 2550 pra 764 resultados, todos começando com
+    esse prefixo. Por isso dá pra usar esse mesmo endpoint (via
+    `buscarOnu({serial})`) num combobox de busca ao vivo, sem precisar
+    de outro endpoint — diferente da busca por usuário PPPoE, que exige
+    match exato aqui e por isso usa `/aaa_ctl/cpe/list` (ILIKE) à parte
+    pra sugestão, só resolvendo a ONU de fato depois que o técnico
+    escolhe um usuário exato.
 - `onu_distance` — a doc diz só "string", sem unidade. **É em
   quilômetros, não metros** (confirmado pelo usuário — um valor real de
   ~10.58 corresponde a ~10,5km; bate também com o exemplo da doc,

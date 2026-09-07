@@ -12,7 +12,6 @@ import {
   type DpDto,
 } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
-import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
@@ -414,7 +413,6 @@ export default function Conexao() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="conexao-tela tela-entrada">
-        <VoltarInicio />
         <CabecalhoTela icone={MdWifi} cor={CORES.conexao} titulo="Conexão" subtitulo="Dados de acesso e sessão do cliente." />
 
         {!temParametroInicial && (
