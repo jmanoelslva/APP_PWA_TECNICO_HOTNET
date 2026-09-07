@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   MdAccountCircle,
@@ -8,8 +8,8 @@ import {
   MdGetApp,
   MdLightMode,
   MdLogout,
-  MdPeopleAlt,
   MdRouter,
+  MdSearch,
   MdWifi,
 } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
@@ -26,8 +26,10 @@ function saudacaoPorHorario(nome: string): string {
   return `${periodo}, ${nome}!`
 }
 
+// "Clientes" saiu daqui de propósito — virou o campo de busca direto no
+// topo da tela (ver <form> abaixo), como primeira opção, em vez de mais
+// um botão que só leva pra outra tela pra então buscar.
 const ITENS_MENU = [
-  { to: '/clientes', Icone: MdPeopleAlt, cor: CORES.cliente, label: 'Clientes' },
   { to: '/suporte', Icone: MdBuild, cor: CORES.suporte, label: 'OS / Suporte' },
   { to: '/conexao', Icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
   { to: '/onu', Icone: MdRouter, cor: CORES.onu, label: 'ONU' },
@@ -41,10 +43,20 @@ export default function Home() {
   const { tema, alternarTema } = useTema()
   const [menuAvatarAberto, setMenuAvatarAberto] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
+  const [busca, setBusca] = useState('')
 
   async function aoClicarInstalarMenu() {
     setMenuAvatarAberto(false)
     await aoClicarInstalar()
+  }
+
+  function aoBuscar(evento: FormEvent) {
+    evento.preventDefault()
+    const termo = busca.trim()
+    // Mesmo parâmetro que BuscaCliente.tsx já lê sozinho ao montar
+    // (?busca=...) — chegar lá com o termo na URL já dispara a busca,
+    // sem precisar digitar de novo na outra tela.
+    navigate(termo ? `/clientes?busca=${encodeURIComponent(termo)}` : '/clientes', { viewTransition: true })
   }
 
   return (
@@ -94,6 +106,17 @@ export default function Home() {
             )}
           </div>
         </header>
+
+        <form className="home-busca" onSubmit={aoBuscar}>
+          <input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar cliente por nome, contrato ou CPF/CNPJ"
+          />
+          <button type="submit" aria-label="Buscar">
+            <MdSearch size={20} />
+          </button>
+        </form>
 
         <div className="home-menu">
           {ITENS_MENU.map((item) => (

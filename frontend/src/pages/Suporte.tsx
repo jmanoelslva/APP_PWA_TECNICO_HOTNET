@@ -6,30 +6,28 @@ import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import PullToRefresh from '../components/PullToRefresh'
-import { useToast } from '../components/Toast/useToast'
 import { formatarDataHora } from '../utils/formatacao'
 import { CORES } from '../utils/cores'
 import './Suporte.css'
 
-const TAMANHO_PAGINA = 20
+// Sem "carregar mais" de propósito — a lista já só mostra OS em aberto
+// (o backend tira as finalizadas, ver ordens_servico.py::
+// _sem_finalizadas), então o volume normal cabe numa página só.
+const TAMANHO_PAGINA = 100
 
 // Uma tela só, sem aba "Minhas OS"/"Todas" — o backend já tira da lista
-// qualquer OS que o técnico já finalizou (ver ordens_servico.py::
-// _sem_finalizadas), então não sobra motivo pra separar "minhas" do
-// resto: o que aparece aqui é sempre trabalho em aberto pra qualquer
-// técnico ver e pegar.
+// qualquer OS que o técnico já finalizou, então não sobra motivo pra
+// separar "minhas" do resto: o que aparece aqui é sempre trabalho em
+// aberto pra qualquer técnico ver e pegar.
 function osFechada(os: OrdemServicoDto): boolean {
   return !!os.op_date_close || !!os.op_date_cancel
 }
 
 export default function Suporte() {
   const navigate = useNavigate()
-  const { toast } = useToast()
 
   const [ordens, setOrdens] = useState<OrdemServicoDto[]>([])
-  const [total, setTotal] = useState(0)
   const [carregando, setCarregando] = useState(true)
-  const [carregandoMais, setCarregandoMais] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
   useEffect(() => {
@@ -43,33 +41,12 @@ export default function Suporte() {
     try {
       const resposta = await listarOrdensServico({ minhas: false, abertas: true, start: 0, limit: TAMANHO_PAGINA })
       setOrdens(resposta.results)
-      setTotal(resposta.total)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar as OS.')
     } finally {
       setCarregando(false)
     }
   }
-
-  async function carregarMais() {
-    setCarregandoMais(true)
-    try {
-      const resposta = await listarOrdensServico({
-        minhas: false,
-        abertas: true,
-        start: ordens.length,
-        limit: TAMANHO_PAGINA,
-      })
-      setOrdens((atual) => [...atual, ...resposta.results])
-      setTotal(resposta.total)
-    } catch {
-      toast('Não foi possível carregar mais OS.')
-    } finally {
-      setCarregandoMais(false)
-    }
-  }
-
-  const haMaisParaCarregar = ordens.length < total
 
   return (
     <PullToRefresh aoAtualizar={carregar}>
@@ -113,6 +90,7 @@ export default function Suporte() {
                       {os.op_date_cancel ? 'Cancelada' : fechada ? 'Fechada' : 'Aberta'}
                     </span>
                   </div>
+                  {os.client_complete_name && <p className="ticket-protocolo">{os.client_complete_name}</p>}
                   <p className="ticket-protocolo">Chamado #{os.ticket_protocol ?? os.ticket_pk ?? '—'}</p>
                   {os.op_priority != null && <p className="ticket-protocolo">Prioridade: {os.op_priority}</p>}
                   <p className="ticket-data">
@@ -122,12 +100,6 @@ export default function Suporte() {
               )
             })}
           </ul>
-        )}
-
-        {!carregando && !erro && haMaisParaCarregar && (
-          <button className="suporte-carregar-mais" onClick={carregarMais} disabled={carregandoMais}>
-            {carregandoMais ? 'Carregando…' : 'Carregar mais'}
-          </button>
         )}
       </div>
     </PullToRefresh>

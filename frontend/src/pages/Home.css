@@ -108,6 +108,44 @@
   padding: 24px 20px 48px;
 }
 
+.home-busca {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.home-busca input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-card);
+  color: var(--cor-texto);
+  font-size: 14px;
+}
+
+.home-busca input:focus {
+  outline: none;
+  border-color: var(--cor-primaria);
+}
+
+.home-busca button {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+  color: var(--cor-branco-fixo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .home-menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
