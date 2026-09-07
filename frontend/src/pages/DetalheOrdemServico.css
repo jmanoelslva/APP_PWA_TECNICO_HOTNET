@@ -127,6 +127,14 @@
   color: var(--cor-erro);
 }
 
+.detalhe-ordem-etapa-btn-marcar:disabled,
+.detalhe-ordem-etapa-btn-desfazer:disabled {
+  opacity: 0.4;
+  cursor: default;
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-terciario);
+}
+
 .detalhe-ordem-linha {
   margin: 4px 0 0;
   font-size: 13px;

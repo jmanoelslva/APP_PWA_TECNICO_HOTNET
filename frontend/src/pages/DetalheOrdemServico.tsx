@@ -120,6 +120,27 @@ function etapaConcluida(eventos: OperacaoDto[], osRaizPk: number, etapa: ConfigE
   return !!evento?.[etapa.campoData]
 }
 
+/**
+ * As 3 etapas do técnico seguem sequência obrigatória, nos dois sentidos
+ * (pedido explícito): não dá pra pular direto pra "Finalizada" sem
+ * "Respondida"/"Iniciada" antes, e pra desfazer uma etapa é preciso
+ * desfazer as posteriores primeiro (não dá pra desfazer "Respondida"
+ * com "Iniciada" ainda de pé). Cada etapa só tem UMA ação disponível
+ * por vez: "confirmar" se é a próxima pendente, "desfazer" se é a
+ * última concluída — nunca as duas, nunca nenhuma no meio da lista.
+ */
+function situacaoEtapa(concluidas: boolean[], indice: number): 'confirmar' | 'desfazer' | 'bloqueada' {
+  if (concluidas[indice]) {
+    // Só a última concluída pode ser desfeita — se alguma posterior
+    // também estiver concluída, essa aqui fica bloqueada até lá.
+    const temPosteriorConcluida = concluidas.slice(indice + 1).some(Boolean)
+    return temPosteriorConcluida ? 'bloqueada' : 'desfazer'
+  }
+  // Só a primeira pendente pode ser confirmada — precisa das anteriores prontas.
+  const anterioresProntas = concluidas.slice(0, indice).every(Boolean)
+  return anterioresProntas ? 'confirmar' : 'bloqueada'
+}
+
 /** Rótulo resumido pro cabeçalho — a última das 3 etapas que estiver concluída, ou "Agendada". */
 function estagioResumo(eventos: OperacaoDto[], os: OrdemServicoDto): string {
   if (os.op_date_cancel) return 'Cancelada'
@@ -232,7 +253,8 @@ export default function DetalheOrdemServico() {
   }
 
   async function confirmarEtapa() {
-    const etapa = ETAPAS.find((e) => e.chave === acaoConfirmando?.etapa)
+    const indice = ETAPAS.findIndex((e) => e.chave === acaoConfirmando?.etapa)
+    const etapa = ETAPAS[indice]
     // O parâmetro que a ação espera ("op_os_pk") é, na real, o PRÓPRIO
     // op_pk da OS raiz (agendada pelo escritório) — confirmado capturando
     // o clique real no painel do Controllr: o corpo enviado foi
@@ -244,9 +266,31 @@ export default function DetalheOrdemServico() {
       setAcaoConfirmando(null)
       return
     }
+    // Confere de novo com os dados mais recentes (defesa contra estado
+    // desatualizado, ex: outro técnico mexeu na mesma OS enquanto o
+    // diálogo estava aberto) — o botão já vem desabilitado fora de
+    // ordem, mas não custa garantir aqui também.
+    const concluidas = ETAPAS.map((e) => etapaConcluida(eventos, osAtual.op_pk!, e))
+    const situacao = situacaoEtapa(concluidas, indice)
+    const acaoEsperada = acaoConfirmando.desfazer ? 'desfazer' : 'confirmar'
+    if (situacao !== acaoEsperada) {
+      toast(
+        acaoConfirmando.desfazer
+          ? `Não dá pra desfazer "${etapa.rotulo}" agora — desfaça as etapas seguintes primeiro.`
+          : `Não dá pra confirmar "${etapa.rotulo}" agora — confirme as etapas anteriores primeiro.`,
+      )
+      setAcaoConfirmando(null)
+      setObservacaoEtapa('')
+      recarregarEventos()
+      return
+    }
     const observacao = observacaoEtapa.trim()
     if (!observacao) {
-      toast('Descreva o que foi feito antes de continuar.')
+      toast(
+        acaoConfirmando.desfazer
+          ? `Descreva o motivo de desfazer "${etapa.rotulo}" antes de continuar.`
+          : `Descreva o que foi feito antes de confirmar "${etapa.rotulo}".`,
+      )
       return
     }
     setExecutandoEtapa(true)
@@ -254,14 +298,20 @@ export default function DetalheOrdemServico() {
       const chamada = acaoConfirmando.desfazer ? etapa.desfazer : etapa.marcar
       await chamada(pk, { opOsPk: osAtual.op_pk, opDesc: observacao })
       toast(
-        acaoConfirmando.desfazer ? `Etapa "${etapa.rotulo}" desfeita.` : `OS marcada como ${etapa.rotulo.toLowerCase()}.`,
+        acaoConfirmando.desfazer ? `Etapa "${etapa.rotulo}" desfeita.` : `Etapa "${etapa.rotulo}" confirmada.`,
         'sucesso',
       )
       setAcaoConfirmando(null)
       setObservacaoEtapa('')
       recarregarEventos()
     } catch (excecao) {
-      toast(excecao instanceof ApiError ? excecao.message : `Não foi possível atualizar a etapa "${etapa.rotulo}".`)
+      toast(
+        excecao instanceof ApiError
+          ? excecao.message
+          : acaoConfirmando.desfazer
+            ? `Não foi possível desfazer "${etapa.rotulo}".`
+            : `Não foi possível confirmar "${etapa.rotulo}".`,
+      )
     } finally {
       setExecutandoEtapa(false)
     }
@@ -456,25 +506,45 @@ export default function DetalheOrdemServico() {
               </div>
               <span className="detalhe-ordem-etapa-feito">Pronto</span>
             </div>
-            {ETAPAS.map((etapa) => {
-              const evento = osAtual.op_pk ? ultimoEvento(eventos, osAtual.op_pk, etapa.opType) : undefined
-              const concluida = !!evento?.[etapa.campoData]
-              return (
-                <div key={etapa.chave} className="detalhe-ordem-etapa-item">
-                  <div className="detalhe-ordem-etapa-item-texto">
-                    <strong>{etapa.rotulo}</strong>
-                    <span>{concluida && evento ? formatarDataHora(evento[etapa.campoData]) : 'Ainda não'}</span>
+            {(() => {
+              if (!osAtual.op_pk) return null
+              const osRaizPk = osAtual.op_pk
+              const concluidas = ETAPAS.map((e) => etapaConcluida(eventos, osRaizPk, e))
+              return ETAPAS.map((etapa, indice) => {
+                const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
+                const concluida = concluidas[indice]
+                const situacao = situacaoEtapa(concluidas, indice)
+                // Texto explica POR QUE o botão está bloqueado, em vez de
+                // só desabilitar sem dizer nada — pedido explícito de
+                // deixar claro que a sequência é obrigatória nos dois
+                // sentidos (marcar em ordem, desfazer em ordem reversa).
+                let subtitulo: string
+                if (concluida && evento) {
+                  subtitulo = formatarDataHora(evento[etapa.campoData])
+                  if (situacao === 'bloqueada') subtitulo += ` · desfaça "${ETAPAS[indice + 1]?.rotulo}" antes`
+                } else if (situacao === 'bloqueada') {
+                  subtitulo = `Aguardando "${ETAPAS[indice - 1]?.rotulo}"`
+                } else {
+                  subtitulo = 'Ainda não'
+                }
+                return (
+                  <div key={etapa.chave} className="detalhe-ordem-etapa-item">
+                    <div className="detalhe-ordem-etapa-item-texto">
+                      <strong>{etapa.rotulo}</strong>
+                      <span>{subtitulo}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className={concluida ? 'detalhe-ordem-etapa-btn-desfazer' : 'detalhe-ordem-etapa-btn-marcar'}
+                      disabled={situacao === 'bloqueada'}
+                      onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: concluida })}
+                    >
+                      <etapa.Icone size={14} /> {concluida ? 'Desfazer' : 'Confirmar'}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className={concluida ? 'detalhe-ordem-etapa-btn-desfazer' : 'detalhe-ordem-etapa-btn-marcar'}
-                    onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: concluida })}
-                  >
-                    <etapa.Icone size={14} /> {concluida ? 'Desfazer' : 'Confirmar'}
-                  </button>
-                </div>
-              )
-            })}
+                )
+              })
+            })()}
           </div>
         </>
       )}
