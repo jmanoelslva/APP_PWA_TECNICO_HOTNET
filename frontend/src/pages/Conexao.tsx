@@ -42,13 +42,15 @@ export default function Conexao() {
   const [wifiSenha, setWifiSenha] = useState('')
   const [mostrarSenhaWifi, setMostrarSenhaWifi] = useState(false)
   const [salvandoWifi, setSalvandoWifi] = useState(false)
-  // Detalhes do CPE (observação + CTO/porta) — cpe_obs, dp_pk, cpe_dp_port
-  // (confirmados na doc oficial de /aaa_ctl/cpe/update).
+  // Observação do CPE — cpe_obs (confirmado na doc oficial de
+  // /aaa_ctl/cpe/update). Card e Salvar próprios, separados da CTO.
   const [obs, setObs] = useState('')
+  const [salvandoObs, setSalvandoObs] = useState(false)
+  // CTO/porta — dp_pk, cpe_dp_port (idem).
   const [dpPk, setDpPk] = useState('')
   const [dpPorta, setDpPorta] = useState('')
   const [dps, setDps] = useState<DpDto[]>([])
-  const [salvandoDetalhes, setSalvandoDetalhes] = useState(false)
+  const [salvandoCto, setSalvandoCto] = useState(false)
   // Acesso administrativo ao roteador — cpe_access_login/password/port,
   // agora editável (antes só era possível ver o que já vinha cadastrado).
   const [acessoLogin, setAcessoLogin] = useState('')
@@ -95,12 +97,25 @@ export default function Conexao() {
     }
   }
 
-  async function salvarDetalhesCpe() {
+  async function salvarObs() {
     if (!cpe?.pk) return
-    setSalvandoDetalhes(true)
+    setSalvandoObs(true)
+    try {
+      await atualizarDetalhesCpe(cpe.pk, { cpe_obs: obs })
+      setCpe((atual) => (atual ? { ...atual, obs } : atual))
+      toast('Observação atualizada.', 'sucesso')
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível atualizar a observação.')
+    } finally {
+      setSalvandoObs(false)
+    }
+  }
+
+  async function salvarCto() {
+    if (!cpe?.pk) return
+    setSalvandoCto(true)
     try {
       await atualizarDetalhesCpe(cpe.pk, {
-        cpe_obs: obs,
         dp_pk: dpPk.trim() ? Number(dpPk.trim()) : undefined,
         cpe_dp_port: dpPorta.trim() ? Number(dpPorta.trim()) : undefined,
       })
@@ -109,18 +124,17 @@ export default function Conexao() {
         atual
           ? {
               ...atual,
-              obs,
               dp_pk: dpPk.trim() ? Number(dpPk.trim()) : undefined,
               dp_port: dpPorta.trim() ? Number(dpPorta.trim()) : undefined,
               dp_name: dpEscolhida?.name ?? atual.dp_name,
             }
           : atual,
       )
-      toast('Detalhes do CPE atualizados.', 'sucesso')
+      toast('CTO atualizada.', 'sucesso')
     } catch (excecao) {
-      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível atualizar os detalhes do CPE.')
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível atualizar a CTO.')
     } finally {
-      setSalvandoDetalhes(false)
+      setSalvandoCto(false)
     }
   }
 
@@ -434,13 +448,9 @@ export default function Conexao() {
             </div>
 
             <div className="conexao-card">
-              {/* cpe_obs, dp_pk e cpe_dp_port (CTO/porta da CTO) — confirmados
-                  na doc oficial de /aaa_ctl/cpe/update. A lista de CTOs vem
-                  do próprio sistema (GET /dp/lista), pra selecionar em vez
-                  de digitar um pk cru. */}
-              <h2>Detalhes do CPE</h2>
+              {/* cpe_obs — confirmado na doc oficial de /aaa_ctl/cpe/update. */}
+              <h2>Observação do CPE</h2>
               <div className="conexao-campo">
-                <span>Observação</span>
                 <textarea
                   className="conexao-input conexao-textarea"
                   value={obs}
@@ -449,6 +459,17 @@ export default function Conexao() {
                   rows={3}
                 />
               </div>
+              <button className="conexao-btn-secundario" onClick={salvarObs} disabled={salvandoObs}>
+                {salvandoObs ? 'Salvando…' : 'Salvar observação'}
+              </button>
+            </div>
+
+            <div className="conexao-card">
+              {/* dp_pk e cpe_dp_port (CTO/porta da CTO) — confirmados na doc
+                  oficial de /aaa_ctl/cpe/update. A lista de CTOs vem do
+                  próprio sistema (GET /dp/lista), pra selecionar em vez de
+                  digitar um pk cru. */}
+              <h2>CTO</h2>
               <div className="conexao-campo">
                 <span>CTO</span>
                 <select className="conexao-input" value={dpPk} onChange={(e) => setDpPk(e.target.value)}>
@@ -470,8 +491,8 @@ export default function Conexao() {
                   placeholder="Não informado"
                 />
               </div>
-              <button className="conexao-btn-secundario" onClick={salvarDetalhesCpe} disabled={salvandoDetalhes}>
-                {salvandoDetalhes ? 'Salvando…' : 'Salvar detalhes'}
+              <button className="conexao-btn-secundario" onClick={salvarCto} disabled={salvandoCto}>
+                {salvandoCto ? 'Salvando…' : 'Salvar CTO'}
               </button>
             </div>
 
