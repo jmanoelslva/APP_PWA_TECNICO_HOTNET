@@ -405,8 +405,11 @@ export default function OnuStatus() {
               <strong>{onu.state ?? '—'}</strong>
             </div>
             <div className="onu-linha">
+              {/* onu_distance vem em KM, não metros (confirmado: exemplo
+                  "0.931" na doc oficial só faz sentido pra alcance de
+                  GPON como km — 0.931 m seria o cliente colado na OLT). */}
               <span>Distância</span>
-              <strong>{onu.distance != null ? `${onu.distance} m` : '—'}</strong>
+              <strong>{onu.distance != null ? `${onu.distance} km` : '—'}</strong>
             </div>
             <div className="onu-linha">
               <span>Temperatura</span>
@@ -423,6 +426,10 @@ export default function OnuStatus() {
             <div className="onu-linha">
               <span>Splitter (DP)</span>
               <strong>{onu.dp_name ?? '—'}</strong>
+            </div>
+            <div className="onu-linha">
+              <span>Porta da CTO</span>
+              <strong>{onu.cpe_dp_port ?? '—'}</strong>
             </div>
           </div>
 

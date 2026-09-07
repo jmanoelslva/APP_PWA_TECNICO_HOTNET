@@ -433,6 +433,10 @@ export interface OnuDto {
   id?: number
   cpe_pk?: number
   cpe_v4_ip_last?: string
+  // Porta da CTO (mesmo campo cpe_dp_port já usado no CPE — confirmado
+  // no modelo vendorizado; não está na doc oficial de /fiber_ctl/onu/list,
+  // mas o backend já expõe corretamente).
+  cpe_dp_port?: number
   client_name?: string
   client_pk?: number
   contract_pk?: number
