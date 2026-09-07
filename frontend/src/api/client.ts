@@ -482,6 +482,25 @@ export interface OnuDto {
   // populado em produção via /fiber_ctl/onu/list.
   wancfg_pppoe_username?: string
   wancfg_pppoe_passwd?: string
+  // Resto da config de WAN da ONU (Vlan, Cos, Template etc.) — o técnico
+  // nunca edita isso diretamente, mas precisa ser reenviado ao associar
+  // um cliente (ver associarClienteOnu), senão /fiber_ctl/onu/apply_wan
+  // zeraria a configuração de rede da própria ONU (mesmo endpoint exige
+  // o registro completo, confirmado lendo o handler do botão "Salvar" da
+  // tela "Informações" do painel).
+  wancfg_pppoe_svcname?: string
+  wancfg_conntype?: number
+  wan_tpl_pk?: number
+  wancfg_vlanid?: number
+  wancfg_user_vlanid?: number
+  wancfg_cos?: number
+  wancfg_tcont?: number
+  wancfg_gemport?: number
+  wancfg_svlan?: number
+  wancfg_stpid?: number
+  wancfg_scos?: number
+  wancfg_pon_profile?: string
+  wancfg_local_ip?: string
   // Wi-Fi e acesso web da própria ONU — confirmados na doc oficial
   // (apidoc.brbyte.com/#post-/fiber_ctl/onu/list).
   wificfg_name?: string
@@ -509,6 +528,49 @@ export function atualizarInfoOnu(
   // JSON (ver backend/app/routers/onu.py::atualizar_info_onu).
   const query = querystring({ ...parametros, frame_id: parametros.frame_id ?? 1 })
   return post(`onu/${onuPk}/atualizar${query}`)
+}
+
+interface OspoOnu {
+  olt_pk: number
+  slot_id: number
+  port_id: number
+  onu_id: number
+  frame_id?: number
+}
+
+export function reiniciarOnu(onuPk: number, parametros: OspoOnu): Promise<{ success: boolean; results: unknown }> {
+  const query = querystring({ ...parametros, frame_id: parametros.frame_id ?? 1 })
+  return post(`onu/${onuPk}/reiniciar${query}`)
+}
+
+export function removerOnu(onuPk: number, parametros: OspoOnu): Promise<{ success: boolean; results: unknown }> {
+  const query = querystring({ ...parametros, frame_id: parametros.frame_id ?? 1 })
+  return post(`onu/${onuPk}/remover${query}`)
+}
+
+export interface AssociarClienteOnuPayload extends OspoOnu {
+  client_pk: number
+  onu_serial: string
+  wancfg_conntype?: number
+  wan_tpl_pk?: number
+  wancfg_vlanid?: number
+  wancfg_user_vlanid?: number
+  wancfg_cos?: number
+  wancfg_tcont?: number
+  wancfg_gemport?: number
+  wancfg_svlan?: number
+  wancfg_stpid?: number
+  wancfg_scos?: number
+  wancfg_pon_profile?: string
+  wancfg_pppoe_svcname?: string
+  wancfg_local_ip?: string
+}
+
+export function associarClienteOnu(
+  onuPk: number,
+  dados: AssociarClienteOnuPayload,
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`onu/${onuPk}/associar-cliente`, dados)
 }
 
 // ---------------------------------------------------------------------

@@ -1,7 +1,30 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MdContentCopy, MdPeopleAlt, MdRefresh, MdRouter, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
-import { ApiError, atualizarInfoOnu, buscarCpe, buscarOnu, type CpeDto, type OnuDto } from '../api/client'
+import {
+  MdContentCopy,
+  MdDeleteForever,
+  MdPeopleAlt,
+  MdPersonAdd,
+  MdPowerSettingsNew,
+  MdRefresh,
+  MdRouter,
+  MdVisibility,
+  MdVisibilityOff,
+  MdWifi,
+} from 'react-icons/md'
+import {
+  ApiError,
+  associarClienteOnu,
+  atualizarInfoOnu,
+  buscarClientes,
+  buscarCpe,
+  buscarOnu,
+  reiniciarOnu,
+  removerOnu,
+  type BuscaClienteResultado,
+  type CpeDto,
+  type OnuDto,
+} from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
@@ -54,6 +77,14 @@ export default function OnuStatus() {
   const [onu, setOnu] = useState<OnuDto | null>(null)
   const [atualizando, setAtualizando] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  // Reiniciar/Remover — achados lendo (sem disparar de verdade) o handler
+  // real dos ícones de ação da tela "ONU - Registrado" do painel via
+  // Ext.ComponentQuery; nunca documentados na doc oficial. Confirmação em
+  // 2 passos sempre (mesmo padrão de "Fibra Onu" do próprio painel), já
+  // que os dois afetam a conexão do cliente na hora.
+  const [confirmandoAcao, setConfirmandoAcao] = useState<'reiniciar' | 'remover' | null>(null)
+  const [executandoAcao, setExecutandoAcao] = useState(false)
+  const [registrandoCliente, setRegistrandoCliente] = useState(false)
   // Combobox único — busca por serial (/fiber_ctl/onu/list no formato
   // "wizard", confirmado ao vivo que filtra por PREFIXO: "ZTEG" já
   // filtrou de 2550 pra 764 resultados) e por usuário PPPoE (/cpe/busca,
@@ -159,6 +190,42 @@ export default function OnuStatus() {
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível atualizar a ONU.')
     } finally {
       setAtualizando(false)
+    }
+  }
+
+  function dadosOspo() {
+    if (!onu || onu.olt_pk == null || onu.slot == null || onu.pon == null || onu.id == null) return null
+    return { olt_pk: onu.olt_pk, slot_id: onu.slot, port_id: onu.pon, onu_id: onu.id, frame_id: onu.frame ?? 1 }
+  }
+
+  async function executarAcao() {
+    const acao = confirmandoAcao
+    const ospo = dadosOspo()
+    if (!acao || !onu?.pk || !ospo) {
+      toast('Dados insuficientes pra executar esta ação.')
+      setConfirmandoAcao(null)
+      return
+    }
+    setExecutandoAcao(true)
+    try {
+      if (acao === 'reiniciar') {
+        await reiniciarOnu(onu.pk, ospo)
+        toast('ONU reiniciada.', 'sucesso')
+      } else {
+        await removerOnu(onu.pk, ospo)
+        toast('ONU removida do registro.', 'sucesso')
+        setOnu(null)
+        setParams({})
+      }
+      setConfirmandoAcao(null)
+    } catch (excecao) {
+      toast(
+        excecao instanceof ApiError
+          ? excecao.message
+          : `Não foi possível ${acao === 'reiniciar' ? 'reiniciar' : 'remover'} a ONU.`,
+      )
+    } finally {
+      setExecutandoAcao(false)
     }
   }
 
@@ -354,7 +421,9 @@ export default function OnuStatus() {
                   <MdPeopleAlt size={14} /> {onu.client_name ?? '—'}
                 </Link>
               ) : (
-                <strong>{onu.client_name ?? '—'}</strong>
+                <button type="button" className="onu-btn-registrar-cliente" onClick={() => setRegistrandoCliente(true)}>
+                  <MdPersonAdd size={14} /> Registrar cliente
+                </button>
               )}
             </div>
             {(onu.contract_number ?? onu.contract_pk) != null && (
@@ -417,8 +486,199 @@ export default function OnuStatus() {
           <button className="onu-btn-atualizar" onClick={atualizarAgora} disabled={atualizando}>
             <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
           </button>
+
+          <div className="onu-acoes-onu">
+            <button
+              type="button"
+              className="onu-btn-secundario"
+              onClick={() => setConfirmandoAcao('reiniciar')}
+              disabled={executandoAcao}
+            >
+              <MdPowerSettingsNew size={16} /> Reiniciar ONU
+            </button>
+            <button
+              type="button"
+              className="onu-btn-secundario onu-btn-perigo"
+              onClick={() => setConfirmandoAcao('remover')}
+              disabled={executandoAcao}
+            >
+              <MdDeleteForever size={16} /> Remover ONU
+            </button>
+          </div>
         </>
       )}
+
+      {confirmandoAcao && (
+        <div className="onu-modal-fundo" onClick={() => !executandoAcao && setConfirmandoAcao(null)}>
+          <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>{confirmandoAcao === 'reiniciar' ? 'Reiniciar esta ONU?' : 'Remover esta ONU?'}</h2>
+            <p className="onu-modal-texto">
+              {confirmandoAcao === 'reiniciar'
+                ? 'O equipamento vai reiniciar agora — o cliente fica sem conexão por alguns instantes.'
+                : 'A ONU sai do registro do painel — o cliente fica sem conexão até ela ser cadastrada de novo.'}
+            </p>
+            <div className="onu-modal-acoes">
+              <button onClick={() => setConfirmandoAcao(null)} disabled={executandoAcao}>
+                Cancelar
+              </button>
+              <button
+                className={confirmandoAcao === 'remover' ? 'onu-btn-primario onu-btn-primario-perigo' : 'onu-btn-primario'}
+                disabled={executandoAcao}
+                onClick={executarAcao}
+              >
+                {executandoAcao ? 'Aguarde…' : confirmandoAcao === 'reiniciar' ? 'Reiniciar' : 'Remover'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {registrandoCliente && onu && (
+        <ModalRegistrarCliente
+          onu={onu}
+          onFechar={() => setRegistrandoCliente(false)}
+          onAssociado={(clientPk, clientNome) => {
+            setRegistrandoCliente(false)
+            setOnu((atual) => (atual ? { ...atual, client_pk: clientPk, client_name: clientNome } : atual))
+            toast('ONU associada ao cliente com sucesso.', 'sucesso')
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+function ModalRegistrarCliente({
+  onu,
+  onFechar,
+  onAssociado,
+}: {
+  onu: OnuDto
+  onFechar: () => void
+  onAssociado: (clientPk: number, clientNome: string | undefined) => void
+}) {
+  const [busca, setBusca] = useState('')
+  const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
+  const [buscando, setBuscando] = useState(false)
+  const [selecionado, setSelecionado] = useState<BuscaClienteResultado | null>(null)
+  const [associando, setAssociando] = useState(false)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const nome = busca.trim()
+    if (nome.length < 2) {
+      setResultados([])
+      return
+    }
+    let cancelado = false
+    setBuscando(true)
+    const temporizador = setTimeout(() => {
+      buscarClientes({ nome })
+        .then((resposta) => {
+          if (!cancelado) setResultados(resposta.results)
+        })
+        .catch(() => {
+          if (!cancelado) setResultados([])
+        })
+        .finally(() => {
+          if (!cancelado) setBuscando(false)
+        })
+    }, 350)
+    return () => {
+      cancelado = true
+      clearTimeout(temporizador)
+    }
+  }, [busca])
+
+  async function confirmar() {
+    if (!selecionado || !onu.pk || !onu.sn || onu.olt_pk == null || onu.slot == null || onu.pon == null || onu.id == null) {
+      toast('Dados insuficientes pra associar esta ONU.')
+      return
+    }
+    setAssociando(true)
+    try {
+      await associarClienteOnu(onu.pk, {
+        client_pk: selecionado.client_pk,
+        olt_pk: onu.olt_pk,
+        slot_id: onu.slot,
+        port_id: onu.pon,
+        onu_id: onu.id,
+        onu_serial: onu.sn,
+        frame_id: onu.frame ?? 1,
+        wancfg_conntype: onu.wancfg_conntype,
+        wan_tpl_pk: onu.wan_tpl_pk,
+        wancfg_vlanid: onu.wancfg_vlanid,
+        wancfg_user_vlanid: onu.wancfg_user_vlanid,
+        wancfg_cos: onu.wancfg_cos,
+        wancfg_tcont: onu.wancfg_tcont,
+        wancfg_gemport: onu.wancfg_gemport,
+        wancfg_svlan: onu.wancfg_svlan,
+        wancfg_stpid: onu.wancfg_stpid,
+        wancfg_scos: onu.wancfg_scos,
+        wancfg_pon_profile: onu.wancfg_pon_profile,
+        wancfg_pppoe_svcname: onu.wancfg_pppoe_svcname,
+        wancfg_local_ip: onu.wancfg_local_ip,
+      })
+      onAssociado(selecionado.client_pk, selecionado.cliente.client_complete_name)
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível associar esta ONU ao cliente.')
+    } finally {
+      setAssociando(false)
+    }
+  }
+
+  return (
+    <div className="onu-modal-fundo" onClick={onFechar}>
+      <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Registrar cliente nesta ONU</h2>
+        {!selecionado ? (
+          <>
+            <p className="onu-modal-texto">
+              Busque o cliente pelo nome — o usuário e a senha PPPoE já cadastrados dele serão aplicados nesta ONU.
+            </p>
+            <input
+              type="text"
+              className="onu-modal-input"
+              placeholder="Nome do cliente"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              autoFocus
+            />
+            <ul className="onu-modal-lista">
+              {buscando && <li className="onu-combobox-vazio">Buscando…</li>}
+              {!buscando && busca.trim().length >= 2 && resultados.length === 0 && (
+                <li className="onu-combobox-vazio">Nenhum cliente encontrado.</li>
+              )}
+              {!buscando &&
+                resultados.map((resultado) => (
+                  <li key={resultado.client_pk}>
+                    <button type="button" onClick={() => setSelecionado(resultado)}>
+                      {resultado.cliente.client_complete_name ?? `Cliente #${resultado.client_pk}`}
+                    </button>
+                  </li>
+                ))}
+            </ul>
+            <div className="onu-modal-acoes">
+              <button onClick={onFechar}>Cancelar</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="onu-modal-texto">
+              Associar esta ONU a <strong>{selecionado.cliente.client_complete_name}</strong>? O usuário e a senha PPPoE
+              já cadastrados dele serão aplicados nesta ONU.
+            </p>
+            <div className="onu-modal-acoes">
+              <button onClick={() => setSelecionado(null)} disabled={associando}>
+                Voltar
+              </button>
+              <button className="onu-btn-primario" disabled={associando} onClick={confirmar}>
+                {associando ? 'Associando…' : 'Associar'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }

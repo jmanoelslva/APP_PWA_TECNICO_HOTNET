@@ -3,6 +3,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
@@ -116,4 +117,128 @@ async def atualizar_info_onu(
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar a ONU.", resposta))
 
     await asyncio.sleep(ESPERA_APOS_ATUALIZAR_ONU_S)
+    return {"success": True, "results": resposta.results}
+
+
+# Endpoints não documentados na doc oficial — achados lendo o handler real
+# dos ícones de ação da tela "ONU - Registrado" do painel (Ext.ComponentQuery,
+# sem precisar disparar a ação de verdade: os handlers ficam acessíveis como
+# funções JS mesmo sem clicar "Sim" na confirmação). Corpo dos dois:
+# olt_pk/frame_id/slot_id/port_id/onu_id — mesmos identificadores OSPO já
+# usados por onu_update_info acima, sem o serial.
+@router.post("/{onu_pk}/reiniciar")
+async def reiniciar_onu(
+    onu_pk: int,
+    olt_pk: int = Query(...),
+    slot_id: int = Query(...),
+    port_id: int = Query(...),
+    onu_id: int = Query(...),
+    frame_id: int = Query(default=1),
+    ctx: AuthContext = Depends(get_auth_context),
+) -> dict[str, Any]:
+    resposta = await ctx.controllr.call_api_post(
+        "/fiber_ctl/onu/apply_reboot",
+        urlencode({"olt_pk": olt_pk, "frame_id": frame_id, "slot_id": slot_id, "port_id": port_id, "onu_id": onu_id}),
+    )
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível reiniciar a ONU.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+@router.post("/{onu_pk}/remover")
+async def remover_onu(
+    onu_pk: int,
+    olt_pk: int = Query(...),
+    slot_id: int = Query(...),
+    port_id: int = Query(...),
+    onu_id: int = Query(...),
+    frame_id: int = Query(default=1),
+    ctx: AuthContext = Depends(get_auth_context),
+) -> dict[str, Any]:
+    resposta = await ctx.controllr.call_api_post(
+        "/fiber_ctl/onu/delete",
+        urlencode({"olt_pk": olt_pk, "frame_id": frame_id, "slot_id": slot_id, "port_id": port_id, "onu_id": onu_id}),
+    )
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível remover a ONU.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+class AssociarClientePayload(BaseModel):
+    client_pk: int
+    olt_pk: int
+    slot_id: int
+    port_id: int
+    onu_id: int
+    onu_serial: str
+    frame_id: int = 1
+    # Config de WAN da própria ONU (Vlan, Cos, Template etc.) — o técnico
+    # não edita nada disso aqui, só reenvia o que a tela já tinha carregado
+    # (ver OnuDto em api/client.ts): /fiber_ctl/onu/apply_wan também exige
+    # o registro completo, confirmado lendo o handler real do botão
+    # "Salvar" da tela "Informações" da ONU no painel (mesmo padrão já
+    # visto em phone/update). Sem isso, salvar zeraria a config de rede da
+    # própria ONU.
+    wancfg_conntype: int | None = None
+    wan_tpl_pk: int | None = None
+    wancfg_vlanid: int | None = None
+    wancfg_user_vlanid: int | None = None
+    wancfg_cos: int | None = None
+    wancfg_tcont: int | None = None
+    wancfg_gemport: int | None = None
+    wancfg_svlan: int | None = None
+    wancfg_stpid: int | None = None
+    wancfg_scos: int | None = None
+    wancfg_pon_profile: str | None = None
+    wancfg_pppoe_svcname: str | None = None
+    wancfg_local_ip: str | None = None
+
+
+@router.post("/{onu_pk}/associar-cliente")
+async def associar_cliente_onu(
+    onu_pk: int, payload: AssociarClientePayload, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
+    # Achado ao vivo na tela "Informações" da ONU do painel (janela aberta
+    # pelo ícone "i" da lista "ONU - Registrado", sem documentação
+    # oficial): selecionar um Cliente ali carrega o Contrato dele e busca
+    # a CPE correspondente via /aaa_ctl/cpe/list_combo, preenchendo
+    # usuário/senha PPPoE automaticamente a partir dela — não existe
+    # cadastro de PPPoE "solto" aqui, é sempre o acesso que já existe no
+    # cadastro do cliente. Por isso a associação depende do cliente já ter
+    # uma CPE cadastrada.
+    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", payload.client_pk), limit=5))
+    cpes = cpes_resp.results if cpes_resp.success else []
+    if not cpes:
+        raise HTTPException(status_code=400, detail="Este cliente não tem nenhuma conexão (CPE) cadastrada.")
+    cpe = cpes[0]
+
+    campos = {
+        "olt_pk": payload.olt_pk,
+        "frame_id": payload.frame_id,
+        "slot_id": payload.slot_id,
+        "port_id": payload.port_id,
+        "onu_id": payload.onu_id,
+        "onu_serial": payload.onu_serial,
+        "client_pk": payload.client_pk,
+        "contract_pk": cpe.get("contract_pk"),
+        "cpe_pk": cpe.get("cpe_pk"),
+        "onu_wancfg_pppoe_username": cpe.get("cpe_username"),
+        "onu_wancfg_pppoe_passwd": cpe.get("cpe_password"),
+        "onu_wancfg_pppoe_svcname": payload.wancfg_pppoe_svcname or "",
+        "onu_wancfg_conntype": payload.wancfg_conntype,
+        "wan_tpl_pk": payload.wan_tpl_pk,
+        "onu_wancfg_vlanid": payload.wancfg_vlanid,
+        "onu_wancfg_user_vlanid": payload.wancfg_user_vlanid,
+        "onu_wancfg_cos": payload.wancfg_cos,
+        "onu_wancfg_tcont": payload.wancfg_tcont,
+        "onu_wancfg_gemport": payload.wancfg_gemport,
+        "onu_wancfg_svlan": payload.wancfg_svlan,
+        "onu_wancfg_stpid": payload.wancfg_stpid,
+        "onu_wancfg_scos": payload.wancfg_scos,
+        "onu_wancfg_pon_profile": payload.wancfg_pon_profile or "",
+        "onu_wancfg_local_ip": payload.wancfg_local_ip or "",
+    }
+    resposta = await ctx.controllr.call_api_post("/fiber_ctl/onu/apply_wan", urlencode(campos))
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível associar a ONU a este cliente.", resposta))
     return {"success": True, "results": resposta.results}

@@ -247,6 +247,73 @@ precisa de endpoint extra pra buscar isso — já vem no mesmo list.
   no fluxo de "Atualizar agora": reconnect → espera 15s →
   `onu_update_info` → espera 30s.
 
+### 5.1. Reiniciar/Remover/Associar cliente — achados SEM disparar a ação de verdade
+
+Técnica usada (nova nesta sessão): em vez de clicar o botão de verdade
+(reiniciar/remover uma ONU real derrubaria a conexão de um cliente de
+verdade), os ícones de ação da tela "ONU - Registrado" são componentes
+ExtJS — dá pra pegar o handler de cada um **sem clicar** via
+`Ext.ComponentQuery.query('actioncolumn')`, e ler `item.handler.toString()`
+pra extrair a URL e os campos do corpo. Confirmado que só ABRIR a janela
+de confirmação ("Fibra Onu": "Reiniciar ONU, `<nome>`?" / clicar "Não")
+não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
+`apply_reboot`/`delete`/`apply_wan` até o fechamento).
+
+- **Reiniciar**: `POST /fiber_ctl/onu/apply_reboot`, corpo
+  `olt_pk/frame_id/slot_id/port_id/onu_id` (mesmos identificadores OSPO
+  de `onu_update_info`, **sem** `onu_serial`).
+- **Remover**: `POST /fiber_ctl/onu/delete`, mesmo corpo exato do
+  reiniciar (só muda a URL).
+- **Associar a um cliente** (pedido do usuário: "se a onu não tiver
+  cliente vinculado, registrar ao cliente buscando pelo nome"): não
+  existe um endpoint de "associar" dedicado. O painel faz isso através
+  da janela "Informações" da ONU (ícone "i"), que tem uma seção
+  "Cliente" com combo de busca por nome (`POST
+  /controllrctl/client/list_combo`, `where` com `client_complete_name`
+  oper 10 = ILIKE `%valor%`, mesmo padrão já usado em `buscar_clientes`)
+  — selecionar um cliente ali:
+  1. Busca os contratos dele (`/controllrctl/contract/list_combo`,
+     `where contract.client_pk=<pk>`).
+  2. Busca a CPE do contrato (`/aaa_ctl/cpe/list_combo`, `where
+     aaa_cpe.contract_pk=<pk>` — **mesmo endpoint que `cpe_list_combo`
+     do brbyteapi já usa em `clientes.py`**, e o retorno CRU, sem
+     `model_return`, já traz `cpe_username`/`cpe_password` prontos —
+     o model `CPECombo` do pacote vendorizado NÃO expõe
+     `cpe_password`, por isso a chamada tem que ser sem
+     `model_return=True`).
+  3. Preenche "PPPoE Usuário"/"Senha" com o `cpe_username`/`cpe_password`
+     achado — **não existe PPPoE "solto"**, é sempre o acesso que já
+     existe no cadastro do cliente. Cliente sem CPE cadastrada não dá
+     pra associar por aqui.
+  4. "Salvar" chama `POST /fiber_ctl/onu/apply_wan` com **o registro
+     inteiro da config de WAN da ONU** (mesmo padrão "registro completo"
+     já visto em `phone/update` — confirmado lendo o handler do botão
+     "Salvar": referencia `client_pk`, `contract_pk`, `cpe_pk` vindos dos
+     combos, mais todos os campos nomeados do formulário). Campos do
+     formulário (nome = chave enviada): `onu_wancfg_conntype`,
+     `wan_tpl_pk`, `onu_wancfg_vlanid`, `onu_wancfg_user_vlanid`,
+     `onu_wancfg_cos`, `onu_wancfg_tcont`, `onu_wancfg_gemport`,
+     `onu_wancfg_svlan`, `onu_wancfg_stpid`, `onu_wancfg_scos`,
+     `onu_wancfg_pon_profile`, `onu_wancfg_pppoe_username`,
+     `onu_wancfg_pppoe_passwd`, `onu_wancfg_pppoe_svcname`,
+     `onu_wancfg_local_ip`, mais `olt_pk`/`frame_id`/`slot_id`/
+     `port_id`/`onu_id`/`onu_serial`.
+  - **Boa notícia**: o modelo vendorizado `ONU`/`ONUExtended`
+    (`brbyteapi/controllr/models/onu.py`) **já mapeia todos esses campos
+    de WAN** (`wancfg_conntype`, `wan_tpl_pk`, `wancfg_vlanid` etc.) —
+    `buscarOnu()` já traz tudo que é preciso reenviar pra não zerar a
+    config de rede da própria ONU ao associar um cliente; não precisou
+    editar o pacote vendorizado nem fazer fetch adicional no backend.
+  - O ícone "editar" (lápis) da lista é só **renomear** a ONU
+    (`fiber_onu_rename`) — não tem nada a ver com cliente/CPE, apesar do
+    nome sugestivo.
+  - Módulo `fiber_onu_add` (`/fiber_ctl/onu/add`, botão "Cadastrar" da
+    tela "Não Registrado") é só pra dar entrada na ONU na rede
+    (name/line_profile/service_profile/model/slot/port/serial) — **sem
+    nenhum campo de cliente**. Confirma que associar cliente é sempre
+    via a janela de Informações de uma ONU já registrada, nunca no
+    cadastro inicial.
+
 ---
 
 ## 6. Contrato (`/controllrctl/contract/*`)
