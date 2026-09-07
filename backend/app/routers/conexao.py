@@ -22,18 +22,19 @@ async def buscar_cpe(
     if not client_pk and not contract_pk and not cpe_pk and not username:
         raise HTTPException(status_code=400, detail="Informe client_pk, contract_pk, cpe_pk ou username.")
 
-    # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe", não "cpe"
-    # (confirmado no app cliente de referência, que filtra
-    # aaa_ctl/connection/session por "aaa_cpe.cpe_pk"). cpe_pk/contract_pk
-    # não têm esse problema (colunas próprias, sem ambiguidade de join).
-    # username usa ILIKE com "%termo%" (busca parcial, como a busca por
-    # nome de cliente) em vez de EQUAL — o técnico digita um pedaço do
-    # usuário PPPoE e a lista vai filtrando, igual o combobox de CTO.
+    # "aaa_cpe.client_pk"/"aaa_cpe.contract_pk" — nome real da tabela é
+    # "aaa_cpe", não "cpe" (confirmado no app cliente de referência, que
+    # filtra aaa_ctl/connection/session por "aaa_cpe.cpe_pk"). "contract_pk"
+    # bare (sem prefixo) é ambíguo em /aaa_ctl/cpe/list (junta com a tabela
+    # de contrato) e ficava mudo/sem filtrar de verdade — mesmo padrão de
+    # bug já visto em client_pk; cpe_pk é a única sem esse problema (coluna
+    # própria, sem ambiguidade). username usa ILIKE com "%termo%" (busca
+    # parcial, como a busca por nome de cliente) em vez de EQUAL.
     if cpe_pk:
         where = where_eq("cpe_pk", cpe_pk)
         resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     elif contract_pk:
-        where = where_eq("contract_pk", contract_pk)
+        where = where_eq("aaa_cpe.contract_pk", contract_pk)
         resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     elif username:
         # client_status=0 = ativo (mesmo valor confirmado na busca de
