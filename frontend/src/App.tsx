@@ -9,8 +9,9 @@ import { useSessao } from './auth/useSessao'
 // Uma página por chunk — carregada só quando o técnico navega até ela.
 const BuscaCliente = lazy(() => import('./pages/BuscaCliente'))
 const Conexao = lazy(() => import('./pages/Conexao'))
+const DetalheChamado = lazy(() => import('./pages/DetalheChamado'))
 const DetalheCliente = lazy(() => import('./pages/DetalheCliente'))
-const DetalheOS = lazy(() => import('./pages/DetalheOS'))
+const DetalheOrdemServico = lazy(() => import('./pages/DetalheOrdemServico'))
 const Ferramentas = lazy(() => import('./pages/Ferramentas'))
 const Home = lazy(() => import('./pages/Home'))
 const Login = lazy(() => import('./pages/Login'))
@@ -87,7 +88,15 @@ function App() {
             path="/suporte/:ticketPk"
             element={
               <RotaProtegida>
-                <DetalheOS />
+                <DetalheChamado />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/os/:ticketPk"
+            element={
+              <RotaProtegida>
+                <DetalheOrdemServico />
               </RotaProtegida>
             }
           />

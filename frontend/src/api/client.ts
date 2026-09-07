@@ -568,6 +568,22 @@ export interface OrdemServicoDto {
   user_pk?: number
   staff_pk?: number
   task_pk?: number
+  // Confirmados na doc oficial (apidoc.brbyte.com/#post-/support_ctl/os/list)
+  // — client_pk/contrato/endereço vêm prontos no próprio registro da OS,
+  // sem precisar buscar o cliente à parte pra mostrar isso na tela da OS.
+  client_pk?: number
+  client_complete_name?: string
+  contract_pk?: number
+  contract_number?: number
+  ticket_protocol?: string
+  address_identification?: string
+  address?: string
+  address_number?: string
+  address_neighborhood?: string
+  address_province?: string
+  address_state?: string
+  address_zipcode?: string
+  address_completation?: string
 }
 
 export interface ListarOrdensServicoResponse {

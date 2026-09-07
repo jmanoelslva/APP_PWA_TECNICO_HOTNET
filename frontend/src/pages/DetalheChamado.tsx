@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   MdAttachFile,
+  MdBuild,
   MdCameraAlt,
   MdChatBubbleOutline,
-  MdCheckCircle,
   MdDescription,
   MdImage,
   MdPictureAsPdf,
-  MdPlayArrow,
-  MdVisibility,
 } from 'react-icons/md'
 import VoltarInicio from '../components/VoltarInicio'
 import EstadoVazio from '../components/EstadoVazio'
@@ -20,17 +18,13 @@ import {
   criarMensagemTicket,
   detalheTicket,
   enviarAnexoTicket,
-  finalizarOrdemServico,
-  iniciarOrdemServico,
   listarMensagensTicket,
   listarOrdensServico,
-  responderOrdemServico,
   type OperacaoDto,
-  type OrdemServicoDto,
   type TicketDto,
 } from '../api/client'
 import { agoraNoFormatoDoServidor, formatarDataHora } from '../utils/formatacao'
-import './DetalheOS.css'
+import './DetalheChamado.css'
 
 const INTERVALO_ATUALIZACAO_MS = 10_000
 
@@ -69,6 +63,9 @@ function converterOperacao(dto: OperacaoDto): Mensagem | null {
     // autor — o autor real não vem tipado no schema, então tratamos toda
     // mensagem como vinda da equipe (bolha à esquerda) por padrão, exceto
     // as que este técnico acabou de enviar nesta sessão (ver pendentes).
+    // Isso também inclui os eventos automáticos de Respondida/Iniciada/
+    // Finalizada da OS (mesma tabela support_op, op_type diferente) —
+    // aparecem aqui igual a uma mensagem normal, sem tratamento especial.
     daEquipe: true,
   }
 }
@@ -83,59 +80,23 @@ function descartarPendentesConfirmadas(pendentes: Mensagem[], dados: Mensagem[])
   return pendentes.filter((_, i) => !usados.has(i))
 }
 
-// Os 4 estágios reais de uma OS (confirmado com o dono da operação e
-// capturado ao vivo do painel do Controllr — não documentado
-// oficialmente): Agendada (feita pelo escritório) -> Respondida ->
-// Iniciada -> Finalizada, as 3 últimas marcadas pelo técnico aqui.
-// Fechar é etapa À PARTE, só do escritório (ACL do Controllr não libera
-// pro técnico) — por isso não tem botão de fechar nesta tela.
-type Etapa = 'responder' | 'iniciar' | 'finalizar'
-
-interface ConfigEtapa {
-  chave: Etapa
-  rotulo: string
-  rotuloAcao: string
-  campoData: 'op_date_answer' | 'op_date_start' | 'op_date_finish'
-  Icone: typeof MdVisibility
-  acao: typeof responderOrdemServico
-}
-
-const ETAPAS: ConfigEtapa[] = [
-  { chave: 'responder', rotulo: 'Respondida', rotuloAcao: 'Marcar como respondida', campoData: 'op_date_answer', Icone: MdVisibility, acao: responderOrdemServico },
-  { chave: 'iniciar', rotulo: 'Iniciada', rotuloAcao: 'Iniciar atendimento', campoData: 'op_date_start', Icone: MdPlayArrow, acao: iniciarOrdemServico },
-  { chave: 'finalizar', rotulo: 'Finalizada', rotuloAcao: 'Finalizar atendimento', campoData: 'op_date_finish', Icone: MdCheckCircle, acao: finalizarOrdemServico },
-]
-
-/** Próxima etapa que o técnico pode marcar — null se já finalizada, fechada ou cancelada. */
-function proximaEtapa(os: OrdemServicoDto | null): ConfigEtapa | null {
-  if (!os || os.op_date_close || os.op_date_cancel) return null
-  return ETAPAS.find((etapa) => !os[etapa.campoData]) ?? null
-}
-
-function rotuloEtapaAtual(os: OrdemServicoDto): string {
-  if (os.op_date_cancel) return 'Cancelada'
-  if (os.op_date_close) return 'Fechada'
-  if (os.op_date_finish) return 'Finalizada'
-  if (os.op_date_start) return 'Iniciada'
-  if (os.op_date_answer) return 'Respondida'
-  if (os.op_date_sched) return 'Agendada'
-  return 'Sem data'
-}
-
-export default function DetalheOS() {
+export default function DetalheChamado() {
   const { ticketPk } = useParams<{ ticketPk: string }>()
   const pk = Number(ticketPk)
   const location = useLocation()
   const { toast } = useToast()
 
-  const estadoNavegacao = location.state as { chamado?: TicketDto; os?: OrdemServicoDto } | null
+  const estadoNavegacao = location.state as { chamado?: TicketDto } | null
   const [ticket, setTicket] = useState<TicketDto | null>(estadoNavegacao?.chamado ?? null)
-  // A OS (Ordem de Serviço) é quem tem o ciclo de vida fechar/cancelar/
-  // reabrir de verdade — o ticket em si (acima) é só o caso/chat. Uma OS
-  // pode não existir ainda pra este ticket (ex: chamado recém-aberto,
-  // sem visita técnica agendada) — nesse caso não há o que fechar.
-  const [osAtual, setOsAtual] = useState<OrdemServicoDto | null>(estadoNavegacao?.os ?? null)
-  const fechada = osAtual ? !!osAtual.op_date_close || !!osAtual.op_date_cancel : false
+  const fechado = !!ticket?.ticket_date_close
+
+  // Chamado (ticket) e Ordem de Serviço são dois recursos/endpoints
+  // diferentes no Controllr — misturar tudo numa tela só causava
+  // confusão. Aqui é só o chat do chamado; a OS (endereço, contrato,
+  // dados de conexão, estágio respondida/iniciada/finalizada) tem tela
+  // própria em /os/:ticketPk. Só busca se existe uma OS pra mostrar o
+  // link de atalho — não carrega os detalhes dela aqui.
+  const [temOs, setTemOs] = useState(false)
 
   const [mensagens, setMensagens] = useState<Mensagem[]>([])
   const [pendentes, setPendentes] = useState<Mensagem[]>([])
@@ -144,9 +105,6 @@ export default function DetalheOS() {
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [menuAnexoAberto, setMenuAnexoAberto] = useState(false)
-  const [etapaConfirmando, setEtapaConfirmando] = useState<Etapa | null>(null)
-  const [observacaoEtapa, setObservacaoEtapa] = useState('')
-  const [executandoEtapa, setExecutandoEtapa] = useState(false)
 
   const inputFotoRef = useRef<HTMLInputElement>(null)
   const inputGaleriaRef = useRef<HTMLInputElement>(null)
@@ -162,17 +120,9 @@ export default function DetalheOS() {
         .then((resposta) => setTicket(resposta.ticket))
         .catch(() => {})
     }
-    if (!osAtual) {
-      listarOrdensServico({ ticketPk: pk, minhas: false, abertas: false, limit: 5 })
-        .then((resposta) => {
-          // Prefere uma OS ainda aberta (sem data de fechamento/
-          // cancelamento); se todas já estiverem fechadas, mostra a mais
-          // recente mesmo assim (histórico), só sem o botão de fechar.
-          const aberta = resposta.results.find((os) => !os.op_date_close && !os.op_date_cancel)
-          setOsAtual(aberta ?? resposta.results[0] ?? null)
-        })
-        .catch(() => {})
-    }
+    listarOrdensServico({ ticketPk: pk, minhas: false, abertas: false, limit: 1 })
+      .then((resposta) => setTemOs(resposta.results.length > 0))
+      .catch(() => {})
     carregar(true)
     let intervalo: ReturnType<typeof setInterval> | null =
       document.visibilityState === 'visible' ? setInterval(() => carregar(false), INTERVALO_ATUALIZACAO_MS) : null
@@ -214,7 +164,7 @@ export default function DetalheOS() {
         setTimeout(() => fimDaListaRef.current?.scrollIntoView({ block: 'end' }), 0)
       }
     } catch {
-      if (mostrarCarregando) setErro('Não foi possível carregar as mensagens desta OS.')
+      if (mostrarCarregando) setErro('Não foi possível carregar as mensagens deste chamado.')
     } finally {
       if (mostrarCarregando) setCarregando(false)
     }
@@ -267,70 +217,36 @@ export default function DetalheOS() {
     }
   }
 
-  async function confirmarEtapa() {
-    const etapa = ETAPAS.find((e) => e.chave === etapaConfirmando)
-    if (!etapa || !osAtual?.op_os_pk) {
-      toast('Nenhuma OS aberta encontrada pra este chamado.')
-      setEtapaConfirmando(null)
-      return
-    }
-    const observacao = observacaoEtapa.trim()
-    if (!observacao) {
-      toast('Descreva o que foi feito antes de continuar.')
-      return
-    }
-    setExecutandoEtapa(true)
-    try {
-      await etapa.acao(pk, { opOsPk: osAtual.op_os_pk, opDesc: observacao })
-      toast(`OS marcada como ${etapa.rotulo.toLowerCase()}.`, 'sucesso')
-      setEtapaConfirmando(null)
-      setObservacaoEtapa('')
-      setOsAtual((atual) => (atual ? { ...atual, [etapa.campoData]: agoraNoFormatoDoServidor() } : atual))
-    } catch (excecao) {
-      toast(excecao instanceof ApiError ? excecao.message : `Não foi possível marcar a OS como ${etapa.rotulo.toLowerCase()}.`)
-    } finally {
-      setExecutandoEtapa(false)
-    }
-  }
-
   if (!Number.isFinite(pk)) {
-    return <p className="detalhe-os-status">OS não encontrada.</p>
+    return <p className="detalhe-chamado-status">Chamado não encontrado.</p>
   }
 
   const listaExibida = [...mensagens, ...pendentes]
-  const proxima = proximaEtapa(osAtual)
 
   return (
-    <div className="detalhe-os-tela tela-entrada">
-      <header className="detalhe-os-cabecalho">
+    <div className="detalhe-chamado-tela tela-entrada">
+      <header className="detalhe-chamado-cabecalho">
         <VoltarInicio to="/suporte" label="OS" />
         {ticket && (
-          <div className="detalhe-os-resumo">
-            <div className="detalhe-os-resumo-topo">
-              <span className="detalhe-os-assunto">{ticket.ticket_title ?? `OS #${pk}`}</span>
-              <span className={`ticket-status-badge ${fechada ? 'badge-fechado' : 'badge-aberto'}`}>
-                {fechada ? 'Fechada' : 'Aberta'}
+          <div className="detalhe-chamado-resumo">
+            <div className="detalhe-chamado-resumo-topo">
+              <span className="detalhe-chamado-assunto">{ticket.ticket_title ?? `Chamado #${pk}`}</span>
+              <span className={`ticket-status-badge ${fechado ? 'badge-fechado' : 'badge-aberto'}`}>
+                {fechado ? 'Fechado' : 'Aberto'}
               </span>
             </div>
-            {ticket.ticket_protocol && <p className="detalhe-os-linha-resumo">Protocolo: {ticket.ticket_protocol}</p>}
-            <p className="detalhe-os-linha-resumo">{ticket.category_name ?? 'Categoria não informada'}</p>
-            {osAtual?.op_date_sched && (
-              <p className="detalhe-os-linha-resumo">OS agendada para {formatarDataHora(osAtual.op_date_sched)}</p>
-            )}
-            {osAtual && <p className="detalhe-os-linha-resumo">Etapa atual: {rotuloEtapaAtual(osAtual)}</p>}
+            {ticket.ticket_protocol && <p className="detalhe-chamado-linha-resumo">Protocolo: {ticket.ticket_protocol}</p>}
+            <p className="detalhe-chamado-linha-resumo">{ticket.category_name ?? 'Categoria não informada'}</p>
           </div>
         )}
-        {osAtual?.op_os_pk && proxima && (
-          <button className="detalhe-os-btn-fechar" onClick={() => setEtapaConfirmando(proxima.chave)}>
-            <proxima.Icone size={16} /> {proxima.rotuloAcao}
-          </button>
-        )}
-        {ticket && !osAtual?.op_os_pk && (
-          <p className="detalhe-os-linha-resumo">Nenhuma OS aberta pra este chamado ainda.</p>
+        {temOs && (
+          <Link to={`/os/${pk}`} className="detalhe-chamado-chip-os" viewTransition>
+            <MdBuild size={14} /> Ver Ordem de Serviço
+          </Link>
         )}
       </header>
 
-      <div className="detalhe-os-chat" role="log" aria-live="polite" aria-relevant="additions">
+      <div className="detalhe-chamado-chat" role="log" aria-live="polite" aria-relevant="additions">
         {carregando &&
           [0, 1, 2].map((indice) => (
             <div key={indice} className={`balao-linha ${indice === 1 ? 'linha-tecnico' : 'linha-equipe'}`}>
@@ -341,7 +257,7 @@ export default function DetalheOS() {
           ))}
 
         {!carregando && erro && (
-          <div className="detalhe-os-status">
+          <div className="detalhe-chamado-status">
             <p>{erro}</p>
             <button onClick={() => carregar(true)}>Tentar novamente</button>
           </div>
@@ -385,20 +301,20 @@ export default function DetalheOS() {
         <div ref={fimDaListaRef} />
       </div>
 
-      {!fechada && (
-        <div className="detalhe-os-envio">
+      {!fechado && (
+        <div className="detalhe-chamado-envio">
           <input ref={inputFotoRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
           <input ref={inputGaleriaRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
           <input ref={inputArquivoRef} type="file" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
 
-          <div className="detalhe-os-anexo-wrapper">
-            <button className="detalhe-os-btn-anexar" disabled={enviando} onClick={() => setMenuAnexoAberto((v) => !v)} aria-label="Anexar">
+          <div className="detalhe-chamado-anexo-wrapper">
+            <button className="detalhe-chamado-btn-anexar" disabled={enviando} onClick={() => setMenuAnexoAberto((v) => !v)} aria-label="Anexar">
               <MdAttachFile size={20} />
             </button>
             {menuAnexoAberto && (
               <>
-                <div className="detalhe-os-menu-fundo" onClick={() => setMenuAnexoAberto(false)} />
-                <div className="detalhe-os-menu-anexo">
+                <div className="detalhe-chamado-menu-fundo" onClick={() => setMenuAnexoAberto(false)} />
+                <div className="detalhe-chamado-menu-anexo">
                   <button onClick={() => inputFotoRef.current?.click()}>
                     <MdCameraAlt /> Tirar foto
                   </button>
@@ -415,49 +331,15 @@ export default function DetalheOS() {
 
           <input
             ref={inputMensagemRef}
-            className="detalhe-os-input-mensagem"
+            className="detalhe-chamado-input-mensagem"
             value={texto}
             onChange={(evento) => setTexto(evento.target.value)}
             onKeyDown={(evento) => evento.key === 'Enter' && aoEnviarMensagem()}
             placeholder="Digite uma mensagem…"
           />
-          <button className="detalhe-os-btn-enviar" disabled={enviando || !texto.trim()} onClick={aoEnviarMensagem}>
+          <button className="detalhe-chamado-btn-enviar" disabled={enviando || !texto.trim()} onClick={aoEnviarMensagem}>
             Enviar
           </button>
-        </div>
-      )}
-
-      {etapaConfirmando && (
-        <div
-          className="detalhe-os-modal-fundo"
-          onClick={() => {
-            setEtapaConfirmando(null)
-            setObservacaoEtapa('')
-          }}
-        >
-          <div className="detalhe-os-modal" onClick={(evento) => evento.stopPropagation()}>
-            <h2>{ETAPAS.find((e) => e.chave === etapaConfirmando)?.rotuloAcao}?</h2>
-            <p className="detalhe-os-modal-texto">Descreva o que foi feito — o sistema exige essa observação.</p>
-            <textarea
-              value={observacaoEtapa}
-              onChange={(e) => setObservacaoEtapa(e.target.value)}
-              placeholder="Ex: Trocado cabo de rede, sinal normalizado."
-              rows={3}
-            />
-            <div className="detalhe-os-modal-acoes">
-              <button
-                onClick={() => {
-                  setEtapaConfirmando(null)
-                  setObservacaoEtapa('')
-                }}
-              >
-                Cancelar
-              </button>
-              <button className="detalhe-os-btn-primario" disabled={executandoEtapa} onClick={confirmarEtapa}>
-                {executandoEtapa ? 'Salvando…' : 'Confirmar'}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

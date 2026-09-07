@@ -114,7 +114,7 @@ export default function Suporte() {
                 <li
                   key={os.op_pk ?? os.op_os_pk}
                   className="ticket-card"
-                  onClick={() => os.ticket_pk && navigate(`/suporte/${os.ticket_pk}`, { state: { os }, viewTransition: true })}
+                  onClick={() => os.ticket_pk && navigate(`/os/${os.ticket_pk}`, { state: { os }, viewTransition: true })}
                 >
                   <div className="ticket-topo">
                     <span className="ticket-assunto">{os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`}</span>
