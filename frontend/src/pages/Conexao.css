@@ -209,6 +209,11 @@
   background: var(--cor-fundo);
 }
 
+.conexao-combobox-distancia {
+  color: var(--cor-texto-terciario);
+  font-size: 11px;
+}
+
 .conexao-combobox-vazio {
   padding: 8px 10px;
   font-size: 12px;

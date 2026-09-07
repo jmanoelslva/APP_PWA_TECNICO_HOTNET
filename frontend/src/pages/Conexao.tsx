@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MdContentCopy, MdPeopleAlt, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
+import { MdContentCopy, MdMyLocation, MdPeopleAlt, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
 import {
   ApiError,
   atualizarDetalhesCpe,
@@ -19,6 +19,23 @@ import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/formatacao'
 import './Conexao.css'
+
+// Fórmula de Haversine — distância em linha reta (metros) entre a
+// localização do técnico e a coordenada cadastrada da CTO. Suficiente
+// para sugerir/ordenar por proximidade; não precisa de rota real.
+function distanciaMetros(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const raioTerraM = 6371000
+  const paraRad = (graus: number) => (graus * Math.PI) / 180
+  const dLat = paraRad(lat2 - lat1)
+  const dLng = paraRad(lng2 - lng1)
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(paraRad(lat1)) * Math.cos(paraRad(lat2)) * Math.sin(dLng / 2) ** 2
+  return 2 * raioTerraM * Math.asin(Math.sqrt(a))
+}
+
+function formatarDistancia(metros: number): string {
+  if (metros < 1000) return `${Math.round(metros)} m`
+  return `${(metros / 1000).toFixed(1)} km`
+}
 
 export default function Conexao() {
   const [params, setParams] = useSearchParams()
@@ -72,9 +89,28 @@ export default function Conexao() {
   const [dpPorta, setDpPorta] = useState('')
   const [dps, setDps] = useState<DpDto[]>([])
   const [salvandoCto, setSalvandoCto] = useState(false)
-  const dpsFiltradas = dpBusca.trim()
-    ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase()))
-    : dps
+  // Localização do técnico (botão "Usar minha localização") — usada só
+  // para sugerir/ordenar a CTO mais próxima por distância, nunca para
+  // selecionar sozinha sem confirmação em caso de dúvida (ver critério em
+  // usarLocalizacaoAtual).
+  const [minhaLocalizacao, setMinhaLocalizacao] = useState<{ lat: number; lng: number } | null>(null)
+  const [localizando, setLocalizando] = useState(false)
+  const dpsFiltradas = (
+    dpBusca.trim() ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase())) : dps
+  )
+    .map((dp) => ({
+      ...dp,
+      distanciaM:
+        minhaLocalizacao && dp.lat != null && dp.lng != null
+          ? distanciaMetros(minhaLocalizacao.lat, minhaLocalizacao.lng, dp.lat, dp.lng)
+          : null,
+    }))
+    .sort((a, b) => {
+      if (a.distanciaM == null && b.distanciaM == null) return 0
+      if (a.distanciaM == null) return 1
+      if (b.distanciaM == null) return -1
+      return a.distanciaM - b.distanciaM
+    })
   // Acesso administrativo ao roteador — cpe_access_login/password/port,
   // agora editável (antes só era possível ver o que já vinha cadastrado).
   const [acessoLogin, setAcessoLogin] = useState('')
@@ -183,6 +219,66 @@ export default function Conexao() {
     } finally {
       setSalvandoObs(false)
     }
+  }
+
+  function usarLocalizacaoAtual() {
+    if (!navigator.geolocation) {
+      toast('Este dispositivo/navegador não oferece localização.')
+      return
+    }
+    setLocalizando(true)
+    navigator.geolocation.getCurrentPosition(
+      (posicao) => {
+        const minhaLat = posicao.coords.latitude
+        const minhaLng = posicao.coords.longitude
+        setMinhaLocalizacao({ lat: minhaLat, lng: minhaLng })
+
+        const comCoordenada = dps
+          .filter((dp): dp is DpDto & { lat: number; lng: number } => dp.lat != null && dp.lng != null)
+          .map((dp) => ({ dp, distanciaM: distanciaMetros(minhaLat, minhaLng, dp.lat, dp.lng) }))
+          .sort((a, b) => a.distanciaM - b.distanciaM)
+
+        const maisProxima = comCoordenada[0]
+        const segundaMaisProxima = comCoordenada[1]
+        // Só seleciona sozinho quando não há ambiguidade (bem mais perto
+        // que a segunda opção) — perto de caixas/muros o GPS perde
+        // precisão, então em caso de dúvida é melhor abrir a lista
+        // ordenada por distância e deixar o técnico confirmar.
+        const semAmbiguidade =
+          !!maisProxima &&
+          maisProxima.distanciaM < 10 &&
+          (!segundaMaisProxima || segundaMaisProxima.distanciaM - maisProxima.distanciaM > 20)
+
+        setDpBusca('')
+        if (semAmbiguidade) {
+          setDpPk(String(maisProxima.dp.pk))
+          setDpBusca(maisProxima.dp.name)
+          setDpListaAberta(false)
+          toast(`CTO mais próxima selecionada: ${maisProxima.dp.name} (${formatarDistancia(maisProxima.distanciaM)}).`, 'sucesso')
+        } else {
+          setDpPk('')
+          setDpListaAberta(true)
+          if (maisProxima) {
+            toast(
+              `CTOs ordenadas pela sua distância. Mais próxima: ${maisProxima.dp.name} (${formatarDistancia(maisProxima.distanciaM)}). Confira e selecione na lista.`,
+              'sucesso',
+            )
+          } else {
+            toast('Nenhuma CTO cadastrada tem coordenada para comparar com sua localização.')
+          }
+        }
+        setLocalizando(false)
+      },
+      (erro) => {
+        setLocalizando(false)
+        toast(
+          erro.code === erro.PERMISSION_DENIED
+            ? 'Permissão de localização negada. Habilite a localização para o navegador e tente novamente.'
+            : 'Não foi possível obter sua localização.',
+        )
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    )
   }
 
   async function salvarCto() {
@@ -609,19 +705,30 @@ export default function Conexao() {
               <h2>CTO</h2>
               <div className="conexao-campo conexao-combobox">
                 <span>CTO</span>
-                <input
-                  className="conexao-input"
-                  type="text"
-                  value={dpBusca}
-                  placeholder="Digite para buscar a CTO"
-                  onChange={(e) => {
-                    setDpBusca(e.target.value)
-                    setDpPk('')
-                    setDpListaAberta(true)
-                  }}
-                  onFocus={() => setDpListaAberta(true)}
-                  onBlur={() => setTimeout(() => setDpListaAberta(false), 150)}
-                />
+                <div className="conexao-campo-valor">
+                  <input
+                    className="conexao-input"
+                    type="text"
+                    value={dpBusca}
+                    placeholder="Digite para buscar a CTO"
+                    onChange={(e) => {
+                      setDpBusca(e.target.value)
+                      setDpPk('')
+                      setDpListaAberta(true)
+                    }}
+                    onFocus={() => setDpListaAberta(true)}
+                    onBlur={() => setTimeout(() => setDpListaAberta(false), 150)}
+                  />
+                  <button
+                    type="button"
+                    onClick={usarLocalizacaoAtual}
+                    disabled={localizando}
+                    aria-label="Usar minha localização para sugerir a CTO mais próxima"
+                    title="Usar minha localização para sugerir a CTO mais próxima"
+                  >
+                    <MdMyLocation size={16} />
+                  </button>
+                </div>
                 {dpListaAberta && (
                   <ul className="conexao-combobox-lista">
                     {dpsFiltradas.length === 0 && <li className="conexao-combobox-vazio">Nenhuma CTO encontrada.</li>}
@@ -637,6 +744,9 @@ export default function Conexao() {
                           }}
                         >
                           {dp.name}
+                          {dp.distanciaM != null && (
+                            <span className="conexao-combobox-distancia"> — {formatarDistancia(dp.distanciaM)}</span>
+                          )}
                         </button>
                       </li>
                     ))}

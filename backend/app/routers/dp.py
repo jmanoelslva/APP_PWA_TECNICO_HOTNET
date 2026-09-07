@@ -20,16 +20,30 @@ async def listar_dps(ctx: AuthContext = Depends(get_auth_context)) -> dict[str, 
     # no modelo DP, mas nem toda CTO cadastrada tem coordenada), a
     # validação de TODA a lista falha e a lista inteira vem vazia para o
     # técnico, sem erro visível (o front só ignora a falha do combo).
-    # Como só precisamos de pk/nome, pega o dado cru e não passa pelo
-    # modelo rígido.
+    # Como só precisamos de pk/nome (+ coordenada, quando existir), pega o
+    # dado cru e não passa pelo modelo rígido.
     resposta = await ctx.controllr.dp_list(
         corpo(where_eq("dp_status", 1), limit=500, sort="dp_name", dir="ASC")
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível listar as CTOs.", resposta))
     resultado = [
-        {"pk": dp.get("dp_pk"), "name": dp.get("dp_name") or dp.get("dp_id") or f"CTO {dp.get('dp_pk')}"}
+        {
+            "pk": dp.get("dp_pk"),
+            "name": dp.get("dp_name") or dp.get("dp_id") or f"CTO {dp.get('dp_pk')}",
+            "lat": _coordenada(dp.get("dp_lat")),
+            "lng": _coordenada(dp.get("dp_lng")),
+        }
         for dp in resposta.results
         if dp.get("dp_pk") is not None
     ]
     return {"success": True, "results": resultado}
+
+
+def _coordenada(valor: Any) -> float | None:
+    # dp_lat/dp_lng nem sempre existem (CTO sem coordenada cadastrada) —
+    # devolve None nesse caso em vez de deixar o handler quebrar.
+    try:
+        return float(valor) if valor is not None else None
+    except (TypeError, ValueError):
+        return None

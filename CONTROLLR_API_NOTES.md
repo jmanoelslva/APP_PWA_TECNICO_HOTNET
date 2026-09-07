@@ -483,7 +483,34 @@ mesmo com o dado presente. Todos corrigidos em
 
 ---
 
-## 10. Como investigar um novo caso (técnica que funcionou repetidas vezes)
+## 10. CTO / Distribution Point (`/controllrctl/dp/list`) — coordenada e sugestão por proximidade
+
+Além de `pk`/`name` (já usados no seletor de CTO da tela Conexão), o
+registro cru de `/controllrctl/dp/list` traz `dp_lat`/`dp_lng` (string
+decimal) com a coordenada da caixa — mas **nem toda CTO cadastrada tem
+essa coordenada preenchida**, por isso o backend (`routers/dp.py`) não
+usa o modelo Pydantic `DP` (que exige os dois campos) para a lista
+inteira, e converte `dp_lat`/`dp_lng` para `float | None` campo a campo
+(`_coordenada()`), devolvendo `None` para quem não tiver.
+
+O frontend usa essas coordenadas para um botão "usar minha localização"
+ao lado do combobox de CTO (`Conexao.tsx`): captura a posição do técnico
+via `navigator.geolocation`, calcula a distância até cada CTO com
+coordenada (fórmula de Haversine, `distanciaMetros()`) e reordena a lista
+do combobox pela proximidade, mostrando a distância ao lado do nome.
+
+Decisão de UX (pedido explícito do usuário): **não selecionar a CTO
+sozinho por padrão** — GPS perto de caixas metálicas/muros perde
+precisão facilmente (erro de 30–50 m em área urbana densa), então duas
+CTOs próximas entre si poderiam ser confundidas. Só há auto-seleção
+"cega" quando a mais próxima está a menos de 10 m *e* a segunda mais
+próxima está pelo menos 20 m mais longe que ela (sem ambiguidade); fora
+isso, a lista é só reordenada por distância e o técnico confirma
+manualmente qual é a caixa certa.
+
+---
+
+## 11. Como investigar um novo caso (técnica que funcionou repetidas vezes)
 
 1. Pedir para o usuário logar no painel real do Controllr (nunca eu digito
    credencial).

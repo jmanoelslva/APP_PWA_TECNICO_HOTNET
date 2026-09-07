@@ -434,6 +434,8 @@ export function atualizarDetalhesCpe(cpePk: number, dados: DetalhesCpePayload): 
 export interface DpDto {
   pk: number
   name: string
+  lat: number | null
+  lng: number | null
 }
 
 export function listarDps(): Promise<{ success: boolean; results: DpDto[] }> {
