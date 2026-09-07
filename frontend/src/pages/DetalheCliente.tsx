@@ -144,7 +144,7 @@ export default function DetalheCliente() {
             {cpes.map((cpe) => (
               <div key={cpe.cpe_pk} className="detalhe-cliente-item">
                 <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
-                {cpe.contract_pk && <p>Contrato: {cpe.contract_pk}</p>}
+                {(cpe.contract_number ?? cpe.contract_pk) != null && <p>Contrato: {cpe.contract_number ?? cpe.contract_pk}</p>}
                 <div className="detalhe-cliente-item-acoes">
                   <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
                     <MdWifi size={14} /> Conexão

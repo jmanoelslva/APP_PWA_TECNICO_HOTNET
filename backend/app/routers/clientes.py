@@ -68,10 +68,25 @@ async def buscar_clientes(
         # (tentativa anterior) e "client_pk" puro davam ambos vazio.
         cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
+
+        # list_combo só traz contract_pk (confirmado na doc oficial), não o
+        # número de contrato — mesmo fix aplicado em detalhe_cliente.
+        contratos_resp = await ctx.controllr.contract_list(corpo(where_eq("client_pk", client_pk), action="list", start=0))
+        numero_por_contrato_pk = {
+            c["contract_pk"]: c.get("contract_number")
+            for c in (contratos_resp.results if contratos_resp.success else [])
+            if c.get("contract_pk") is not None
+        }
+        cpes = cpes_resp.results if cpes_resp.success else []
+        for cpe in cpes:
+            contract_pk = cpe.get("contract_pk")
+            if contract_pk in numero_por_contrato_pk:
+                cpe["contract_number"] = numero_por_contrato_pk[contract_pk]
+
         resultados.append({
             "client_pk": client_pk,
             "cliente": cliente,
-            "cpes": cpes_resp.results if cpes_resp.success else [],
+            "cpes": cpes,
         })
 
     return {"success": True, "results": resultados}
@@ -109,10 +124,25 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     # correção anterior — só a de buscar_clientes tinha sido trocada.
     cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
 
+    contratos = contratos_resp.results if contratos_resp.success else []
+    # /aaa_ctl/cpe/list_combo só traz contract_pk (confirmado na doc
+    # oficial), não o número de contrato que o técnico reconhece de
+    # verdade (ex: "1024") — sem isso, a tela mostrava o pk interno cru
+    # e parecia que o contrato "não aparecia". Completa usando os
+    # contratos do próprio cliente, já buscados acima.
+    numero_por_contrato_pk = {
+        c["contract_pk"]: c.get("contract_number") for c in contratos if c.get("contract_pk") is not None
+    }
+    cpes = cpes_resp.results if cpes_resp.success else []
+    for cpe in cpes:
+        contract_pk = cpe.get("contract_pk")
+        if contract_pk in numero_por_contrato_pk:
+            cpe["contract_number"] = numero_por_contrato_pk[contract_pk]
+
     return {
         "success": True,
         "cliente": cliente_resp.results[0],
-        "contratos": contratos_resp.results if contratos_resp.success else [],
+        "contratos": contratos,
         "enderecos": enderecos_resp.results if enderecos_resp.success else [],
-        "cpes": cpes_resp.results if cpes_resp.success else [],
+        "cpes": cpes,
     }

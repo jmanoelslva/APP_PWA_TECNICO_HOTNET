@@ -114,7 +114,7 @@ export default function BuscaCliente() {
                 {resultado.cpes.length > 0 && (
                   <p>
                     {resultado.cpes.length} conexão(ões) — contrato(s):{' '}
-                    {resultado.cpes.map((c) => c.contract_pk).filter(Boolean).join(', ') || 'não informado'}
+                    {resultado.cpes.map((c) => c.contract_number ?? c.contract_pk).filter(Boolean).join(', ') || 'não informado'}
                   </p>
                 )}
               </Link>

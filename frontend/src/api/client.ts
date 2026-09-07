@@ -164,6 +164,11 @@ export interface CpeComboDto {
   cpe_pk?: number
   client_pk?: number
   contract_pk?: number
+  // /aaa_ctl/cpe/list_combo só traz contract_pk (confirmado na doc
+  // oficial) — contract_number é completado pelo próprio backend
+  // cruzando com os contratos do cliente (ver clientes.py), não vem
+  // assim da API do Controllr.
+  contract_number?: number
   cpe_circuit_id?: string
   client_complete_name?: string
   dp_name?: string
