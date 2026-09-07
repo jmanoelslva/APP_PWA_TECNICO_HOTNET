@@ -71,14 +71,18 @@ export default function Conexao() {
     }
   }
 
-  // /aaa_ctl/session_online/list não tem documentação oficial (não achei
-  // esse endpoint na doc do Controllr) — os nomes de campo abaixo são os
-  // mesmos usados como search_term em session_online_list_wizard (esses
-  // sim confirmados no pacote brbyteapi: session_callingid, nas_name,
-  // session_v4_ip, session_v6_px, session_v6_pd, session_nas_port_id),
-  // mais candidatos alternativos por padrão de nomenclatura, pra cada um
-  // dos campos que o técnico realmente usa em campo (pedido explícito:
-  // só estes, não "todos os dados").
+  // /aaa_ctl/session_online/list não tem documentação oficial, mas os
+  // nomes de campo abaixo foram CONFIRMADOS capturando ao vivo a resposta
+  // real da tela "Sessões Online" do próprio Controllr (mesma requisição,
+  // mesmo backend). Formato real de uma sessão (campos usados aqui):
+  // session_callingid (MAC), contract_status, nas_name/nas_addr,
+  // session_nas_port_id, session_v4_ip, session_v6_px/pd,
+  // session_acct_time (segundos conectado) e stats.total.rx_byte/tx_byte
+  // — esses dois últimos vêm ANINHADOS dentro de "stats.total", e o valor
+  // está em KB (não bytes, apesar do nome): confirmado batendo a conta
+  // contra o "Rx Bytes"/"Tx Bytes" mostrado na tela real (346047 ->
+  // 337,9 MB, bate com os 336,84 MB exibidos). Candidatos alternativos
+  // ficam como fallback caso o formato mude.
   function formatarBytes(valor: unknown): string {
     const n = Number(valor)
     if (!Number.isFinite(n)) return String(valor)
@@ -117,48 +121,71 @@ export default function Conexao() {
     return String(valor)
   }
 
+  interface ValorEncontrado {
+    valor: unknown
+    chave: string
+  }
+
   interface CampoDesejado {
     rotulo: string
-    candidatos: string[]
+    extrair: (sessao: Record<string, unknown>) => ValorEncontrado | undefined
     formatar?: (valor: unknown, chave: string) => string
   }
 
+  function porCandidatos(candidatos: string[]): (sessao: Record<string, unknown>) => ValorEncontrado | undefined {
+    return (sessao) => {
+      const chavesPorNomeMinusculo = new Map(Object.keys(sessao).map((chave) => [chave.toLowerCase(), chave]))
+      for (const candidato of candidatos) {
+        const chave = chavesPorNomeMinusculo.get(candidato)
+        if (chave !== undefined) return { valor: sessao[chave], chave }
+      }
+      return undefined
+    }
+  }
+
+  function porConsumo(direcao: 'rx' | 'tx'): (sessao: Record<string, unknown>) => ValorEncontrado | undefined {
+    const chaveAninhada = direcao === 'rx' ? 'rx_byte' : 'tx_byte'
+    const candidatosPlanos = direcao === 'rx'
+      ? ['session_input_octets', 'session_rx_bytes', 'rx_bytes', 'input_octets']
+      : ['session_output_octets', 'session_tx_bytes', 'tx_bytes', 'output_octets']
+    return (sessao) => {
+      const stats = (sessao as { stats?: { total?: Record<string, unknown> } }).stats?.total
+      const valorAninhado = stats?.[chaveAninhada]
+      if (valorAninhado != null && valorAninhado !== '') {
+        // stats.total.rx_byte/tx_byte vêm em KB, não bytes — converte antes de formatar.
+        return { valor: Number(valorAninhado) * 1024, chave: chaveAninhada }
+      }
+      return porCandidatos(candidatosPlanos)(sessao)
+    }
+  }
+
   const CAMPOS_DESEJADOS: CampoDesejado[] = [
-    { rotulo: 'MAC da CPE', candidatos: ['session_callingid', 'session_calling_station_id', 'callingstationid', 'cpe_mac', 'mac'] },
-    { rotulo: 'Status do contrato', candidatos: ['contract_status_name', 'client_contract_status_name', 'contract_status', 'client_contract_status'] },
-    { rotulo: 'NAS (nome/identificador)', candidatos: ['nas_name', 'nas_identifier', 'session_nas_identifier'] },
-    { rotulo: 'NAS (endereço/IP)', candidatos: ['nas_ip_address', 'nas_address', 'nas_addr', 'nas_ip'] },
-    { rotulo: 'NAS (porta)', candidatos: ['session_nas_port_id', 'nas_port_id', 'session_nas_port'] },
-    { rotulo: 'IPv4', candidatos: ['session_v4_ip', 'session_framed_ip_address', 'v4_ip'] },
-    { rotulo: 'IPv6 (PX)', candidatos: ['session_v6_px', 'v6_px'] },
-    { rotulo: 'IPv6 (PD)', candidatos: ['session_v6_pd', 'v6_pd'] },
+    { rotulo: 'MAC da CPE', extrair: porCandidatos(['session_callingid', 'cpe_mac', 'session_calling_station_id', 'mac']) },
+    { rotulo: 'Status do contrato', extrair: porCandidatos(['contract_status', 'contract_status_name', 'client_contract_status']) },
+    { rotulo: 'NAS (nome/identificador)', extrair: porCandidatos(['nas_name', 'session_nas_identifier', 'nas_identifier']) },
+    { rotulo: 'NAS (endereço/IP)', extrair: porCandidatos(['nas_addr', 'session_nas_ip', 'nas_ip_address', 'nas_address']) },
+    { rotulo: 'NAS (porta)', extrair: porCandidatos(['session_nas_port_id', 'nas_port_id']) },
+    { rotulo: 'IPv4', extrair: porCandidatos(['session_v4_ip', 'v4_ip']) },
+    { rotulo: 'IPv6 (PX)', extrair: porCandidatos(['session_v6_px', 'v6_px']) },
+    { rotulo: 'IPv6 (PD)', extrair: porCandidatos(['session_v6_pd', 'v6_pd']) },
     {
       rotulo: 'Tempo conectado',
-      candidatos: ['session_uptime', 'session_duration', 'session_time', 'session_start', 'session_start_time', 'session_acct_start_time'],
+      extrair: porCandidatos(['session_acct_time', 'session_uptime', 'session_duration', 'session_time']),
       formatar: formatarTempoConectado,
     },
-    {
-      rotulo: 'Consumo (download)',
-      candidatos: ['session_input_octets', 'session_rx_bytes', 'rx_bytes', 'input_octets'],
-      formatar: formatarBytes,
-    },
-    {
-      rotulo: 'Consumo (upload)',
-      candidatos: ['session_output_octets', 'session_tx_bytes', 'tx_bytes', 'output_octets'],
-      formatar: formatarBytes,
-    },
+    { rotulo: 'Consumo (download)', extrair: porConsumo('rx'), formatar: formatarBytes },
+    { rotulo: 'Consumo (upload)', extrair: porConsumo('tx'), formatar: formatarBytes },
   ]
 
   function camposSessao(): Array<[string, string]> {
     if (!sessao) return []
-    const chavesPorNomeMinusculo = new Map(Object.keys(sessao).map((chave) => [chave.toLowerCase(), chave]))
     const resultado: Array<[string, string]> = []
     for (const campo of CAMPOS_DESEJADOS) {
-      const chaveEncontrada = campo.candidatos.map((c) => chavesPorNomeMinusculo.get(c)).find((c) => c !== undefined)
-      if (!chaveEncontrada) continue
-      const valor = sessao[chaveEncontrada]
+      const encontrado = campo.extrair(sessao)
+      if (!encontrado) continue
+      const { valor, chave } = encontrado
       if (valor == null || valor === '') continue
-      resultado.push([campo.rotulo, campo.formatar ? campo.formatar(valor, chaveEncontrada) : String(valor)])
+      resultado.push([campo.rotulo, campo.formatar ? campo.formatar(valor, chave) : String(valor)])
     }
     return resultado
   }
