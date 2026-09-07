@@ -8,7 +8,7 @@ from ..brbyteapi.controllr import AsyncControllr
 from ..brbyteapi.controllr.login import ControllrLogin
 from ..config import CONTROLLR_URL, SESSION_COOKIE_NAME, SESSION_TTL_SECONDS
 from ..deps import AuthContext, get_auth_context
-from ..sessions import create_session, delete_session
+from ..sessions import create_session, delete_session, get_session
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -86,6 +86,20 @@ async def logout(
     response: Response,
     tecsession: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
 ) -> dict[str, bool]:
+    sessao = get_session(tecsession)
+    if sessao is not None:
+        # Avisa o próprio Controllr que a sessão do técnico encerrou
+        # (mesmo endpoint usado pelo painel administrativo, apesar de
+        # aqui a gente não manter cookie de sessão com ele — chamada por
+        # cortesia). Best-effort: falhar aqui não pode impedir o logout
+        # local, que é o que de fato protege a conta (apaga a sessão
+        # deste backend e o cookie do navegador).
+        try:
+            controllr = AsyncControllr(authorization=sessao.basic_auth, server_url=CONTROLLR_URL)
+            await controllr.call_api_post("/session/logout")
+        except Exception:
+            pass
+
     delete_session(tecsession)
     response.delete_cookie(SESSION_COOKIE_NAME, path="/")
     return {"success": True}
