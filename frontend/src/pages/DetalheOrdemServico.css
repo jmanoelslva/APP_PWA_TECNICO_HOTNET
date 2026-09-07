@@ -56,6 +56,16 @@
   color: var(--cor-texto);
 }
 
+.detalhe-ordem-btn-icone {
+  border: none;
+  background: transparent;
+  color: var(--cor-texto-terciario);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  flex-shrink: 0;
+}
+
 .detalhe-ordem-etapa-badge {
   flex-shrink: 0;
   font-size: 11px;

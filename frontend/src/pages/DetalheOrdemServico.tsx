@@ -5,6 +5,7 @@ import {
   MdCheckCircle,
   MdChatBubbleOutline,
   MdContentCopy,
+  MdEdit,
   MdLocationOn,
   MdPeopleAlt,
   MdPlayArrow,
@@ -12,9 +13,11 @@ import {
   MdVisibilityOff,
   MdWifi,
 } from 'react-icons/md'
+import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
+import { CORES } from '../utils/cores'
 import {
   ApiError,
   buscarCpe,
@@ -172,6 +175,7 @@ export default function DetalheOrdemServico() {
   const [contrato, setContrato] = useState<ContratoDto | null>(null)
   const [telefone, setTelefone] = useState<string | null>(null)
   const [endereco, setEndereco] = useState<EnderecoDto | null>(null)
+  const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   const [cpe, setCpe] = useState<CpeDto | null>(null)
   const [eventos, setEventos] = useState<OperacaoDto[]>([])
   const [carregando, setCarregando] = useState(true)
@@ -422,7 +426,19 @@ export default function DetalheOrdemServico() {
           </div>
 
           <div className="detalhe-ordem-card">
-            <h2>Endereço</h2>
+            <div className="detalhe-ordem-topo">
+              <h2>Endereço</h2>
+              {endereco?.address_pk && (
+                <button
+                  type="button"
+                  className="detalhe-ordem-btn-icone"
+                  onClick={() => setEnderecoEditando(endereco)}
+                  aria-label="Editar endereço"
+                >
+                  <MdEdit size={16} />
+                </button>
+              )}
+            </div>
             <p className="detalhe-ordem-linha">{enderecoResumo(endereco ?? osAtual)}</p>
             {(endereco?.address_province ?? osAtual.address_province) || (endereco?.address_state ?? osAtual.address_state) ? (
               <p className="detalhe-ordem-linha">
@@ -610,6 +626,19 @@ export default function DetalheOrdemServico() {
             </div>
           </div>
         </div>
+      )}
+
+      {enderecoEditando && (
+        <ModalEditarEndereco
+          endereco={enderecoEditando}
+          corDestaque={CORES.suporte}
+          onFechar={() => setEnderecoEditando(null)}
+          onSalvo={(atualizado) => {
+            setEndereco(atualizado)
+            setEnderecoEditando(null)
+            toast('Endereço atualizado com sucesso.', 'sucesso')
+          }}
+        />
       )}
     </div>
   )

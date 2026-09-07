@@ -355,30 +355,6 @@
   color: var(--cor-texto);
 }
 
-.detalhe-cliente-modal-linha {
-  display: flex;
-  gap: 12px;
-}
-
-.detalhe-cliente-modal-localizacao {
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.detalhe-cliente-modal-localizacao span {
-  font-size: 13px;
-  color: var(--cor-texto-secundario);
-  font-family: ui-monospace, Consolas, monospace;
-}
-
-.detalhe-cliente-modal-linha > div {
-  flex: 1;
-}
-
 .detalhe-cliente-modal-acoes {
   display: flex;
   gap: 8px;
