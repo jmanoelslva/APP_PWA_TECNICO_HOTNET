@@ -1,6 +1,16 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { MdBuild, MdDescription, MdEdit, MdLocationOn, MdPeopleAlt, MdRouter, MdWifi } from 'react-icons/md'
+import {
+  MdBuild,
+  MdDescription,
+  MdEdit,
+  MdExpandLess,
+  MdExpandMore,
+  MdLocationOn,
+  MdPeopleAlt,
+  MdRouter,
+  MdWifi,
+} from 'react-icons/md'
 import {
   ApiError,
   atualizarEndereco,
@@ -56,6 +66,19 @@ export default function DetalheCliente() {
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
   const [chamados, setChamados] = useState<TicketDto[]>([])
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
+  // Contrato traz bastante informação (assinatura, itens...) que só
+  // interessa quando o técnico realmente precisa dela — fica recolhido
+  // por padrão pra não ocupar a tela à toa, expande sob demanda.
+  const [contratosExpandidos, setContratosExpandidos] = useState<Set<number>>(new Set())
+
+  function alternarContrato(chave: number) {
+    setContratosExpandidos((atual) => {
+      const novo = new Set(atual)
+      if (novo.has(chave)) novo.delete(chave)
+      else novo.add(chave)
+      return novo
+    })
+  }
 
   useEffect(() => {
     if (!Number.isFinite(pk)) return
@@ -119,73 +142,6 @@ export default function DetalheCliente() {
               {doc && <p>Documento: {doc}</p>}
             </div>
           </div>
-
-          <section className="detalhe-cliente-secao">
-            <h2>Contratos</h2>
-            {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
-            {contratos.map((contrato) => (
-              <div key={contrato.contract_pk} className="detalhe-cliente-item">
-                <div className="detalhe-cliente-item-topo">
-                  <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
-                </div>
-                {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
-                {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
-                {/* contract_sign_date vazio/null = ainda não assinado
-                    (confirmado na doc oficial, apidoc.brbyte.com/#post-
-                    /controllrctl/contract/list) — é o indicador de status
-                    da assinatura, não um campo à parte. */}
-                <p>Assinatura: {contrato.contract_sign_date ? `Assinado em ${formatarData(contrato.contract_sign_date)}` : 'Não assinado'}</p>
-                {camposAssinaturaExtra(contrato).map(([rotulo, valor]) => (
-                  <p key={rotulo} className="detalhe-cliente-campo-extra">
-                    {rotulo}: {valor}
-                  </p>
-                ))}
-                {contrato.itens && contrato.itens.length > 0 && (
-                  <div className="detalhe-cliente-itens">
-                    <span className="detalhe-cliente-itens-titulo">Itens do contrato</span>
-                    {contrato.itens.map((item, indice) => (
-                      <div key={item.item_pk ?? indice} className="detalhe-cliente-itens-linha">
-                        <span>{item.item_name ?? item.plan_name ?? 'Item'}</span>
-                        {item.item_amount && <strong>R$ {item.item_amount}</strong>}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* Contrato ainda não assinado: destaca a assinatura como
-                    ação principal — é o que o técnico faz na visita,
-                    entregando o aparelho pro cliente assinar ali mesmo
-                    nesse link. Já assinado, "Ver contrato" some pra um
-                    chip discreto (só consulta). */}
-                {!contrato.contract_sign_date && contrato.contract_sign_doc_link && (
-                  <a
-                    href={contrato.contract_sign_doc_link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="detalhe-cliente-btn-assinar"
-                  >
-                    <MdDescription size={18} /> Assinar contrato agora
-                  </a>
-                )}
-                {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
-                  <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível pra este contrato.</p>
-                )}
-                {(contrato.contract_pk || (contrato.contract_sign_date && contrato.contract_sign_doc_link)) && (
-                  <div className="detalhe-cliente-item-acoes">
-                    {contrato.contract_pk && (
-                      <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
-                        <MdWifi size={14} /> Conexão
-                      </Link>
-                    )}
-                    {contrato.contract_sign_date && contrato.contract_sign_doc_link && (
-                      <a href={contrato.contract_sign_doc_link} target="_blank" rel="noreferrer" className="detalhe-cliente-chip">
-                        <MdDescription size={14} /> Ver contrato assinado
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </section>
 
           <section className="detalhe-cliente-secao">
             <h2>Endereços</h2>
@@ -261,6 +217,87 @@ export default function DetalheCliente() {
                 <MdBuild size={14} /> Ver todas as OS
               </Link>
             )}
+          </section>
+
+          <section className="detalhe-cliente-secao">
+            <h2>Contratos</h2>
+            {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
+            {contratos.map((contrato, indice) => {
+              const chave = contrato.contract_pk ?? indice
+              const expandido = contratosExpandidos.has(chave)
+              return (
+                <div key={chave} className="detalhe-cliente-item">
+                  <button
+                    type="button"
+                    className="detalhe-cliente-item-topo detalhe-cliente-contrato-toggle"
+                    onClick={() => alternarContrato(chave)}
+                    aria-expanded={expandido}
+                  >
+                    <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
+                    {expandido ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
+                  </button>
+                  {expandido && (
+                    <>
+                      {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
+                      {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
+                      {/* contract_sign_date vazio/null = ainda não assinado
+                          (confirmado na doc oficial, apidoc.brbyte.com/#post-
+                          /controllrctl/contract/list) — é o indicador de status
+                          da assinatura, não um campo à parte. */}
+                      <p>Assinatura: {contrato.contract_sign_date ? `Assinado em ${formatarData(contrato.contract_sign_date)}` : 'Não assinado'}</p>
+                      {camposAssinaturaExtra(contrato).map(([rotulo, valor]) => (
+                        <p key={rotulo} className="detalhe-cliente-campo-extra">
+                          {rotulo}: {valor}
+                        </p>
+                      ))}
+                      {contrato.itens && contrato.itens.length > 0 && (
+                        <div className="detalhe-cliente-itens">
+                          <span className="detalhe-cliente-itens-titulo">Itens do contrato</span>
+                          {contrato.itens.map((item, indiceItem) => (
+                            <div key={item.item_pk ?? indiceItem} className="detalhe-cliente-itens-linha">
+                              <span>{item.item_name ?? item.plan_name ?? 'Item'}</span>
+                              {item.item_amount && <strong>R$ {item.item_amount}</strong>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Contrato ainda não assinado: destaca a assinatura como
+                          ação principal — é o que o técnico faz na visita,
+                          entregando o aparelho pro cliente assinar ali mesmo
+                          nesse link. Já assinado, "Ver contrato" some pra um
+                          chip discreto (só consulta). */}
+                      {!contrato.contract_sign_date && contrato.contract_sign_doc_link && (
+                        <a
+                          href={contrato.contract_sign_doc_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="detalhe-cliente-btn-assinar"
+                        >
+                          <MdDescription size={18} /> Assinar contrato agora
+                        </a>
+                      )}
+                      {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
+                        <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível pra este contrato.</p>
+                      )}
+                      {(contrato.contract_pk || (contrato.contract_sign_date && contrato.contract_sign_doc_link)) && (
+                        <div className="detalhe-cliente-item-acoes">
+                          {contrato.contract_pk && (
+                            <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
+                              <MdWifi size={14} /> Conexão
+                            </Link>
+                          )}
+                          {contrato.contract_sign_date && contrato.contract_sign_doc_link && (
+                            <a href={contrato.contract_sign_doc_link} target="_blank" rel="noreferrer" className="detalhe-cliente-chip">
+                              <MdDescription size={14} /> Ver contrato assinado
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )
+            })}
           </section>
         </>
       )}
