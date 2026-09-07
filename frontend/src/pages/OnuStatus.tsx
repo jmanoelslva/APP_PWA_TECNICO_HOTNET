@@ -8,24 +8,14 @@ import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
+import { nivelSinalOnu, type NivelSinal } from '../utils/formatacao'
 import './OnuStatus.css'
 
-type NivelSinal = 'boa' | 'alerta' | 'critica' | 'desconhecida'
-
 /**
- * Faixas de sinal óptico (dBm) — confirmadas contra um script de
- * monitoramento (bot de Telegram) já em uso interno na empresa, que usa
- * exatamente esses cortes pra classificar RX de ONU e de OLT (são faixas
- * diferentes uma da outra). Não é uma norma GPON genérica — é o critério
- * já calibrado e adotado por esta operação.
+ * Faixa de sinal óptico (dBm) da OLT — mesma origem/critério de
+ * nivelSinalOnu (utils/formatacao.ts), mas com cortes diferentes (não é
+ * a mesma faixa da ONU, ver comentário lá).
  */
-function nivelSinalOnu(rx: number | undefined): NivelSinal {
-  if (rx == null) return 'desconhecida'
-  if (rx >= -22) return 'boa'
-  if (rx >= -24) return 'alerta'
-  return 'critica'
-}
-
 function nivelSinalOlt(rx: number | undefined): NivelSinal {
   if (rx == null) return 'desconhecida'
   if (rx >= -25) return 'boa'

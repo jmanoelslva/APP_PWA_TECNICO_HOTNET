@@ -66,3 +66,27 @@ export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> 
   { valor: 2, rotulo: 'WPA' },
   { valor: 3, rotulo: 'EAP' },
 ]
+
+export type NivelSinal = 'boa' | 'alerta' | 'critica' | 'desconhecida'
+
+/**
+ * Faixas de sinal óptico (dBm) da ONU — confirmadas contra um script de
+ * monitoramento (bot de Telegram) já em uso interno na empresa, que usa
+ * exatamente esses cortes pra classificar RX de ONU (ver também
+ * OnuStatus.tsx, que usa a mesma faixa pra OLT com cortes diferentes).
+ * Não é uma norma GPON genérica — é o critério já calibrado e adotado
+ * por esta operação.
+ */
+export function nivelSinalOnu(rx: number | null | undefined): NivelSinal {
+  if (rx == null) return 'desconhecida'
+  if (rx >= -22) return 'boa'
+  if (rx >= -24) return 'alerta'
+  return 'critica'
+}
+
+export const TEXTO_SINAL_ONU: Record<NivelSinal, string> = {
+  boa: 'Sinal normal',
+  alerta: 'Sinal fraco',
+  critica: 'Sinal crítico',
+  desconhecida: 'Sinal não informado',
+}

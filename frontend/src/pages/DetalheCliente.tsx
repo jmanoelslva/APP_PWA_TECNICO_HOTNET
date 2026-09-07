@@ -14,19 +14,34 @@ import {
 import {
   ApiError,
   atualizarEndereco,
+  buscarCpe,
   buscarDetalheCliente,
+  buscarOnu,
   listarTickets,
   type ContratoDto,
   type CpeComboDto,
+  type CpeDto,
   type EnderecoDto,
+  type OnuDto,
   type TicketDto,
 } from '../api/client'
 import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { extrairTelefones, formatarData, formatarStatusContrato } from '../utils/formatacao'
+import { extrairTelefones, formatarData, formatarStatusContrato, nivelSinalOnu, TEXTO_SINAL_ONU } from '../utils/formatacao'
 import './DetalheCliente.css'
+
+// Resumo de conexão + ONU de um CPE, carregado à parte (endpoints
+// diferentes de /clientes/{pk}) pra já mostrar aqui na tela do cliente
+// o que o técnico normalmente só via depois de entrar em Conexão/ONU —
+// os links pra essas telas continuam existindo, pra ações (revelar
+// senha, forçar atualização da ONU etc).
+interface ResumoConexao {
+  carregando: boolean
+  cpe: CpeDto | null
+  onu: OnuDto | null
+}
 
 // contract_sign_code/info/draw/ip/hash — vistos numa captura real da API,
 // mas sem descrição na doc oficial (só sign_date/sign_doc_link têm
@@ -65,6 +80,7 @@ export default function DetalheCliente() {
   const [contratos, setContratos] = useState<ContratoDto[]>([])
   const [enderecos, setEnderecos] = useState<EnderecoDto[]>([])
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
+  const [resumosConexao, setResumosConexao] = useState<Record<number, ResumoConexao>>({})
   const [chamados, setChamados] = useState<TicketDto[]>([])
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   // Contrato traz bastante informação (assinatura, itens...) que só
@@ -104,10 +120,35 @@ export default function DetalheCliente() {
       listarTickets({ minhas: false, clientPk: pk, limit: 10 })
         .then((r) => setChamados(r.results))
         .catch(() => setChamados([]))
+      carregarResumosConexao(resposta.cpes)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados do cliente.')
     } finally {
       setCarregando(false)
+    }
+  }
+
+  // Um CPE por vez, em paralelo entre si — cada um busca sua conexão e
+  // sua ONU juntas, sem travar os outros CPEs nem o resto da tela se um
+  // deles falhar (ex: cliente sem ONU cadastrada, só CPE).
+  function carregarResumosConexao(listaCpes: CpeComboDto[]) {
+    for (const cpe of listaCpes) {
+      if (cpe.cpe_pk == null) continue
+      const cpePk = cpe.cpe_pk
+      setResumosConexao((atual) => ({ ...atual, [cpePk]: { carregando: true, cpe: null, onu: null } }))
+      Promise.allSettled([
+        buscarCpe({ cpe_pk: cpePk }),
+        cpe.cpe_username ? buscarOnu({ username: cpe.cpe_username }) : buscarOnu({ cpe_pk: cpePk }),
+      ]).then(([resultadoCpe, resultadoOnu]) => {
+        setResumosConexao((atual) => ({
+          ...atual,
+          [cpePk]: {
+            carregando: false,
+            cpe: resultadoCpe.status === 'fulfilled' ? (resultadoCpe.value.results[0] ?? null) : null,
+            onu: resultadoOnu.status === 'fulfilled' ? (resultadoOnu.value.results[0] ?? null) : null,
+          },
+        }))
+      })
     }
   }
 
@@ -185,28 +226,72 @@ export default function DetalheCliente() {
           <section className="detalhe-cliente-secao">
             <h2>Conexões (CPE)</h2>
             {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
-            {cpes.map((cpe) => (
-              <div key={cpe.cpe_pk} className="detalhe-cliente-item">
-                <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
-                {(cpe.contract_number ?? cpe.contract_pk) != null && <p>Contrato: {cpe.contract_number ?? cpe.contract_pk}</p>}
-                <div className="detalhe-cliente-item-acoes">
-                  <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
-                    <MdWifi size={14} /> Conexão
-                  </Link>
-                  <Link
-                    to={
-                      cpe.cpe_username
-                        ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
-                        : `/onu?cpe_pk=${cpe.cpe_pk}`
-                    }
-                    className="detalhe-cliente-chip"
-                    viewTransition
-                  >
-                    <MdRouter size={14} /> ONU
-                  </Link>
+            {cpes.map((cpe) => {
+              const resumo = cpe.cpe_pk != null ? resumosConexao[cpe.cpe_pk] : undefined
+              const sinal = nivelSinalOnu(resumo?.onu?.omddm_rx_power)
+              return (
+                <div key={cpe.cpe_pk} className="detalhe-cliente-item">
+                  <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
+                  {(cpe.contract_number ?? cpe.contract_pk) != null && <p>Contrato: {cpe.contract_number ?? cpe.contract_pk}</p>}
+
+                  {resumo?.carregando && <p className="detalhe-cliente-resumo-carregando">Consultando conexão e ONU…</p>}
+
+                  {resumo && !resumo.carregando && (resumo.cpe || resumo.onu) && (
+                    <div className="detalhe-cliente-resumo-grid">
+                      {resumo.cpe?.plan_name && (
+                        <div>
+                          <span>Plano</span>
+                          <strong>{resumo.cpe.plan_name}</strong>
+                        </div>
+                      )}
+                      {(resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last) && (
+                        <div>
+                          <span>IP</span>
+                          <strong>{resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last}</strong>
+                        </div>
+                      )}
+                      {resumo.onu && (
+                        <div>
+                          <span>Sinal ONU</span>
+                          <span className={`detalhe-cliente-sinal-badge ${sinal}`}>
+                            {resumo.onu.omddm_rx_power != null ? `${resumo.onu.omddm_rx_power} dBm` : TEXTO_SINAL_ONU[sinal]}
+                          </span>
+                        </div>
+                      )}
+                      {resumo.onu?.distance != null && (
+                        <div>
+                          <span>Distância</span>
+                          <strong>{resumo.onu.distance} km</strong>
+                        </div>
+                      )}
+                      {resumo.onu?.state && (
+                        <div>
+                          <span>Estado ONU</span>
+                          <strong>{resumo.onu.state}</strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="detalhe-cliente-item-acoes">
+                    <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
+                      <MdWifi size={14} /> Conexão
+                    </Link>
+                    <Link
+                      to={
+                        cpe.cpe_username
+                          ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
+                          : `/onu?cpe_pk=${cpe.cpe_pk}`
+                      }
+                      className="detalhe-cliente-chip"
+                      viewTransition
+                    >
+                      <MdRouter size={14} /> ONU
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </section>
 
           <section className="detalhe-cliente-secao">
