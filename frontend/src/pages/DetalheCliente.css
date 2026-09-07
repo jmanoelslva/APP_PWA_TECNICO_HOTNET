@@ -101,6 +101,42 @@
   margin-top: 10px;
 }
 
+.detalhe-cliente-campo-extra {
+  font-family: ui-monospace, Consolas, monospace;
+  word-break: break-all;
+}
+
+.detalhe-cliente-itens {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cor-borda-suave);
+}
+
+.detalhe-cliente-itens-titulo {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cor-texto-terciario);
+  margin-bottom: 4px;
+}
+
+.detalhe-cliente-itens-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 3px 0;
+}
+
+.detalhe-cliente-itens-linha span {
+  color: var(--cor-texto-secundario);
+}
+
+.detalhe-cliente-itens-linha strong {
+  color: var(--cor-texto);
+  font-weight: 700;
+}
+
 .detalhe-cliente-chip {
   display: inline-flex;
   align-items: center;

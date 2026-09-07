@@ -179,6 +179,17 @@ export interface CpeComboDto {
   cpe_username?: string
 }
 
+export interface ItemContratoDto {
+  item_pk?: number
+  contract_pk?: number
+  item_name?: string
+  item_amount?: string
+  item_type?: number
+  item_rent?: boolean
+  plan_name?: string
+  plan_pk?: number
+}
+
 export interface ContratoDto {
   contract_pk?: number
   contract_number?: number
@@ -189,9 +200,14 @@ export interface ContratoDto {
   // Assinatura do contrato (confirmado na doc oficial,
   // apidoc.brbyte.com/#post-/controllrctl/contract/list): sign_date vem
   // vazio/null enquanto o contrato não foi assinado — é o indicador de
-  // status. sign_doc_link é o link pra ver/assinar o documento.
+  // status. sign_doc_link é o link pra ver/assinar o documento. Os demais
+  // contract_sign_* (code/info/draw/ip/hash — vistos numa captura real,
+  // mas sem descrição na doc) chegam soltos via o índice abaixo e são
+  // mostrados de forma genérica (ver DetalheCliente.tsx).
   contract_sign_date?: string
   contract_sign_doc_link?: string
+  itens?: ItemContratoDto[]
+  [chave: string]: unknown
 }
 
 export interface EnderecoDto {

@@ -18,6 +18,30 @@ import { CORES } from '../utils/cores'
 import { formatarData, formatarStatusContrato } from '../utils/formatacao'
 import './DetalheCliente.css'
 
+// contract_sign_code/info/draw/ip/hash — vistos numa captura real da API,
+// mas sem descrição na doc oficial (só sign_date/sign_doc_link têm
+// significado confirmado, tratados à parte). Mostra os demais de forma
+// genérica em vez de inventar um rótulo/tradução que não dá pra confirmar.
+function rotuloCampoAssinatura(chave: string): string {
+  return chave
+    .replace(/^contract_sign_/, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function camposAssinaturaExtra(contrato: ContratoDto): Array<[string, string]> {
+  return Object.entries(contrato)
+    .filter(
+      ([chave, valor]) =>
+        chave.startsWith('contract_sign_') &&
+        chave !== 'contract_sign_date' &&
+        chave !== 'contract_sign_doc_link' &&
+        valor != null &&
+        valor !== '',
+    )
+    .map(([chave, valor]) => [rotuloCampoAssinatura(chave), String(valor)])
+}
+
 export default function DetalheCliente() {
   const { clientPk } = useParams<{ clientPk: string }>()
   const pk = Number(clientPk)
@@ -111,6 +135,22 @@ export default function DetalheCliente() {
                     /controllrctl/contract/list) — é o indicador de status
                     da assinatura, não um campo à parte. */}
                 <p>Assinatura: {contrato.contract_sign_date ? `Assinado em ${formatarData(contrato.contract_sign_date)}` : 'Não assinado'}</p>
+                {camposAssinaturaExtra(contrato).map(([rotulo, valor]) => (
+                  <p key={rotulo} className="detalhe-cliente-campo-extra">
+                    {rotulo}: {valor}
+                  </p>
+                ))}
+                {contrato.itens && contrato.itens.length > 0 && (
+                  <div className="detalhe-cliente-itens">
+                    <span className="detalhe-cliente-itens-titulo">Itens do contrato</span>
+                    {contrato.itens.map((item, indice) => (
+                      <div key={item.item_pk ?? indice} className="detalhe-cliente-itens-linha">
+                        <span>{item.item_name ?? item.plan_name ?? 'Item'}</span>
+                        {item.item_amount && <strong>R$ {item.item_amount}</strong>}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {(contrato.contract_pk || contrato.contract_sign_doc_link) && (
                   <div className="detalhe-cliente-item-acoes">
                     {contrato.contract_pk && (

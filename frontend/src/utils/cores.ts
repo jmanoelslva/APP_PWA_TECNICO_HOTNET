@@ -33,6 +33,7 @@ export const CORES = {
   conexao: 'var(--cor-conexao)',
   onu: 'var(--cor-onu)',
   endereco: 'var(--cor-endereco)',
+  ferramentas: 'var(--cor-ferramentas)',
 } as const
 
 /**

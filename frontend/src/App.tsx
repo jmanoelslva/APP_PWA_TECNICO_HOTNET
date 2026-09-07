@@ -11,6 +11,7 @@ const BuscaCliente = lazy(() => import('./pages/BuscaCliente'))
 const Conexao = lazy(() => import('./pages/Conexao'))
 const DetalheCliente = lazy(() => import('./pages/DetalheCliente'))
 const DetalheOS = lazy(() => import('./pages/DetalheOS'))
+const Ferramentas = lazy(() => import('./pages/Ferramentas'))
 const Home = lazy(() => import('./pages/Home'))
 const Login = lazy(() => import('./pages/Login'))
 const OnuStatus = lazy(() => import('./pages/OnuStatus'))
@@ -87,6 +88,14 @@ function App() {
             element={
               <RotaProtegida>
                 <DetalheOS />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/ferramentas"
+            element={
+              <RotaProtegida>
+                <Ferramentas />
               </RotaProtegida>
             }
           />

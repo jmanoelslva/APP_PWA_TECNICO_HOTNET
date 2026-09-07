@@ -30,6 +30,20 @@ async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[in
     return contratos
 
 
+async def _itens_contrato(ctx: AuthContext, contract_pk: int) -> list[dict[str, Any]]:
+    # /controllrctl/contract/svclist não tem wrapper no brbyteapi vendorizado
+    # — chamada direta. "item.contract_pk" (com prefixo) confirmado no app
+    # cliente de referência (D:\Desktop\WEB_APPS\HOTNET_WEB_APP\src\api\
+    # client.ts::listarItensContrato); sem o prefixo "item." a ambiguidade
+    # de join (mesmo padrão já visto em client_pk/cpe_pk) provavelmente
+    # também se aplica aqui.
+    resposta = await ctx.controllr.call_api_post(
+        "/controllrctl/contract/svclist",
+        corpo(where_eq("item.contract_pk", contract_pk), sort="contract_pk", dir="ASC"),
+    )
+    return resposta.results if resposta.success else []
+
+
 @router.get("/busca")
 async def buscar_clientes(
     doc: str | None = Query(default=None, description="CPF/CNPJ do cliente"),
@@ -160,6 +174,11 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
         contrato = contratos_por_pk.get(cpe.get("contract_pk"))
         if contrato:
             cpe["contract_number"] = contrato.get("contract_number")
+
+    # Itens do contrato (planos/equipamentos cobrados) — o técnico pediu
+    # pra ver tudo, não só o resumo. Anexa em cada contrato como "itens".
+    for contract_pk, contrato in contratos_por_pk.items():
+        contrato["itens"] = await _itens_contrato(ctx, contract_pk)
 
     return {
         "success": True,

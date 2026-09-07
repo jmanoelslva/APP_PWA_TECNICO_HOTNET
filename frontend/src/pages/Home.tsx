@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   MdAccountCircle,
   MdBuild,
+  MdConstruction,
   MdDarkMode,
   MdGetApp,
   MdLightMode,
@@ -30,6 +31,7 @@ const ITENS_MENU = [
   { to: '/suporte', Icone: MdBuild, cor: CORES.suporte, label: 'OS / Suporte' },
   { to: '/conexao', Icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
   { to: '/onu', Icone: MdRouter, cor: CORES.onu, label: 'ONU' },
+  { to: '/ferramentas', Icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
 
 export default function Home() {
