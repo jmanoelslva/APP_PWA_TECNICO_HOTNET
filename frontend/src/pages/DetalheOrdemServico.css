@@ -141,6 +141,19 @@
   color: var(--cor-texto-secundario);
 }
 
+.detalhe-ordem-descricao {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cor-texto);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.detalhe-ordem-descricao:last-child {
+  margin-bottom: 0;
+}
+
 .detalhe-ordem-linha-campo {
   display: flex;
   align-items: center;

@@ -384,6 +384,23 @@ export default function DetalheOrdemServico() {
             </Link>
           </div>
 
+          {(ticket?.ticket_desc || osAtual.op_obs) && (
+            <div className="detalhe-ordem-card">
+              {ticket?.ticket_desc && (
+                <>
+                  <h2>Descrição do problema</h2>
+                  <p className="detalhe-ordem-descricao">{ticket.ticket_desc}</p>
+                </>
+              )}
+              {osAtual.op_obs && (
+                <>
+                  <h2>Observação</h2>
+                  <p className="detalhe-ordem-descricao">{osAtual.op_obs}</p>
+                </>
+              )}
+            </div>
+          )}
+
           <div className="detalhe-ordem-card">
             <h2>Cliente</h2>
             <div className="detalhe-ordem-linha-campo">
