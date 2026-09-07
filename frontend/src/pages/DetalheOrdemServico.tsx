@@ -285,12 +285,12 @@ export default function DetalheOrdemServico() {
       return
     }
     const observacao = observacaoEtapa.trim()
-    if (!observacao) {
-      toast(
-        acaoConfirmando.desfazer
-          ? `Descreva o motivo de desfazer "${etapa.rotulo}" antes de continuar.`
-          : `Descreva o que foi feito antes de confirmar "${etapa.rotulo}".`,
-      )
+    // Só "Finalizar" exige descrição (pedido explícito) — "Responder" e
+    // "Iniciar" ficam com o campo opcional, pro técnico usar se quiser.
+    // Desfazer nunca exige (o motivo de desfazer é sempre opcional).
+    const exigeObservacao = etapa.chave === 'finalizar' && !acaoConfirmando.desfazer
+    if (exigeObservacao && !observacao) {
+      toast(`Descreva o que foi feito antes de confirmar "${etapa.rotulo}".`)
       return
     }
     setExecutandoEtapa(true)
@@ -584,7 +584,11 @@ export default function DetalheOrdemServico() {
                 return acaoConfirmando.desfazer ? `${etapa.rotuloDesfazer}?` : `${etapa.rotuloMarcar}?`
               })()}
             </h2>
-            <p className="detalhe-ordem-modal-texto">Descreva o que foi feito — o sistema exige essa observação.</p>
+            <p className="detalhe-ordem-modal-texto">
+              {acaoConfirmando.etapa === 'finalizar' && !acaoConfirmando.desfazer
+                ? 'Descreva o que foi feito — obrigatório para finalizar.'
+                : 'Descreva o que foi feito, se quiser (opcional).'}
+            </p>
             <textarea
               value={observacaoEtapa}
               onChange={(e) => setObservacaoEtapa(e.target.value)}
