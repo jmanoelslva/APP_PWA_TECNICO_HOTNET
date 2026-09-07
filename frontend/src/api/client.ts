@@ -283,6 +283,17 @@ export function atualizarTelefone(phonePk: number, dados: TelefoneDto): Promise<
   return put(`telefones/${phonePk}`, dados)
 }
 
+// Só identificação e número — o backend preenche o resto (status,
+// válido, SVA, tipo de contato) com os mesmos valores padrão de um
+// telefone novo no painel (confirmado ao vivo, ver telefones.py).
+export function criarTelefone(dados: {
+  client_pk: number
+  phone_identification: string
+  phone_number: string
+}): Promise<{ success: boolean; results: unknown }> {
+  return post('telefones', dados)
+}
+
 // ---------------------------------------------------------------------
 // Endereço / localização
 // ---------------------------------------------------------------------

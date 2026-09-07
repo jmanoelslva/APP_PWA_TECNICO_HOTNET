@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
+  MdAdd,
   MdBuild,
   MdDescription,
   MdEdit,
@@ -18,6 +19,7 @@ import {
   buscarCpe,
   buscarDetalheCliente,
   buscarOnu,
+  criarTelefone,
   listarTickets,
   type ContratoDto,
   type CpeComboDto,
@@ -27,7 +29,6 @@ import {
   type TelefoneDto,
   type TicketDto,
 } from '../api/client'
-import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
@@ -86,6 +87,7 @@ export default function DetalheCliente() {
   const [chamados, setChamados] = useState<TicketDto[]>([])
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   const [telefoneEditando, setTelefoneEditando] = useState<TelefoneDto | null>(null)
+  const [adicionandoTelefone, setAdicionandoTelefone] = useState(false)
   // Contrato traz bastante informação (assinatura, itens...) que só
   // interessa quando o técnico realmente precisa dela — fica recolhido
   // por padrão pra não ocupar a tela à toa, expande sob demanda.
@@ -161,8 +163,6 @@ export default function DetalheCliente() {
 
   return (
     <div className="detalhe-cliente-tela tela-entrada">
-      <VoltarInicio to="/clientes" label="Clientes" />
-
       {carregando && (
         <div className="detalhe-cliente-card">
           <Skeleton width="50%" height={18} />
@@ -203,6 +203,9 @@ export default function DetalheCliente() {
                 <p>{tel.phone_number || 'Número não informado'}</p>
               </div>
             ))}
+            <button type="button" className="detalhe-cliente-chip detalhe-cliente-chip-botao" onClick={() => setAdicionandoTelefone(true)}>
+              <MdAdd size={14} /> Adicionar telefone
+            </button>
           </section>
 
           <section className="detalhe-cliente-secao">
@@ -446,6 +449,23 @@ export default function DetalheCliente() {
           }}
         />
       )}
+
+      {adicionandoTelefone && (
+        <ModalAdicionarTelefone
+          clientPk={pk}
+          onFechar={() => setAdicionandoTelefone(false)}
+          onSalvo={() => {
+            setAdicionandoTelefone(false)
+            toast('Telefone adicionado com sucesso.', 'sucesso')
+            // Recarrega em vez de montar o registro na mão — o phone_pk
+            // de verdade só vem do Controllr, e é mais simples pegar a
+            // lista atualizada inteira do que tentar adivinhar/extrair
+            // isso da resposta crua do /telefones (results não tem tipo
+            // garantido, ver criarTelefone em api/client.ts).
+            carregar()
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -625,6 +645,58 @@ function ModalEditarTelefone({
     <div className="detalhe-cliente-modal-fundo" onClick={onFechar}>
       <div className="detalhe-cliente-modal" onClick={(e) => e.stopPropagation()}>
         <h2>Editar telefone{telefone.phone_identification ? ` — ${telefone.phone_identification}` : ''}</h2>
+
+        <label>Número</label>
+        <input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
+
+        <div className="detalhe-cliente-modal-acoes">
+          <button onClick={onFechar}>Cancelar</button>
+          <button className="detalhe-cliente-modal-btn-primario" disabled={salvando} onClick={salvar}>
+            {salvando ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ModalAdicionarTelefone({
+  clientPk,
+  onFechar,
+  onSalvo,
+}: {
+  clientPk: number
+  onFechar: () => void
+  onSalvo: () => void
+}) {
+  const [identificacao, setIdentificacao] = useState('')
+  const [numero, setNumero] = useState('')
+  const [salvando, setSalvando] = useState(false)
+  const { toast } = useToast()
+
+  async function salvar() {
+    if (!identificacao.trim() || !numero.trim()) {
+      toast('Preencha identificação e número.')
+      return
+    }
+    setSalvando(true)
+    try {
+      await criarTelefone({ client_pk: clientPk, phone_identification: identificacao.trim(), phone_number: numero.trim() })
+      onSalvo()
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível adicionar o telefone.')
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  return (
+    <div className="detalhe-cliente-modal-fundo" onClick={onFechar}>
+      <div className="detalhe-cliente-modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Adicionar telefone</h2>
+
+        <label>Identificação</label>
+        <input value={identificacao} onChange={(e) => setIdentificacao(e.target.value)} placeholder="Ex: Celular, WhatsApp" />
 
         <label>Número</label>
         <input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />

@@ -324,6 +324,18 @@ Online" do próprio painel:
     `phone_code` — todos presentes no corpo, mesmo os que não mudaram).
     Mesmo padrão de "reenviar o que já veio carregado" já visto em
     endereço (`address_siafi` etc).
+  - `/controllrctl/phone/create` usa o **mesmo formato** de
+    `phone/update` (mesmos campos, incluindo um `phone_pk` vazio/
+    irrelevante — formulário "Nova Entrada" e "Editar" são o mesmo
+    componente no painel) — confirmado ao vivo criando e apagando um
+    telefone de teste (`phone_delete` logo em seguida, sem deixar
+    rastro). Defaults de um telefone novo no painel: `phone_status=1`,
+    `phone_valid=1`, `phone_sva=1`, `phone_type=15` (bitmask dos 4 tipos
+    de contato pré-marcados). `phone_operator` default é `"-"` (nenhuma
+    operadora selecionada). `phone_code` parece ser só um código de
+    verificação gerado no cliente (JS do painel), não validado por
+    formato específico — geramos um número aleatório de 6 dígitos no
+    backend em vez de depender de algo vindo do técnico.
 
 ---
 

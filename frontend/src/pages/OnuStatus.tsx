@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MdContentCopy, MdPeopleAlt, MdRefresh, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
+import { MdContentCopy, MdPeopleAlt, MdRefresh, MdRouter, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
 import { ApiError, atualizarInfoOnu, buscarCpe, buscarOnu, type CpeDto, type OnuDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
@@ -222,9 +222,6 @@ export default function OnuStatus() {
                 onBlur={() => setTimeout(() => setListaSerialAberta(false), 150)}
                 autoCapitalize="characters"
               />
-              <button type="submit" aria-label="Buscar">
-                <MdSearch size={20} />
-              </button>
             </div>
             {listaSerialAberta && serialBusca.trim().length >= 2 && (
               <ul className="onu-combobox-lista">
