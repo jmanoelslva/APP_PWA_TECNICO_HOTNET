@@ -60,7 +60,6 @@
   background: var(--cor-fundo);
   color: var(--cor-texto);
   font-size: 14px;
-  text-transform: uppercase;
 }
 
 .onu-busca-campo input:focus {
@@ -80,14 +79,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-}
-
-/* Usuário PPPoE não deve ficar forçado em maiúsculas (diferente do
-   serial, que é convencionalmente maiúsculo) — por isso essa classe
-   própria em vez de reaproveitar ".onu-combobox" genérico (usado pelos
-   DOIS formulários, serial incluso, só pra posicionar o dropdown). */
-.onu-busca-usuario .onu-busca-campo input {
-  text-transform: none;
 }
 
 .onu-combobox {

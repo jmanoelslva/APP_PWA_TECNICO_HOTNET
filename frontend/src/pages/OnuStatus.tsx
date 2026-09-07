@@ -29,6 +29,8 @@ const TEXTO_SINAL: Record<NivelSinal, string> = {
   desconhecida: 'Sinal não informado',
 }
 
+type ResultadoCombo = { tipo: 'serial'; item: OnuDto } | { tipo: 'usuario'; item: CpeDto }
+
 export default function OnuStatus() {
   const [params, setParams] = useSearchParams()
   const cpePkParam = params.get('cpe_pk')
@@ -52,26 +54,17 @@ export default function OnuStatus() {
   const [onu, setOnu] = useState<OnuDto | null>(null)
   const [atualizando, setAtualizando] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
-  // Combobox de busca por serial — confirmado ao vivo (aba de rede da
-  // própria tela "ONU - Registrado" do painel) que /fiber_ctl/onu/list
-  // no formato "wizard" (search_term=onu_serial) filtra por PREFIXO, não
-  // só match exato: digitar "ZTEG" já filtrou de 2550 pra 764 resultados,
-  // todos começando com esse prefixo. Mesmo endpoint que buscarOnu({serial})
-  // já chama, então dá pra usar direto aqui, sem precisar de outro
-  // endpoint (diferente do combobox de usuário PPPoE, ver comentário
-  // abaixo).
-  const [serialBusca, setSerialBusca] = useState('')
-  const [resultadosSerial, setResultadosSerial] = useState<OnuDto[]>([])
-  const [buscandoSerial, setBuscandoSerial] = useState(false)
-  const [listaSerialAberta, setListaSerialAberta] = useState(false)
-  // Busca por usuário PPPoE — mesmo combobox com filtro parcial da tela
-  // de Conexão: a busca em si é feita em /cpe/busca (que suporta ILIKE
-  // parcial), não em /onu/busca (que só acha por usuário exato); ao
-  // clicar num resultado, aí sim busca a ONU pelo usuário exato dele.
-  const [usuarioBusca, setUsuarioBusca] = useState('')
-  const [resultadosUsuario, setResultadosUsuario] = useState<CpeDto[]>([])
-  const [buscandoUsuario, setBuscandoUsuario] = useState(false)
-  const [listaUsuarioAberta, setListaUsuarioAberta] = useState(false)
+  // Combobox único — busca por serial (/fiber_ctl/onu/list no formato
+  // "wizard", confirmado ao vivo que filtra por PREFIXO: "ZTEG" já
+  // filtrou de 2550 pra 764 resultados) e por usuário PPPoE (/cpe/busca,
+  // que suporta ILIKE parcial) em paralelo, e mistura os dois num só
+  // dropdown — o técnico não precisa saber de antemão se tem o serial ou
+  // o usuário em mãos. Selecionar um item de serial já é a própria ONU;
+  // selecionar um item de usuário busca a ONU pelo usuário exato dele.
+  const [busca, setBusca] = useState('')
+  const [resultados, setResultados] = useState<ResultadoCombo[]>([])
+  const [buscandoCombo, setBuscandoCombo] = useState(false)
+  const [listaAberta, setListaAberta] = useState(false)
 
   useEffect(() => {
     if (!temParametroInicial) {
@@ -83,54 +76,34 @@ export default function OnuStatus() {
   }, [cpePkParam, usernameParam, serialParam])
 
   useEffect(() => {
-    if (temParametroInicial || serialBusca.trim().length < 2) {
-      setResultadosSerial([])
+    const valor = busca.trim()
+    if (valor.length < 2) {
+      setResultados([])
       return
     }
     let cancelado = false
-    setBuscandoSerial(true)
+    setBuscandoCombo(true)
     const temporizador = setTimeout(() => {
-      buscarOnu({ serial: serialBusca.trim() })
-        .then((resposta) => {
-          if (!cancelado) setResultadosSerial(resposta.results)
-        })
-        .catch(() => {
-          if (!cancelado) setResultadosSerial([])
+      Promise.all([
+        buscarOnu({ serial: valor }).catch(() => ({ results: [] as OnuDto[] })),
+        buscarCpe({ username: valor }).catch(() => ({ results: [] as CpeDto[] })),
+      ])
+        .then(([respostaOnu, respostaCpe]) => {
+          if (cancelado) return
+          setResultados([
+            ...respostaOnu.results.map((item): ResultadoCombo => ({ tipo: 'serial', item })),
+            ...respostaCpe.results.map((item): ResultadoCombo => ({ tipo: 'usuario', item })),
+          ])
         })
         .finally(() => {
-          if (!cancelado) setBuscandoSerial(false)
+          if (!cancelado) setBuscandoCombo(false)
         })
     }, 350)
     return () => {
       cancelado = true
       clearTimeout(temporizador)
     }
-  }, [serialBusca, temParametroInicial])
-
-  useEffect(() => {
-    if (temParametroInicial || usuarioBusca.trim().length < 2) {
-      setResultadosUsuario([])
-      return
-    }
-    let cancelado = false
-    setBuscandoUsuario(true)
-    const temporizador = setTimeout(() => {
-      buscarCpe({ username: usuarioBusca.trim() })
-        .then((resposta) => {
-          if (!cancelado) setResultadosUsuario(resposta.results)
-        })
-        .catch(() => {
-          if (!cancelado) setResultadosUsuario([])
-        })
-        .finally(() => {
-          if (!cancelado) setBuscandoUsuario(false)
-        })
-    }, 350)
-    return () => {
-      cancelado = true
-      clearTimeout(temporizador)
-    }
-  }, [usuarioBusca, temParametroInicial])
+  }, [busca])
 
   async function carregar(chamada: () => ReturnType<typeof buscarOnu>) {
     setCarregando(true)
@@ -145,20 +118,20 @@ export default function OnuStatus() {
     }
   }
 
-  function buscarPorSerialAtual() {
-    const serial = serialBusca.trim()
-    if (!serial) return
-    carregar(() => buscarOnu({ serial }))
+  function selecionar(resultado: ResultadoCombo) {
+    setListaAberta(false)
+    setBusca('')
+    if (resultado.tipo === 'serial' && resultado.item.sn) setParams({ serial: resultado.item.sn })
+    else if (resultado.tipo === 'usuario' && resultado.item.username) setParams({ username: resultado.item.username })
   }
 
-  function aoBuscarSerial(evento: FormEvent) {
+  function aoSubmeterBusca(evento: FormEvent) {
     evento.preventDefault()
-    buscarPorSerialAtual()
+    if (resultados.length === 1) selecionar(resultados[0])
   }
 
   function tentarNovamente() {
-    if (temParametroInicial) carregar(buscarInicial)
-    else buscarPorSerialAtual()
+    carregar(buscarInicial)
   }
 
   async function atualizarAgora() {
@@ -207,95 +180,51 @@ export default function OnuStatus() {
     <div className="onu-tela tela-entrada">
       <CabecalhoTela icone={MdRouter} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
 
-      {semSelecao && (
-        <>
-          <form className="onu-card onu-busca onu-combobox" onSubmit={aoBuscarSerial}>
-            <label htmlFor="onu-serial-input">Serial da ONU</label>
-            <div className="onu-busca-campo">
-              <input
-                id="onu-serial-input"
-                type="text"
-                placeholder="Ex: ZTEGCEC2A8EF"
-                value={serialBusca}
-                onChange={(e) => setSerialBusca(e.target.value)}
-                onFocus={() => setListaSerialAberta(true)}
-                onBlur={() => setTimeout(() => setListaSerialAberta(false), 150)}
-                autoCapitalize="characters"
-              />
-            </div>
-            {listaSerialAberta && serialBusca.trim().length >= 2 && (
-              <ul className="onu-combobox-lista">
-                {buscandoSerial && <li className="onu-combobox-vazio">Buscando…</li>}
-                {!buscandoSerial && resultadosSerial.length === 0 && (
-                  <li className="onu-combobox-vazio">Nenhuma ONU encontrada.</li>
-                )}
-                {!buscandoSerial &&
-                  resultadosSerial.map((resultado) => (
-                    <li key={resultado.pk}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => {
-                          setListaSerialAberta(false)
-                          if (resultado.sn) setParams({ serial: resultado.sn })
-                        }}
-                      >
-                        <strong>{resultado.sn}</strong>
-                        {resultado.client_name && ` — ${resultado.client_name}`}
-                      </button>
-                    </li>
-                  ))}
-              </ul>
-            )}
-          </form>
+      <form className="onu-card onu-busca onu-combobox" onSubmit={aoSubmeterBusca}>
+        <label htmlFor="onu-busca-input">Serial da ONU ou usuário PPPoE</label>
+        <div className="onu-busca-campo">
+          <input
+            id="onu-busca-input"
+            type="text"
+            placeholder="Digite o serial ou o usuário"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            onFocus={() => setListaAberta(true)}
+            onBlur={() => setTimeout(() => setListaAberta(false), 150)}
+          />
+        </div>
+        {listaAberta && busca.trim().length >= 2 && (
+          <ul className="onu-combobox-lista">
+            {buscandoCombo && <li className="onu-combobox-vazio">Buscando…</li>}
+            {!buscandoCombo && resultados.length === 0 && <li className="onu-combobox-vazio">Nada encontrado.</li>}
+            {!buscandoCombo &&
+              resultados.map((resultado) => (
+                <li key={`${resultado.tipo}-${resultado.item.pk}`}>
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => selecionar(resultado)}>
+                    {resultado.tipo === 'serial' ? (
+                      <>
+                        <strong>{resultado.item.sn}</strong>
+                        {resultado.item.client_name && ` — ${resultado.item.client_name}`}
+                      </>
+                    ) : (
+                      <>
+                        <strong>{resultado.item.username}</strong>
+                        {resultado.item.client_complete_name && ` — ${resultado.item.client_complete_name}`}
+                      </>
+                    )}
+                  </button>
+                </li>
+              ))}
+          </ul>
+        )}
+      </form>
 
-          <div className="onu-card onu-busca onu-combobox onu-busca-usuario">
-            <label htmlFor="onu-usuario-input">Usuário PPPoE</label>
-            <div className="onu-busca-campo">
-              <input
-                id="onu-usuario-input"
-                type="text"
-                placeholder="Digite o usuário"
-                value={usuarioBusca}
-                onChange={(e) => setUsuarioBusca(e.target.value)}
-                onFocus={() => setListaUsuarioAberta(true)}
-                onBlur={() => setTimeout(() => setListaUsuarioAberta(false), 150)}
-              />
-            </div>
-            {listaUsuarioAberta && usuarioBusca.trim().length >= 2 && (
-              <ul className="onu-combobox-lista">
-                {buscandoUsuario && <li className="onu-combobox-vazio">Buscando…</li>}
-                {!buscandoUsuario && resultadosUsuario.length === 0 && (
-                  <li className="onu-combobox-vazio">Nenhum usuário encontrado.</li>
-                )}
-                {!buscandoUsuario &&
-                  resultadosUsuario.map((resultado) => (
-                    <li key={resultado.pk}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => {
-                          setListaUsuarioAberta(false)
-                          if (resultado.username) setParams({ username: resultado.username })
-                        }}
-                      >
-                        <strong>{resultado.username}</strong>
-                        {resultado.client_complete_name && ` — ${resultado.client_complete_name}`}
-                      </button>
-                    </li>
-                  ))}
-              </ul>
-            )}
-          </div>
-
-          {!erro && (
-            <EstadoVazio
-              icone={MdRouter}
-              titulo="Busque pelo serial da ONU ou pelo usuário PPPoE"
-              subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
-            />
-          )}
-        </>
+      {semSelecao && !erro && (
+        <EstadoVazio
+          icone={MdRouter}
+          titulo="Busque pelo serial da ONU ou pelo usuário PPPoE"
+          subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
+        />
       )}
 
       {carregando && (
