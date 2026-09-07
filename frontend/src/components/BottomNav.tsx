@@ -1,14 +1,16 @@
 import { useState, type CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MdBuild, MdHome, MdLogout, MdPeopleAlt, MdWifi } from 'react-icons/md'
+import { MdBuild, MdHome, MdLogout, MdWifi } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import ModalConfirmarLogout from './ModalConfirmarLogout'
 import './BottomNav.css'
 
+// "Clientes" saiu daqui de propósito — a busca combobox da Home já leva
+// direto pra tela do cliente, então essa aba virou um caminho redundante
+// (ver Home.tsx).
 const ITENS = [
   { to: '/', icone: MdHome, cor: CORES.primaria, label: 'Início', fim: true },
-  { to: '/clientes', icone: MdPeopleAlt, cor: CORES.cliente, label: 'Clientes' },
   { to: '/suporte', icone: MdBuild, cor: CORES.suporte, label: 'OS' },
   { to: '/conexao', icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
 ]

@@ -9,7 +9,6 @@ import {
   MdLightMode,
   MdLogout,
   MdRouter,
-  MdSearch,
   MdWifi,
 } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
@@ -50,8 +49,9 @@ export default function Home() {
   // ONU/CTO: digita um pedaço do nome/contrato/documento e a lista vai
   // filtrando no backend com debounce, sem precisar apertar buscar nem
   // sair da Home pra ver o resultado — clicar num item já leva direto
-  // pro cliente. O botão de buscar continua levando pra tela de busca
-  // completa (útil quando há muitos resultados).
+  // pro cliente. Sem botão de buscar (lupa): o combobox já cobre a busca
+  // sozinho; Enter no campo ainda leva pra tela de busca completa, útil
+  // quando há muitos resultados pra rolar.
   const [busca, setBusca] = useState('')
   const [resultadosBusca, setResultadosBusca] = useState<BuscaClienteResultado[]>([])
   const [buscando, setBuscando] = useState(false)
@@ -153,9 +153,6 @@ export default function Home() {
               onBlur={() => setTimeout(() => setListaAberta(false), 150)}
               placeholder="Buscar cliente por nome, contrato ou CPF/CNPJ"
             />
-            <button type="submit" aria-label="Buscar">
-              <MdSearch size={20} />
-            </button>
           </div>
           {listaAberta && busca.trim().length >= 2 && (
             <ul className="home-combobox-lista">

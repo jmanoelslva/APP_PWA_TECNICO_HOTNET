@@ -244,6 +244,10 @@
   color: var(--cor-texto);
 }
 
+/* Mesmo padrão de contraste do card de sinal em OnuStatus.css (fundo
+   levemente tingido + texto na cor normal do tema) — um fundo sólido com
+   texto branco fixo (versão anterior) ficava ilegível em "alerta"
+   (laranja) e "boa" (verde), contraste baixo demais com branco por cima. */
 .detalhe-cliente-sinal-badge {
   display: inline-block;
   width: fit-content;
@@ -251,23 +255,29 @@
   border-radius: 8px;
   font-size: 11px;
   font-weight: 800;
-  color: var(--cor-branco-fixo);
+  color: var(--cor-texto);
+  border: 1.5px solid transparent;
 }
 
 .detalhe-cliente-sinal-badge.boa {
-  background: var(--cor-sucesso);
+  border-color: color-mix(in srgb, var(--cor-sucesso) 40%, transparent);
+  background: color-mix(in srgb, var(--cor-sucesso) 14%, var(--cor-superficie));
 }
 
 .detalhe-cliente-sinal-badge.alerta {
-  background: var(--cor-alerta);
+  border-color: color-mix(in srgb, var(--cor-atencao) 50%, transparent);
+  background: color-mix(in srgb, var(--cor-atencao) 16%, var(--cor-superficie));
 }
 
 .detalhe-cliente-sinal-badge.critica {
-  background: var(--cor-erro);
+  border-color: color-mix(in srgb, var(--cor-erro) 40%, transparent);
+  background: color-mix(in srgb, var(--cor-erro) 14%, var(--cor-superficie));
 }
 
 .detalhe-cliente-sinal-badge.desconhecida {
-  background: var(--cor-texto-terciario);
+  border-color: var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto-terciario);
 }
 
 .detalhe-cliente-resumo-carregando {
