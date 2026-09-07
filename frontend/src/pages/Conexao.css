@@ -138,6 +138,32 @@
   cursor: default;
 }
 
+.conexao-input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--cor-borda-suave);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-size: 14px;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.conexao-input:focus {
+  outline: none;
+  border-color: var(--cor-conexao);
+}
+
+.conexao-campo .conexao-input {
+  width: 100%;
+}
+
+.conexao-card > .conexao-btn-secundario {
+  margin-top: 8px;
+}
+
 .conexao-sessao-vazio {
   margin: 8px 0 0;
   font-size: 12px;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MdContentCopy, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
-import { ApiError, buscarCpe, buscarSessaoOnlineCpe, type CpeDto } from '../api/client'
+import { ApiError, atualizarWifiCpe, buscarCpe, buscarSessaoOnlineCpe, type CpeDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
@@ -26,6 +26,13 @@ export default function Conexao() {
   const [mostrarSenhaRoteador, setMostrarSenhaRoteador] = useState(false)
   const [sessao, setSessao] = useState<Record<string, unknown> | null>(null)
   const [carregandoSessao, setCarregandoSessao] = useState(false)
+  // Campos editáveis de criptografia do Wi-Fi do CPE — pré-preenchidos
+  // com o que o sistema fornecer ao carregar, e reenviados ao Controllr
+  // só quando o técnico salvar.
+  const [wifiTipo, setWifiTipo] = useState('')
+  const [wifiSenha, setWifiSenha] = useState('')
+  const [mostrarSenhaWifi, setMostrarSenhaWifi] = useState(false)
+  const [salvandoWifi, setSalvandoWifi] = useState(false)
 
   useEffect(() => {
     if (!cpePkParam) {
@@ -41,11 +48,33 @@ export default function Conexao() {
     setErro(null)
     try {
       const resposta = await buscarCpe({ cpe_pk: Number(cpePkParam) })
-      setCpe(resposta.results[0] ?? null)
+      const cpeCarregado = resposta.results[0] ?? null
+      setCpe(cpeCarregado)
+      setWifiTipo(cpeCarregado?.wifi_encryption_type != null ? String(cpeCarregado.wifi_encryption_type) : '')
+      setWifiSenha(cpeCarregado?.wifi_encryption_password ?? '')
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados de conexão.')
     } finally {
       setCarregando(false)
+    }
+  }
+
+  async function salvarWifi() {
+    if (!cpe?.pk) return
+    setSalvandoWifi(true)
+    try {
+      await atualizarWifiCpe(cpe.pk, {
+        wifi_encryption_type: wifiTipo.trim() ? Number(wifiTipo.trim()) : undefined,
+        wifi_encryption_password: wifiSenha,
+      })
+      setCpe((atual) =>
+        atual ? { ...atual, wifi_encryption_type: wifiTipo.trim() ? Number(wifiTipo.trim()) : undefined, wifi_encryption_password: wifiSenha } : atual,
+      )
+      toast('Wi-Fi do CPE atualizado.', 'sucesso')
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível atualizar o Wi-Fi.')
+    } finally {
+      setSalvandoWifi(false)
     }
   }
 
@@ -297,6 +326,47 @@ export default function Conexao() {
                 </div>
               </div>
             )}
+
+            <div className="conexao-card">
+              {/* cpe_wifi_encryption_type/password (confirmado na doc oficial
+                  do Controllr) — não há enum documentado pro "type", então
+                  o campo fica editável como número cru, sem tradução
+                  inventada por nós. Pré-preenchido com o que o sistema
+                  fornecer; só é enviado ao Controllr quando o técnico
+                  clicar em Salvar. */}
+              <h2>Wi-Fi do CPE (criptografia)</h2>
+              <div className="conexao-campo">
+                <span>Tipo de criptografia (código)</span>
+                <input
+                  className="conexao-input"
+                  type="number"
+                  value={wifiTipo}
+                  onChange={(e) => setWifiTipo(e.target.value)}
+                  placeholder="Não informado"
+                />
+              </div>
+              <div className="conexao-campo">
+                <span>Senha do Wi-Fi</span>
+                <div className="conexao-campo-valor">
+                  <input
+                    className="conexao-input"
+                    type={mostrarSenhaWifi ? 'text' : 'password'}
+                    value={wifiSenha}
+                    onChange={(e) => setWifiSenha(e.target.value)}
+                    placeholder="Não informado"
+                  />
+                  <button
+                    onClick={() => setMostrarSenhaWifi((v) => !v)}
+                    aria-label={mostrarSenhaWifi ? 'Ocultar senha do Wi-Fi' : 'Mostrar senha do Wi-Fi'}
+                  >
+                    {mostrarSenhaWifi ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                  </button>
+                </div>
+              </div>
+              <button className="conexao-btn-secundario" onClick={salvarWifi} disabled={salvandoWifi}>
+                {salvandoWifi ? 'Salvando…' : 'Salvar Wi-Fi'}
+              </button>
+            </div>
 
             <div className="conexao-card">
               <h2>Rede</h2>

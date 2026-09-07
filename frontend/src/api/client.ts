@@ -311,6 +311,13 @@ export interface CpeDto {
   plan_name?: string
   dp_name?: string
   dp_pk?: number
+  // Criptografia do Wi-Fi do próprio CPE/roteador (cpe_wifi_encryption_type/
+  // password na API — confirmado na doc oficial, apidoc.brbyte.com/#post-
+  // /aaa_ctl/cpe/update). Não há enum documentado pro "type" (a doc só diz
+  // que é number), por isso o app não tenta traduzir o código pra um nome
+  // de protocolo — mostra e edita o valor cru que o sistema fornecer.
+  wifi_encryption_type?: number
+  wifi_encryption_password?: string
 }
 
 export interface BuscaCpeResponse {
@@ -329,6 +336,13 @@ export interface SessaoOnlineResponse {
 
 export function buscarSessaoOnlineCpe(cpePk: number): Promise<SessaoOnlineResponse> {
   return get<SessaoOnlineResponse>(`cpe/${cpePk}/sessao`)
+}
+
+export function atualizarWifiCpe(
+  cpePk: number,
+  dados: { wifi_encryption_type?: number; wifi_encryption_password?: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return put(`cpe/${cpePk}/wifi`, dados)
 }
 
 // ---------------------------------------------------------------------
