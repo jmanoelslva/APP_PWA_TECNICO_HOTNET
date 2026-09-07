@@ -328,7 +328,9 @@ export interface BuscaCpeResponse {
   results: CpeDto[]
 }
 
-export function buscarCpe(filtro: { client_pk?: number; contract_pk?: number; cpe_pk?: number }): Promise<BuscaCpeResponse> {
+export function buscarCpe(
+  filtro: { client_pk?: number; contract_pk?: number; cpe_pk?: number; username?: string },
+): Promise<BuscaCpeResponse> {
   return get<BuscaCpeResponse>('cpe/busca', filtro)
 }
 

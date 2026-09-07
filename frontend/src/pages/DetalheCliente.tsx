@@ -101,9 +101,18 @@ export default function DetalheCliente() {
             {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
             {contratos.map((contrato) => (
               <div key={contrato.contract_pk} className="detalhe-cliente-item">
-                <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
+                <div className="detalhe-cliente-item-topo">
+                  <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
+                </div>
                 {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
                 {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
+                {contrato.contract_pk && (
+                  <div className="detalhe-cliente-item-acoes">
+                    <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
+                      <MdWifi size={14} /> Conexão
+                    </Link>
+                  </div>
+                )}
               </div>
             ))}
           </section>

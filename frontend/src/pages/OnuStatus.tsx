@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { MdContentCopy, MdRefresh, MdRouter, MdSearch, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { Link, useSearchParams } from 'react-router-dom'
+import { MdContentCopy, MdPeopleAlt, MdRefresh, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
 import { ApiError, atualizarInfoOnu, buscarOnu, type OnuDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import VoltarInicio from '../components/VoltarInicio'
@@ -233,6 +233,14 @@ export default function OnuStatus() {
                 <span>Usuário</span>
                 <div className="onu-campo-valor">
                   <strong>{onu.wancfg_pppoe_username}</strong>
+                  <Link
+                    to={`/conexao?username=${encodeURIComponent(onu.wancfg_pppoe_username)}`}
+                    className="onu-btn-link"
+                    aria-label="Ver conexão deste usuário"
+                    viewTransition
+                  >
+                    <MdWifi size={16} />
+                  </Link>
                   <button onClick={() => copiar(onu.wancfg_pppoe_username, 'Usuário')} aria-label="Copiar usuário">
                     <MdContentCopy size={16} />
                   </button>
@@ -287,8 +295,26 @@ export default function OnuStatus() {
           <div className="onu-card">
             <div className="onu-linha">
               <span>Cliente</span>
-              <strong>{onu.client_name ?? '—'}</strong>
+              {onu.client_pk ? (
+                <Link to={`/clientes/${onu.client_pk}`} className="onu-link" viewTransition>
+                  <MdPeopleAlt size={14} /> {onu.client_name ?? '—'}
+                </Link>
+              ) : (
+                <strong>{onu.client_name ?? '—'}</strong>
+              )}
             </div>
+            {(onu.contract_number ?? onu.contract_pk) != null && (
+              <div className="onu-linha">
+                <span>Contrato</span>
+                {onu.contract_pk ? (
+                  <Link to={`/conexao?contract_pk=${onu.contract_pk}`} className="onu-link" viewTransition>
+                    <MdWifi size={14} /> {onu.contract_number ?? onu.contract_pk}
+                  </Link>
+                ) : (
+                  <strong>{onu.contract_number}</strong>
+                )}
+              </div>
+            )}
             <div className="onu-linha">
               <span>Serial</span>
               <strong>{onu.sn ?? '—'}</strong>

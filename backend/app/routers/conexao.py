@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import corpo, where_eq
+from ..where import corpo, where_eq, where_ilike
 
 router = APIRouter(prefix="/cpe", tags=["conexao"])
 
@@ -16,19 +16,29 @@ async def buscar_cpe(
     client_pk: int | None = Query(default=None),
     contract_pk: int | None = Query(default=None),
     cpe_pk: int | None = Query(default=None),
+    username: str | None = Query(default=None, description="Usuário PPPoE do CPE — mesma busca que sai da tela do cliente"),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
-    if not client_pk and not contract_pk and not cpe_pk:
-        raise HTTPException(status_code=400, detail="Informe client_pk, contract_pk ou cpe_pk.")
+    if not client_pk and not contract_pk and not cpe_pk and not username:
+        raise HTTPException(status_code=400, detail="Informe client_pk, contract_pk, cpe_pk ou username.")
 
     # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe", não "cpe"
     # (confirmado no app cliente de referência, que filtra
     # aaa_ctl/connection/session por "aaa_cpe.cpe_pk"). cpe_pk/contract_pk
     # não têm esse problema (colunas próprias, sem ambiguidade de join).
-    campo, valor = (
-        ("cpe_pk", cpe_pk) if cpe_pk else ("contract_pk", contract_pk) if contract_pk else ("aaa_cpe.client_pk", client_pk)
-    )
-    resposta = await ctx.controllr.cpe_list(corpo(where_eq(campo, valor), limit=20), model_return=True, model_extended=True)
+    # username usa ILIKE sem "%" (comparação exata, mas sem diferenciar
+    # maiúsculas/minúsculas) em vez de EQUAL — é o mesmo dado que o
+    # técnico já viu na tela do cliente, então tolera diferença de caixa
+    # ao digitar de novo.
+    if cpe_pk:
+        where = where_eq("cpe_pk", cpe_pk)
+    elif contract_pk:
+        where = where_eq("contract_pk", contract_pk)
+    elif username:
+        where = where_ilike("cpe_username", username.strip())
+    else:
+        where = where_eq("aaa_cpe.client_pk", client_pk)
+    resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível buscar os CPEs.", resposta))
     return {"success": True, "results": [cpe.model_dump(mode="json") for cpe in resposta.results]}

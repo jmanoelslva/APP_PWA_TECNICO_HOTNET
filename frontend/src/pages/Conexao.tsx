@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { MdContentCopy, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { MdContentCopy, MdPeopleAlt, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
 import {
   ApiError,
   atualizarDetalhesCpe,
@@ -22,10 +22,22 @@ import { formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/forma
 import './Conexao.css'
 
 export default function Conexao() {
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const cpePkParam = params.get('cpe_pk')
+  const contractPkParam = params.get('contract_pk')
+  const usernameParam = params.get('username')
+  // cpe_pk é o mais específico (sem ambiguidade de busca) — prioriza ele
+  // quando vier mais de um parâmetro ao mesmo tempo.
+  const temParametroInicial = !!cpePkParam || !!usernameParam || !!contractPkParam
   const { toast } = useToast()
 
+  function buscarInicial() {
+    if (cpePkParam) return buscarCpe({ cpe_pk: Number(cpePkParam) })
+    if (usernameParam) return buscarCpe({ username: usernameParam })
+    return buscarCpe({ contract_pk: Number(contractPkParam) })
+  }
+
+  const [buscaUsuario, setBuscaUsuario] = useState(usernameParam ?? '')
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [cpe, setCpe] = useState<CpeDto | null>(null)
@@ -67,19 +79,19 @@ export default function Conexao() {
   }, [])
 
   useEffect(() => {
-    if (!cpePkParam) {
+    if (!temParametroInicial) {
       setCarregando(false)
       return
     }
-    carregar()
+    carregar(buscarInicial)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cpePkParam])
+  }, [cpePkParam, usernameParam, contractPkParam])
 
-  async function carregar() {
+  async function carregar(chamada: () => ReturnType<typeof buscarCpe> = buscarInicial) {
     setCarregando(true)
     setErro(null)
     try {
-      const resposta = await buscarCpe({ cpe_pk: Number(cpePkParam) })
+      const resposta = await chamada()
       const cpeCarregado = resposta.results[0] ?? null
       setCpe(cpeCarregado)
       setWifiTipo(cpeCarregado?.wifi_encryption_type != null ? String(cpeCarregado.wifi_encryption_type) : '')
@@ -95,6 +107,24 @@ export default function Conexao() {
     } finally {
       setCarregando(false)
     }
+  }
+
+  function buscarPorUsuarioAtual() {
+    const usuario = buscaUsuario.trim()
+    if (!usuario) return
+    // Guarda na URL (?username=...) — mesmo motivo da busca de cliente:
+    // sair pra outra tela e voltar não deve perder a busca.
+    setParams({ username: usuario })
+  }
+
+  function aoBuscarUsuario(evento: FormEvent) {
+    evento.preventDefault()
+    buscarPorUsuarioAtual()
+  }
+
+  function tentarNovamente() {
+    if (temParametroInicial) carregar(buscarInicial)
+    else buscarPorUsuarioAtual()
   }
 
   async function salvarObs() {
@@ -342,11 +372,34 @@ export default function Conexao() {
         <VoltarInicio />
         <CabecalhoTela icone={MdWifi} cor={CORES.conexao} titulo="Conexão" subtitulo="Dados de acesso e sessão do cliente." />
 
-        {!cpePkParam && (
-          <EstadoVazio icone={MdWifi} titulo="Nenhuma conexão selecionada" subtitulo="Acesse esta tela a partir dos detalhes de um cliente." />
+        {!temParametroInicial && (
+          <>
+            <form className="conexao-card conexao-busca" onSubmit={aoBuscarUsuario}>
+              <label htmlFor="conexao-usuario-input">Usuário PPPoE</label>
+              <div className="conexao-busca-campo">
+                <input
+                  id="conexao-usuario-input"
+                  type="text"
+                  placeholder="Ex: eronildes-oit"
+                  value={buscaUsuario}
+                  onChange={(e) => setBuscaUsuario(e.target.value)}
+                />
+                <button type="submit" aria-label="Buscar">
+                  <MdSearch size={20} />
+                </button>
+              </div>
+            </form>
+            {!erro && (
+              <EstadoVazio
+                icone={MdWifi}
+                titulo="Busque pelo usuário PPPoE"
+                subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
+              />
+            )}
+          </>
         )}
 
-        {cpePkParam && carregando && (
+        {carregando && (
           <div className="conexao-card">
             <Skeleton width="50%" height={16} />
             <Skeleton width="70%" height={13} />
@@ -354,19 +407,29 @@ export default function Conexao() {
           </div>
         )}
 
-        {cpePkParam && !carregando && erro && (
+        {!carregando && erro && (
           <div className="conexao-status">
             <p>{erro}</p>
-            <button onClick={carregar}>Tentar novamente</button>
+            <button onClick={tentarNovamente}>Tentar novamente</button>
           </div>
         )}
 
-        {cpePkParam && !carregando && !erro && cpe && (
+        {temParametroInicial && !carregando && !erro && !cpe && (
+          <EstadoVazio icone={MdWifi} titulo="Nenhuma conexão encontrada." />
+        )}
+
+        {!carregando && !erro && cpe && (
           <>
             <div className="conexao-card">
               <div className="conexao-linha">
                 <span>Cliente</span>
-                <strong>{cpe.client_complete_name ?? '—'}</strong>
+                {cpe.client_pk ? (
+                  <Link to={`/clientes/${cpe.client_pk}`} className="conexao-link" viewTransition>
+                    <MdPeopleAlt size={14} /> {cpe.client_complete_name ?? '—'}
+                  </Link>
+                ) : (
+                  <strong>{cpe.client_complete_name ?? '—'}</strong>
+                )}
               </div>
               <div className="conexao-linha">
                 <span>Contrato</span>
@@ -384,6 +447,11 @@ export default function Conexao() {
                 <span>Usuário</span>
                 <div className="conexao-campo-valor">
                   <strong>{cpe.username ?? '—'}</strong>
+                  {cpe.username && (
+                    <Link to={`/onu?username=${encodeURIComponent(cpe.username)}`} className="conexao-btn-link" aria-label="Ver ONU deste usuário" viewTransition>
+                      <MdRouter size={16} />
+                    </Link>
+                  )}
                   <button onClick={() => copiar(cpe.username, 'Usuário')} aria-label="Copiar usuário">
                     <MdContentCopy size={16} />
                   </button>
