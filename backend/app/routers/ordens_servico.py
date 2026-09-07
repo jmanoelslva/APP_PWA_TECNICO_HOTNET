@@ -58,8 +58,13 @@ async def listar_ordens_servico(
         condicoes.extend(_condicoes_abertas())
 
     if minhas and ctx.session.user_pk is not None:
-        # Mesmo padrão confirmado pra ticket_list (oper 21 = IN).
-        condicoes.append({"field": "user_pk", "oper": OPER_IN, "value": [ctx.session.user_pk]})
+        # "support_op.user_pk" (com prefixo) — bare "user_pk" é ambíguo em
+        # /support_ctl/os/list (erro real do Postgres confirmado batendo
+        # direto no Controllr: code 42702 = "ambiguous_column"; a tabela
+        # certa, "support_op", foi achada testando candidatos até um dar
+        # 200 em vez de 42P01 "relation does not exist"). Mesmo padrão de
+        # bug já visto em client_pk/contract_pk/dp_port. oper 21 = IN.
+        condicoes.append({"field": "support_op.user_pk", "oper": OPER_IN, "value": [ctx.session.user_pk]})
 
     where = where_and(*condicoes) if condicoes else None
     resposta = await ctx.controllr.call_api_post(
