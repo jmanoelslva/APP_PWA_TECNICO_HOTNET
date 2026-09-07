@@ -37,7 +37,13 @@ export default function Conexao() {
     return buscarCpe({ contract_pk: Number(contractPkParam) })
   }
 
+  // Busca por usuário PPPoE — igual ao combobox de CTO: digita um pedaço
+  // do usuário e a lista vai filtrando ao vivo (busca no backend com
+  // debounce), sem precisar do nome exato nem apertar buscar.
   const [buscaUsuario, setBuscaUsuario] = useState(usernameParam ?? '')
+  const [resultadosBuscaUsuario, setResultadosBuscaUsuario] = useState<CpeDto[]>([])
+  const [buscandoUsuario, setBuscandoUsuario] = useState(false)
+  const [listaUsuarioAberta, setListaUsuarioAberta] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [cpe, setCpe] = useState<CpeDto | null>(null)
@@ -84,6 +90,35 @@ export default function Conexao() {
         /* lista de CTOs é só conveniência pro seletor — se falhar, o técnico ainda pode digitar o pk em outro lugar */
       })
   }, [])
+
+  useEffect(() => {
+    // Só busca ao vivo na tela de "sem conexão selecionada" (senão ficaria
+    // buscando de novo toda vez que o campo de usuário já carregado muda
+    // por outro motivo). Menos de 2 caracteres não busca — evita trazer
+    // metade da base de usuários a cada tecla.
+    if (temParametroInicial || buscaUsuario.trim().length < 2) {
+      setResultadosBuscaUsuario([])
+      return
+    }
+    let cancelado = false
+    setBuscandoUsuario(true)
+    const temporizador = setTimeout(() => {
+      buscarCpe({ username: buscaUsuario.trim() })
+        .then((resposta) => {
+          if (!cancelado) setResultadosBuscaUsuario(resposta.results)
+        })
+        .catch(() => {
+          if (!cancelado) setResultadosBuscaUsuario([])
+        })
+        .finally(() => {
+          if (!cancelado) setBuscandoUsuario(false)
+        })
+    }, 350)
+    return () => {
+      cancelado = true
+      clearTimeout(temporizador)
+    }
+  }, [buscaUsuario, temParametroInicial])
 
   useEffect(() => {
     if (!temParametroInicial) {
@@ -384,20 +419,46 @@ export default function Conexao() {
 
         {!temParametroInicial && (
           <>
-            <form className="conexao-card conexao-busca" onSubmit={aoBuscarUsuario}>
+            <form className="conexao-card conexao-busca conexao-combobox" onSubmit={aoBuscarUsuario}>
               <label htmlFor="conexao-usuario-input">Usuário PPPoE</label>
               <div className="conexao-busca-campo">
                 <input
                   id="conexao-usuario-input"
                   type="text"
-                  placeholder="Ex: eronildes-oit"
+                  placeholder="Digite parte do usuário — ex: eronildes"
                   value={buscaUsuario}
                   onChange={(e) => setBuscaUsuario(e.target.value)}
+                  onFocus={() => setListaUsuarioAberta(true)}
+                  onBlur={() => setTimeout(() => setListaUsuarioAberta(false), 150)}
                 />
                 <button type="submit" aria-label="Buscar">
                   <MdSearch size={20} />
                 </button>
               </div>
+              {listaUsuarioAberta && buscaUsuario.trim().length >= 2 && (
+                <ul className="conexao-combobox-lista">
+                  {buscandoUsuario && <li className="conexao-combobox-vazio">Buscando…</li>}
+                  {!buscandoUsuario && resultadosBuscaUsuario.length === 0 && (
+                    <li className="conexao-combobox-vazio">Nenhum usuário encontrado.</li>
+                  )}
+                  {!buscandoUsuario &&
+                    resultadosBuscaUsuario.map((resultado) => (
+                      <li key={resultado.pk}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setListaUsuarioAberta(false)
+                            if (resultado.pk) setParams({ cpe_pk: String(resultado.pk) })
+                          }}
+                        >
+                          <strong>{resultado.username}</strong>
+                          {resultado.client_complete_name && ` — ${resultado.client_complete_name}`}
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              )}
             </form>
             {!erro && (
               <EstadoVazio

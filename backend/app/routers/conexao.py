@@ -26,19 +26,25 @@ async def buscar_cpe(
     # (confirmado no app cliente de referência, que filtra
     # aaa_ctl/connection/session por "aaa_cpe.cpe_pk"). cpe_pk/contract_pk
     # não têm esse problema (colunas próprias, sem ambiguidade de join).
-    # username usa ILIKE sem "%" (comparação exata, mas sem diferenciar
-    # maiúsculas/minúsculas) em vez de EQUAL — é o mesmo dado que o
-    # técnico já viu na tela do cliente, então tolera diferença de caixa
-    # ao digitar de novo.
+    # username usa ILIKE com "%termo%" (busca parcial, como a busca por
+    # nome de cliente) em vez de EQUAL — o técnico digita um pedaço do
+    # usuário PPPoE e a lista vai filtrando, igual o combobox de CTO.
     if cpe_pk:
         where = where_eq("cpe_pk", cpe_pk)
+        resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     elif contract_pk:
         where = where_eq("contract_pk", contract_pk)
+        resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     elif username:
-        where = where_ilike("cpe_username", username.strip())
+        where = where_ilike("cpe_username", f"%{username.strip()}%")
+        resposta = await ctx.controllr.cpe_list(
+            corpo(where, page=1, start=0, limit=15, sort="cpe_username", dir="ASC"),
+            model_return=True,
+            model_extended=True,
+        )
     else:
         where = where_eq("aaa_cpe.client_pk", client_pk)
-    resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
+        resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível buscar os CPEs.", resposta))
     return {"success": True, "results": [cpe.model_dump(mode="json") for cpe in resposta.results]}
