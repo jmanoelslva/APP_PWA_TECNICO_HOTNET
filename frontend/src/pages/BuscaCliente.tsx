@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { MdPeopleAlt, MdSearch } from 'react-icons/md'
 import { ApiError, buscarClientes, type BuscaClienteResultado } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -9,27 +9,23 @@ import { CORES } from '../utils/cores'
 import './BuscaCliente.css'
 
 export default function BuscaCliente() {
-  const [doc, setDoc] = useState('')
-  const [contrato, setContrato] = useState('')
-  const [nome, setNome] = useState('')
+  const [params, setParams] = useSearchParams()
+  const [doc, setDoc] = useState(params.get('doc') ?? '')
+  const [contrato, setContrato] = useState(params.get('contrato') ?? '')
+  const [nome, setNome] = useState(params.get('nome') ?? '')
   const [carregando, setCarregando] = useState(false)
   const [jaBuscou, setJaBuscou] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
 
-  async function aoBuscar(evento: FormEvent) {
-    evento.preventDefault()
-    if (!doc.trim() && !contrato.trim() && !nome.trim()) {
-      setErro('Preencha ao menos um campo: documento, contrato ou nome.')
-      return
-    }
+  async function buscar(filtros: { doc: string; contrato: string; nome: string }) {
     setCarregando(true)
     setErro(null)
     try {
       const resposta = await buscarClientes({
-        doc: doc.trim() || undefined,
-        contrato: contrato.trim() ? Number(contrato.trim()) : undefined,
-        nome: nome.trim() || undefined,
+        doc: filtros.doc.trim() || undefined,
+        contrato: filtros.contrato.trim() ? Number(filtros.contrato.trim()) : undefined,
+        nome: filtros.nome.trim() || undefined,
       })
       setResultados(resposta.results)
       setJaBuscou(true)
@@ -38,6 +34,31 @@ export default function BuscaCliente() {
     } finally {
       setCarregando(false)
     }
+  }
+
+  useEffect(() => {
+    // Refaz a busca sozinho quando a tela é montada com filtros já na
+    // URL — sem isso, sair pra ver Conexão/ONU/detalhe de um resultado e
+    // voltar perdia a busca inteira, obrigando o técnico a buscar nome/
+    // CPF de novo do zero.
+    if (params.get('doc') || params.get('contrato') || params.get('nome')) {
+      buscar({ doc: params.get('doc') ?? '', contrato: params.get('contrato') ?? '', nome: params.get('nome') ?? '' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function aoBuscar(evento: FormEvent) {
+    evento.preventDefault()
+    if (!doc.trim() && !contrato.trim() && !nome.trim()) {
+      setErro('Preencha ao menos um campo: documento, contrato ou nome.')
+      return
+    }
+    const novosParams: Record<string, string> = {}
+    if (doc.trim()) novosParams.doc = doc.trim()
+    if (contrato.trim()) novosParams.contrato = contrato.trim()
+    if (nome.trim()) novosParams.nome = nome.trim()
+    setParams(novosParams)
+    buscar({ doc, contrato, nome })
   }
 
   return (

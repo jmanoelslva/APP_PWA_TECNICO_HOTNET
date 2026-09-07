@@ -20,6 +20,9 @@ export default function Conexao() {
   const [erro, setErro] = useState<string | null>(null)
   const [cpe, setCpe] = useState<CpeDto | null>(null)
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  // Estado separado do PPPoE acima — são credenciais diferentes, e um
+  // técnico pode querer conferir uma sem revelar a outra sem querer.
+  const [mostrarSenhaRoteador, setMostrarSenhaRoteador] = useState(false)
   const [sessao, setSessao] = useState<Record<string, unknown> | null>(null)
   const [carregandoSessao, setCarregandoSessao] = useState(false)
 
@@ -68,13 +71,25 @@ export default function Conexao() {
     }
   }
 
-  function campoSessao(chaves: string[]): string {
-    if (!sessao) return '—'
-    for (const chave of chaves) {
-      const valor = sessao[chave]
-      if (valor != null && valor !== '') return String(valor)
-    }
-    return '—'
+  // /aaa_ctl/session_online/list nem tem documentação oficial (não achei
+  // esse endpoint na doc do Controllr) — em vez de arriscar cherry-pick
+  // de 3-4 nomes de campo achados por analogia, mostra TODOS os campos
+  // que a resposta trouxer, sem exceção, com um rótulo derivado do nome
+  // técnico. Isso é o que garante "todos os dados" de verdade, mesmo
+  // que o Controllr use nomes diferentes do esperado ou adicione campos
+  // novos no futuro.
+  function rotulo(chave: string): string {
+    return chave
+      .replace(/^session_/, '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+  }
+
+  function camposSessao(): Array<[string, string]> {
+    if (!sessao) return []
+    return Object.entries(sessao)
+      .filter(([, valor]) => valor != null && valor !== '')
+      .map(([chave, valor]) => [rotulo(chave), String(valor)])
   }
 
   return (
@@ -162,7 +177,13 @@ export default function Conexao() {
                 <div className="conexao-campo">
                   <span>Senha</span>
                   <div className="conexao-campo-valor">
-                    <strong>{mostrarSenha ? cpe.access_password ?? '—' : '••••••••'}</strong>
+                    <strong>{mostrarSenhaRoteador ? cpe.access_password ?? '—' : '••••••••'}</strong>
+                    <button
+                      onClick={() => setMostrarSenhaRoteador((v) => !v)}
+                      aria-label={mostrarSenhaRoteador ? 'Ocultar senha do roteador' : 'Mostrar senha do roteador'}
+                    >
+                      {mostrarSenhaRoteador ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                    </button>
                     <button onClick={() => copiar(cpe.access_password, 'Senha do roteador')} aria-label="Copiar senha do roteador">
                       <MdContentCopy size={16} />
                     </button>
@@ -194,26 +215,16 @@ export default function Conexao() {
                   {carregandoSessao ? 'Consultando…' : 'Ver sessão online agora'}
                 </button>
               </div>
-              {sessao && (
-                <>
-                  <div className="conexao-linha">
-                    <span>IP</span>
-                    <strong>{campoSessao(['session_v4_ip', 'v4_ip', 'ip'])}</strong>
-                  </div>
-                  <div className="conexao-linha">
-                    <span>MAC</span>
-                    <strong>{campoSessao(['session_mac', 'mac'])}</strong>
-                  </div>
-                  <div className="conexao-linha">
-                    <span>Conectado desde</span>
-                    <strong>{campoSessao(['session_date_add', 'date_add'])}</strong>
-                  </div>
-                  <div className="conexao-linha">
-                    <span>Tempo de sessão</span>
-                    <strong>{campoSessao(['session_acct_time', 'acct_time'])}</strong>
-                  </div>
-                </>
+              {sessao && camposSessao().length === 0 && (
+                <p className="conexao-sessao-vazio">Cliente sem sessão online no momento.</p>
               )}
+              {sessao &&
+                camposSessao().map(([rotulo, valor]) => (
+                  <div className="conexao-linha" key={rotulo}>
+                    <span>{rotulo}</span>
+                    <strong>{valor}</strong>
+                  </div>
+                ))}
               {!sessao && <p className="conexao-sessao-vazio">Toque em "Ver sessão online agora" pra consultar em tempo real.</p>}
             </div>
           </>
