@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { MdAttachFile, MdBuild, MdChatBubbleOutline, MdPictureAsPdf } from 'react-icons/md'
+import { MdAttachFile, MdBuild, MdChatBubbleOutline, MdClose, MdDownload, MdPictureAsPdf } from 'react-icons/md'
 import VoltarInicio from '../components/VoltarInicio'
 import EstadoVazio from '../components/EstadoVazio'
 import Skeleton from '../components/Skeleton'
@@ -63,6 +63,7 @@ export default function DetalheChamado() {
   const [mensagens, setMensagens] = useState<Mensagem[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  const [imagemAberta, setImagemAberta] = useState<string | null>(null)
 
   const fimDaListaRef = useRef<HTMLDivElement>(null)
   const qtdMensagensRef = useRef(0)
@@ -179,9 +180,13 @@ export default function DetalheChamado() {
                 {op.texto && <p className="balao-texto">{op.texto}</p>}
 
                 {op.arquivo && ehImagem(op.arquivo) && (
-                  <a href={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} target="_blank" rel="noreferrer">
+                  <button
+                    type="button"
+                    className="balao-anexo-imagem-botao"
+                    onClick={() => setImagemAberta(op.arquivo)}
+                  >
                     <img src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} alt="Anexo" className="balao-anexo-imagem" />
-                  </a>
+                  </button>
                 )}
                 {op.arquivo && ehVideo(op.arquivo) && (
                   <>
@@ -216,6 +221,36 @@ export default function DetalheChamado() {
           ))}
         <div ref={fimDaListaRef} />
       </div>
+
+      {imagemAberta && (
+        <div className="chamado-imagem-modal-fundo" onClick={() => setImagemAberta(null)}>
+          <div className="chamado-imagem-modal-acoes">
+            <a
+              href={`/api/suporte/tickets/${pk}/anexos/${imagemAberta}`}
+              download={imagemAberta}
+              className="chamado-imagem-modal-botao"
+              aria-label="Baixar imagem"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MdDownload size={20} />
+            </a>
+            <button
+              type="button"
+              className="chamado-imagem-modal-botao"
+              aria-label="Fechar"
+              onClick={() => setImagemAberta(null)}
+            >
+              <MdClose size={20} />
+            </button>
+          </div>
+          <img
+            src={`/api/suporte/tickets/${pk}/anexos/${imagemAberta}`}
+            alt="Anexo em tela cheia"
+            className="chamado-imagem-modal-imagem"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   )
 }
