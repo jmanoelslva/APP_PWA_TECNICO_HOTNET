@@ -64,3 +64,27 @@ async def atualizar_wifi_cpe(
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o Wi-Fi.", resposta))
     return {"success": True, "results": resposta.results}
+
+
+class CpeDetalhesPayload(BaseModel):
+    # Todos confirmados como campos de verdade em /aaa_ctl/cpe/update na
+    # doc oficial. None aqui significa "não mexe nesse campo" — pra
+    # limpar um valor (ex: observação), o front manda string vazia, não
+    # None (mesmo padrão já usado em EnderecoPayload).
+    cpe_obs: str | None = None
+    dp_pk: int | None = None
+    cpe_dp_port: int | None = None
+    cpe_access_login: str | None = None
+    cpe_access_password: str | None = None
+    cpe_access_port: int | None = None
+
+
+@router.put("/{cpe_pk}/detalhes")
+async def atualizar_detalhes_cpe(
+    cpe_pk: int, payload: CpeDetalhesPayload, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
+    campos: dict[str, Any] = {"cpe_pk": cpe_pk, **payload.model_dump(exclude_none=True)}
+    resposta = await ctx.controllr.cpe_update(urlencode(campos))
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o CPE.", resposta))
+    return {"success": True, "results": resposta.results}

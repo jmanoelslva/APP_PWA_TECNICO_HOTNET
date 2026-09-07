@@ -160,6 +160,13 @@
   width: 100%;
 }
 
+.conexao-textarea {
+  height: auto;
+  padding: 8px 10px;
+  resize: vertical;
+  font-family: inherit;
+}
+
 .conexao-card > .conexao-btn-secundario {
   margin-top: 8px;
 }

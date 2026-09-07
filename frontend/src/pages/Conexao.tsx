@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MdContentCopy, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
-import { ApiError, atualizarWifiCpe, buscarCpe, buscarSessaoOnlineCpe, type CpeDto } from '../api/client'
+import {
+  ApiError,
+  atualizarDetalhesCpe,
+  atualizarWifiCpe,
+  buscarCpe,
+  buscarSessaoOnlineCpe,
+  listarDps,
+  type CpeDto,
+  type DpDto,
+} from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
@@ -33,6 +42,27 @@ export default function Conexao() {
   const [wifiSenha, setWifiSenha] = useState('')
   const [mostrarSenhaWifi, setMostrarSenhaWifi] = useState(false)
   const [salvandoWifi, setSalvandoWifi] = useState(false)
+  // Detalhes do CPE (observação + CTO/porta) — cpe_obs, dp_pk, cpe_dp_port
+  // (confirmados na doc oficial de /aaa_ctl/cpe/update).
+  const [obs, setObs] = useState('')
+  const [dpPk, setDpPk] = useState('')
+  const [dpPorta, setDpPorta] = useState('')
+  const [dps, setDps] = useState<DpDto[]>([])
+  const [salvandoDetalhes, setSalvandoDetalhes] = useState(false)
+  // Acesso administrativo ao roteador — cpe_access_login/password/port,
+  // agora editável (antes só era possível ver o que já vinha cadastrado).
+  const [acessoLogin, setAcessoLogin] = useState('')
+  const [acessoSenha, setAcessoSenha] = useState('')
+  const [acessoPorta, setAcessoPorta] = useState('')
+  const [salvandoAcesso, setSalvandoAcesso] = useState(false)
+
+  useEffect(() => {
+    listarDps()
+      .then((resposta) => setDps(resposta.results))
+      .catch(() => {
+        /* lista de CTOs é só conveniência pro seletor — se falhar, o técnico ainda pode digitar o pk em outro lugar */
+      })
+  }, [])
 
   useEffect(() => {
     if (!cpePkParam) {
@@ -52,10 +82,67 @@ export default function Conexao() {
       setCpe(cpeCarregado)
       setWifiTipo(cpeCarregado?.wifi_encryption_type != null ? String(cpeCarregado.wifi_encryption_type) : '')
       setWifiSenha(cpeCarregado?.wifi_encryption_password ?? '')
+      setObs(cpeCarregado?.obs ?? '')
+      setDpPk(cpeCarregado?.dp_pk != null ? String(cpeCarregado.dp_pk) : '')
+      setDpPorta(cpeCarregado?.dp_port != null ? String(cpeCarregado.dp_port) : '')
+      setAcessoLogin(cpeCarregado?.access_login ?? '')
+      setAcessoSenha(cpeCarregado?.access_password ?? '')
+      setAcessoPorta(cpeCarregado?.access_port != null ? String(cpeCarregado.access_port) : '')
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados de conexão.')
     } finally {
       setCarregando(false)
+    }
+  }
+
+  async function salvarDetalhesCpe() {
+    if (!cpe?.pk) return
+    setSalvandoDetalhes(true)
+    try {
+      await atualizarDetalhesCpe(cpe.pk, {
+        cpe_obs: obs,
+        dp_pk: dpPk.trim() ? Number(dpPk.trim()) : undefined,
+        cpe_dp_port: dpPorta.trim() ? Number(dpPorta.trim()) : undefined,
+      })
+      const dpEscolhida = dps.find((dp) => String(dp.pk) === dpPk.trim())
+      setCpe((atual) =>
+        atual
+          ? {
+              ...atual,
+              obs,
+              dp_pk: dpPk.trim() ? Number(dpPk.trim()) : undefined,
+              dp_port: dpPorta.trim() ? Number(dpPorta.trim()) : undefined,
+              dp_name: dpEscolhida?.name ?? atual.dp_name,
+            }
+          : atual,
+      )
+      toast('Detalhes do CPE atualizados.', 'sucesso')
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível atualizar os detalhes do CPE.')
+    } finally {
+      setSalvandoDetalhes(false)
+    }
+  }
+
+  async function salvarAcessoRoteador() {
+    if (!cpe?.pk) return
+    setSalvandoAcesso(true)
+    try {
+      await atualizarDetalhesCpe(cpe.pk, {
+        cpe_access_login: acessoLogin,
+        cpe_access_password: acessoSenha,
+        cpe_access_port: acessoPorta.trim() ? Number(acessoPorta.trim()) : undefined,
+      })
+      setCpe((atual) =>
+        atual
+          ? { ...atual, access_login: acessoLogin, access_password: acessoSenha, access_port: acessoPorta.trim() ? Number(acessoPorta.trim()) : undefined }
+          : atual,
+      )
+      toast('Acesso ao roteador atualizado.', 'sucesso')
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível atualizar o acesso ao roteador.')
+    } finally {
+      setSalvandoAcesso(false)
     }
   }
 
@@ -302,38 +389,91 @@ export default function Conexao() {
               </div>
             </div>
 
-            {(cpe.access_login || cpe.access_password) && (
-              <div className="conexao-card">
-                {/* Credencial DIFERENTE do PPPoE acima — acesso administrativo
-                    ao próprio roteador/CPE, não o login de internet do
-                    cliente (confirmado na doc oficial do Controllr). */}
-                <h2>Acesso ao roteador (admin)</h2>
-                <div className="conexao-campo">
-                  <span>Usuário</span>
-                  <div className="conexao-campo-valor">
-                    <strong>{cpe.access_login ?? '—'}</strong>
-                    <button onClick={() => copiar(cpe.access_login, 'Usuário')} aria-label="Copiar usuário do roteador">
-                      <MdContentCopy size={16} />
-                    </button>
-                  </div>
-                </div>
-                <div className="conexao-campo">
-                  <span>Senha</span>
-                  <div className="conexao-campo-valor">
-                    <strong>{mostrarSenhaRoteador ? cpe.access_password ?? '—' : '••••••••'}</strong>
-                    <button
-                      onClick={() => setMostrarSenhaRoteador((v) => !v)}
-                      aria-label={mostrarSenhaRoteador ? 'Ocultar senha do roteador' : 'Mostrar senha do roteador'}
-                    >
-                      {mostrarSenhaRoteador ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
-                    </button>
-                    <button onClick={() => copiar(cpe.access_password, 'Senha do roteador')} aria-label="Copiar senha do roteador">
-                      <MdContentCopy size={16} />
-                    </button>
-                  </div>
+            <div className="conexao-card">
+              {/* Credencial DIFERENTE do PPPoE acima — acesso administrativo
+                  ao próprio roteador/CPE, não o login de internet do
+                  cliente (confirmado na doc oficial do Controllr:
+                  cpe_access_login/password/port). Editável — antes só dava
+                  pra ver o que já vinha cadastrado. */}
+              <h2>Acesso ao roteador (admin)</h2>
+              <div className="conexao-campo">
+                <span>Usuário</span>
+                <input className="conexao-input" value={acessoLogin} onChange={(e) => setAcessoLogin(e.target.value)} placeholder="Não informado" />
+              </div>
+              <div className="conexao-campo">
+                <span>Senha</span>
+                <div className="conexao-campo-valor">
+                  <input
+                    className="conexao-input"
+                    type={mostrarSenhaRoteador ? 'text' : 'password'}
+                    value={acessoSenha}
+                    onChange={(e) => setAcessoSenha(e.target.value)}
+                    placeholder="Não informado"
+                  />
+                  <button
+                    onClick={() => setMostrarSenhaRoteador((v) => !v)}
+                    aria-label={mostrarSenhaRoteador ? 'Ocultar senha do roteador' : 'Mostrar senha do roteador'}
+                  >
+                    {mostrarSenhaRoteador ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                  </button>
                 </div>
               </div>
-            )}
+              <div className="conexao-campo">
+                <span>Porta</span>
+                <input
+                  className="conexao-input"
+                  type="number"
+                  value={acessoPorta}
+                  onChange={(e) => setAcessoPorta(e.target.value)}
+                  placeholder="Não informado"
+                />
+              </div>
+              <button className="conexao-btn-secundario" onClick={salvarAcessoRoteador} disabled={salvandoAcesso}>
+                {salvandoAcesso ? 'Salvando…' : 'Salvar acesso'}
+              </button>
+            </div>
+
+            <div className="conexao-card">
+              {/* cpe_obs, dp_pk e cpe_dp_port (CTO/porta da CTO) — confirmados
+                  na doc oficial de /aaa_ctl/cpe/update. A lista de CTOs vem
+                  do próprio sistema (GET /dp/lista), pra selecionar em vez
+                  de digitar um pk cru. */}
+              <h2>Detalhes do CPE</h2>
+              <div className="conexao-campo">
+                <span>Observação</span>
+                <textarea
+                  className="conexao-input conexao-textarea"
+                  value={obs}
+                  onChange={(e) => setObs(e.target.value)}
+                  placeholder="Sem observação"
+                  rows={3}
+                />
+              </div>
+              <div className="conexao-campo">
+                <span>CTO</span>
+                <select className="conexao-input" value={dpPk} onChange={(e) => setDpPk(e.target.value)}>
+                  <option value="">Não informado</option>
+                  {dps.map((dp) => (
+                    <option key={dp.pk} value={dp.pk}>
+                      {dp.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="conexao-campo">
+                <span>Porta da CTO</span>
+                <input
+                  className="conexao-input"
+                  type="number"
+                  value={dpPorta}
+                  onChange={(e) => setDpPorta(e.target.value)}
+                  placeholder="Não informado"
+                />
+              </div>
+              <button className="conexao-btn-secundario" onClick={salvarDetalhesCpe} disabled={salvandoDetalhes}>
+                {salvandoDetalhes ? 'Salvando…' : 'Salvar detalhes'}
+              </button>
+            </div>
 
             <div className="conexao-card">
               {/* cpe_wifi_encryption_type/password (confirmado na doc oficial

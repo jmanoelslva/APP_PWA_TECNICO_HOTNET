@@ -293,6 +293,7 @@ export interface CpeDto {
   password?: string
   access_login?: string
   access_password?: string
+  access_port?: number
   v4_ip?: string
   v4_ip_last?: string
   mac?: string
@@ -311,6 +312,8 @@ export interface CpeDto {
   plan_name?: string
   dp_name?: string
   dp_pk?: number
+  dp_port?: number
+  obs?: string
   // Criptografia do Wi-Fi do próprio CPE/roteador (cpe_wifi_encryption_type/
   // password na API — confirmado na doc oficial, apidoc.brbyte.com/#post-
   // /aaa_ctl/cpe/update). Não há enum documentado pro "type" (a doc só diz
@@ -343,6 +346,28 @@ export function atualizarWifiCpe(
   dados: { wifi_encryption_type?: number; wifi_encryption_password?: string },
 ): Promise<{ success: boolean; results: unknown }> {
   return put(`cpe/${cpePk}/wifi`, dados)
+}
+
+export interface DetalhesCpePayload {
+  cpe_obs?: string
+  dp_pk?: number
+  cpe_dp_port?: number
+  cpe_access_login?: string
+  cpe_access_password?: string
+  cpe_access_port?: number
+}
+
+export function atualizarDetalhesCpe(cpePk: number, dados: DetalhesCpePayload): Promise<{ success: boolean; results: unknown }> {
+  return put(`cpe/${cpePk}/detalhes`, dados)
+}
+
+export interface DpDto {
+  pk: number
+  name: string
+}
+
+export function listarDps(): Promise<{ success: boolean; results: DpDto[] }> {
+  return get<{ success: boolean; results: DpDto[] }>('dp/lista')
 }
 
 // ---------------------------------------------------------------------

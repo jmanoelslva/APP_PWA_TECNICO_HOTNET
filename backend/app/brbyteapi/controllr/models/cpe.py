@@ -86,7 +86,12 @@ class CPEExtended(CPE):
     deleted                     : Any   | Empty = Field(default_factory=Empty, alias='cpe_deleted')
     dp_id                       : str   | Empty = Field(default_factory=Empty, alias='dp_id')
     dp_name                     : str   | Empty = Field(default_factory=Empty, alias='dp_name')
-    dp_port                     : Any   | Empty = Field(default_factory=Empty, alias='dp_port')
+    # Alias correto é "cpe_dp_port", não "dp_port" (confirmado na doc
+    # oficial, apidoc.brbyte.com/#post-/aaa_ctl/cpe/list) — mesmo padrão
+    # de bug já visto em cpe_password/cpe_latitude: o pacote original
+    # usava o nome "bonito" em vez da chave de verdade da resposta, então
+    # esse campo nunca era preenchido.
+    dp_port                     : Any   | Empty = Field(default_factory=Empty, alias='cpe_dp_port')
     lending                     : Any   | Empty = Field(default_factory=Empty, alias='lending')
     mac_last                    : Any   | Empty = Field(default_factory=Empty, alias='mac_last')
     nas_addr                    : Any   | Empty = Field(default_factory=Empty, alias='nas_addr')
