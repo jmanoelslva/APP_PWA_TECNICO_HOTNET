@@ -13,8 +13,11 @@ import './Suporte.css'
 
 const TAMANHO_PAGINA = 20
 
-type Aba = 'minhas' | 'todas'
-
+// Uma tela só, sem aba "Minhas OS"/"Todas" — o backend já tira da lista
+// qualquer OS que o técnico já finalizou (ver ordens_servico.py::
+// _sem_finalizadas), então não sobra motivo pra separar "minhas" do
+// resto: o que aparece aqui é sempre trabalho em aberto pra qualquer
+// técnico ver e pegar.
 function osFechada(os: OrdemServicoDto): boolean {
   return !!os.op_date_close || !!os.op_date_cancel
 }
@@ -23,7 +26,6 @@ export default function Suporte() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  const [aba, setAba] = useState<Aba>('minhas')
   const [ordens, setOrdens] = useState<OrdemServicoDto[]>([])
   const [total, setTotal] = useState(0)
   const [carregando, setCarregando] = useState(true)
@@ -33,13 +35,13 @@ export default function Suporte() {
   useEffect(() => {
     carregar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aba])
+  }, [])
 
   async function carregar() {
     setCarregando(true)
     setErro(null)
     try {
-      const resposta = await listarOrdensServico({ minhas: aba === 'minhas', abertas: true, start: 0, limit: TAMANHO_PAGINA })
+      const resposta = await listarOrdensServico({ minhas: false, abertas: true, start: 0, limit: TAMANHO_PAGINA })
       setOrdens(resposta.results)
       setTotal(resposta.total)
     } catch (excecao) {
@@ -53,7 +55,7 @@ export default function Suporte() {
     setCarregandoMais(true)
     try {
       const resposta = await listarOrdensServico({
-        minhas: aba === 'minhas',
+        minhas: false,
         abertas: true,
         start: ordens.length,
         limit: TAMANHO_PAGINA,
@@ -74,15 +76,6 @@ export default function Suporte() {
       <div className="suporte-tela tela-entrada">
         <CabecalhoTela icone={MdBuild} cor={CORES.suporte} titulo="OS / Suporte" subtitulo="Ordens de serviço agendadas." />
 
-        <div className="suporte-abas">
-          <button className={`aba-chip ${aba === 'minhas' ? 'ativa' : ''}`} onClick={() => setAba('minhas')}>
-            Minhas OS
-          </button>
-          <button className={`aba-chip ${aba === 'todas' ? 'ativa' : ''}`} onClick={() => setAba('todas')}>
-            Todas
-          </button>
-        </div>
-
         {carregando && (
           <ul className="suporte-lista">
             {[0, 1, 2].map((i) => (
@@ -102,9 +95,7 @@ export default function Suporte() {
           </div>
         )}
 
-        {!carregando && !erro && ordens.length === 0 && (
-          <EstadoVazio icone={MdBuild} titulo={aba === 'minhas' ? 'Nenhuma OS atribuída a você' : 'Nenhuma OS aberta'} />
-        )}
+        {!carregando && !erro && ordens.length === 0 && <EstadoVazio icone={MdBuild} titulo="Nenhuma OS aberta" />}
 
         {!carregando && !erro && ordens.length > 0 && (
           <ul className="suporte-lista">

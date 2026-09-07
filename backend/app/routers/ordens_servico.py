@@ -42,7 +42,7 @@ from pydantic import BaseModel
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_IN, corpo, where_and
+from ..where import OPER_EQ, OPER_IN, corpo, where_and, where_in
 
 router = APIRouter(prefix="/os", tags=["ordem-servico"])
 
@@ -95,7 +95,46 @@ async def listar_ordens_servico(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível listar as ordens de serviço.", resposta))
-    return {"success": True, "results": resposta.results, "total": resposta.total}
+
+    resultados = resposta.results
+    if ticket_pk is None and abertas:
+        resultados = await _sem_finalizadas(ctx, resultados)
+
+    return {"success": True, "results": resultados, "total": resposta.total}
+
+
+async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Tira da lista as OS que o técnico já finalizou — pedido explícito
+    ("após finalizar a OS ela já some da lista"). op_date_finish do
+    registro raiz (o que veio em "ordens") NUNCA reflete isso (fica
+    sempre nulo, ver módulo acima) — o único jeito de saber é olhar o
+    evento op_type=5 mais recente de cada OS em /support_ctl/op/list
+    (mesmo endpoint do chat), pegando todos os tickets de uma vez em vez
+    de uma chamada por OS.
+    """
+    tickets_pks = [o["ticket_pk"] for o in ordens if o.get("ticket_pk") is not None]
+    if not tickets_pks:
+        return ordens
+
+    resposta = await ctx.controllr.call_api_post(
+        "/support_ctl/op/list",
+        corpo(where_in("ticket_pk", tickets_pks), sort="op_pk", dir="ASC"),
+    )
+    if not resposta.success:
+        return ordens  # falhar aberto: melhor mostrar demais do que sumir com OS por engano
+
+    # Ordenado por op_pk ASC — o último write pra cada op_os_pk vence.
+    ultimo_finish_por_os: dict[int, dict[str, Any]] = {}
+    for evento in resposta.results:
+        if evento.get("op_type") == 5 and evento.get("op_os_pk") is not None:
+            ultimo_finish_por_os[evento["op_os_pk"]] = evento
+
+    def finalizada(ordem: dict[str, Any]) -> bool:
+        evento = ultimo_finish_por_os.get(ordem.get("op_pk"))
+        return bool(evento and evento.get("op_date_finish"))
+
+    return [o for o in ordens if not finalizada(o)]
 
 
 class AcaoOSPayload(BaseModel):
