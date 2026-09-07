@@ -151,16 +151,34 @@ export default function DetalheCliente() {
                     ))}
                   </div>
                 )}
-                {(contrato.contract_pk || contrato.contract_sign_doc_link) && (
+                {/* Contrato ainda não assinado: destaca a assinatura como
+                    ação principal — é o que o técnico faz na visita,
+                    entregando o aparelho pro cliente assinar ali mesmo
+                    nesse link. Já assinado, "Ver contrato" some pra um
+                    chip discreto (só consulta). */}
+                {!contrato.contract_sign_date && contrato.contract_sign_doc_link && (
+                  <a
+                    href={contrato.contract_sign_doc_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="detalhe-cliente-btn-assinar"
+                  >
+                    <MdDescription size={18} /> Assinar contrato agora
+                  </a>
+                )}
+                {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
+                  <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível pra este contrato.</p>
+                )}
+                {(contrato.contract_pk || (contrato.contract_sign_date && contrato.contract_sign_doc_link)) && (
                   <div className="detalhe-cliente-item-acoes">
                     {contrato.contract_pk && (
                       <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
                         <MdWifi size={14} /> Conexão
                       </Link>
                     )}
-                    {contrato.contract_sign_doc_link && (
+                    {contrato.contract_sign_date && contrato.contract_sign_doc_link && (
                       <a href={contrato.contract_sign_doc_link} target="_blank" rel="noreferrer" className="detalhe-cliente-chip">
-                        <MdDescription size={14} /> Ver contrato
+                        <MdDescription size={14} /> Ver contrato assinado
                       </a>
                     )}
                   </div>
