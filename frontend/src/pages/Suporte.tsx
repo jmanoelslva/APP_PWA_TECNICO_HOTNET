@@ -113,7 +113,7 @@ export default function Suporte() {
                       {os.op_date_cancel ? 'Cancelada' : fechada ? 'Fechada' : 'Aberta'}
                     </span>
                   </div>
-                  <p className="ticket-protocolo">Chamado #{os.ticket_pk ?? '—'}</p>
+                  <p className="ticket-protocolo">Chamado #{os.ticket_protocol ?? os.ticket_pk ?? '—'}</p>
                   {os.op_priority != null && <p className="ticket-protocolo">Prioridade: {os.op_priority}</p>}
                   <p className="ticket-data">
                     {os.op_date_sched ? `Agendada para ${formatarDataHora(os.op_date_sched)}` : 'Sem data agendada'}

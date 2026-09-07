@@ -374,8 +374,9 @@ export default function DetalheOrdemServico() {
               <span className="detalhe-ordem-etapa-badge">{estagioResumo(eventos, osAtual)}</span>
             </div>
             {(ticket?.ticket_protocol ?? osAtual.ticket_protocol) && (
-              <p className="detalhe-ordem-linha">Protocolo: {ticket?.ticket_protocol ?? osAtual.ticket_protocol}</p>
+              <p className="detalhe-ordem-linha">Chamado: {ticket?.ticket_protocol ?? osAtual.ticket_protocol}</p>
             )}
+            {osAtual.op_number && <p className="detalhe-ordem-linha">OS: {osAtual.op_number}</p>}
             {osAtual.op_date_sched && <p className="detalhe-ordem-linha">Agendada para {formatarDataHora(osAtual.op_date_sched)}</p>}
             <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
               <MdChatBubbleOutline size={14} /> Ver chamado

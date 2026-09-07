@@ -566,6 +566,10 @@ export async function enviarAnexoTicket(ticketPk: number, arquivo: File): Promis
 export interface OrdemServicoDto {
   op_pk?: number
   op_os_pk?: number
+  // Número legível da OS (confirmado na doc oficial e visto ao vivo, ex:
+  // "20260528000013") — diferente de op_pk (id interno) e de
+  // ticket_protocol (número do CHAMADO, outra coisa).
+  op_number?: string
   ticket_pk?: number
   op_date_sched?: string
   op_date_create?: string
