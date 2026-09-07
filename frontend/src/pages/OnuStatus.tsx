@@ -188,7 +188,10 @@ export default function OnuStatus() {
             type="text"
             placeholder="Digite o serial ou o usuário"
             value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            onChange={(e) => {
+              setBusca(e.target.value)
+              setListaAberta(true)
+            }}
             onFocus={() => setListaAberta(true)}
             onBlur={() => setTimeout(() => setListaAberta(false), 150)}
           />
