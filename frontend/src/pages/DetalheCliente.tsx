@@ -159,7 +159,22 @@ export default function DetalheCliente() {
                     .filter(Boolean)
                     .join(', ') || 'Endereço não informado'}
                 </p>
+                {(endereco.address_province || endereco.address_state) && (
+                  <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
+                )}
                 {endereco.address_zipcode && <p>CEP: {endereco.address_zipcode}</p>}
+                {endereco.address_latitude && endereco.address_longitude && (
+                  <div className="detalhe-cliente-item-acoes">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="detalhe-cliente-chip"
+                    >
+                      <MdLocationOn size={14} /> Ver no Google Maps
+                    </a>
+                  </div>
+                )}
               </div>
             ))}
           </section>
