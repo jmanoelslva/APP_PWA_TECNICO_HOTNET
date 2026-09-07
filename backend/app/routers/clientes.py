@@ -20,10 +20,16 @@ async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[in
     # referência, D:\Desktop\WEB_APPS\HOTNET_WEB_APP). Único filtro
     # confiável ali é por "contract_pk" (oper 5, "="), então busca cada
     # contrato individualmente em vez de um único "client_pk=X" em lote.
+    # "sign_url=true" — parâmetro extra confirmado capturando a chamada
+    # real do painel do Controllr: sem ele, o servidor nem calcula
+    # contract_sign_doc_link (o campo some da resposta, não vem null).
+    # Junto com "contract.contract_pk" (com prefixo — é o que o painel usa
+    # nessa chamada específica; "contract_pk" bare também funciona, mas
+    # segue exatamente o formato confirmado).
     contratos: dict[int, dict[str, Any]] = {}
     for contract_pk in contract_pks:
         resposta = await ctx.controllr.contract_list(
-            corpo(where_eq("contract_pk", contract_pk), action="list", start=0, limit=1)
+            corpo(where_eq("contract.contract_pk", contract_pk), sign_url="true")
         )
         if resposta.success and resposta.results:
             contratos[contract_pk] = resposta.results[0]
