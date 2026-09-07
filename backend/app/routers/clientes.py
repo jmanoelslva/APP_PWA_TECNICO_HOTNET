@@ -13,6 +13,23 @@ def _somente_digitos(valor: str) -> str:
     return "".join(c for c in valor if c.isdigit())
 
 
+async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[int, dict[str, Any]]:
+    # /controllrctl/contract/list filtrado por "client_pk" pode voltar
+    # VAZIO mesmo pra cliente com contrato de verdade — bug de backend já
+    # confirmado (comentário em src/api/client.ts do app cliente de
+    # referência, D:\Desktop\WEB_APPS\HOTNET_WEB_APP). Único filtro
+    # confiável ali é por "contract_pk" (oper 5, "="), então busca cada
+    # contrato individualmente em vez de um único "client_pk=X" em lote.
+    contratos: dict[int, dict[str, Any]] = {}
+    for contract_pk in contract_pks:
+        resposta = await ctx.controllr.contract_list(
+            corpo(where_eq("contract_pk", contract_pk), action="list", start=0, limit=1)
+        )
+        if resposta.success and resposta.results:
+            contratos[contract_pk] = resposta.results[0]
+    return contratos
+
+
 @router.get("/busca")
 async def buscar_clientes(
     doc: str | None = Query(default=None, description="CPF/CNPJ do cliente"),
@@ -81,20 +98,16 @@ async def buscar_clientes(
             continue
 
         cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
+        cpes = cpes_resp.results if cpes_resp.success else []
 
         # list_combo só traz contract_pk (confirmado na doc oficial), não o
         # número de contrato — mesmo fix aplicado em detalhe_cliente.
-        contratos_resp = await ctx.controllr.contract_list(corpo(where_eq("client_pk", client_pk), action="list", start=0))
-        numero_por_contrato_pk = {
-            c["contract_pk"]: c.get("contract_number")
-            for c in (contratos_resp.results if contratos_resp.success else [])
-            if c.get("contract_pk") is not None
-        }
-        cpes = cpes_resp.results if cpes_resp.success else []
+        contract_pks = {cpe["contract_pk"] for cpe in cpes if cpe.get("contract_pk") is not None}
+        contratos_por_pk = await _contratos_por_pk(ctx, contract_pks)
         for cpe in cpes:
-            contract_pk = cpe.get("contract_pk")
-            if contract_pk in numero_por_contrato_pk:
-                cpe["contract_number"] = numero_por_contrato_pk[contract_pk]
+            contrato = contratos_por_pk.get(cpe.get("contract_pk"))
+            if contrato:
+                cpe["contract_number"] = contrato.get("contract_number")
 
         resultados.append({
             "client_pk": client_pk,
@@ -117,9 +130,6 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     if not cliente_resp.success or not cliente_resp.results:
         raise HTTPException(status_code=404, detail=detalhe_erro("Cliente não encontrado.", cliente_resp))
 
-    contratos_resp = await ctx.controllr.contract_list(
-        corpo(where_eq("client_pk", client_pk), action="list", start=0)
-    )
     # /controllrctl/addresses/list (NÃO list_combo) — confirmado na doc
     # oficial (apidoc.brbyte.com/#post-/controllrctl/addresses/list): só
     # esse endpoint completo traz address_siafi/latitude/longitude, que
@@ -136,26 +146,31 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     # referência). Esta segunda ocorrência tinha ficado pra trás na
     # correção anterior — só a de buscar_clientes tinha sido trocada.
     cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
+    cpes = cpes_resp.results if cpes_resp.success else []
 
-    contratos = contratos_resp.results if contratos_resp.success else []
     # /aaa_ctl/cpe/list_combo só traz contract_pk (confirmado na doc
     # oficial), não o número de contrato que o técnico reconhece de
-    # verdade (ex: "1024") — sem isso, a tela mostrava o pk interno cru
-    # e parecia que o contrato "não aparecia". Completa usando os
-    # contratos do próprio cliente, já buscados acima.
-    numero_por_contrato_pk = {
-        c["contract_pk"]: c.get("contract_number") for c in contratos if c.get("contract_pk") is not None
-    }
-    cpes = cpes_resp.results if cpes_resp.success else []
+    # verdade (ex: "1024"). Completa buscando cada contrato individualmente
+    # (ver _contratos_por_pk — filtrar contract_list por "client_pk" pode
+    # voltar vazio mesmo com contrato de verdade, bug de backend confirmado
+    # no app cliente de referência; por "contract_pk" é confiável).
+    contract_pks = {cpe["contract_pk"] for cpe in cpes if cpe.get("contract_pk") is not None}
+    contratos_por_pk = await _contratos_por_pk(ctx, contract_pks)
     for cpe in cpes:
-        contract_pk = cpe.get("contract_pk")
-        if contract_pk in numero_por_contrato_pk:
-            cpe["contract_number"] = numero_por_contrato_pk[contract_pk]
+        contrato = contratos_por_pk.get(cpe.get("contract_pk"))
+        if contrato:
+            cpe["contract_number"] = contrato.get("contract_number")
 
     return {
         "success": True,
         "cliente": cliente_resp.results[0],
-        "contratos": contratos,
+        # A seção "Contratos" da tela lista os mesmos contratos usados na
+        # busca acima (um por contract_pk distinto entre as CPEs do
+        # cliente) — não há um jeito confiável de listar TODOS os
+        # contratos do cliente direto (ver comentário acima); na prática,
+        # um contrato sem nenhuma CPE vinculada não interessa muito pro
+        # técnico de campo mesmo (ele trabalha em cima da conexão).
+        "contratos": list(contratos_por_pk.values()),
         "enderecos": enderecos_resp.results if enderecos_resp.success else [],
         "cpes": cpes,
     }
