@@ -295,6 +295,34 @@ Online" do próprio painel:
 
 ---
 
+## 8.5. Login/Logout — sessão por cookie, não por Basic Auth
+
+Confirmado ao vivo (painel administrativo real, aba de rede): o botão
+"Logout" do painel dispara `POST /session/logout`, **sem corpo**,
+autenticado só pelo **cookie** de sessão que o próprio `/login` (form
+`username`/`password`) devolve — o mesmo mecanismo usado por
+`ControllrLogin.login` neste backend, cujo cookie a versão original do
+pacote **descartava** (a `aiohttp.ClientSession` era fechada logo depois
+de validar o login, junto com o cookie jar).
+
+Isso importa porque este backend autentica as DEMAIS chamadas por
+**Basic Auth por requisição** (decisão de arquitetura, ver `sessions.py`)
+— e Basic Auth **não cria sessão nenhuma** no Controllr. Ou seja, chamar
+`/session/logout` mandando só o header `Authorization: Basic ...` (sem o
+cookie) não derruba nada, porque não existe sessão associada a esse
+header pra derrubar — foi exatamente o bug do primeiro logout
+implementado aqui (parecia funcionar, mas era um no-op do lado do
+Controllr).
+
+Corrigido guardando o cookie devolvido pelo `/login` (agora
+`ControllrLogin.login` retorna `ControllrLoginResult{success,
+cookie_header}` em vez de só `bool`) junto da sessão do técnico
+(`TechnicianSession.controllr_cookie`), e usando **esse cookie
+específico** — não o Basic Auth — pra chamar `/session/logout` no
+`/auth/logout` deste backend.
+
+---
+
 ## 9. Bugs no `brbyteapi` vendorizado (não são do Controllr — são do pacote Python)
 
 Vários campos do pacote vendorizado usavam o alias "bonito" em vez da

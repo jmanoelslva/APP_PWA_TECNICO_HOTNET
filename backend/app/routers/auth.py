@@ -1,6 +1,7 @@
 import base64
 from typing import Any
 
+from aiohttp import ClientSession, ClientTimeout
 from fastapi import APIRouter, Cookie, Depends, Response
 from pydantic import BaseModel
 
@@ -51,8 +52,8 @@ def _find_user_pk(records: list[dict[str, Any]], username: str) -> int | None:
 
 @router.post("/login", response_model=LoginResponse)
 async def login(payload: LoginRequest, response: Response) -> LoginResponse:
-    autenticado = await ControllrLogin.login(CONTROLLR_URL, payload.username, payload.password)
-    if not autenticado:
+    resultado_login = await ControllrLogin.login(CONTROLLR_URL, payload.username, payload.password)
+    if not resultado_login.success:
         return LoginResponse(success=False, message="Usuário ou senha incorretos.")
 
     credenciais = f"{payload.username}:{payload.password}".encode("utf-8")
@@ -69,7 +70,12 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         # OS" vai cair pra "Todas" até resolvermos o campo certo do ACL.
         user_pk = None
 
-    sessao = create_session(username=payload.username, basic_auth=basic_auth, user_pk=user_pk)
+    sessao = create_session(
+        username=payload.username,
+        basic_auth=basic_auth,
+        user_pk=user_pk,
+        controllr_cookie=resultado_login.cookie_header,
+    )
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
         value=sessao.session_id,
@@ -87,16 +93,27 @@ async def logout(
     tecsession: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
 ) -> dict[str, bool]:
     sessao = get_session(tecsession)
-    if sessao is not None:
-        # Avisa o próprio Controllr que a sessão do técnico encerrou
-        # (mesmo endpoint usado pelo painel administrativo, apesar de
-        # aqui a gente não manter cookie de sessão com ele — chamada por
-        # cortesia). Best-effort: falhar aqui não pode impedir o logout
-        # local, que é o que de fato protege a conta (apaga a sessão
-        # deste backend e o cookie do navegador).
+    if sessao is not None and sessao.controllr_cookie:
+        # Encerra de verdade a sessão que o Controllr criou no momento do
+        # /login (mesmo endpoint usado pelo painel administrativo,
+        # confirmado numa captura ao vivo: POST /session/logout, sem
+        # corpo, carregando o cookie da sessão a encerrar). Só faz
+        # sentido com o COOKIE dessa sessão específica — chamar isso com
+        # o Basic Auth do técnico (usado nas outras chamadas deste
+        # backend) não derruba nada, porque Basic Auth não cria sessão
+        # nenhuma no Controllr pra existir algo a encerrar. Best-effort:
+        # falhar aqui não pode impedir o logout local, que é o que de
+        # fato protege a conta (apaga a sessão deste backend e o cookie
+        # do navegador).
         try:
-            controllr = AsyncControllr(authorization=sessao.basic_auth, server_url=CONTROLLR_URL)
-            await controllr.call_api_post("/session/logout")
+            timeout = ClientTimeout(10)
+            async with ClientSession() as http:
+                async with http.post(
+                    f"{CONTROLLR_URL}/session/logout",
+                    headers={"Cookie": sessao.controllr_cookie},
+                    timeout=timeout,
+                ):
+                    pass
         except Exception:
             pass
 
