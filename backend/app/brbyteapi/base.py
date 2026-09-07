@@ -33,11 +33,30 @@ class BrByteAPIBase():
                 success = False
             )
         
+        # Nem todo erro do Controllr vem no formato {"errors": [...]} — em
+        # alguns endpoints (ex: erro de coluna ambígua do Postgres) a
+        # resposta é {"success": false, "code": N, "message": "..."}, sem
+        # "errors" nenhum. Sem isso, esse "message"/"code" era descartado
+        # silenciosamente aqui (nunca guardado em lugar nenhum), e todo
+        # erro assim virava um "não foi possível..." genérico pro
+        # técnico, sem pista nenhuma do motivo real.
+        errors = response_json.get('errors', [])
+        if not errors and response_json.get('message') is not None:
+            errors = [{"id": str(response_json.get('code', '_controllr')), "msg": str(response_json.get('message'))}]
+
+        # Confirmado ao vivo: pelo menos um endpoint (support_ctl/os/
+        # undo_finish) devolve {"success": false, ...} com STATUS HTTP
+        # 200 — decidir sucesso só pelo status HTTP (como era antes)
+        # tratava essa falha como sucesso, sem erro nenhum pro técnico.
+        # Prioriza o "success" do próprio corpo quando presente.
+        sucesso_http = 200 <= response.status <= 299
+        sucesso = response_json.get('success', sucesso_http)
+
         return Response[dict[str, Any]](
-            errors  = response_json.get('errors', []),
+            errors  = errors,
             results = response_json.get('results', []),
             status  = response.status,
-            success = True if 200 <= response.status <= 299 else False
+            success = bool(sucesso)
         )
             
     async def call_api_post(self, api_path: str, data: str | FormData | None = None) -> Response[dict[str, Any]]:

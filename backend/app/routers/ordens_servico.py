@@ -7,16 +7,29 @@ Ticket/Suporte Técnico (ver suporte.py). Confirmado na doc oficial
 campo atribuído ao técnico.
 
 Ciclo de vida real de uma OS (confirmado com o dono da operação, e as
-ações de responder/iniciar/finalizar capturadas ao vivo do painel do
-Controllr, já que não estão na doc oficial):
+ações de responder/iniciar/finalizar/desfazer capturadas ao vivo do
+painel do Controllr, já que não estão na doc oficial):
 1. Agendamento — feito pelo escritório, já vem pronto.
-2. Respondida — técnico marca que viu a OS (/responder).
-3. Iniciada — técnico marca que começou o atendimento (/iniciar).
-4. Finalizada — técnico marca que terminou o atendimento (/finalizar).
+2. Respondida — técnico marca que viu a OS (/responder, desfaz em /desfazer-resposta).
+3. Iniciada — técnico marca que começou o atendimento (/iniciar, desfaz em /desfazer-inicio).
+4. Finalizada — técnico marca que terminou o atendimento (/finalizar, desfaz em /desfazer-finalizacao).
 Fechar a OS é uma etapa À PARTE, feita só pelo escritório — o ACL do
 Controllr não libera essa permissão pro técnico, por isso não existe
 rota de fechar aqui. Cancelar/reabrir continuam disponíveis (não
 mencionados como restritos).
+
+IMPORTANTE sobre como saber o estágio atual: os campos op_date_answer/
+op_date_start/op_date_finish do registro RAIZ da OS (o que list()
+devolve) ficam SEMPRE nulos — confirmado ao vivo. Cada clique em
+responder/iniciar/finalizar/desfazer cria um novo registro de EVENTO
+(visível só em /support_ctl/op/list, o mesmo endpoint do chat do
+chamado — ver suporte.py::listar_mensagens_ticket) vinculado à OS via
+op_os_pk = op_pk do registro raiz. Um "set" grava o evento com a data
+correspondente preenchida; um "undo" grava outro evento do MESMO
+op_type só que com a data nula. Ou seja: pra saber se uma etapa está
+marcada, o frontend precisa olhar o evento MAIS RECENTE daquele tipo
+entre os registros da OS, não um campo fixo — não tem endpoint próprio
+aqui pra isso porque dá pra reaproveitar listarMensagensTicket.
 
 Nome do arquivo evita "os.py" de propósito — colidiria com o módulo
 "os" da biblioteca padrão do Python dentro deste mesmo pacote.
@@ -138,6 +151,56 @@ async def finalizar_ordem_servico(
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_finish", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível finalizar a OS.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+class DesfazerEtapaPayload(BaseModel):
+    op_os_pk: int
+    op_desc: str
+
+
+# undo_answer/undo_start/undo_finish — mesmo achado ao vivo que set_*,
+# igualmente fora da doc oficial. Também exigem op_os_pk + op_desc
+# (confirmado sondando o endpoint com corpo vazio: os dois vêm como
+# "Required Field"). O jeito de saber se uma etapa está marcada ou não
+# NÃO é o op_date_* do registro raiz da OS (que fica sempre nulo!) — é
+# olhar pro evento mais recente daquele tipo (respondida/iniciada/
+# finalizada) entre os registros de /support_ctl/op/list dessa OS: um
+# set_* grava esse evento com a data preenchida, um undo_* grava outro
+# evento do MESMO tipo só que com a data nula (confirmado comparando os
+# dois registros criados ao vivo). Por isso o front usa
+# listarMensagensTicket (mesmo endpoint do chat) pra calcular o estágio
+# de cada etapa, em vez de confiar em campo nenhum da OS em si.
+@router.post("/{ticket_pk}/desfazer-resposta")
+async def desfazer_resposta_ordem_servico(
+    ticket_pk: int, payload: DesfazerEtapaPayload, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
+    corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc)
+    resposta = await ctx.controllr.call_api_post("/support_ctl/os/undo_answer", corpo_req)
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível desfazer a resposta da OS.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+@router.post("/{ticket_pk}/desfazer-inicio")
+async def desfazer_inicio_ordem_servico(
+    ticket_pk: int, payload: DesfazerEtapaPayload, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
+    corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc)
+    resposta = await ctx.controllr.call_api_post("/support_ctl/os/undo_start", corpo_req)
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível desfazer o início da OS.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+@router.post("/{ticket_pk}/desfazer-finalizacao")
+async def desfazer_finalizacao_ordem_servico(
+    ticket_pk: int, payload: DesfazerEtapaPayload, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
+    corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc)
+    resposta = await ctx.controllr.call_api_post("/support_ctl/os/undo_finish", corpo_req)
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível desfazer a finalização da OS.", resposta))
     return {"success": True, "results": resposta.results}
 
 

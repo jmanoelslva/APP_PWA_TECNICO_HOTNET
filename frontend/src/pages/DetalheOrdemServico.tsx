@@ -19,57 +19,116 @@ import {
   ApiError,
   buscarCpe,
   buscarDetalheCliente,
+  desfazerFinalizacaoOrdemServico,
+  desfazerInicioOrdemServico,
+  desfazerRespostaOrdemServico,
   detalheTicket,
   enviarAnexoTicket,
   finalizarOrdemServico,
   iniciarOrdemServico,
+  listarMensagensTicket,
   listarOrdensServico,
   responderOrdemServico,
   type ContratoDto,
   type CpeDto,
   type EnderecoDto,
+  type OperacaoDto,
   type OrdemServicoDto,
   type TicketDto,
 } from '../api/client'
-import { agoraNoFormatoDoServidor, extrairTelefones, formatarDataHora, formatarStatusContrato } from '../utils/formatacao'
+import { extrairTelefones, formatarDataHora, formatarStatusContrato } from '../utils/formatacao'
 import './DetalheOrdemServico.css'
 
 // Os 4 estágios reais de uma OS (confirmado com o dono da operação e
 // capturado ao vivo do painel do Controllr — não documentado
-// oficialmente): Agendada (feita pelo escritório) -> Respondida ->
-// Iniciada -> Finalizada, as 3 últimas marcadas pelo técnico aqui.
-// Fechar é etapa À PARTE, só do escritório (ACL do Controllr não libera
-// pro técnico) — por isso não tem botão de fechar nesta tela.
+// oficialmente): Agendada (feita pelo escritório, já vem pronta) ->
+// Respondida -> Iniciada -> Finalizada, as 3 últimas marcadas (e
+// desmarcadas) pelo técnico aqui. Fechar é etapa À PARTE, só do
+// escritório (ACL do Controllr não libera pro técnico) — por isso não
+// tem botão de fechar nesta tela.
+//
+// IMPORTANTE: os campos op_date_answer/start/finish do registro RAIZ da
+// OS (osAtual) ficam SEMPRE nulos — confirmado ao vivo. Cada clique em
+// marcar/desfazer cria um novo registro de EVENTO em /support_ctl/op/
+// list (mesmo endpoint do chat, ver listarMensagensTicket) vinculado à
+// OS via op_os_pk = op_pk da raiz. Um "marcar" grava esse evento com a
+// data preenchida; um "desfazer" grava outro evento do MESMO op_type
+// com a data nula. Por isso o estágio de cada etapa é calculado a
+// partir do evento mais recente daquele tipo, não de um campo fixo.
 type Etapa = 'responder' | 'iniciar' | 'finalizar'
 
 interface ConfigEtapa {
   chave: Etapa
   rotulo: string
-  rotuloAcao: string
+  rotuloMarcar: string
+  rotuloDesfazer: string
+  opType: number
   campoData: 'op_date_answer' | 'op_date_start' | 'op_date_finish'
   Icone: typeof MdVisibility
-  acao: typeof responderOrdemServico
+  marcar: typeof responderOrdemServico
+  desfazer: typeof desfazerRespostaOrdemServico
 }
 
 const ETAPAS: ConfigEtapa[] = [
-  { chave: 'responder', rotulo: 'Respondida', rotuloAcao: 'Marcar como respondida', campoData: 'op_date_answer', Icone: MdVisibility, acao: responderOrdemServico },
-  { chave: 'iniciar', rotulo: 'Iniciada', rotuloAcao: 'Iniciar atendimento', campoData: 'op_date_start', Icone: MdPlayArrow, acao: iniciarOrdemServico },
-  { chave: 'finalizar', rotulo: 'Finalizada', rotuloAcao: 'Finalizar atendimento', campoData: 'op_date_finish', Icone: MdCheckCircle, acao: finalizarOrdemServico },
+  {
+    chave: 'responder',
+    rotulo: 'Respondida',
+    rotuloMarcar: 'Marcar como respondida',
+    rotuloDesfazer: 'Desfazer resposta',
+    opType: 3,
+    campoData: 'op_date_answer',
+    Icone: MdVisibility,
+    marcar: responderOrdemServico,
+    desfazer: desfazerRespostaOrdemServico,
+  },
+  {
+    chave: 'iniciar',
+    rotulo: 'Iniciada',
+    rotuloMarcar: 'Iniciar atendimento',
+    rotuloDesfazer: 'Desfazer início',
+    opType: 4,
+    campoData: 'op_date_start',
+    Icone: MdPlayArrow,
+    marcar: iniciarOrdemServico,
+    desfazer: desfazerInicioOrdemServico,
+  },
+  {
+    chave: 'finalizar',
+    rotulo: 'Finalizada',
+    rotuloMarcar: 'Finalizar atendimento',
+    rotuloDesfazer: 'Desfazer finalização',
+    opType: 5,
+    campoData: 'op_date_finish',
+    Icone: MdCheckCircle,
+    marcar: finalizarOrdemServico,
+    desfazer: desfazerFinalizacaoOrdemServico,
+  },
 ]
 
-function proximaEtapa(os: OrdemServicoDto | null): ConfigEtapa | null {
-  if (!os || os.op_date_close || os.op_date_cancel) return null
-  return ETAPAS.find((etapa) => !os[etapa.campoData]) ?? null
+/** Evento mais recente (maior op_pk) daquele tipo, vinculado à OS raiz — ou undefined se nunca aconteceu. */
+function ultimoEvento(eventos: OperacaoDto[], osRaizPk: number, opType: number): OperacaoDto | undefined {
+  return eventos
+    .filter((e) => e.op_os_pk === osRaizPk && e.op_type === opType)
+    .reduce<OperacaoDto | undefined>((mais_recente, atual) => {
+      if (!mais_recente) return atual
+      return (atual.op_pk ?? 0) > (mais_recente.op_pk ?? 0) ? atual : mais_recente
+    }, undefined)
 }
 
-function rotuloEtapaAtual(os: OrdemServicoDto): string {
+function etapaConcluida(eventos: OperacaoDto[], osRaizPk: number, etapa: ConfigEtapa): boolean {
+  const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
+  return !!evento?.[etapa.campoData]
+}
+
+/** Rótulo resumido pro cabeçalho — a última das 3 etapas que estiver concluída, ou "Agendada". */
+function estagioResumo(eventos: OperacaoDto[], os: OrdemServicoDto): string {
   if (os.op_date_cancel) return 'Cancelada'
   if (os.op_date_close) return 'Fechada'
-  if (os.op_date_finish) return 'Finalizada'
-  if (os.op_date_start) return 'Iniciada'
-  if (os.op_date_answer) return 'Respondida'
-  if (os.op_date_sched) return 'Agendada'
-  return 'Sem data'
+  if (!os.op_pk) return 'Agendada'
+  for (let i = ETAPAS.length - 1; i >= 0; i--) {
+    if (etapaConcluida(eventos, os.op_pk, ETAPAS[i])) return ETAPAS[i].rotulo
+  }
+  return 'Agendada'
 }
 
 function enderecoResumo(endereco: { address?: string; address_number?: string; address_neighborhood?: string }): string {
@@ -93,10 +152,13 @@ export default function DetalheOrdemServico() {
   const [telefone, setTelefone] = useState<string | null>(null)
   const [endereco, setEndereco] = useState<EnderecoDto | null>(null)
   const [cpe, setCpe] = useState<CpeDto | null>(null)
+  const [eventos, setEventos] = useState<OperacaoDto[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [mostrarSenha, setMostrarSenha] = useState(false)
-  const [etapaConfirmando, setEtapaConfirmando] = useState<Etapa | null>(null)
+  // { etapa, desfazer: true } quando o técnico clica no botão de uma
+  // etapa JÁ concluída (quer desfazer); false quando quer marcar.
+  const [acaoConfirmando, setAcaoConfirmando] = useState<{ etapa: Etapa; desfazer: boolean } | null>(null)
   const [observacaoEtapa, setObservacaoEtapa] = useState('')
   const [executandoEtapa, setExecutandoEtapa] = useState(false)
   const [enviandoAnexo, setEnviandoAnexo] = useState(false)
@@ -121,6 +183,7 @@ export default function DetalheOrdemServico() {
       const aberta = respOs.results.find((os) => !os.op_date_close && !os.op_date_cancel)
       const os = aberta ?? respOs.results[0] ?? null
       setOsAtual(os)
+      recarregarEventos()
 
       if (os?.client_pk) {
         buscarDetalheCliente(os.client_pk)
@@ -149,6 +212,15 @@ export default function DetalheOrdemServico() {
     }
   }
 
+  // Os eventos de responder/iniciar/finalizar/desfazer vêm do MESMO
+  // endpoint do chat (/support_ctl/op/list) — recarrega só isso depois
+  // de uma ação, sem precisar refazer as buscas de cliente/contrato/CPE.
+  function recarregarEventos() {
+    listarMensagensTicket(pk)
+      .then((resposta) => setEventos(resposta.results))
+      .catch(() => {})
+  }
+
   async function copiar(valor: string | undefined, rotulo: string) {
     if (!valor) return
     try {
@@ -160,18 +232,16 @@ export default function DetalheOrdemServico() {
   }
 
   async function confirmarEtapa() {
-    const etapa = ETAPAS.find((e) => e.chave === etapaConfirmando)
+    const etapa = ETAPAS.find((e) => e.chave === acaoConfirmando?.etapa)
     // O parâmetro que a ação espera ("op_os_pk") é, na real, o PRÓPRIO
     // op_pk da OS raiz (agendada pelo escritório) — confirmado capturando
     // o clique real no painel do Controllr: o corpo enviado foi
     // op_os_pk=4227, que era o op_pk do registro agendado (cujo campo
     // op_os_pk vem null, já que ele não referencia "outra" OS, é a
-    // própria). O campo osAtual.op_os_pk só é preenchido em registros de
-    // EVENTO (resposta/início/fim), não na OS raiz — por isso usar
-    // osAtual.op_os_pk aqui sempre dava "Nenhuma OS encontrada".
-    if (!etapa || !osAtual?.op_pk) {
+    // própria — só os EVENTOS que ela gera têm op_os_pk preenchido).
+    if (!etapa || !acaoConfirmando || !osAtual?.op_pk) {
       toast('Nenhuma OS aberta encontrada pra este chamado.')
-      setEtapaConfirmando(null)
+      setAcaoConfirmando(null)
       return
     }
     const observacao = observacaoEtapa.trim()
@@ -181,13 +251,17 @@ export default function DetalheOrdemServico() {
     }
     setExecutandoEtapa(true)
     try {
-      await etapa.acao(pk, { opOsPk: osAtual.op_pk, opDesc: observacao })
-      toast(`OS marcada como ${etapa.rotulo.toLowerCase()}.`, 'sucesso')
-      setEtapaConfirmando(null)
+      const chamada = acaoConfirmando.desfazer ? etapa.desfazer : etapa.marcar
+      await chamada(pk, { opOsPk: osAtual.op_pk, opDesc: observacao })
+      toast(
+        acaoConfirmando.desfazer ? `Etapa "${etapa.rotulo}" desfeita.` : `OS marcada como ${etapa.rotulo.toLowerCase()}.`,
+        'sucesso',
+      )
+      setAcaoConfirmando(null)
       setObservacaoEtapa('')
-      setOsAtual((atual) => (atual ? { ...atual, [etapa.campoData]: agoraNoFormatoDoServidor() } : atual))
+      recarregarEventos()
     } catch (excecao) {
-      toast(excecao instanceof ApiError ? excecao.message : `Não foi possível marcar a OS como ${etapa.rotulo.toLowerCase()}.`)
+      toast(excecao instanceof ApiError ? excecao.message : `Não foi possível atualizar a etapa "${etapa.rotulo}".`)
     } finally {
       setExecutandoEtapa(false)
     }
@@ -214,8 +288,6 @@ export default function DetalheOrdemServico() {
   if (!Number.isFinite(pk)) {
     return <p className="detalhe-ordem-status">OS não encontrada.</p>
   }
-
-  const proxima = proximaEtapa(osAtual)
 
   return (
     <div className="detalhe-ordem-tela tela-entrada">
@@ -249,7 +321,7 @@ export default function DetalheOrdemServico() {
           <div className="detalhe-ordem-card">
             <div className="detalhe-ordem-topo">
               <strong>{ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_pk ?? pk}`}</strong>
-              <span className="detalhe-ordem-etapa-badge">{rotuloEtapaAtual(osAtual)}</span>
+              <span className="detalhe-ordem-etapa-badge">{estagioResumo(eventos, osAtual)}</span>
             </div>
             {(ticket?.ticket_protocol ?? osAtual.ticket_protocol) && (
               <p className="detalhe-ordem-linha">Protocolo: {ticket?.ticket_protocol ?? osAtual.ticket_protocol}</p>
@@ -375,24 +447,54 @@ export default function DetalheOrdemServico() {
             </button>
           </div>
 
-          {proxima && (
-            <button className="detalhe-ordem-btn-etapa" onClick={() => setEtapaConfirmando(proxima.chave)}>
-              <proxima.Icone size={18} /> {proxima.rotuloAcao}
-            </button>
-          )}
+          <div className="detalhe-ordem-card">
+            <h2>Etapas da OS</h2>
+            <div className="detalhe-ordem-etapa-item">
+              <div className="detalhe-ordem-etapa-item-texto">
+                <strong>Agendamento</strong>
+                <span>{osAtual.op_date_sched ? formatarDataHora(osAtual.op_date_sched) : 'Feito pelo escritório'}</span>
+              </div>
+              <span className="detalhe-ordem-etapa-feito">Pronto</span>
+            </div>
+            {ETAPAS.map((etapa) => {
+              const evento = osAtual.op_pk ? ultimoEvento(eventos, osAtual.op_pk, etapa.opType) : undefined
+              const concluida = !!evento?.[etapa.campoData]
+              return (
+                <div key={etapa.chave} className="detalhe-ordem-etapa-item">
+                  <div className="detalhe-ordem-etapa-item-texto">
+                    <strong>{etapa.rotulo}</strong>
+                    <span>{concluida && evento ? formatarDataHora(evento[etapa.campoData]) : 'Ainda não'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={concluida ? 'detalhe-ordem-etapa-btn-desfazer' : 'detalhe-ordem-etapa-btn-marcar'}
+                    onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: concluida })}
+                  >
+                    <etapa.Icone size={14} /> {concluida ? 'Desfazer' : 'Confirmar'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         </>
       )}
 
-      {etapaConfirmando && (
+      {acaoConfirmando && (
         <div
           className="detalhe-ordem-modal-fundo"
           onClick={() => {
-            setEtapaConfirmando(null)
+            setAcaoConfirmando(null)
             setObservacaoEtapa('')
           }}
         >
           <div className="detalhe-ordem-modal" onClick={(evento) => evento.stopPropagation()}>
-            <h2>{ETAPAS.find((e) => e.chave === etapaConfirmando)?.rotuloAcao}?</h2>
+            <h2>
+              {(() => {
+                const etapa = ETAPAS.find((e) => e.chave === acaoConfirmando.etapa)
+                if (!etapa) return ''
+                return acaoConfirmando.desfazer ? `${etapa.rotuloDesfazer}?` : `${etapa.rotuloMarcar}?`
+              })()}
+            </h2>
             <p className="detalhe-ordem-modal-texto">Descreva o que foi feito — o sistema exige essa observação.</p>
             <textarea
               value={observacaoEtapa}
@@ -403,7 +505,7 @@ export default function DetalheOrdemServico() {
             <div className="detalhe-ordem-modal-acoes">
               <button
                 onClick={() => {
-                  setEtapaConfirmando(null)
+                  setAcaoConfirmando(null)
                   setObservacaoEtapa('')
                 }}
               >

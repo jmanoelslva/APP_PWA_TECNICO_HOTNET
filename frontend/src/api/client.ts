@@ -528,6 +528,17 @@ export interface OperacaoDto {
   op_type?: number
   op_code?: number
   op_client?: boolean
+  // Confirmados capturando ao vivo — o mesmo /support_ctl/op/list usado
+  // pro chat também traz os eventos de responder/iniciar/finalizar/
+  // desfazer da OS (op_os_pk aponta pro op_pk do registro raiz da OS).
+  // Um "set" grava esse evento com a data preenchida; um "undo" grava
+  // outro evento do MESMO op_type com a data nula — por isso pra saber
+  // o estágio atual é preciso olhar o evento mais recente de cada tipo,
+  // não um campo fixo (ver DetalheOrdemServico.tsx).
+  op_os_pk?: number
+  op_date_answer?: string
+  op_date_start?: string
+  op_date_finish?: string
 }
 
 export function listarMensagensTicket(ticketPk: number): Promise<{ success: boolean; results: OperacaoDto[] }> {
@@ -632,6 +643,29 @@ export function finalizarOrdemServico(
   parametros: { opOsPk: number; opDesc?: string },
 ): Promise<{ success: boolean; results: unknown }> {
   return post(`os/${ticketPk}/finalizar`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+}
+
+// Desfazer exige op_desc (confirmado sondando o endpoint) — sem opcional,
+// diferente das funções de marcar acima.
+export function desfazerRespostaOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/desfazer-resposta`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+}
+
+export function desfazerInicioOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/desfazer-inicio`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+}
+
+export function desfazerFinalizacaoOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/desfazer-finalizacao`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
 }
 
 export function cancelarOrdemServico(
