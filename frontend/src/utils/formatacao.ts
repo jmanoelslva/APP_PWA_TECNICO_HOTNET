@@ -41,6 +41,24 @@ export function formatarStatusContrato(valor: number | string | null | undefined
   return ROTULOS_STATUS_CONTRATO[Number(valor)] ?? String(valor)
 }
 
+/**
+ * client_phones vem no formato "Rótulo#-#número", às vezes múltiplos
+ * separados por vírgula (ex: "Celular#-#82996267665,Comercial#-#..."),
+ * confirmado no app cliente de referência (D:\Desktop\WEB_APPS\
+ * HOTNET_WEB_APP\src\api\cadastro.ts::formatarContatos). Aqui só o(s)
+ * número(s) interessa(m), sem o rótulo.
+ */
+export function extrairTelefones(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const numeros = raw
+    .split(',')
+    .map((parte) => parte.trim())
+    .filter(Boolean)
+    .map((parte) => parte.split('#-#').pop()?.trim() ?? parte)
+    .filter(Boolean)
+  return numeros.length > 0 ? numeros.join(', ') : null
+}
+
 /** Tipos de criptografia Wi-Fi do CPE (cpe_wifi_encryption_type), confirmado pelo usuário. */
 export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> = [
   { valor: 0, rotulo: 'Nenhum' },

@@ -5,6 +5,7 @@ import {
   MdCheckCircle,
   MdChatBubbleOutline,
   MdContentCopy,
+  MdLocationOn,
   MdPeopleAlt,
   MdPlayArrow,
   MdVisibility,
@@ -26,10 +27,11 @@ import {
   responderOrdemServico,
   type ContratoDto,
   type CpeDto,
+  type EnderecoDto,
   type OrdemServicoDto,
   type TicketDto,
 } from '../api/client'
-import { agoraNoFormatoDoServidor, formatarDataHora, formatarStatusContrato } from '../utils/formatacao'
+import { agoraNoFormatoDoServidor, extrairTelefones, formatarDataHora, formatarStatusContrato } from '../utils/formatacao'
 import './DetalheOrdemServico.css'
 
 // Os 4 estágios reais de uma OS (confirmado com o dono da operação e
@@ -70,9 +72,10 @@ function rotuloEtapaAtual(os: OrdemServicoDto): string {
   return 'Sem data'
 }
 
-function enderecoCompleto(os: OrdemServicoDto): string {
+function enderecoResumo(endereco: { address?: string; address_number?: string; address_neighborhood?: string }): string {
   return (
-    [os.address, os.address_number, os.address_neighborhood].filter(Boolean).join(', ') || 'Endereço não informado'
+    [endereco.address, endereco.address_number, endereco.address_neighborhood].filter(Boolean).join(', ') ||
+    'Endereço não informado'
   )
 }
 
@@ -88,6 +91,7 @@ export default function DetalheOrdemServico() {
   const [osAtual, setOsAtual] = useState<OrdemServicoDto | null>(estadoNavegacao?.os ?? null)
   const [contrato, setContrato] = useState<ContratoDto | null>(null)
   const [telefone, setTelefone] = useState<string | null>(null)
+  const [endereco, setEndereco] = useState<EnderecoDto | null>(null)
   const [cpe, setCpe] = useState<CpeDto | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
@@ -121,9 +125,14 @@ export default function DetalheOrdemServico() {
       if (os?.client_pk) {
         buscarDetalheCliente(os.client_pk)
           .then((resposta) => {
-            setTelefone(resposta.cliente.client_phones ?? null)
+            setTelefone(extrairTelefones(resposta.cliente.client_phones))
             const contratoDaOs = resposta.contratos.find((c) => c.contract_pk === os.contract_pk)
             setContrato(contratoDaOs ?? resposta.contratos[0] ?? null)
+            // Mesmos dados do endereço mostrados no Detalhe do Cliente
+            // (cidade/UF, coordenadas pro Google Maps) — a OS em si só traz
+            // um resumo (address/number/neighborhood), sem isso.
+            const enderecoDaOs = resposta.enderecos.find((e) => e.address_pk === os.address_pk)
+            setEndereco(enderecoDaOs ?? resposta.enderecos[0] ?? null)
           })
           .catch(() => {})
         // Prioriza o contrato específico desta OS pra achar a CPE certa —
@@ -152,7 +161,15 @@ export default function DetalheOrdemServico() {
 
   async function confirmarEtapa() {
     const etapa = ETAPAS.find((e) => e.chave === etapaConfirmando)
-    if (!etapa || !osAtual?.op_os_pk) {
+    // O parâmetro que a ação espera ("op_os_pk") é, na real, o PRÓPRIO
+    // op_pk da OS raiz (agendada pelo escritório) — confirmado capturando
+    // o clique real no painel do Controllr: o corpo enviado foi
+    // op_os_pk=4227, que era o op_pk do registro agendado (cujo campo
+    // op_os_pk vem null, já que ele não referencia "outra" OS, é a
+    // própria). O campo osAtual.op_os_pk só é preenchido em registros de
+    // EVENTO (resposta/início/fim), não na OS raiz — por isso usar
+    // osAtual.op_os_pk aqui sempre dava "Nenhuma OS encontrada".
+    if (!etapa || !osAtual?.op_pk) {
       toast('Nenhuma OS aberta encontrada pra este chamado.')
       setEtapaConfirmando(null)
       return
@@ -164,7 +181,7 @@ export default function DetalheOrdemServico() {
     }
     setExecutandoEtapa(true)
     try {
-      await etapa.acao(pk, { opOsPk: osAtual.op_os_pk, opDesc: observacao })
+      await etapa.acao(pk, { opOsPk: osAtual.op_pk, opDesc: observacao })
       toast(`OS marcada como ${etapa.rotulo.toLowerCase()}.`, 'sucesso')
       setEtapaConfirmando(null)
       setObservacaoEtapa('')
@@ -231,7 +248,7 @@ export default function DetalheOrdemServico() {
         <>
           <div className="detalhe-ordem-card">
             <div className="detalhe-ordem-topo">
-              <strong>{ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_os_pk ?? pk}`}</strong>
+              <strong>{ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_pk ?? pk}`}</strong>
               <span className="detalhe-ordem-etapa-badge">{rotuloEtapaAtual(osAtual)}</span>
             </div>
             {(ticket?.ticket_protocol ?? osAtual.ticket_protocol) && (
@@ -265,8 +282,27 @@ export default function DetalheOrdemServico() {
 
           <div className="detalhe-ordem-card">
             <h2>Endereço</h2>
-            <p className="detalhe-ordem-linha">{enderecoCompleto(osAtual)}</p>
-            {osAtual.address_zipcode && <p className="detalhe-ordem-linha">CEP: {osAtual.address_zipcode}</p>}
+            <p className="detalhe-ordem-linha">{enderecoResumo(endereco ?? osAtual)}</p>
+            {(endereco?.address_province ?? osAtual.address_province) || (endereco?.address_state ?? osAtual.address_state) ? (
+              <p className="detalhe-ordem-linha">
+                {[endereco?.address_province ?? osAtual.address_province, endereco?.address_state ?? osAtual.address_state]
+                  .filter(Boolean)
+                  .join(' - ')}
+              </p>
+            ) : null}
+            {(endereco?.address_zipcode ?? osAtual.address_zipcode) && (
+              <p className="detalhe-ordem-linha">CEP: {endereco?.address_zipcode ?? osAtual.address_zipcode}</p>
+            )}
+            {endereco?.address_latitude && endereco?.address_longitude && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
+                target="_blank"
+                rel="noreferrer"
+                className="detalhe-ordem-chip"
+              >
+                <MdLocationOn size={14} /> Ver no Google Maps
+              </a>
+            )}
           </div>
 
           <div className="detalhe-ordem-card">

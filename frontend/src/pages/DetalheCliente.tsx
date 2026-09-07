@@ -25,7 +25,7 @@ import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarData, formatarStatusContrato } from '../utils/formatacao'
+import { extrairTelefones, formatarData, formatarStatusContrato } from '../utils/formatacao'
 import './DetalheCliente.css'
 
 // contract_sign_code/info/draw/ip/hash — vistos numa captura real da API,
@@ -61,6 +61,7 @@ export default function DetalheCliente() {
   const [erro, setErro] = useState<string | null>(null)
   const [nome, setNome] = useState<string | null>(null)
   const [doc, setDoc] = useState<string | null>(null)
+  const [telefone, setTelefone] = useState<string | null>(null)
   const [contratos, setContratos] = useState<ContratoDto[]>([])
   const [enderecos, setEnderecos] = useState<EnderecoDto[]>([])
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
@@ -93,6 +94,7 @@ export default function DetalheCliente() {
       const resposta = await buscarDetalheCliente(pk)
       setNome(resposta.cliente.client_complete_name ?? resposta.cliente.client_name ?? null)
       setDoc(resposta.cliente.client_doc1 ?? null)
+      setTelefone(extrairTelefones(resposta.cliente.client_phones))
       setContratos(resposta.contratos)
       setEnderecos(resposta.enderecos)
       setCpes(resposta.cpes)
@@ -140,6 +142,7 @@ export default function DetalheCliente() {
             <div>
               <strong>{nome ?? `Cliente #${pk}`}</strong>
               {doc && <p>Documento: {doc}</p>}
+              {telefone && <p>Telefone: {telefone}</p>}
             </div>
           </div>
 
