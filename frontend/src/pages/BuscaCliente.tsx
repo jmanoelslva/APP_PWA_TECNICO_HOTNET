@@ -8,25 +8,34 @@ import EstadoVazio from '../components/EstadoVazio'
 import { CORES } from '../utils/cores'
 import './BuscaCliente.css'
 
+// Um campo só decide sozinho o que foi digitado, em vez de pedir pro
+// técnico escolher entre nome/contrato/documento: CPF tem 11 dígitos,
+// CNPJ tem 14 — só números com uma dessas contagens vira busca por
+// documento; outra quantidade de dígitos vira busca por contrato;
+// qualquer coisa com letra vira busca por nome.
+function detectarTipoBusca(valor: string): { doc?: string; contrato?: number; nome?: string } {
+  const termo = valor.trim()
+  const somenteDigitos = termo.replace(/\D/g, '')
+  if (somenteDigitos && somenteDigitos.length === termo.length) {
+    if (somenteDigitos.length === 11 || somenteDigitos.length === 14) return { doc: somenteDigitos }
+    return { contrato: Number(somenteDigitos) }
+  }
+  return { nome: termo }
+}
+
 export default function BuscaCliente() {
   const [params, setParams] = useSearchParams()
-  const [doc, setDoc] = useState(params.get('doc') ?? '')
-  const [contrato, setContrato] = useState(params.get('contrato') ?? '')
-  const [nome, setNome] = useState(params.get('nome') ?? '')
+  const [busca, setBusca] = useState(params.get('busca') ?? '')
   const [carregando, setCarregando] = useState(false)
   const [jaBuscou, setJaBuscou] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
 
-  async function buscar(filtros: { doc: string; contrato: string; nome: string }) {
+  async function buscar(termo: string) {
     setCarregando(true)
     setErro(null)
     try {
-      const resposta = await buscarClientes({
-        doc: filtros.doc.trim() || undefined,
-        contrato: filtros.contrato.trim() ? Number(filtros.contrato.trim()) : undefined,
-        nome: filtros.nome.trim() || undefined,
-      })
+      const resposta = await buscarClientes(detectarTipoBusca(termo))
       setResultados(resposta.results)
       setJaBuscou(true)
     } catch (excecao) {
@@ -37,28 +46,22 @@ export default function BuscaCliente() {
   }
 
   useEffect(() => {
-    // Refaz a busca sozinho quando a tela é montada com filtros já na
+    // Refaz a busca sozinho quando a tela é montada com o termo já na
     // URL — sem isso, sair pra ver Conexão/ONU/detalhe de um resultado e
-    // voltar perdia a busca inteira, obrigando o técnico a buscar nome/
-    // CPF de novo do zero.
-    if (params.get('doc') || params.get('contrato') || params.get('nome')) {
-      buscar({ doc: params.get('doc') ?? '', contrato: params.get('contrato') ?? '', nome: params.get('nome') ?? '' })
-    }
+    // voltar perdia a busca inteira, obrigando o técnico a buscar de novo.
+    const termoInicial = params.get('busca')
+    if (termoInicial) buscar(termoInicial)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function aoBuscar(evento: FormEvent) {
     evento.preventDefault()
-    if (!doc.trim() && !contrato.trim() && !nome.trim()) {
-      setErro('Preencha ao menos um campo: documento, contrato ou nome.')
+    if (!busca.trim()) {
+      setErro('Digite um nome, número de contrato ou CPF/CNPJ.')
       return
     }
-    const novosParams: Record<string, string> = {}
-    if (doc.trim()) novosParams.doc = doc.trim()
-    if (contrato.trim()) novosParams.contrato = contrato.trim()
-    if (nome.trim()) novosParams.nome = nome.trim()
-    setParams(novosParams)
-    buscar({ doc, contrato, nome })
+    setParams({ busca: busca.trim() })
+    buscar(busca)
   }
 
   return (
@@ -67,24 +70,17 @@ export default function BuscaCliente() {
         icone={MdPeopleAlt}
         cor={CORES.cliente}
         titulo="Clientes"
-        subtitulo="Busque por documento, contrato ou nome."
+        subtitulo="Busque por nome, contrato ou CPF/CNPJ."
       />
 
       <form className="busca-cliente-form" onSubmit={aoBuscar}>
-        <label htmlFor="doc">CPF/CNPJ</label>
-        <input id="doc" value={doc} onChange={(e) => setDoc(e.target.value)} placeholder="Somente números" />
-
-        <label htmlFor="contrato">Número do contrato</label>
+        <label htmlFor="busca">Nome, contrato ou CPF/CNPJ</label>
         <input
-          id="contrato"
-          value={contrato}
-          onChange={(e) => setContrato(e.target.value)}
-          inputMode="numeric"
-          placeholder="Ex: 12345"
+          id="busca"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Ex: João Silva, 12345 ou 12345678900"
         />
-
-        <label htmlFor="nome">Nome</label>
-        <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome ou razão social" />
 
         {erro && <p className="busca-cliente-erro">{erro}</p>}
 

@@ -425,7 +425,7 @@ export default function Conexao() {
                 <input
                   id="conexao-usuario-input"
                   type="text"
-                  placeholder="Digite parte do usuário — ex: eronildes"
+                  placeholder="Digite o usuário"
                   value={buscaUsuario}
                   onChange={(e) => setBuscaUsuario(e.target.value)}
                   onFocus={() => setListaUsuarioAberta(true)}

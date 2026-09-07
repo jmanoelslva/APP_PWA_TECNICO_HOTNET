@@ -82,6 +82,56 @@
   cursor: pointer;
 }
 
+/* Usuário PPPoE não deve ficar forçado em maiúsculas (diferente do
+   serial, que é convencionalmente maiúsculo). */
+.onu-combobox .onu-busca-campo input {
+  text-transform: none;
+}
+
+.onu-combobox {
+  position: relative;
+}
+
+.onu-combobox-lista {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 18px;
+  right: 18px;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--cor-superficie);
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 10px;
+  box-shadow: var(--sombra-card);
+}
+
+.onu-combobox-lista li button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: var(--cor-texto);
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.onu-combobox-lista li button:hover {
+  background: var(--cor-fundo);
+}
+
+.onu-combobox-vazio {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
 .onu-campo {
   padding: 8px 0;
   border-bottom: 1px solid var(--cor-borda-suave);

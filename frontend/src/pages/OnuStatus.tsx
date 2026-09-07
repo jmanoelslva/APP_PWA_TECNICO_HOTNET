@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { MdContentCopy, MdPeopleAlt, MdRefresh, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
-import { ApiError, atualizarInfoOnu, buscarOnu, type OnuDto } from '../api/client'
+import { ApiError, atualizarInfoOnu, buscarCpe, buscarOnu, type CpeDto, type OnuDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
@@ -41,7 +41,7 @@ const TEXTO_SINAL: Record<NivelSinal, string> = {
 }
 
 export default function OnuStatus() {
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const cpePkParam = params.get('cpe_pk')
   const usernameParam = params.get('username')
   // Usuário PPPoE do CPE é o jeito confiável de achar a ONU de um
@@ -62,6 +62,14 @@ export default function OnuStatus() {
   const [atualizando, setAtualizando] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [serialBusca, setSerialBusca] = useState('')
+  // Busca por usuário PPPoE — mesmo combobox com filtro parcial da tela
+  // de Conexão: a busca em si é feita em /cpe/busca (que suporta ILIKE
+  // parcial), não em /onu/busca (que só acha por usuário exato); ao
+  // clicar num resultado, aí sim busca a ONU pelo usuário exato dele.
+  const [usuarioBusca, setUsuarioBusca] = useState('')
+  const [resultadosUsuario, setResultadosUsuario] = useState<CpeDto[]>([])
+  const [buscandoUsuario, setBuscandoUsuario] = useState(false)
+  const [listaUsuarioAberta, setListaUsuarioAberta] = useState(false)
 
   useEffect(() => {
     if (!temParametroInicial) {
@@ -71,6 +79,31 @@ export default function OnuStatus() {
     carregar(buscarInicial)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cpePkParam, usernameParam])
+
+  useEffect(() => {
+    if (temParametroInicial || usuarioBusca.trim().length < 2) {
+      setResultadosUsuario([])
+      return
+    }
+    let cancelado = false
+    setBuscandoUsuario(true)
+    const temporizador = setTimeout(() => {
+      buscarCpe({ username: usuarioBusca.trim() })
+        .then((resposta) => {
+          if (!cancelado) setResultadosUsuario(resposta.results)
+        })
+        .catch(() => {
+          if (!cancelado) setResultadosUsuario([])
+        })
+        .finally(() => {
+          if (!cancelado) setBuscandoUsuario(false)
+        })
+    }, 350)
+    return () => {
+      cancelado = true
+      clearTimeout(temporizador)
+    }
+  }, [usuarioBusca, temParametroInicial])
 
   async function carregar(chamada: () => ReturnType<typeof buscarOnu>) {
     setCarregando(true)
@@ -166,10 +199,50 @@ export default function OnuStatus() {
               </button>
             </div>
           </form>
+
+          <div className="onu-card onu-busca onu-combobox">
+            <label htmlFor="onu-usuario-input">Usuário PPPoE</label>
+            <div className="onu-busca-campo">
+              <input
+                id="onu-usuario-input"
+                type="text"
+                placeholder="Digite o usuário"
+                value={usuarioBusca}
+                onChange={(e) => setUsuarioBusca(e.target.value)}
+                onFocus={() => setListaUsuarioAberta(true)}
+                onBlur={() => setTimeout(() => setListaUsuarioAberta(false), 150)}
+              />
+            </div>
+            {listaUsuarioAberta && usuarioBusca.trim().length >= 2 && (
+              <ul className="onu-combobox-lista">
+                {buscandoUsuario && <li className="onu-combobox-vazio">Buscando…</li>}
+                {!buscandoUsuario && resultadosUsuario.length === 0 && (
+                  <li className="onu-combobox-vazio">Nenhum usuário encontrado.</li>
+                )}
+                {!buscandoUsuario &&
+                  resultadosUsuario.map((resultado) => (
+                    <li key={resultado.pk}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setListaUsuarioAberta(false)
+                          if (resultado.username) setParams({ username: resultado.username })
+                        }}
+                      >
+                        <strong>{resultado.username}</strong>
+                        {resultado.client_complete_name && ` — ${resultado.client_complete_name}`}
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
+
           {!erro && (
             <EstadoVazio
               icone={MdRouter}
-              titulo="Busque pelo serial da ONU"
+              titulo="Busque pelo serial da ONU ou pelo usuário PPPoE"
               subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
             />
           )}
