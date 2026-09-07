@@ -15,7 +15,7 @@ import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarData } from '../utils/formatacao'
+import { formatarData, formatarStatusContrato } from '../utils/formatacao'
 import './DetalheCliente.css'
 
 export default function DetalheCliente() {
@@ -102,7 +102,7 @@ export default function DetalheCliente() {
             {contratos.map((contrato) => (
               <div key={contrato.contract_pk} className="detalhe-cliente-item">
                 <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
-                {contrato.contract_status != null && <p>Status: {contrato.contract_status}</p>}
+                {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
                 {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
               </div>
             ))}

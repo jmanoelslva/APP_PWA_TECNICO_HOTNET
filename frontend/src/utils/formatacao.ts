@@ -25,3 +25,18 @@ export function agoraNoFormatoDoServidor(): string {
   const par = (n: number) => String(n).padStart(2, '0')
   return `${agora.getFullYear()}-${par(agora.getMonth() + 1)}-${par(agora.getDate())} ${par(agora.getHours())}:${par(agora.getMinutes())}:${par(agora.getSeconds())}`
 }
+
+/** Mapeamento oficial de contract_status confirmado na doc do Controllr. */
+const ROTULOS_STATUS_CONTRATO: Record<number, string> = {
+  0: 'Desativado',
+  1: 'Ativado',
+  2: 'Alertado',
+  3: 'Pendente',
+  4: 'Bloqueado',
+  5: 'Cancelado',
+}
+
+export function formatarStatusContrato(valor: number | string | null | undefined): string {
+  if (valor == null) return '—'
+  return ROTULOS_STATUS_CONTRATO[Number(valor)] ?? String(valor)
+}

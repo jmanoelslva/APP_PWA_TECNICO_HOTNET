@@ -9,6 +9,7 @@ import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
+import { formatarStatusContrato } from '../utils/formatacao'
 import './Conexao.css'
 
 export default function Conexao() {
@@ -161,7 +162,11 @@ export default function Conexao() {
 
   const CAMPOS_DESEJADOS: CampoDesejado[] = [
     { rotulo: 'MAC da CPE', extrair: porCandidatos(['session_callingid', 'cpe_mac', 'session_calling_station_id', 'mac']) },
-    { rotulo: 'Status do contrato', extrair: porCandidatos(['contract_status', 'contract_status_name', 'client_contract_status']) },
+    {
+      rotulo: 'Status do contrato',
+      extrair: porCandidatos(['contract_status', 'contract_status_name', 'client_contract_status']),
+      formatar: (valor) => formatarStatusContrato(valor as number | string),
+    },
     { rotulo: 'NAS (nome/identificador)', extrair: porCandidatos(['nas_name', 'session_nas_identifier', 'nas_identifier']) },
     { rotulo: 'NAS (endereço/IP)', extrair: porCandidatos(['nas_addr', 'session_nas_ip', 'nas_ip_address', 'nas_address']) },
     { rotulo: 'NAS (porta)', extrair: porCandidatos(['session_nas_port_id', 'nas_port_id']) },
@@ -173,8 +178,11 @@ export default function Conexao() {
       extrair: porCandidatos(['session_acct_time', 'session_uptime', 'session_duration', 'session_time']),
       formatar: formatarTempoConectado,
     },
-    { rotulo: 'Consumo (download)', extrair: porConsumo('rx'), formatar: formatarBytes },
-    { rotulo: 'Consumo (upload)', extrair: porConsumo('tx'), formatar: formatarBytes },
+    // rx/tx aqui são do ponto de vista do NAS (padrão RADIUS accounting):
+    // rx_byte = recebido PELO NAS vindo do cliente = upload do cliente;
+    // tx_byte = enviado PELO NAS para o cliente = download do cliente.
+    { rotulo: 'Consumo (download)', extrair: porConsumo('tx'), formatar: formatarBytes },
+    { rotulo: 'Consumo (upload)', extrair: porConsumo('rx'), formatar: formatarBytes },
   ]
 
   function camposSessao(): Array<[string, string]> {
