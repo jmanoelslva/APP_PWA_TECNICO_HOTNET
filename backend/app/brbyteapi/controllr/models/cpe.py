@@ -93,7 +93,12 @@ class CPEExtended(CPE):
     # esse campo nunca era preenchido.
     dp_port                     : Any   | Empty = Field(default_factory=Empty, alias='cpe_dp_port')
     lending                     : Any   | Empty = Field(default_factory=Empty, alias='lending')
-    mac_last                    : Any   | Empty = Field(default_factory=Empty, alias='mac_last')
+    # Alias correto é "cpe_mac_last", não "mac_last" (confirmado na doc
+    # oficial, apidoc.brbyte.com/#post-/aaa_ctl/cpe/list) — mesmo padrão de
+    # bug já visto em cpe_password/cpe_latitude/cpe_dp_port: quando o
+    # cliente conecta por PPPoE (sem MAC fixo cadastrado), cpe_mac fica
+    # vazio e o MAC de verdade só aparece aqui, no "último MAC visto".
+    mac_last                    : Any   | Empty = Field(default_factory=Empty, alias='cpe_mac_last')
     nas_addr                    : Any   | Empty = Field(default_factory=Empty, alias='nas_addr')
     nas_interface               : Any   | Empty = Field(default_factory=Empty, alias='nas_interface')
     nas_name                    : Any   | Empty = Field(default_factory=Empty, alias='nas_name')

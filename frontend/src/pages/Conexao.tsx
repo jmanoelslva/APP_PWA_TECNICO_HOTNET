@@ -58,11 +58,18 @@ export default function Conexao() {
   // /aaa_ctl/cpe/update). Card e Salvar próprios, separados da CTO.
   const [obs, setObs] = useState('')
   const [salvandoObs, setSalvandoObs] = useState(false)
-  // CTO/porta — dp_pk, cpe_dp_port (idem).
+  // CTO/porta — dp_pk, cpe_dp_port (idem). dpBusca é o texto digitado no
+  // combobox (filtra a lista enquanto digita); dpPk só muda quando o
+  // técnico clica numa CTO da lista filtrada.
   const [dpPk, setDpPk] = useState('')
+  const [dpBusca, setDpBusca] = useState('')
+  const [dpListaAberta, setDpListaAberta] = useState(false)
   const [dpPorta, setDpPorta] = useState('')
   const [dps, setDps] = useState<DpDto[]>([])
   const [salvandoCto, setSalvandoCto] = useState(false)
+  const dpsFiltradas = dpBusca.trim()
+    ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase()))
+    : dps
   // Acesso administrativo ao roteador — cpe_access_login/password/port,
   // agora editável (antes só era possível ver o que já vinha cadastrado).
   const [acessoLogin, setAcessoLogin] = useState('')
@@ -94,10 +101,13 @@ export default function Conexao() {
       const resposta = await chamada()
       const cpeCarregado = resposta.results[0] ?? null
       setCpe(cpeCarregado)
-      setWifiTipo(cpeCarregado?.wifi_encryption_type != null ? String(cpeCarregado.wifi_encryption_type) : '')
+      // Sem "não informado" no seletor — assume Nenhum (0) até o técnico
+      // escolher outra coisa, pra manter o estado igual ao que a tela mostra.
+      setWifiTipo(cpeCarregado?.wifi_encryption_type != null ? String(cpeCarregado.wifi_encryption_type) : '0')
       setWifiSenha(cpeCarregado?.wifi_encryption_password ?? '')
       setObs(cpeCarregado?.obs ?? '')
       setDpPk(cpeCarregado?.dp_pk != null ? String(cpeCarregado.dp_pk) : '')
+      setDpBusca(cpeCarregado?.dp_name ?? '')
       setDpPorta(cpeCarregado?.dp_port != null ? String(cpeCarregado.dp_port) : '')
       setAcessoLogin(cpeCarregado?.access_login ?? '')
       setAcessoSenha(cpeCarregado?.access_password ?? '')
@@ -538,16 +548,41 @@ export default function Conexao() {
                   próprio sistema (GET /dp/lista), pra selecionar em vez de
                   digitar um pk cru. */}
               <h2>CTO</h2>
-              <div className="conexao-campo">
+              <div className="conexao-campo conexao-combobox">
                 <span>CTO</span>
-                <select className="conexao-input" value={dpPk} onChange={(e) => setDpPk(e.target.value)}>
-                  <option value="">Não informado</option>
-                  {dps.map((dp) => (
-                    <option key={dp.pk} value={dp.pk}>
-                      {dp.name}
-                    </option>
-                  ))}
-                </select>
+                <input
+                  className="conexao-input"
+                  type="text"
+                  value={dpBusca}
+                  placeholder="Digite pra buscar a CTO"
+                  onChange={(e) => {
+                    setDpBusca(e.target.value)
+                    setDpPk('')
+                    setDpListaAberta(true)
+                  }}
+                  onFocus={() => setDpListaAberta(true)}
+                  onBlur={() => setTimeout(() => setDpListaAberta(false), 150)}
+                />
+                {dpListaAberta && (
+                  <ul className="conexao-combobox-lista">
+                    {dpsFiltradas.length === 0 && <li className="conexao-combobox-vazio">Nenhuma CTO encontrada.</li>}
+                    {dpsFiltradas.map((dp) => (
+                      <li key={dp.pk}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setDpPk(String(dp.pk))
+                            setDpBusca(dp.name)
+                            setDpListaAberta(false)
+                          }}
+                        >
+                          {dp.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <div className="conexao-campo">
                 <span>Porta da CTO</span>
@@ -582,7 +617,6 @@ export default function Conexao() {
                     if (e.target.value === '0') setWifiSenha('')
                   }}
                 >
-                  <option value="">Não informado</option>
                   {OPCOES_CRIPTOGRAFIA_WIFI.map((opcao) => (
                     <option key={opcao.valor} value={opcao.valor}>
                       {opcao.rotulo}
@@ -623,11 +657,7 @@ export default function Conexao() {
               </div>
               <div className="conexao-linha">
                 <span>MAC</span>
-                <strong>{cpe.mac ?? '—'}</strong>
-              </div>
-              <div className="conexao-linha">
-                <span>Status</span>
-                <strong>{cpe.status ?? cpe.state ?? '—'}</strong>
+                <strong>{cpe.mac ?? cpe.mac_last ?? '—'}</strong>
               </div>
             </div>
 

@@ -297,6 +297,10 @@ export interface CpeDto {
   v4_ip?: string
   v4_ip_last?: string
   mac?: string
+  // Último MAC visto (cpe_mac_last) — quando o cliente conecta por PPPoE
+  // sem MAC fixo cadastrado, cpe_mac fica vazio e o MAC de verdade só
+  // aparece aqui.
+  mac_last?: string
   status?: number
   state?: number
   address?: string
