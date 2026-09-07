@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import CORS_ALLOW_ORIGINS
-from .routers import auth, clientes, conexao, dp, enderecos, onu, ordens_servico, suporte
+from .routers import auth, clientes, conexao, dp, enderecos, onu, ordens_servico, suporte, telefones
 
 app = FastAPI(title="HOTNET Técnico API")
 
@@ -22,6 +22,7 @@ app.include_router(dp.router)
 app.include_router(onu.router)
 app.include_router(ordens_servico.router)
 app.include_router(suporte.router)
+app.include_router(telefones.router)
 
 
 @app.get("/health")

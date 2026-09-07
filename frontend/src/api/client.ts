@@ -245,16 +245,42 @@ export function buscarClientes(filtros: { doc?: string; contrato?: number; nome?
   return get<BuscaClienteResponse>('clientes/busca', filtros)
 }
 
+// Telefone é recurso próprio do Controllr (/controllrctl/phone/*), não um
+// campo solto do cliente — client_phones (ClienteDto) é só um resumo
+// "Rótulo#-#número" sem phone_pk, então não dá pra editar a partir dele.
+// Estes campos vêm crus da API (sem cast por model no backend), por isso
+// os nomes batem 1:1 com o Controllr.
+export interface TelefoneDto {
+  phone_pk?: number
+  client_pk?: number
+  phone_identification?: string
+  phone_number?: string
+  phone_operator?: string
+  phone_type?: number
+  phone_sva?: number
+  phone_status?: number
+  phone_valid?: number
+  phone_code?: string
+}
+
 export interface DetalheClienteResponse {
   success: boolean
   cliente: ClienteDto
   contratos: ContratoDto[]
   enderecos: EnderecoDto[]
   cpes: CpeComboDto[]
+  telefones: TelefoneDto[]
 }
 
 export function buscarDetalheCliente(clientPk: number): Promise<DetalheClienteResponse> {
   return get<DetalheClienteResponse>(`clientes/${clientPk}`)
+}
+
+// Reenvia o registro inteiro (não só phone_number) — confirmado ao vivo
+// que o Controllr espera o telefone completo no update, mesmo pra trocar
+// só o número (ver backend/app/routers/telefones.py).
+export function atualizarTelefone(phonePk: number, dados: TelefoneDto): Promise<{ success: boolean; results: unknown }> {
+  return put(`telefones/${phonePk}`, dados)
 }
 
 // ---------------------------------------------------------------------

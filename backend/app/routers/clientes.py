@@ -186,6 +186,19 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     for contract_pk, contrato in contratos_por_pk.items():
         contrato["itens"] = await _itens_contrato(ctx, contract_pk)
 
+    # Telefone é recurso PRÓPRIO do Controllr (/controllrctl/phone/*), não
+    # um campo solto do cliente — client_phones (client/list, usado antes)
+    # é só um resumo "Rótulo#-#número" sem phone_pk nenhum, então não dava
+    # pra editar a partir dele. Busca os registros de verdade aqui pra
+    # poder editar o número (ver routers/telefones.py). Nome real da
+    # tabela é "client_phone" (singular) — confirmado ao vivo testando
+    # candidatos: "phone.client_pk" dá 42P01 (tabela errada), "client_pk"
+    # puro dá 42702 (ambíguo, mesmo padrão de client_pk/cpe_pk visto em
+    # outros endpoints).
+    telefones_resp = await ctx.controllr.phone_list(
+        corpo(where_eq("client_phone.client_pk", client_pk), sort="phone_pk", dir="ASC")
+    )
+
     return {
         "success": True,
         "cliente": cliente_resp.results[0],
@@ -198,4 +211,5 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
         "contratos": list(contratos_por_pk.values()),
         "enderecos": enderecos_resp.results if enderecos_resp.success else [],
         "cpes": cpes,
+        "telefones": telefones_resp.results if telefones_resp.success else [],
     }

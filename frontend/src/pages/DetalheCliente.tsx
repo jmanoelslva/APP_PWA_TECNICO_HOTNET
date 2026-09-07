@@ -14,6 +14,7 @@ import {
 import {
   ApiError,
   atualizarEndereco,
+  atualizarTelefone,
   buscarCpe,
   buscarDetalheCliente,
   buscarOnu,
@@ -23,13 +24,14 @@ import {
   type CpeDto,
   type EnderecoDto,
   type OnuDto,
+  type TelefoneDto,
   type TicketDto,
 } from '../api/client'
 import VoltarInicio from '../components/VoltarInicio'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { extrairTelefones, formatarData, formatarStatusContrato, nivelSinalOnu, TEXTO_SINAL_ONU } from '../utils/formatacao'
+import { formatarData, formatarStatusContrato, nivelSinalOnu, TEXTO_SINAL_ONU } from '../utils/formatacao'
 import './DetalheCliente.css'
 
 // Resumo de conexão + ONU de um CPE, carregado à parte (endpoints
@@ -76,13 +78,14 @@ export default function DetalheCliente() {
   const [erro, setErro] = useState<string | null>(null)
   const [nome, setNome] = useState<string | null>(null)
   const [doc, setDoc] = useState<string | null>(null)
-  const [telefone, setTelefone] = useState<string | null>(null)
+  const [telefones, setTelefones] = useState<TelefoneDto[]>([])
   const [contratos, setContratos] = useState<ContratoDto[]>([])
   const [enderecos, setEnderecos] = useState<EnderecoDto[]>([])
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
   const [resumosConexao, setResumosConexao] = useState<Record<number, ResumoConexao>>({})
   const [chamados, setChamados] = useState<TicketDto[]>([])
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
+  const [telefoneEditando, setTelefoneEditando] = useState<TelefoneDto | null>(null)
   // Contrato traz bastante informação (assinatura, itens...) que só
   // interessa quando o técnico realmente precisa dela — fica recolhido
   // por padrão pra não ocupar a tela à toa, expande sob demanda.
@@ -110,7 +113,7 @@ export default function DetalheCliente() {
       const resposta = await buscarDetalheCliente(pk)
       setNome(resposta.cliente.client_complete_name ?? resposta.cliente.client_name ?? null)
       setDoc(resposta.cliente.client_doc1 ?? null)
-      setTelefone(extrairTelefones(resposta.cliente.client_phones))
+      setTelefones(resposta.telefones ?? [])
       setContratos(resposta.contratos)
       setEnderecos(resposta.enderecos)
       setCpes(resposta.cpes)
@@ -183,9 +186,24 @@ export default function DetalheCliente() {
             <div>
               <strong>{nome ?? `Cliente #${pk}`}</strong>
               {doc && <p>Documento: {doc}</p>}
-              {telefone && <p>Telefone: {telefone}</p>}
             </div>
           </div>
+
+          <section className="detalhe-cliente-secao">
+            <h2>Telefones</h2>
+            {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
+            {telefones.map((tel) => (
+              <div key={tel.phone_pk} className="detalhe-cliente-item">
+                <div className="detalhe-cliente-item-topo">
+                  <strong>{tel.phone_identification ?? 'Telefone'}</strong>
+                  <button className="detalhe-cliente-btn-icone" onClick={() => setTelefoneEditando(tel)} aria-label="Editar telefone">
+                    <MdEdit size={18} />
+                  </button>
+                </div>
+                <p>{tel.phone_number || 'Número não informado'}</p>
+              </div>
+            ))}
+          </section>
 
           <section className="detalhe-cliente-secao">
             <h2>Endereços</h2>
@@ -416,6 +434,18 @@ export default function DetalheCliente() {
           }}
         />
       )}
+
+      {telefoneEditando && (
+        <ModalEditarTelefone
+          telefone={telefoneEditando}
+          onFechar={() => setTelefoneEditando(null)}
+          onSalvo={(atualizado) => {
+            setTelefones((atual) => atual.map((t) => (t.phone_pk === atualizado.phone_pk ? atualizado : t)))
+            setTelefoneEditando(null)
+            toast('Telefone atualizado com sucesso.', 'sucesso')
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -549,6 +579,55 @@ function ModalEditarEndereco({
             <MdLocationOn size={14} /> {capturandoLocalizacao ? 'Capturando…' : 'Capturar localização atual'}
           </button>
         </div>
+
+        <div className="detalhe-cliente-modal-acoes">
+          <button onClick={onFechar}>Cancelar</button>
+          <button className="detalhe-cliente-modal-btn-primario" disabled={salvando} onClick={salvar}>
+            {salvando ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ModalEditarTelefone({
+  telefone,
+  onFechar,
+  onSalvo,
+}: {
+  telefone: TelefoneDto
+  onFechar: () => void
+  onSalvo: (telefone: TelefoneDto) => void
+}) {
+  const [numero, setNumero] = useState(telefone.phone_number ?? '')
+  const [salvando, setSalvando] = useState(false)
+  const { toast } = useToast()
+
+  async function salvar() {
+    if (!telefone.phone_pk) return
+    setSalvando(true)
+    try {
+      // Reenvia o registro inteiro (identificação, operadora, tipo etc.)
+      // como já veio carregado — só phone_number muda aqui (confirmado ao
+      // vivo que o Controllr espera o telefone completo no update, ver
+      // backend/app/routers/telefones.py).
+      await atualizarTelefone(telefone.phone_pk, { ...telefone, phone_number: numero })
+      onSalvo({ ...telefone, phone_number: numero })
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível salvar o telefone.')
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  return (
+    <div className="detalhe-cliente-modal-fundo" onClick={onFechar}>
+      <div className="detalhe-cliente-modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Editar telefone{telefone.phone_identification ? ` — ${telefone.phone_identification}` : ''}</h2>
+
+        <label>Número</label>
+        <input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
 
         <div className="detalhe-cliente-modal-acoes">
           <button onClick={onFechar}>Cancelar</button>

@@ -302,6 +302,28 @@ Online" do próprio painel:
   (código SIAFI do município) além dos campos óbvios — sem ele a
   chamada falha. Não é algo que o técnico deva digitar (não muda);
   sempre reenviar o valor já carregado.
+- **Telefone é recurso PRÓPRIO do Controllr** (`/controllrctl/phone/*`
+  — list, list_combo, create, update, delete), não um campo solto do
+  cliente. `client_phones` (`client/list`) é só um resumo
+  `"Rótulo#-#valor"` montado a partir desses registros pra exibição —
+  não tem `phone_pk`, então não dá pra editar a partir dele.
+  - Nome real da tabela pro `where`: **`client_phone`** (singular) —
+    confirmado ao vivo testando candidatos: `client_pk` puro dá `42702`
+    (ambíguo, mesmo padrão de outros endpoints), `phone.client_pk` dá
+    `42P01` (tabela errada), `client_phone.client_pk` funciona.
+  - Campos reais (via `phone_list`, sem cast de model — nomes crus):
+    `phone_pk`, `phone_identification` (rótulo, ex: "PRINCIPAL",
+    "Celular", "WHATSAPP"), `phone_number`, `phone_operator`,
+    `phone_type`, `client_pk`, `phone_sva`, `phone_status`,
+    `phone_valid`, `phone_code`.
+  - `/controllrctl/phone/update` **exige o registro inteiro**, não só o
+    campo que mudou — confirmado ao vivo capturando um "Salvar" sem
+    alteração nenhuma no formulário real do painel (`phone_type`,
+    `phone_pk`, `client_pk`, `phone_identification`, `phone_status`,
+    `phone_sva`, `phone_number`, `phone_operator`, `phone_valid`,
+    `phone_code` — todos presentes no corpo, mesmo os que não mudaram).
+    Mesmo padrão de "reenviar o que já veio carregado" já visto em
+    endereço (`address_siafi` etc).
 
 ---
 
