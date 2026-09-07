@@ -1,6 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { MdBuild, MdEdit, MdLocationOn, MdPeopleAlt, MdRouter, MdWifi } from 'react-icons/md'
+import { MdBuild, MdDescription, MdEdit, MdLocationOn, MdPeopleAlt, MdRouter, MdWifi } from 'react-icons/md'
 import {
   ApiError,
   atualizarEndereco,
@@ -106,11 +106,23 @@ export default function DetalheCliente() {
                 </div>
                 {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
                 {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
-                {contrato.contract_pk && (
+                {/* contract_sign_date vazio/null = ainda não assinado
+                    (confirmado na doc oficial, apidoc.brbyte.com/#post-
+                    /controllrctl/contract/list) — é o indicador de status
+                    da assinatura, não um campo à parte. */}
+                <p>Assinatura: {contrato.contract_sign_date ? `Assinado em ${formatarData(contrato.contract_sign_date)}` : 'Não assinado'}</p>
+                {(contrato.contract_pk || contrato.contract_sign_doc_link) && (
                   <div className="detalhe-cliente-item-acoes">
-                    <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
-                      <MdWifi size={14} /> Conexão
-                    </Link>
+                    {contrato.contract_pk && (
+                      <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
+                        <MdWifi size={14} /> Conexão
+                      </Link>
+                    )}
+                    {contrato.contract_sign_doc_link && (
+                      <a href={contrato.contract_sign_doc_link} target="_blank" rel="noreferrer" className="detalhe-cliente-chip">
+                        <MdDescription size={14} /> Ver contrato
+                      </a>
+                    )}
                   </div>
                 )}
               </div>

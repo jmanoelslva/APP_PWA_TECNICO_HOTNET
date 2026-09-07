@@ -186,6 +186,12 @@ export interface ContratoDto {
   contract_pay_day?: number
   contract_date_activation?: string
   client_pk?: number
+  // Assinatura do contrato (confirmado na doc oficial,
+  // apidoc.brbyte.com/#post-/controllrctl/contract/list): sign_date vem
+  // vazio/null enquanto o contrato não foi assinado — é o indicador de
+  // status. sign_doc_link é o link pra ver/assinar o documento.
+  contract_sign_date?: string
+  contract_sign_doc_link?: string
 }
 
 export interface EnderecoDto {
