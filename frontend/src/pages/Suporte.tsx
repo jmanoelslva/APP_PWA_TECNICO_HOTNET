@@ -85,7 +85,9 @@ export default function Suporte() {
                   onClick={() => os.ticket_pk && navigate(`/os/${os.ticket_pk}`, { state: { os }, viewTransition: true })}
                 >
                   <div className="ticket-topo">
-                    <span className="ticket-assunto">{os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`}</span>
+                    <span className="ticket-assunto">
+                      {os.task_name ?? (os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`)}
+                    </span>
                     <span className={`ticket-status-badge ${fechada ? 'badge-fechado' : 'badge-aberto'}`}>
                       {os.op_date_cancel ? 'Cancelada' : fechada ? 'Fechada' : 'Aberta'}
                     </span>

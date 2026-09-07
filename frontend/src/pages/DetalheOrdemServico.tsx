@@ -373,6 +373,7 @@ export default function DetalheOrdemServico() {
               <strong>{ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_pk ?? pk}`}</strong>
               <span className="detalhe-ordem-etapa-badge">{estagioResumo(eventos, osAtual)}</span>
             </div>
+            {osAtual.task_name && <p className="detalhe-ordem-linha">Tarefa: {osAtual.task_name}</p>}
             {(ticket?.ticket_protocol ?? osAtual.ticket_protocol) && (
               <p className="detalhe-ordem-linha">Chamado: {ticket?.ticket_protocol ?? osAtual.ticket_protocol}</p>
             )}

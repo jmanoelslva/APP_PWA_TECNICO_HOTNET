@@ -161,6 +161,18 @@ sempre volta vazio. Os eventos só aparecem via `/support_ctl/op/list`
   contrato, dados de conexão (usuário/senha/IP/MAC/CTO) — precisa
   buscar via `/clientes/{pk}` e `/cpe/busca` à parte.
 
+### 3.4.1. `task_name`/`task_pk` — a Tarefa da OS
+
+`/support_ctl/os/list` também já traz `task_pk` e `task_name` prontos no
+próprio registro (confirmado ao vivo na tela "Ordem de Serviço" do
+painel, coluna "Tarefa": valores reais vistos — `"Viabilidade"` (pk 1),
+`"Instalação a Cabo"` (pk 2), `"Desinstalação Equipamento"` (pk 8)).
+É o **tipo de serviço** definido pelo escritório ao agendar a OS — bem
+diferente de `op_desc` (nota de texto livre que só existe depois que o
+técnico confirma uma etapa, pode nem existir numa OS recém-agendada) e
+de `ticket_title` (assunto que o CLIENTE deu ao abrir o chamado). Não
+precisa de endpoint extra pra buscar isso — já vem no mesmo list.
+
 ### 3.5. "Minhas OS abertas" — filtro combinado confirmado
 
 ```json

@@ -624,6 +624,13 @@ export interface OrdemServicoDto {
   user_pk?: number
   staff_pk?: number
   task_pk?: number
+  // Nome da tarefa (ex: "Instalação a Cabo", "Desinstalação Equipamento",
+  // "Viabilidade") — confirmado ao vivo em /support_ctl/os/list, não
+  // documentado na doc oficial. É o tipo de serviço definido pelo
+  // escritório ao agendar a OS, diferente de op_desc (nota do técnico,
+  // preenchida só ao confirmar uma etapa) e de ticket_title (assunto do
+  // chamado aberto pelo cliente).
+  task_name?: string
   // Confirmados na doc oficial (apidoc.brbyte.com/#post-/support_ctl/os/list)
   // — client_pk/contrato/endereço vêm prontos no próprio registro da OS,
   // sem precisar buscar o cliente à parte pra mostrar isso na tela da OS.
