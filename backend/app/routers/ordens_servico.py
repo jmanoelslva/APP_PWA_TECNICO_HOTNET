@@ -2,12 +2,21 @@
 Ordem de Serviço (OS) — recurso PRÓPRIO no Controllr, diferente de
 Ticket/Suporte Técnico (ver suporte.py). Confirmado na doc oficial
 (apidoc.brbyte.com, tag "Ordem de Serviço"): uma OS pertence a um ticket
-(ticket_pk), tem data agendada (op_date_sched), técnico responsável
-(user_pk) e seu próprio ciclo de vida (fechar/cancelar/reabrir) via
-/support_ctl/os/*. É a OS — não o ticket em si — que representa o
-trabalho de campo atribuído ao técnico; fechar uma OS não é a mesma
-operação que mudar o status de um ticket (ticket_change_status), mesmo
-os dois estando relacionados.
+(ticket_pk), tem data agendada (op_date_sched) e técnico responsável
+(user_pk). É a OS — não o ticket em si — que representa o trabalho de
+campo atribuído ao técnico.
+
+Ciclo de vida real de uma OS (confirmado com o dono da operação, e as
+ações de responder/iniciar/finalizar capturadas ao vivo do painel do
+Controllr, já que não estão na doc oficial):
+1. Agendamento — feito pelo escritório, já vem pronto.
+2. Respondida — técnico marca que viu a OS (/responder).
+3. Iniciada — técnico marca que começou o atendimento (/iniciar).
+4. Finalizada — técnico marca que terminou o atendimento (/finalizar).
+Fechar a OS é uma etapa À PARTE, feita só pelo escritório — o ACL do
+Controllr não libera essa permissão pro técnico, por isso não existe
+rota de fechar aqui. Cancelar/reabrir continuam disponíveis (não
+mencionados como restritos).
 
 Nome do arquivo evita "os.py" de propósito — colidiria com o módulo
 "os" da biblioteca padrão do Python dentro deste mesmo pacote.
@@ -81,24 +90,54 @@ class AcaoOSPayload(BaseModel):
     op_desc: str | None = None
 
 
-class FecharOSPayload(AcaoOSPayload):
-    op_client_show: bool = True
-
-
-@router.post("/{ticket_pk}/fechar")
-async def fechar_ordem_servico(
-    ticket_pk: int, payload: FecharOSPayload, ctx: AuthContext = Depends(get_auth_context)
+# Os 4 estágios reais de uma OS (confirmado pelo usuário, dono da operação):
+# 1. Agendamento — feito pelo escritório, já vem pronto (op_date_sched).
+# 2. Respondida — o técnico "viu"/aceitou a OS (op_date_answer).
+# 3. Iniciada — o técnico começou o atendimento (op_date_start).
+# 4. Finalizada — o técnico terminou o atendimento (op_date_finish).
+# Fechar a OS (op_date_close) é feito SÓ pelo escritório — essa permissão
+# não é liberada pro técnico via ACL do Controllr, por isso não existe
+# rota de "fechar" aqui (nem botão no app): tentar chamar
+# /support_ctl/os/close com a conta de um técnico de verdade daria 403
+# "Access Denied" no próprio Controllr.
+#
+# Os 3 endpoints abaixo (set_answer/set_start/set_finish) NÃO estão
+# documentados na doc oficial (só list/close/cancel/reopen/create estão) —
+# confirmados capturando ao vivo os botões reais "Respondida"/"Iniciada"/
+# "Finalizada" no painel web do Controllr. Cada clique cria um novo
+# registro de evento (op_pk novo) vinculado à OS via op_os_pk (a OS em si
+# não é sobrescrita) — corpo confirmado: só op_os_pk + op_desc (SEM
+# ticket_pk, diferente de close/cancel/reopen).
+@router.post("/{ticket_pk}/responder")
+async def responder_ordem_servico(
+    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
-    corpo_req = corpo(
-        None,
-        ticket_pk=ticket_pk,
-        op_os_pk=payload.op_os_pk,
-        op_desc=payload.op_desc or "",
-        op_client_show=int(payload.op_client_show),
-    )
-    resposta = await ctx.controllr.call_api_post("/support_ctl/os/close", corpo_req)
+    corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
+    resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_answer", corpo_req)
     if not resposta.success:
-        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível fechar a OS.", resposta))
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível marcar a OS como respondida.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+@router.post("/{ticket_pk}/iniciar")
+async def iniciar_ordem_servico(
+    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
+    corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
+    resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_start", corpo_req)
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível iniciar a OS.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+@router.post("/{ticket_pk}/finalizar")
+async def finalizar_ordem_servico(
+    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
+    corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
+    resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_finish", corpo_req)
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível finalizar a OS.", resposta))
     return {"success": True, "results": resposta.results}
 
 

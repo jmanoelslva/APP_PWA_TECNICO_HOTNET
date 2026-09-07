@@ -8,6 +8,8 @@ import {
   MdDescription,
   MdImage,
   MdPictureAsPdf,
+  MdPlayArrow,
+  MdVisibility,
 } from 'react-icons/md'
 import VoltarInicio from '../components/VoltarInicio'
 import EstadoVazio from '../components/EstadoVazio'
@@ -18,9 +20,11 @@ import {
   criarMensagemTicket,
   detalheTicket,
   enviarAnexoTicket,
-  fecharOrdemServico,
+  finalizarOrdemServico,
+  iniciarOrdemServico,
   listarMensagensTicket,
   listarOrdensServico,
+  responderOrdemServico,
   type OperacaoDto,
   type OrdemServicoDto,
   type TicketDto,
@@ -79,6 +83,45 @@ function descartarPendentesConfirmadas(pendentes: Mensagem[], dados: Mensagem[])
   return pendentes.filter((_, i) => !usados.has(i))
 }
 
+// Os 4 estágios reais de uma OS (confirmado com o dono da operação e
+// capturado ao vivo do painel do Controllr — não documentado
+// oficialmente): Agendada (feita pelo escritório) -> Respondida ->
+// Iniciada -> Finalizada, as 3 últimas marcadas pelo técnico aqui.
+// Fechar é etapa À PARTE, só do escritório (ACL do Controllr não libera
+// pro técnico) — por isso não tem botão de fechar nesta tela.
+type Etapa = 'responder' | 'iniciar' | 'finalizar'
+
+interface ConfigEtapa {
+  chave: Etapa
+  rotulo: string
+  rotuloAcao: string
+  campoData: 'op_date_answer' | 'op_date_start' | 'op_date_finish'
+  Icone: typeof MdVisibility
+  acao: typeof responderOrdemServico
+}
+
+const ETAPAS: ConfigEtapa[] = [
+  { chave: 'responder', rotulo: 'Respondida', rotuloAcao: 'Marcar como respondida', campoData: 'op_date_answer', Icone: MdVisibility, acao: responderOrdemServico },
+  { chave: 'iniciar', rotulo: 'Iniciada', rotuloAcao: 'Iniciar atendimento', campoData: 'op_date_start', Icone: MdPlayArrow, acao: iniciarOrdemServico },
+  { chave: 'finalizar', rotulo: 'Finalizada', rotuloAcao: 'Finalizar atendimento', campoData: 'op_date_finish', Icone: MdCheckCircle, acao: finalizarOrdemServico },
+]
+
+/** Próxima etapa que o técnico pode marcar — null se já finalizada, fechada ou cancelada. */
+function proximaEtapa(os: OrdemServicoDto | null): ConfigEtapa | null {
+  if (!os || os.op_date_close || os.op_date_cancel) return null
+  return ETAPAS.find((etapa) => !os[etapa.campoData]) ?? null
+}
+
+function rotuloEtapaAtual(os: OrdemServicoDto): string {
+  if (os.op_date_cancel) return 'Cancelada'
+  if (os.op_date_close) return 'Fechada'
+  if (os.op_date_finish) return 'Finalizada'
+  if (os.op_date_start) return 'Iniciada'
+  if (os.op_date_answer) return 'Respondida'
+  if (os.op_date_sched) return 'Agendada'
+  return 'Sem data'
+}
+
 export default function DetalheOS() {
   const { ticketPk } = useParams<{ ticketPk: string }>()
   const pk = Number(ticketPk)
@@ -101,9 +144,9 @@ export default function DetalheOS() {
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [menuAnexoAberto, setMenuAnexoAberto] = useState(false)
-  const [confirmandoFechar, setConfirmandoFechar] = useState(false)
-  const [observacaoFechar, setObservacaoFechar] = useState('')
-  const [fechando, setFechando] = useState(false)
+  const [etapaConfirmando, setEtapaConfirmando] = useState<Etapa | null>(null)
+  const [observacaoEtapa, setObservacaoEtapa] = useState('')
+  const [executandoEtapa, setExecutandoEtapa] = useState(false)
 
   const inputFotoRef = useRef<HTMLInputElement>(null)
   const inputGaleriaRef = useRef<HTMLInputElement>(null)
@@ -224,22 +267,29 @@ export default function DetalheOS() {
     }
   }
 
-  async function confirmarFechamento() {
-    if (!osAtual?.op_os_pk) {
+  async function confirmarEtapa() {
+    const etapa = ETAPAS.find((e) => e.chave === etapaConfirmando)
+    if (!etapa || !osAtual?.op_os_pk) {
       toast('Nenhuma OS aberta encontrada pra este chamado.')
-      setConfirmandoFechar(false)
+      setEtapaConfirmando(null)
       return
     }
-    setFechando(true)
+    const observacao = observacaoEtapa.trim()
+    if (!observacao) {
+      toast('Descreva o que foi feito antes de continuar.')
+      return
+    }
+    setExecutandoEtapa(true)
     try {
-      await fecharOrdemServico(pk, { opOsPk: osAtual.op_os_pk, opDesc: observacaoFechar.trim() || undefined })
-      toast('OS fechada com sucesso.', 'sucesso')
-      setConfirmandoFechar(false)
-      setOsAtual((atual) => (atual ? { ...atual, op_date_close: agoraNoFormatoDoServidor() } : atual))
+      await etapa.acao(pk, { opOsPk: osAtual.op_os_pk, opDesc: observacao })
+      toast(`OS marcada como ${etapa.rotulo.toLowerCase()}.`, 'sucesso')
+      setEtapaConfirmando(null)
+      setObservacaoEtapa('')
+      setOsAtual((atual) => (atual ? { ...atual, [etapa.campoData]: agoraNoFormatoDoServidor() } : atual))
     } catch (excecao) {
-      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível fechar a OS.')
+      toast(excecao instanceof ApiError ? excecao.message : `Não foi possível marcar a OS como ${etapa.rotulo.toLowerCase()}.`)
     } finally {
-      setFechando(false)
+      setExecutandoEtapa(false)
     }
   }
 
@@ -248,6 +298,7 @@ export default function DetalheOS() {
   }
 
   const listaExibida = [...mensagens, ...pendentes]
+  const proxima = proximaEtapa(osAtual)
 
   return (
     <div className="detalhe-os-tela tela-entrada">
@@ -266,14 +317,15 @@ export default function DetalheOS() {
             {osAtual?.op_date_sched && (
               <p className="detalhe-os-linha-resumo">OS agendada para {formatarDataHora(osAtual.op_date_sched)}</p>
             )}
+            {osAtual && <p className="detalhe-os-linha-resumo">Etapa atual: {rotuloEtapaAtual(osAtual)}</p>}
           </div>
         )}
-        {!fechada && osAtual?.op_os_pk && (
-          <button className="detalhe-os-btn-fechar" onClick={() => setConfirmandoFechar(true)}>
-            <MdCheckCircle size={16} /> Fechar OS
+        {osAtual?.op_os_pk && proxima && (
+          <button className="detalhe-os-btn-fechar" onClick={() => setEtapaConfirmando(proxima.chave)}>
+            <proxima.Icone size={16} /> {proxima.rotuloAcao}
           </button>
         )}
-        {!fechada && ticket && !osAtual?.op_os_pk && (
+        {ticket && !osAtual?.op_os_pk && (
           <p className="detalhe-os-linha-resumo">Nenhuma OS aberta pra este chamado ainda.</p>
         )}
       </header>
@@ -375,21 +427,34 @@ export default function DetalheOS() {
         </div>
       )}
 
-      {confirmandoFechar && (
-        <div className="detalhe-os-modal-fundo" onClick={() => setConfirmandoFechar(false)}>
+      {etapaConfirmando && (
+        <div
+          className="detalhe-os-modal-fundo"
+          onClick={() => {
+            setEtapaConfirmando(null)
+            setObservacaoEtapa('')
+          }}
+        >
           <div className="detalhe-os-modal" onClick={(evento) => evento.stopPropagation()}>
-            <h2>Fechar esta OS?</h2>
-            <p className="detalhe-os-modal-texto">Descreva rapidamente o que foi feito (opcional).</p>
+            <h2>{ETAPAS.find((e) => e.chave === etapaConfirmando)?.rotuloAcao}?</h2>
+            <p className="detalhe-os-modal-texto">Descreva o que foi feito — o sistema exige essa observação.</p>
             <textarea
-              value={observacaoFechar}
-              onChange={(e) => setObservacaoFechar(e.target.value)}
+              value={observacaoEtapa}
+              onChange={(e) => setObservacaoEtapa(e.target.value)}
               placeholder="Ex: Trocado cabo de rede, sinal normalizado."
               rows={3}
             />
             <div className="detalhe-os-modal-acoes">
-              <button onClick={() => setConfirmandoFechar(false)}>Cancelar</button>
-              <button className="detalhe-os-btn-primario" disabled={fechando} onClick={confirmarFechamento}>
-                {fechando ? 'Fechando…' : 'Fechar OS'}
+              <button
+                onClick={() => {
+                  setEtapaConfirmando(null)
+                  setObservacaoEtapa('')
+                }}
+              >
+                Cancelar
+              </button>
+              <button className="detalhe-os-btn-primario" disabled={executandoEtapa} onClick={confirmarEtapa}>
+                {executandoEtapa ? 'Salvando…' : 'Confirmar'}
               </button>
             </div>
           </div>

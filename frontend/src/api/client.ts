@@ -473,8 +473,9 @@ export function atualizarInfoOnu(
 // ---------------------------------------------------------------------
 // Suporte / Tickets — o CASO aberto pelo cliente (título, descrição,
 // categoria, chat). Diferente de Ordem de Serviço (ver seção abaixo):
-// um ticket pode ter uma ou mais OS vinculadas, mas quem se fecha aqui é
-// a OS, nunca o ticket em si (ver fecharOrdemServico).
+// um ticket pode ter uma ou mais OS vinculadas, cujo ciclo de vida é
+// próprio (responder/iniciar/finalizar pelo técnico — ver
+// responderOrdemServico/iniciarOrdemServico/finalizarOrdemServico).
 // ---------------------------------------------------------------------
 
 export interface TicketDto {
@@ -587,15 +588,30 @@ export function listarOrdensServico(
   })
 }
 
-export function fecharOrdemServico(
+// Os 4 estágios reais de uma OS (confirmado com o dono da operação):
+// Agendada (feita pelo escritório) -> Respondida -> Iniciada ->
+// Finalizada, todas pelo técnico. Fechar é etapa à parte, só do
+// escritório (ACL do Controllr não libera pro técnico) — por isso não
+// tem função de fechar aqui, só as 3 de progresso do técnico.
+export function responderOrdemServico(
   ticketPk: number,
-  parametros: { opOsPk: number; opDesc?: string; opClientShow?: boolean },
+  parametros: { opOsPk: number; opDesc?: string },
 ): Promise<{ success: boolean; results: unknown }> {
-  return post(`os/${ticketPk}/fechar`, {
-    op_os_pk: parametros.opOsPk,
-    op_desc: parametros.opDesc,
-    op_client_show: parametros.opClientShow ?? true,
-  })
+  return post(`os/${ticketPk}/responder`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+}
+
+export function iniciarOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc?: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/iniciar`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+}
+
+export function finalizarOrdemServico(
+  ticketPk: number,
+  parametros: { opOsPk: number; opDesc?: string },
+): Promise<{ success: boolean; results: unknown }> {
+  return post(`os/${ticketPk}/finalizar`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
 }
 
 export function cancelarOrdemServico(
