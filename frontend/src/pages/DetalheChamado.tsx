@@ -179,10 +179,22 @@ export default function DetalheChamado() {
                 {op.texto && <p className="balao-texto">{op.texto}</p>}
 
                 {op.arquivo && ehImagem(op.arquivo) && (
-                  <img src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} alt="Anexo" className="balao-anexo-imagem" />
+                  <a href={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} target="_blank" rel="noreferrer">
+                    <img src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} alt="Anexo" className="balao-anexo-imagem" />
+                  </a>
                 )}
                 {op.arquivo && ehVideo(op.arquivo) && (
-                  <video src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} controls className="balao-anexo-imagem" />
+                  <>
+                    <video src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} controls className="balao-anexo-imagem" />
+                    <a
+                      href={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="balao-anexo-abrir"
+                    >
+                      Abrir em outra guia
+                    </a>
+                  </>
                 )}
                 {op.arquivo && !ehImagem(op.arquivo) && !ehVideo(op.arquivo) && (
                   <a
