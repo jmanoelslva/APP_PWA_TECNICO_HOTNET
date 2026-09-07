@@ -26,9 +26,14 @@ async def buscar_clientes(
     client_pks: set[int] = set()
 
     if doc:
-        resposta = await ctx.controllr.client_list(
-            corpo(where_eq("client_doc1", _somente_digitos(doc)), action="list", start=0, limit=10)
+        # client_status=0 = ativo (mesmo valor confirmado na busca por
+        # nome abaixo) — sem isso, a busca por CPF/CNPJ trazia clientes
+        # desabilitados junto com os habilitados.
+        condicoes_doc = where_and(
+            {"field": "client_status", "oper": OPER_EQ, "value": 0},
+            {"field": "client_doc1", "oper": OPER_EQ, "value": _somente_digitos(doc)},
         )
+        resposta = await ctx.controllr.client_list(corpo(condicoes_doc, action="list", start=0, limit=10))
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
@@ -66,8 +71,16 @@ async def buscar_clientes(
         # — confirmado no app cliente de referência, que filtra
         # aaa_ctl/connection/session por "aaa_cpe.cpe_pk") — "cpe.client_pk"
         # (tentativa anterior) e "client_pk" puro davam ambos vazio.
-        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
+        # Filtro final de "só habilitados", válido pra qualquer caminho de
+        # busca (doc/contrato/nome) — a busca por número de contrato não
+        # tem como filtrar client_status direto na query (contract_list
+        # não tem esse campo), então garante aqui, depois de já ter o
+        # cadastro do cliente em mãos.
+        if cliente.get("client_status") != 0:
+            continue
+
+        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
 
         # list_combo só traz contract_pk (confirmado na doc oficial), não o
         # número de contrato — mesmo fix aplicado em detalhe_cliente.

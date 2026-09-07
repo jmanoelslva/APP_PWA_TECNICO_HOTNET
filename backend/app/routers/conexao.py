@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import corpo, where_eq, where_ilike
+from ..where import OPER_EQ, OPER_ILIKE, corpo, where_and, where_eq
 
 router = APIRouter(prefix="/cpe", tags=["conexao"])
 
@@ -36,7 +36,13 @@ async def buscar_cpe(
         where = where_eq("contract_pk", contract_pk)
         resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     elif username:
-        where = where_ilike("cpe_username", f"%{username.strip()}%")
+        # client_status=0 = ativo (mesmo valor confirmado na busca de
+        # cliente por nome) — sem isso, a busca por usuário PPPoE trazia
+        # conexões de clientes desabilitados junto com as habilitadas.
+        where = where_and(
+            {"field": "client_status", "oper": OPER_EQ, "value": 0},
+            {"field": "cpe_username", "oper": OPER_ILIKE, "value": f"%{username.strip()}%"},
+        )
         resposta = await ctx.controllr.cpe_list(
             corpo(where, page=1, start=0, limit=15, sort="cpe_username", dir="ASC"),
             model_return=True,
