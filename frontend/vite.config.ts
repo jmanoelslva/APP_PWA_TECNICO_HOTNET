@@ -22,8 +22,8 @@ export default defineConfig({
         clientsClaim: true,
       },
       manifest: {
-        name: 'HOTNET — Técnico',
-        short_name: 'HOTNET Técnico',
+        name: 'HOTNET TECH',
+        short_name: 'HOTNET TECH',
         description: 'Ferramentas de campo para técnicos HOTNET: dados de cliente, endereço, conexão, ONU e OS.',
         lang: 'pt-BR',
         start_url: '/',

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import CORS_ALLOW_ORIGINS
 from .routers import auth, clientes, conexao, dp, enderecos, onu, ordens_servico, suporte, telefones
 
-app = FastAPI(title="HOTNET Técnico API")
+app = FastAPI(title="HOTNET TECH API")
 
 app.add_middleware(
     CORSMiddleware,

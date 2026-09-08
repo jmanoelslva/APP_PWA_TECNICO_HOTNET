@@ -3,18 +3,18 @@
 # Serve o build estático do Vite (npm run build -> frontend/dist) e faz o
 # reverse proxy de /api/* para o BACKEND PRÓPRIO (FastAPI/uvicorn, rodando
 # como serviço systemd em 127.0.0.1:8000 — ver deploy/install.sh) — não
-# pro Controllr direto (quem fala com o Controllr é o backend, com HTTP
+# para o Controllr direto (quem fala com o Controllr é o backend, com HTTP
 # Basic Auth do técnico logado, nunca o navegador).
 #
 # Diferente do vhost do app cliente (cliente.hotnet.net.br): não precisa
-# de "proxy_cookie_domain" nem de proxiar /public, /common, /assets pro
+# de "proxy_cookie_domain" nem de proxiar /public, /common, /assets para o
 # Controllr — o cookie de sessão (TECSESSION) é emitido pelo NOSSO
 # backend sem domínio fixo, então já nasce com o domínio certo
 # (tecnico.hotnet.net.br) por vir da mesma origem; e não existe HTML do
-# Controllr sendo repassado direto pro navegador aqui, só JSON.
+# Controllr sendo repassado direto para o navegador aqui, só JSON.
 #
 # Ajuste os caminhos de certificado (ssl_certificate/ssl_certificate_key),
-# o "root" e a porta do backend (127.0.0.1:8000) pros valores reais —
+# o "root" e a porta do backend (127.0.0.1:8000) para os valores reais —
 # install.sh já faz essas substituições sozinho a partir deste arquivo.
 
 server {
@@ -22,7 +22,7 @@ server {
     listen [::]:80;
     server_name tecnico.hotnet.net.br;
 
-    # Redireciona tudo pra HTTPS.
+    # Redireciona tudo para HTTPS.
     return 301 https://$host$request_uri;
 }
 
@@ -63,7 +63,7 @@ server {
 
         # NUNCA cachear o que passa por aqui (index.html, sw.js,
         # workbox-*.js, manifest.webmanifest) — é assim que o navegador
-        # descobre que existe uma versão nova pra instalar (mesmo motivo
+        # descobre que existe uma versão nova para instalar (mesmo motivo
         # documentado no README do app cliente, "Aviso de nova versão").
         # Os arquivos em /assets/ têm hash no nome, então esses sim podem
         # — e devem — cachear por muito tempo (ver location abaixo).
@@ -76,7 +76,7 @@ server {
         add_header Cache-Control "public, max-age=31536000, immutable" always;
     }
 
-    # Reverse proxy pro backend PRÓPRIO (FastAPI local) — não pro
+    # Reverse proxy para o backend PRÓPRIO (FastAPI local) — não para o
     # Controllr. "/api" some da URL antes de chegar no backend (as rotas
     # lá são tipo /auth/login, não /api/auth/login — mesma reescrita que
     # o vite.config.ts faz em desenvolvimento).

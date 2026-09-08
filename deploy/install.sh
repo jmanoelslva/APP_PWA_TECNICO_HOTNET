@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Instalador do PWA do Técnico HOTNET num servidor Debian — pensado pra
+# Instalador do PWA HOTNET TECH num servidor Debian — pensado para
 # rodar em PARALELO com o portal do cliente (HOTNET_WEB_APP, instalado via
 # deploy/install.sh daquele projeto): usa outro diretório
 # (/opt/hotnet-tecnico), outro vhost (tecnico.hotnet.net.br em vez de
@@ -9,11 +9,11 @@
 # mexe em site/vhost/serviço já existente no servidor.
 #
 # Diferença chave em relação ao instalador do app cliente: lá é só site
-# estático fazendo reverse proxy DIRETO pro Controllr. Aqui tem duas
+# estático fazendo reverse proxy DIRETO para o Controllr. Aqui tem duas
 # partes: o build estático do frontend (Vite) E um processo Python
 # (FastAPI/uvicorn) que fica rodando o tempo todo como serviço systemd —
-# o Nginx/Apache faz proxy de /api/* pra esse processo LOCAL
-# (127.0.0.1:$BACKEND_PORT), não pro Controllr direto.
+# o Nginx/Apache faz proxy de /api/* para esse processo LOCAL
+# (127.0.0.1:$BACKEND_PORT), não para o Controllr direto.
 #
 # Uso:
 #   sudo bash install.sh
@@ -37,9 +37,9 @@ ACME_WEBROOT="/var/www/certbot-acme"
 SERVICE_USER="hotnet-tecnico"
 SERVICE_NAME="hotnet-tecnico-api"
 ENV_FILE="/etc/hotnet-tecnico/backend.env"
-# Guarda o domínio/porta escolhidos na primeira instalação, pra rodar de
+# Guarda o domínio/porta escolhidos na primeira instalação, para rodar de
 # novo (atualização) não pedir de novo nem arriscar "esquecer" e voltar
-# pro padrão — sem isso, quem escolheu uma porta não-padrão (ex: 8517)
+# para o padrão — sem isso, quem escolheu uma porta não-padrão (ex: 8517)
 # teria que digitá-la de cabeça em toda atualização futura.
 STATE_FILE="/etc/hotnet-tecnico/install.conf"
 DEFAULT_DOMAIN="tecnico.hotnet.net.br"
@@ -76,22 +76,22 @@ trap 'err "Instalação interrompida (linha $LINENO). Nada foi desfeito — corr
 # --------------------------------------------------------------------------
 cat <<'BANNER'
 ==========================================================================
- Instalador do PWA do Técnico HOTNET
+ Instalador do PWA HOTNET TECH
 ==========================================================================
  Este script vai, nesta ordem:
    1. Instalar dependências (Node.js, Python 3, git, rsync, Apache OU
       Nginx, certbot) — sem tocar em nada que já esteja instalado/rodando
    2. Clonar/atualizar o projeto, criar o venv Python do backend e gerar
       o build de produção do frontend
-   3. Criar um usuário de sistema dedicado e um serviço systemd pro
+   3. Criar um usuário de sistema dedicado e um serviço systemd para o
       backend (FastAPI/uvicorn), rodando só em 127.0.0.1 — nunca exposto
       direto à internet
    4. Publicar o frontend e configurar o servidor web com reverse proxy
-      pro backend LOCAL (não pro Controllr direto)
-   5. Emitir um certificado Let's Encrypt pro domínio informado e ativar
+      para o backend LOCAL (não para o Controllr direto)
+   5. Emitir um certificado Let's Encrypt para o domínio informado e ativar
       a renovação automática
 
- Feito pra rodar em PARALELO com o portal do cliente (HOTNET_WEB_APP), se
+ Feito para rodar em PARALELO com o portal do cliente (HOTNET_WEB_APP), se
  já estiver no mesmo servidor: usa outro diretório, outro domínio, outro
  serviço — não mexe em nenhum site/vhost/serviço já existente, só
  adiciona os arquivos referentes a este app.
@@ -106,7 +106,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 if ! command -v apt-get >/dev/null 2>&1; then
-  err "Este instalador é só pra Debian/Ubuntu (precisa de apt-get)."
+  err "Este instalador é só para Debian/Ubuntu (precisa de apt-get)."
 fi
 
 # --------------------------------------------------------------------------
@@ -115,16 +115,16 @@ fi
 DOMAIN_REGEX='^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$'
 
 if [ -f "$STATE_FILE" ]; then
-  ok "Instalação existente detectada (domínio '$DEFAULT_DOMAIN', porta '$DEFAULT_PORT') — Enter mantém, ou digite um novo valor pra mudar."
+  ok "Instalação existente detectada (domínio '$DEFAULT_DOMAIN', porta '$DEFAULT_PORT') — Enter mantém, ou digite um novo valor para mudar."
 fi
 
-read -rp "Domínio deste portal (Enter pra usar '$DEFAULT_DOMAIN'): " DOMINIO
+read -rp "Domínio deste portal (Enter para usar '$DEFAULT_DOMAIN'): " DOMINIO
 DOMINIO="${DOMINIO:-$DEFAULT_DOMAIN}"
 if [[ ! "$DOMINIO" =~ $DOMAIN_REGEX ]]; then
   err "Domínio inválido: '$DOMINIO' (sem http://, sem barra no fim)."
 fi
 
-read -rp "Porta local do backend (Enter pra usar '$DEFAULT_PORT'): " BACKEND_PORT
+read -rp "Porta local do backend (Enter para usar '$DEFAULT_PORT'): " BACKEND_PORT
 BACKEND_PORT="${BACKEND_PORT:-$DEFAULT_PORT}"
 if [[ ! "$BACKEND_PORT" =~ ^[0-9]+$ ]]; then
   err "Porta inválida: '$BACKEND_PORT'."
@@ -135,7 +135,7 @@ fi
 # sempre falharia achando que a porta está "ocupada por outro processo"
 # quando na verdade é o nosso próprio serviço de uma instalação anterior.
 if systemctl list-unit-files "$SERVICE_NAME.service" 2>/dev/null | grep -q "$SERVICE_NAME.service"; then
-  info "Parando $SERVICE_NAME temporariamente pra liberar a porta durante a atualização..."
+  info "Parando $SERVICE_NAME temporariamente para liberar a porta durante a atualização..."
   systemctl stop "$SERVICE_NAME" || true
 fi
 
@@ -149,7 +149,7 @@ DOMINIO_SALVO=$DOMINIO
 BACKEND_PORT_SALVO=$BACKEND_PORT
 EOF
 
-read -rp "E-mail pra avisos do Let's Encrypt (opcional, Enter pra pular): " EMAIL
+read -rp "E-mail para avisos do Let's Encrypt (opcional, Enter para pular): " EMAIL
 
 if getent hosts "$DOMINIO" >/dev/null 2>&1; then
   ok "$DOMINIO resolve no DNS."
@@ -228,7 +228,7 @@ else
 fi
 
 # --------------------------------------------------------------------------
-# 6. Node.js (só é usado aqui pra buildar o frontend — nada de Node roda
+# 6. Node.js (só é usado aqui para buildar o frontend — nada de Node roda
 #    em produção; quem fica de pé o tempo todo é o backend Python)
 # --------------------------------------------------------------------------
 instalar_node() {
@@ -247,14 +247,14 @@ instalar_node() {
 instalar_node
 
 # --------------------------------------------------------------------------
-# 7. Usuário de sistema dedicado pro backend (sem login, sem home de
+# 7. Usuário de sistema dedicado para o backend (sem login, sem home de
 #    verdade) — nunca roda o uvicorn como root nem reaproveita o
 #    www-data do servidor web.
-#    --home-dir aponta pro diretório backend/ do próprio projeto (que já
+#    --home-dir aponta para o diretório backend/ do próprio projeto (que já
 #    existe e vai ficar de propriedade deste usuário logo abaixo, ver
 #    chown) em vez do padrão "/home/$SERVICE_USER" que o
 #    --no-create-home NUNCA cria — sem isso, o $HOME do usuário aponta
-#    pra um diretório inexistente/sem permissão e "pip install" (rodado
+#    para um diretório inexistente/sem permissão e "pip install" (rodado
 #    como esse usuário, ver passo 8) desliga o próprio cache sozinho com
 #    um warning (~/.cache/pip sem onde escrever). "usermod" cobre quem
 #    já tinha o usuário criado antes dessa correção — sem ele, uma
@@ -282,7 +282,7 @@ ok "Dependências Python instaladas."
 
 # --------------------------------------------------------------------------
 # 9. Arquivo de ambiente do backend — mantido em /etc (não dentro do
-#    diretório de deploy, que é sobrescrito a cada "git pull"), pra uma
+#    diretório de deploy, que é sobrescrito a cada "git pull"), para uma
 #    reinstalação não apagar CORS_ALLOW_ORIGINS/CONTROLLR_URL já ajustados
 #    manualmente por alguém depois.
 # --------------------------------------------------------------------------
@@ -306,7 +306,7 @@ chown "$SERVICE_USER:$SERVICE_USER" "$ENV_FILE"
 info "Configurando o serviço systemd $SERVICE_NAME..."
 cat > "/etc/systemd/system/$SERVICE_NAME.service" <<EOF
 [Unit]
-Description=HOTNET Técnico API (FastAPI/uvicorn)
+Description=HOTNET TECH API (FastAPI/uvicorn)
 After=network.target
 
 [Service]
@@ -338,7 +338,7 @@ systemctl restart "$SERVICE_NAME"
 
 sleep 1
 if ! systemctl is-active --quiet "$SERVICE_NAME"; then
-  err "O serviço $SERVICE_NAME não subiu — rode 'journalctl -u $SERVICE_NAME -n 50' pra ver o erro."
+  err "O serviço $SERVICE_NAME não subiu — rode 'journalctl -u $SERVICE_NAME -n 50' para ver o erro."
 fi
 ok "Backend rodando em 127.0.0.1:$BACKEND_PORT (serviço $SERVICE_NAME)."
 
@@ -385,7 +385,7 @@ rsync -a --delete "$INSTALL_DIR/frontend/dist/" "$PUBLISH_DIR/"
 chown -R www-data:www-data "$WWW_ROOT"
 
 # --------------------------------------------------------------------------
-# 14. Vhost provisório (só a porta 80, só pro desafio ACME do Let's
+# 14. Vhost provisório (só a porta 80, só para o desafio ACME do Let's
 #     Encrypt) — não mexe em nenhum site já existente, só adiciona o
 #     deste domínio.
 # --------------------------------------------------------------------------
@@ -428,7 +428,7 @@ EOF
 }
 
 if [ ! -f "/etc/letsencrypt/live/$DOMINIO/fullchain.pem" ]; then
-  info "Preparando vhost provisório na porta 80 (necessário pra validar o domínio com o Let's Encrypt)..."
+  info "Preparando vhost provisório na porta 80 (necessário para validar o domínio com o Let's Encrypt)..."
   if [ "$WEBSERVER" = "nginx" ]; then publicar_bootstrap_nginx; else publicar_bootstrap_apache; fi
 fi
 
@@ -438,9 +438,9 @@ fi
 #     geraria sozinho com --nginx/--apache).
 # --------------------------------------------------------------------------
 if [ -f "/etc/letsencrypt/live/$DOMINIO/fullchain.pem" ]; then
-  ok "Já existe certificado Let's Encrypt pra $DOMINIO, pulando emissão."
+  ok "Já existe certificado Let's Encrypt para $DOMINIO, pulando emissão."
 else
-  info "Emitindo certificado Let's Encrypt pra $DOMINIO..."
+  info "Emitindo certificado Let's Encrypt para $DOMINIO..."
   certbot_args=(certonly --webroot -w "$ACME_WEBROOT" -d "$DOMINIO"
     --non-interactive --agree-tos --deploy-hook "systemctl reload $SERVICE_WEB")
   if [ -n "$EMAIL" ]; then
@@ -478,7 +478,7 @@ publicar_final_apache() {
   systemctl reload apache2
 }
 
-info "Publicando o vhost definitivo (HTTPS + reverse proxy pro backend local)..."
+info "Publicando o vhost definitivo (HTTPS + reverse proxy para o backend local)..."
 if [ "$WEBSERVER" = "nginx" ]; then publicar_final_nginx; else publicar_final_apache; fi
 
 # --------------------------------------------------------------------------

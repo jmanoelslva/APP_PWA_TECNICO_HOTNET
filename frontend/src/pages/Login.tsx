@@ -36,7 +36,7 @@ export default function Login() {
           </span>
           <div>
             <strong>HOTNET</strong>
-            <span>Portal do Técnico</span>
+            <span>TECH</span>
           </div>
         </div>
 
