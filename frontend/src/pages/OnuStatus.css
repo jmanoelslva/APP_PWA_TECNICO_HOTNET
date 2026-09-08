@@ -11,21 +11,14 @@
   padding: 32px 0;
 }
 
-.onu-status-erro button {
+.onu-status-erro .botao {
   margin-top: 12px;
-  height: 40px;
-  padding: 0 20px;
-  border: none;
-  border-radius: 8px;
-  color: var(--cor-branco-fixo);
-  font-weight: 700;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--cor-onu), var(--cor-primaria-escura));
 }
 
 .onu-card {
   background: var(--cor-superficie);
   border-radius: 16px;
+  border-left: 4px solid var(--cor-onu);
   padding: 18px;
   box-shadow: var(--sombra-card);
   margin-bottom: 16px;
@@ -318,30 +311,8 @@
   margin-top: 10px;
 }
 
-.onu-btn-secundario {
+.onu-acoes-onu .botao {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1.5px solid var(--cor-borda);
-  background: var(--cor-superficie);
-  color: var(--cor-texto-secundario);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.onu-btn-secundario:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.onu-btn-perigo {
-  border-color: color-mix(in srgb, var(--cor-erro) 50%, transparent);
-  color: var(--cor-erro);
 }
 
 .onu-modal-fundo {
@@ -433,28 +404,6 @@
   margin-top: 12px;
 }
 
-.onu-modal-acoes button {
+.onu-modal-acoes .botao {
   flex: 1;
-  height: 44px;
-  border-radius: 8px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.onu-modal-acoes button:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.onu-btn-primario {
-  border: none !important;
-  color: var(--cor-branco-fixo) !important;
-  background: linear-gradient(135deg, var(--cor-onu), var(--cor-primaria-escura)) !important;
-}
-
-.onu-btn-primario-perigo {
-  background: linear-gradient(135deg, var(--cor-erro), var(--cor-primaria-escura)) !important;
 }

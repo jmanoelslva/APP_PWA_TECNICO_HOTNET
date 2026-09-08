@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   MdAttachFile,
@@ -357,7 +357,9 @@ export default function DetalheOrdemServico() {
       {!carregando && erro && (
         <div className="detalhe-ordem-status">
           <p>{erro}</p>
-          <button onClick={carregar}>Tentar novamente</button>
+          <button className="botao botao-primario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={carregar}>
+            Tentar novamente
+          </button>
         </div>
       )}
 
@@ -527,7 +529,7 @@ export default function DetalheOrdemServico() {
           <div className="detalhe-ordem-card">
             <h2>Anexo</h2>
             <input ref={inputArquivoRef} type="file" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
-            <button className="detalhe-ordem-btn-secundario" disabled={enviandoAnexo} onClick={() => inputArquivoRef.current?.click()}>
+            <button className="botao botao-secundario botao-bloco" disabled={enviandoAnexo} onClick={() => inputArquivoRef.current?.click()}>
               <MdAttachFile size={16} /> {enviandoAnexo ? 'Enviando…' : 'Anexar arquivo ao chamado'}
             </button>
           </div>
@@ -613,6 +615,7 @@ export default function DetalheOrdemServico() {
             />
             <div className="detalhe-ordem-modal-acoes">
               <button
+                className="botao botao-secundario"
                 onClick={() => {
                   setAcaoConfirmando(null)
                   setObservacaoEtapa('')
@@ -620,7 +623,12 @@ export default function DetalheOrdemServico() {
               >
                 Cancelar
               </button>
-              <button className="detalhe-ordem-btn-primario" disabled={executandoEtapa} onClick={confirmarEtapa}>
+              <button
+                className="botao botao-primario"
+                style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                disabled={executandoEtapa}
+                onClick={confirmarEtapa}
+              >
                 {executandoEtapa ? 'Salvando…' : 'Confirmar'}
               </button>
             </div>

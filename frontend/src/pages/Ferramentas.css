@@ -19,6 +19,7 @@
   gap: 12px;
   background: var(--cor-superficie);
   border-radius: 16px;
+  border-left: 4px solid var(--cor-ferramentas);
   padding: 16px 18px;
   box-shadow: var(--sombra-card);
   text-decoration: none;

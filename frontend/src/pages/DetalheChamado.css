@@ -89,16 +89,8 @@
   padding: 32px 0;
 }
 
-.detalhe-chamado-status button {
+.detalhe-chamado-status .botao {
   margin-top: 12px;
-  height: 40px;
-  padding: 0 20px;
-  border: none;
-  border-radius: 8px;
-  color: var(--cor-branco-fixo);
-  font-weight: 700;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--cor-suporte), var(--cor-primaria-escura));
 }
 
 .balao-linha {

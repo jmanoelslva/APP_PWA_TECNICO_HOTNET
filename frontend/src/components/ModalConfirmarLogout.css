@@ -59,19 +59,6 @@
   margin-top: 20px;
 }
 
-.modal-confirmar-logout-acoes button {
+.modal-confirmar-logout-acoes .botao {
   flex: 1;
-  height: 44px;
-  border-radius: 8px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.modal-confirmar-logout-acoes button.modal-confirmar-logout-sair {
-  border: none;
-  color: var(--cor-branco-fixo);
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
 }

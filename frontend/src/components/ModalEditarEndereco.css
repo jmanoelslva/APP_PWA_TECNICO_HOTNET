@@ -117,19 +117,6 @@
   margin-top: 20px;
 }
 
-.modal-editar-endereco-acoes button {
+.modal-editar-endereco-acoes .botao {
   flex: 1;
-  height: 44px;
-  border-radius: 8px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.modal-editar-endereco-btn-primario {
-  border: none !important;
-  color: var(--cor-branco-fixo) !important;
-  background: linear-gradient(135deg, var(--modal-endereco-cor-destaque, var(--cor-primaria)), var(--cor-primaria-escura)) !important;
 }

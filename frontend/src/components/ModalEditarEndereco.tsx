@@ -81,11 +81,11 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
     }
   }
 
-  const estilo = corDestaque ? ({ '--modal-endereco-cor-destaque': corDestaque } as CSSProperties) : undefined
+  const estiloBotaoPrimario = corDestaque ? ({ '--botao-cor': corDestaque } as CSSProperties) : undefined
 
   return (
     <div className="modal-editar-endereco-fundo" onClick={onFechar}>
-      <div className="modal-editar-endereco" style={estilo} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-editar-endereco" onClick={(e) => e.stopPropagation()}>
         <h2>Editar endereço</h2>
 
         <label>Identificação</label>
@@ -140,8 +140,8 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
         </div>
 
         <div className="modal-editar-endereco-acoes">
-          <button onClick={onFechar}>Cancelar</button>
-          <button className="modal-editar-endereco-btn-primario" disabled={salvando} onClick={salvar}>
+          <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
+          <button className="botao botao-primario" style={estiloBotaoPrimario} disabled={salvando} onClick={salvar}>
             {salvando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>

@@ -11,21 +11,14 @@
   padding: 32px 0;
 }
 
-.conexao-status button {
+.conexao-status .botao {
   margin-top: 12px;
-  height: 40px;
-  padding: 0 20px;
-  border: none;
-  border-radius: 8px;
-  color: var(--cor-branco-fixo);
-  font-weight: 700;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--cor-conexao), var(--cor-primaria-escura));
 }
 
 .conexao-card {
   background: var(--cor-superficie);
   border-radius: 16px;
+  border-left: 4px solid var(--cor-conexao);
   padding: 18px;
   box-shadow: var(--sombra-card);
   margin-bottom: 16px;
@@ -120,24 +113,6 @@
   margin: 0;
 }
 
-.conexao-btn-secundario {
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 18px;
-  border: 1.5px solid var(--cor-conexao);
-  background: transparent;
-  color: var(--cor-conexao);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.conexao-btn-secundario:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
 .conexao-input {
   flex: 1;
   min-width: 0;
@@ -167,7 +142,7 @@
   font-family: inherit;
 }
 
-.conexao-card > .conexao-btn-secundario {
+.conexao-card > .botao {
   margin-top: 8px;
 }
 

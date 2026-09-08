@@ -142,6 +142,71 @@ a:active,
   }
 }
 
+/* Sistema de botão único — substitui as classes .xxx-btn-secundario/perigo/
+   primario que cada tela vinha duplicando com o próprio CSS (mesma
+   intenção, altura/raio levemente diferentes de tela para tela). Mesma
+   altura (44px) e raio (12px) em qualquer lugar do app; a cor do módulo
+   atual entra só no variante primário, via --botao-cor (ver uso em cada
+   tela). */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.botao-pequeno {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.botao-primario {
+  border-color: transparent;
+  color: var(--cor-branco-fixo);
+  background: linear-gradient(135deg, var(--botao-cor, var(--cor-primaria)), var(--cor-primaria-escura));
+}
+
+.botao-secundario {
+  border-color: var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-texto-secundario);
+}
+
+/* Preenchimento leve (6%) além do contorno vermelho — ajuda a diferenciar
+   de ".botao-secundario" num relance, sem parecer agressivo. */
+.botao-perigo {
+  border-color: color-mix(in srgb, var(--cor-erro) 55%, transparent);
+  background: color-mix(in srgb, var(--cor-erro) 6%, var(--cor-superficie));
+  color: var(--cor-erro);
+}
+
+.botao-fantasma {
+  border-color: transparent;
+  background: transparent;
+  color: var(--cor-primaria);
+}
+
+/* Utilitário — botão ocupando a largura do container (ex.: "anexar
+   arquivo"), sem precisar de mais uma classe por tela para isso. */
+.botao-bloco {
+  width: 100%;
+}
+
 /* Transição entre telas — View Transitions API nativa (ver prop
    "viewTransition" do react-router-dom nas páginas). */
 @media (prefers-reduced-motion: no-preference) {

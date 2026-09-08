@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   MdContentCopy,
@@ -368,7 +368,9 @@ export default function OnuStatus() {
       {!carregando && erro && (
         <div className="onu-status-erro">
           <p>{erro}</p>
-          <button onClick={tentarNovamente}>Tentar novamente</button>
+          <button className="botao botao-primario" style={{ '--botao-cor': CORES.onu } as CSSProperties} onClick={tentarNovamente}>
+            Tentar novamente
+          </button>
         </div>
       )}
 
@@ -556,7 +558,7 @@ export default function OnuStatus() {
           <div className="onu-acoes-onu">
             <button
               type="button"
-              className="onu-btn-secundario"
+              className="botao botao-secundario"
               onClick={() => abrirAcao('reiniciar')}
               disabled={executandoAcao || atualizandoAntesDaAcao}
             >
@@ -564,7 +566,7 @@ export default function OnuStatus() {
             </button>
             <button
               type="button"
-              className="onu-btn-secundario onu-btn-perigo"
+              className="botao botao-perigo"
               onClick={() => abrirAcao('remover')}
               disabled={executandoAcao || atualizandoAntesDaAcao}
             >
@@ -584,11 +586,12 @@ export default function OnuStatus() {
                 : 'A ONU sai do registro do painel — o cliente fica sem conexão até ela ser cadastrada de novo.'}
             </p>
             <div className="onu-modal-acoes">
-              <button onClick={() => setConfirmandoAcao(null)} disabled={executandoAcao}>
+              <button className="botao botao-secundario" onClick={() => setConfirmandoAcao(null)} disabled={executandoAcao}>
                 Cancelar
               </button>
               <button
-                className={confirmandoAcao === 'remover' ? 'onu-btn-primario onu-btn-primario-perigo' : 'onu-btn-primario'}
+                className="botao botao-primario"
+                style={{ '--botao-cor': confirmandoAcao === 'remover' ? CORES.erro : CORES.onu } as CSSProperties}
                 disabled={executandoAcao}
                 onClick={executarAcao}
               >
@@ -744,7 +747,7 @@ function ModalRegistrarCliente({
                 ))}
             </ul>
             <div className="onu-modal-acoes">
-              <button onClick={onFechar}>Cancelar</button>
+              <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
             </div>
           </>
         )}
@@ -770,7 +773,7 @@ function ModalRegistrarCliente({
               </ul>
             )}
             <div className="onu-modal-acoes">
-              <button onClick={() => setSelecionado(null)}>Voltar</button>
+              <button className="botao botao-secundario" onClick={() => setSelecionado(null)}>Voltar</button>
             </div>
           </>
         )}
@@ -782,10 +785,15 @@ function ModalRegistrarCliente({
               <strong>{cpeEscolhida.cpe_username}</strong>?
             </p>
             <div className="onu-modal-acoes">
-              <button onClick={() => setCpeEscolhida(null)} disabled={associando}>
+              <button className="botao botao-secundario" onClick={() => setCpeEscolhida(null)} disabled={associando}>
                 Voltar
               </button>
-              <button className="onu-btn-primario" disabled={associando} onClick={confirmar}>
+              <button
+                className="botao botao-primario"
+                style={{ '--botao-cor': CORES.onu } as CSSProperties}
+                disabled={associando}
+                onClick={confirmar}
+              >
                 {associando ? 'Associando…' : 'Associar'}
               </button>
             </div>

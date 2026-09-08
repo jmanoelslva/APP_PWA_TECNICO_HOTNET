@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { MdContentCopy, MdMyLocation, MdPeopleAlt, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
 import {
@@ -575,7 +575,9 @@ export default function Conexao() {
         {!carregando && erro && (
           <div className="conexao-status">
             <p>{erro}</p>
-            <button onClick={tentarNovamente}>Tentar novamente</button>
+            <button className="botao botao-primario" style={{ '--botao-cor': CORES.conexao } as CSSProperties} onClick={tentarNovamente}>
+              Tentar novamente
+            </button>
           </div>
         )}
 
@@ -675,7 +677,7 @@ export default function Conexao() {
                   placeholder="Não informado"
                 />
               </div>
-              <button className="conexao-btn-secundario" onClick={salvarAcessoRoteador} disabled={salvandoAcesso}>
+              <button className="botao botao-secundario" onClick={salvarAcessoRoteador} disabled={salvandoAcesso}>
                 {salvandoAcesso ? 'Salvando…' : 'Salvar acesso'}
               </button>
             </div>
@@ -692,7 +694,7 @@ export default function Conexao() {
                   rows={3}
                 />
               </div>
-              <button className="conexao-btn-secundario" onClick={salvarObs} disabled={salvandoObs}>
+              <button className="botao botao-secundario" onClick={salvarObs} disabled={salvandoObs}>
                 {salvandoObs ? 'Salvando…' : 'Salvar observação'}
               </button>
             </div>
@@ -763,7 +765,7 @@ export default function Conexao() {
                   placeholder="Não informado"
                 />
               </div>
-              <button className="conexao-btn-secundario" onClick={salvarCto} disabled={salvandoCto}>
+              <button className="botao botao-secundario" onClick={salvarCto} disabled={salvandoCto}>
                 {salvandoCto ? 'Salvando…' : 'Salvar CTO'}
               </button>
             </div>
@@ -813,7 +815,7 @@ export default function Conexao() {
                   </button>
                 </div>
               </div>
-              <button className="conexao-btn-secundario" onClick={salvarWifi} disabled={salvandoWifi}>
+              <button className="botao botao-secundario" onClick={salvarWifi} disabled={salvandoWifi}>
                 {salvandoWifi ? 'Salvando…' : 'Salvar Wi-Fi'}
               </button>
             </div>
@@ -833,7 +835,7 @@ export default function Conexao() {
             <div className="conexao-card">
               <div className="conexao-sessao-topo">
                 <h2>Sessão online</h2>
-                <button className="conexao-btn-secundario" onClick={verSessaoOnline} disabled={carregandoSessao}>
+                <button className="botao botao-secundario" onClick={verSessaoOnline} disabled={carregandoSessao}>
                   {carregandoSessao ? 'Consultando…' : 'Ver sessão online agora'}
                 </button>
               </div>

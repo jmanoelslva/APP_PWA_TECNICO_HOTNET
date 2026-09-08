@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MdBuild } from 'react-icons/md'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
@@ -68,7 +68,9 @@ export default function Suporte() {
         {!carregando && erro && (
           <div className="suporte-status">
             <p>{erro}</p>
-            <button onClick={carregar}>Tentar novamente</button>
+            <button className="botao botao-primario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={carregar}>
+              Tentar novamente
+            </button>
           </div>
         )}
 

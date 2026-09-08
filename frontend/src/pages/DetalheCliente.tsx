@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MdAdd,
@@ -173,7 +173,9 @@ export default function DetalheCliente() {
       {!carregando && erro && (
         <div className="detalhe-cliente-status">
           <p>{erro}</p>
-          <button onClick={carregar}>Tentar novamente</button>
+          <button className="botao botao-primario" style={{ '--botao-cor': CORES.cliente } as CSSProperties} onClick={carregar}>
+            Tentar novamente
+          </button>
         </div>
       )}
 
@@ -510,8 +512,13 @@ function ModalEditarTelefone({
         <input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
 
         <div className="detalhe-cliente-modal-acoes">
-          <button onClick={onFechar}>Cancelar</button>
-          <button className="detalhe-cliente-modal-btn-primario" disabled={salvando} onClick={salvar}>
+          <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
+          <button
+            className="botao botao-primario"
+            style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+            disabled={salvando}
+            onClick={salvar}
+          >
             {salvando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
@@ -562,8 +569,13 @@ function ModalAdicionarTelefone({
         <input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
 
         <div className="detalhe-cliente-modal-acoes">
-          <button onClick={onFechar}>Cancelar</button>
-          <button className="detalhe-cliente-modal-btn-primario" disabled={salvando} onClick={salvar}>
+          <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
+          <button
+            className="botao botao-primario"
+            style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+            disabled={salvando}
+            onClick={salvar}
+          >
             {salvando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>

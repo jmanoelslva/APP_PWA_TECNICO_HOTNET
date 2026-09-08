@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { MdAttachFile, MdBuild, MdChatBubbleOutline, MdClose, MdDownload, MdPictureAsPdf } from 'react-icons/md'
 import VoltarInicio from '../components/VoltarInicio'
@@ -6,6 +6,7 @@ import EstadoVazio from '../components/EstadoVazio'
 import Skeleton from '../components/Skeleton'
 import { detalheTicket, listarMensagensTicket, listarOrdensServico, type OperacaoDto, type TicketDto } from '../api/client'
 import { formatarDataHora } from '../utils/formatacao'
+import { CORES } from '../utils/cores'
 import './DetalheChamado.css'
 
 const INTERVALO_ATUALIZACAO_MS = 10_000
@@ -164,7 +165,9 @@ export default function DetalheChamado() {
         {!carregando && erro && (
           <div className="detalhe-chamado-status">
             <p>{erro}</p>
-            <button onClick={() => carregar(true)}>Tentar novamente</button>
+            <button className="botao botao-primario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={() => carregar(true)}>
+              Tentar novamente
+            </button>
           </div>
         )}
 

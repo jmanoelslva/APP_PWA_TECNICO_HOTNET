@@ -16,8 +16,8 @@ export default function ModalConfirmarLogout({ aberto, onCancelar, onConfirmar }
         <h2>Sair da conta?</h2>
         <p>Você vai precisar informar usuário e senha de novo para entrar.</p>
         <div className="modal-confirmar-logout-acoes">
-          <button onClick={onCancelar}>Cancelar</button>
-          <button className="modal-confirmar-logout-sair" onClick={onConfirmar}>
+          <button className="botao botao-secundario" onClick={onCancelar}>Cancelar</button>
+          <button className="botao botao-primario" onClick={onConfirmar}>
             Sair
           </button>
         </div>

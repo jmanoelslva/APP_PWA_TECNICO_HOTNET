@@ -14,6 +14,7 @@
 .detalhe-cliente-card {
   background: var(--cor-superficie);
   border-radius: 16px;
+  border-left: 4px solid var(--cor-cliente);
   padding: 18px;
   box-shadow: var(--sombra-card);
   display: flex;
@@ -361,19 +362,6 @@
   margin-top: 20px;
 }
 
-.detalhe-cliente-modal-acoes button {
+.detalhe-cliente-modal-acoes .botao {
   flex: 1;
-  height: 44px;
-  border-radius: 8px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.detalhe-cliente-modal-btn-primario {
-  border: none !important;
-  color: var(--cor-branco-fixo) !important;
-  background: linear-gradient(135deg, var(--cor-cliente), var(--cor-primaria-escura)) !important;
 }
