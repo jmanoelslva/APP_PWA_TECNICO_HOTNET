@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MdAccountCircle, MdBuild, MdGetApp, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { MdAccountCircle, MdGetApp, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -31,13 +31,8 @@ export default function Login() {
     <div className="login-tela tela-entrada">
       <div className="login-card">
         <div className="login-marca">
-          <span className="login-marca-icone">
-            <MdBuild size={28} />
-          </span>
-          <div>
-            <strong>HOTNET</strong>
-            <span>TECH</span>
-          </div>
+          <img className="login-marca-logo" src="/icons/icon-512.png" alt="HOTNET" />
+          <strong>HOTNET</strong>
         </div>
 
         <form onSubmit={aoEnviar}>

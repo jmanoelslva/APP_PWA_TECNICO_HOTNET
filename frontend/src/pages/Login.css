@@ -23,39 +23,24 @@
 
 .login-marca {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   justify-content: center;
   margin-bottom: 24px;
 }
 
-.login-marca-icone {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cor-branco-fixo);
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
-}
-
-.login-marca div {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
+.login-marca-logo {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
 }
 
 .login-marca strong {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
+  letter-spacing: 0.02em;
   color: var(--cor-texto);
-}
-
-.login-marca span {
-  font-size: 12px;
-  color: var(--cor-texto-terciario);
 }
 
 .login-card form {
