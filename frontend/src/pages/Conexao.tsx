@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   MdContentCopy,
   MdDescription,
+  MdExpandLess,
+  MdExpandMore,
   MdMyLocation,
   MdPeopleAlt,
   MdRouter,
@@ -29,7 +31,7 @@ import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/formatacao'
+import { formatarDataHora, formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/formatacao'
 import './Conexao.css'
 
 // Fórmula de Haversine — distância em linha reta (metros) entre a
@@ -112,6 +114,19 @@ export default function Conexao() {
   // usarLocalizacaoAtual).
   const [minhaLocalizacao, setMinhaLocalizacao] = useState<{ lat: number; lng: number } | null>(null)
   const [localizando, setLocalizando] = useState(false)
+  // Acesso ao roteador, Observação do CPE e Wi-Fi do CPE são usados bem
+  // menos que PPPoE/CTO/Rede — ficam recolhidos por padrão pra não
+  // ocupar a tela à toa (mesmo padrão de "Contratos" em DetalheCliente).
+  const [blocosAbertos, setBlocosAbertos] = useState<Set<'roteador' | 'obs' | 'wifi'>>(new Set())
+
+  function alternarBloco(chave: 'roteador' | 'obs' | 'wifi') {
+    setBlocosAbertos((atual) => {
+      const novo = new Set(atual)
+      if (novo.has(chave)) novo.delete(chave)
+      else novo.add(chave)
+      return novo
+    })
+  }
   const dpsFiltradas = (
     dpBusca.trim() ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase())) : dps
   )
@@ -711,60 +726,148 @@ export default function Conexao() {
                   ao próprio roteador/CPE, não o login de internet do
                   cliente (confirmado na doc oficial do Controllr:
                   cpe_access_login/password/port). Editável — antes só dava
-                  para ver o que já vinha cadastrado. */}
-              <h2>Acesso ao roteador (admin)</h2>
-              <div className="conexao-campo">
-                <span>Usuário</span>
-                <input className="conexao-input" value={acessoLogin} onChange={(e) => setAcessoLogin(e.target.value)} placeholder="Não informado" />
-              </div>
-              <div className="conexao-campo">
-                <span>Senha</span>
-                <div className="conexao-campo-valor">
-                  <input
-                    className="conexao-input"
-                    type={mostrarSenhaRoteador ? 'text' : 'password'}
-                    value={acessoSenha}
-                    onChange={(e) => setAcessoSenha(e.target.value)}
-                    placeholder="Não informado"
-                  />
-                  <button
-                    onClick={() => setMostrarSenhaRoteador((v) => !v)}
-                    aria-label={mostrarSenhaRoteador ? 'Ocultar senha do roteador' : 'Mostrar senha do roteador'}
-                  >
-                    {mostrarSenhaRoteador ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
-                  </button>
-                </div>
-              </div>
-              <div className="conexao-campo">
-                <span>Porta</span>
-                <input
-                  className="conexao-input"
-                  type="number"
-                  value={acessoPorta}
-                  onChange={(e) => setAcessoPorta(e.target.value)}
-                  placeholder="Não informado"
-                />
-              </div>
-              <button className="botao botao-secundario" onClick={salvarAcessoRoteador} disabled={salvandoAcesso}>
-                {salvandoAcesso ? 'Salvando…' : 'Salvar acesso'}
+                  para ver o que já vinha cadastrado. Recolhido por padrão. */}
+              <button
+                type="button"
+                className="conexao-card-toggle"
+                onClick={() => alternarBloco('roteador')}
+                aria-expanded={blocosAbertos.has('roteador')}
+              >
+                <h2>Acesso ao roteador (admin)</h2>
+                {blocosAbertos.has('roteador') ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
               </button>
+              {blocosAbertos.has('roteador') && (
+                <>
+                  <div className="conexao-campo">
+                    <span>Usuário</span>
+                    <input className="conexao-input" value={acessoLogin} onChange={(e) => setAcessoLogin(e.target.value)} placeholder="Não informado" />
+                  </div>
+                  <div className="conexao-campo">
+                    <span>Senha</span>
+                    <div className="conexao-campo-valor">
+                      <input
+                        className="conexao-input"
+                        type={mostrarSenhaRoteador ? 'text' : 'password'}
+                        value={acessoSenha}
+                        onChange={(e) => setAcessoSenha(e.target.value)}
+                        placeholder="Não informado"
+                      />
+                      <button
+                        onClick={() => setMostrarSenhaRoteador((v) => !v)}
+                        aria-label={mostrarSenhaRoteador ? 'Ocultar senha do roteador' : 'Mostrar senha do roteador'}
+                      >
+                        {mostrarSenhaRoteador ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="conexao-campo">
+                    <span>Porta</span>
+                    <input
+                      className="conexao-input"
+                      type="number"
+                      value={acessoPorta}
+                      onChange={(e) => setAcessoPorta(e.target.value)}
+                      placeholder="Não informado"
+                    />
+                  </div>
+                  <button className="botao botao-secundario" onClick={salvarAcessoRoteador} disabled={salvandoAcesso}>
+                    {salvandoAcesso ? 'Salvando…' : 'Salvar acesso'}
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="conexao-card">
-              {/* cpe_obs — confirmado na doc oficial de /aaa_ctl/cpe/update. */}
-              <h2>Observação do CPE</h2>
-              <div className="conexao-campo">
-                <textarea
-                  className="conexao-input conexao-textarea"
-                  value={obs}
-                  onChange={(e) => setObs(e.target.value)}
-                  placeholder="Sem observação"
-                  rows={3}
-                />
-              </div>
-              <button className="botao botao-secundario" onClick={salvarObs} disabled={salvandoObs}>
-                {salvandoObs ? 'Salvando…' : 'Salvar observação'}
+              {/* cpe_obs — confirmado na doc oficial de /aaa_ctl/cpe/update.
+                  Recolhido por padrão. */}
+              <button
+                type="button"
+                className="conexao-card-toggle"
+                onClick={() => alternarBloco('obs')}
+                aria-expanded={blocosAbertos.has('obs')}
+              >
+                <h2>Observação do CPE</h2>
+                {blocosAbertos.has('obs') ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
               </button>
+              {blocosAbertos.has('obs') && (
+                <>
+                  <div className="conexao-campo">
+                    <textarea
+                      className="conexao-input conexao-textarea"
+                      value={obs}
+                      onChange={(e) => setObs(e.target.value)}
+                      placeholder="Sem observação"
+                      rows={3}
+                    />
+                  </div>
+                  <button className="botao botao-secundario" onClick={salvarObs} disabled={salvandoObs}>
+                    {salvandoObs ? 'Salvando…' : 'Salvar observação'}
+                  </button>
+                </>
+              )}
+            </div>
+
+            <div className="conexao-card">
+              {/* cpe_wifi_encryption_type/password (confirmado na doc oficial
+                  do Controllr, valores confirmados pelo usuário: 0 Nenhum,
+                  1 WEP, 2 WPA, 3 EAP). Com "Nenhum" não faz sentido ter
+                  senha — o campo fica desabilitado e é limpo nesse caso.
+                  Pré-preenchido com o que o sistema fornecer; só é enviado
+                  ao Controllr quando o técnico clicar em Salvar. Recolhido
+                  por padrão. */}
+              <button
+                type="button"
+                className="conexao-card-toggle"
+                onClick={() => alternarBloco('wifi')}
+                aria-expanded={blocosAbertos.has('wifi')}
+              >
+                <h2>Wi-Fi do CPE (criptografia)</h2>
+                {blocosAbertos.has('wifi') ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
+              </button>
+              {blocosAbertos.has('wifi') && (
+                <>
+                  <div className="conexao-campo">
+                    <span>Tipo de criptografia</span>
+                    <select
+                      className="conexao-input"
+                      value={wifiTipo}
+                      onChange={(e) => {
+                        setWifiTipo(e.target.value)
+                        if (e.target.value === '0') setWifiSenha('')
+                      }}
+                    >
+                      {OPCOES_CRIPTOGRAFIA_WIFI.map((opcao) => (
+                        <option key={opcao.valor} value={opcao.valor}>
+                          {opcao.rotulo}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="conexao-campo">
+                    <span>Senha do Wi-Fi</span>
+                    <div className="conexao-campo-valor">
+                      <input
+                        className="conexao-input"
+                        type={mostrarSenhaWifi ? 'text' : 'password'}
+                        value={wifiSemCriptografia ? '' : wifiSenha}
+                        onChange={(e) => setWifiSenha(e.target.value)}
+                        disabled={wifiSemCriptografia}
+                        placeholder={wifiSemCriptografia ? 'Sem criptografia — sem senha' : 'Não informado'}
+                      />
+                      <button
+                        onClick={() => setMostrarSenhaWifi((v) => !v)}
+                        disabled={wifiSemCriptografia}
+                        aria-label={mostrarSenhaWifi ? 'Ocultar senha do Wi-Fi' : 'Mostrar senha do Wi-Fi'}
+                      >
+                        {mostrarSenhaWifi ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <button className="botao botao-secundario" onClick={salvarWifi} disabled={salvandoWifi}>
+                    {salvandoWifi ? 'Salvando…' : 'Salvar Wi-Fi'}
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="conexao-card">
@@ -839,56 +942,6 @@ export default function Conexao() {
             </div>
 
             <div className="conexao-card">
-              {/* cpe_wifi_encryption_type/password (confirmado na doc oficial
-                  do Controllr, valores confirmados pelo usuário: 0 Nenhum,
-                  1 WEP, 2 WPA, 3 EAP). Com "Nenhum" não faz sentido ter
-                  senha — o campo fica desabilitado e é limpo nesse caso.
-                  Pré-preenchido com o que o sistema fornecer; só é enviado
-                  ao Controllr quando o técnico clicar em Salvar. */}
-              <h2>Wi-Fi do CPE (criptografia)</h2>
-              <div className="conexao-campo">
-                <span>Tipo de criptografia</span>
-                <select
-                  className="conexao-input"
-                  value={wifiTipo}
-                  onChange={(e) => {
-                    setWifiTipo(e.target.value)
-                    if (e.target.value === '0') setWifiSenha('')
-                  }}
-                >
-                  {OPCOES_CRIPTOGRAFIA_WIFI.map((opcao) => (
-                    <option key={opcao.valor} value={opcao.valor}>
-                      {opcao.rotulo}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="conexao-campo">
-                <span>Senha do Wi-Fi</span>
-                <div className="conexao-campo-valor">
-                  <input
-                    className="conexao-input"
-                    type={mostrarSenhaWifi ? 'text' : 'password'}
-                    value={wifiSemCriptografia ? '' : wifiSenha}
-                    onChange={(e) => setWifiSenha(e.target.value)}
-                    disabled={wifiSemCriptografia}
-                    placeholder={wifiSemCriptografia ? 'Sem criptografia — sem senha' : 'Não informado'}
-                  />
-                  <button
-                    onClick={() => setMostrarSenhaWifi((v) => !v)}
-                    disabled={wifiSemCriptografia}
-                    aria-label={mostrarSenhaWifi ? 'Ocultar senha do Wi-Fi' : 'Mostrar senha do Wi-Fi'}
-                  >
-                    {mostrarSenhaWifi ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
-                  </button>
-                </div>
-              </div>
-              <button className="botao botao-secundario" onClick={salvarWifi} disabled={salvandoWifi}>
-                {salvandoWifi ? 'Salvando…' : 'Salvar Wi-Fi'}
-              </button>
-            </div>
-
-            <div className="conexao-card">
               <h2>Rede</h2>
               <div className="conexao-linha">
                 <span>IP</span>
@@ -898,6 +951,33 @@ export default function Conexao() {
                 <span>MAC</span>
                 <strong>{cpe.mac ?? cpe.mac_last ?? '—'}</strong>
               </div>
+              <div className="conexao-linha">
+                <span>Última autenticação</span>
+                <strong>{cpe.date_auth ? formatarDataHora(cpe.date_auth) : '—'}</strong>
+              </div>
+            </div>
+
+            <div className="conexao-card">
+              <div className="conexao-sessao-topo">
+                <h2>Sessão online</h2>
+                <button className="botao botao-secundario" onClick={verSessaoOnline} disabled={carregandoSessao}>
+                  {carregandoSessao ? 'Consultando…' : 'Atualizar'}
+                </button>
+              </div>
+              {carregandoSessao && !sessao && <Skeleton width="60%" height={14} />}
+              {sessao && camposSessao().length === 0 && (
+                <p className="conexao-sessao-vazio">Cliente sem sessão online no momento.</p>
+              )}
+              {sessao &&
+                camposSessao().map(([rotulo, valor]) => (
+                  <div className="conexao-linha" key={rotulo}>
+                    <span>{rotulo}</span>
+                    <strong>{valor}</strong>
+                  </div>
+                ))}
+              {!carregandoSessao && !sessao && (
+                <p className="conexao-sessao-vazio">Não foi possível consultar a sessão online agora.</p>
+              )}
             </div>
 
             {carregandoOnuResumo && (
@@ -932,29 +1012,6 @@ export default function Conexao() {
                 </div>
               </div>
             )}
-
-            <div className="conexao-card">
-              <div className="conexao-sessao-topo">
-                <h2>Sessão online</h2>
-                <button className="botao botao-secundario" onClick={verSessaoOnline} disabled={carregandoSessao}>
-                  {carregandoSessao ? 'Consultando…' : 'Atualizar'}
-                </button>
-              </div>
-              {carregandoSessao && !sessao && <Skeleton width="60%" height={14} />}
-              {sessao && camposSessao().length === 0 && (
-                <p className="conexao-sessao-vazio">Cliente sem sessão online no momento.</p>
-              )}
-              {sessao &&
-                camposSessao().map(([rotulo, valor]) => (
-                  <div className="conexao-linha" key={rotulo}>
-                    <span>{rotulo}</span>
-                    <strong>{valor}</strong>
-                  </div>
-                ))}
-              {!carregandoSessao && !sessao && (
-                <p className="conexao-sessao-vazio">Não foi possível consultar a sessão online agora.</p>
-              )}
-            </div>
           </>
         )}
       </div>

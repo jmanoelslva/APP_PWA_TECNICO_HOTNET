@@ -101,6 +101,25 @@
   flex-shrink: 0;
 }
 
+.conexao-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-bottom: 4px;
+  color: var(--cor-texto-terciario);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.conexao-card-toggle h2 {
+  margin: 0;
+}
+
 .conexao-sessao-topo {
   display: flex;
   align-items: center;

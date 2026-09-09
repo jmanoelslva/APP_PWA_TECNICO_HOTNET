@@ -365,6 +365,8 @@ export interface CpeDto {
   // sem MAC fixo cadastrado, cpe_mac fica vazio e o MAC de verdade só
   // aparece aqui.
   mac_last?: string
+  // Última autenticação do cliente (cpe_date_auth na API).
+  date_auth?: string
   status?: number
   state?: number
   address?: string

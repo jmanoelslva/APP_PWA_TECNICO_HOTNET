@@ -19,6 +19,7 @@ import {
   buscarDetalheCliente,
   buscarOnu,
   criarTelefone,
+  listarOrdensServico,
   listarTickets,
   type ContratoDto,
   type CpeComboDto,
@@ -85,6 +86,13 @@ export default function DetalheCliente() {
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
   const [resumosConexao, setResumosConexao] = useState<Record<number, ResumoConexao>>({})
   const [chamados, setChamados] = useState<TicketDto[]>([])
+  // Chamado com OS em aberto já aparece em "OS / Suporte" (Suporte.tsx,
+  // mesmo filtro minhas:false/abertas:true) — pedido explícito pra não
+  // duplicar o mesmo trabalho em dois lugares diferentes da tela do
+  // cliente. Cross-referencia por ticket_pk em vez de filtrar o próprio
+  // /os por ticket_pk (esse filtro ignora "abertas" no backend — ver
+  // ordens_servico.py — então não bateria com o que a tela de OS mostra).
+  const [ticketsComOsAberta, setTicketsComOsAberta] = useState<Set<number>>(new Set())
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   const [telefoneEditando, setTelefoneEditando] = useState<TelefoneDto | null>(null)
   const [adicionandoTelefone, setAdicionandoTelefone] = useState(false)
@@ -125,6 +133,13 @@ export default function DetalheCliente() {
       listarTickets({ minhas: false, clientPk: pk, limit: 10 })
         .then((r) => setChamados(r.results))
         .catch(() => setChamados([]))
+      listarOrdensServico({ minhas: false, abertas: true, limit: 100 })
+        .then((r) =>
+          setTicketsComOsAberta(
+            new Set(r.results.map((os) => os.ticket_pk).filter((tp): tp is number => tp != null)),
+          ),
+        )
+        .catch(() => setTicketsComOsAberta(new Set()))
       carregarResumosConexao(resposta.cpes)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados do cliente.')
@@ -160,6 +175,10 @@ export default function DetalheCliente() {
   if (!Number.isFinite(pk)) {
     return <p className="detalhe-cliente-status">Cliente não encontrado.</p>
   }
+
+  const chamadosSemOsAberta = chamados.filter(
+    (chamado) => chamado.ticket_pk == null || !ticketsComOsAberta.has(chamado.ticket_pk),
+  )
 
   return (
     <div className="detalhe-cliente-tela tela-entrada">
@@ -319,8 +338,9 @@ export default function DetalheCliente() {
 
           <section className="detalhe-cliente-secao">
             <h2>Chamados / OS</h2>
-            {chamados.length === 0 && <p className="detalhe-cliente-vazio">Nenhum chamado encontrado.</p>}
-            {chamados.map((chamado) => (
+            {/* Chamado com OS aberta some daqui — já aparece em "OS / Suporte" (ver ticketsComOsAberta acima). */}
+            {chamadosSemOsAberta.length === 0 && <p className="detalhe-cliente-vazio">Nenhum chamado encontrado.</p>}
+            {chamadosSemOsAberta.map((chamado) => (
               <Link
                 key={chamado.ticket_pk}
                 to={`/suporte/${chamado.ticket_pk}`}
