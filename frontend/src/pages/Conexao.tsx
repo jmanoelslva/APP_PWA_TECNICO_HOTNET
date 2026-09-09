@@ -6,7 +6,9 @@ import {
   MdExpandMore,
   MdMyLocation,
   MdPeopleAlt,
+  MdRefresh,
   MdRouter,
+  MdSave,
   MdSearch,
   MdVisibility,
   MdVisibilityOff,
@@ -840,12 +842,12 @@ export default function Conexao() {
                     />
                   </div>
                   <button
-                    className="botao botao-secundario"
+                    className="botao botao-secundario botao-pequeno"
                     style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                     onClick={salvarAcessoRoteador}
                     disabled={salvandoAcesso}
                   >
-                    {salvandoAcesso ? 'Salvando…' : 'Salvar acesso'}
+                    <MdSave size={14} /> {salvandoAcesso ? 'Salvando…' : 'Salvar acesso'}
                   </button>
                 </>
               )}
@@ -875,12 +877,12 @@ export default function Conexao() {
                     />
                   </div>
                   <button
-                    className="botao botao-secundario"
+                    className="botao botao-secundario botao-pequeno"
                     style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                     onClick={salvarObs}
                     disabled={salvandoObs}
                   >
-                    {salvandoObs ? 'Salvando…' : 'Salvar observação'}
+                    <MdSave size={14} /> {salvandoObs ? 'Salvando…' : 'Salvar observação'}
                   </button>
                 </>
               )}
@@ -943,12 +945,12 @@ export default function Conexao() {
                     </div>
                   </div>
                   <button
-                    className="botao botao-secundario"
+                    className="botao botao-secundario botao-pequeno"
                     style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                     onClick={salvarWifi}
                     disabled={salvandoWifi}
                   >
-                    {salvandoWifi ? 'Salvando…' : 'Salvar Wi-Fi'}
+                    <MdSave size={14} /> {salvandoWifi ? 'Salvando…' : 'Salvar Wi-Fi'}
                   </button>
                 </>
               )}
@@ -1021,12 +1023,12 @@ export default function Conexao() {
                 />
               </div>
               <button
-                className="botao botao-secundario"
+                className="botao botao-secundario botao-pequeno"
                 style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                 onClick={salvarCto}
                 disabled={salvandoCto}
               >
-                {salvandoCto ? 'Salvando…' : 'Salvar CTO'}
+                <MdSave size={14} /> {salvandoCto ? 'Salvando…' : 'Salvar CTO'}
               </button>
             </div>
 
@@ -1136,12 +1138,12 @@ export default function Conexao() {
                   ))}
                   {temMaisHistorico && (
                     <button
-                      className="botao botao-secundario"
+                      className="botao botao-secundario botao-pequeno"
                       style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                       onClick={() => carregarHistorico(Math.floor(historico.length / LIMITE_HISTORICO) + 1)}
                       disabled={carregandoHistorico}
                     >
-                      {carregandoHistorico ? 'Carregando…' : 'Carregar mais'}
+                      <MdExpandMore size={14} /> {carregandoHistorico ? 'Carregando…' : 'Carregar mais'}
                     </button>
                   )}
                 </>
@@ -1152,12 +1154,12 @@ export default function Conexao() {
               <div className="conexao-sessao-topo">
                 <h2>Sessão online</h2>
                 <button
-                  className="botao botao-secundario"
+                  className="botao botao-secundario botao-pequeno"
                   style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                   onClick={verSessaoOnline}
                   disabled={carregandoSessao}
                 >
-                  {carregandoSessao ? 'Consultando…' : 'Atualizar'}
+                  <MdRefresh size={14} /> {carregandoSessao ? 'Consultando…' : 'Atualizar'}
                 </button>
               </div>
               {carregandoSessao && !sessao && <Skeleton width="60%" height={14} />}

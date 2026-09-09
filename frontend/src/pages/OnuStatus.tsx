@@ -557,13 +557,7 @@ export default function OnuStatus() {
             {(onu.contract_number ?? onu.contract_pk) != null && (
               <div className="onu-linha">
                 <span>Contrato</span>
-                {onu.contract_pk ? (
-                  <Link to={`/conexao?contract_pk=${onu.contract_pk}`} className="onu-link" viewTransition>
-                    <MdWifi size={14} /> {onu.contract_number ?? onu.contract_pk}
-                  </Link>
-                ) : (
-                  <strong>{onu.contract_number}</strong>
-                )}
+                <strong>{onu.contract_number ?? onu.contract_pk}</strong>
               </div>
             )}
             <div className="onu-linha">
