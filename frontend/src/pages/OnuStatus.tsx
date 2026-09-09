@@ -7,6 +7,7 @@ import {
   MdPeopleAlt,
   MdPersonAdd,
   MdPowerSettingsNew,
+  MdQrCodeScanner,
   MdRefresh,
   MdRouter,
   MdVisibility,
@@ -29,6 +30,7 @@ import {
   type OnuDto,
 } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
+import LeitorCodigoBarras from '../components/LeitorCodigoBarras'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
@@ -109,6 +111,10 @@ export default function OnuStatus() {
   const [renomeando, setRenomeando] = useState(false)
   const [novoNome, setNovoNome] = useState('')
   const [salvandoNome, setSalvandoNome] = useState(false)
+  // Leitor de código de barras/QR pela câmera — alternativa a digitar o
+  // serial na mão (etiqueta da ONU costuma ter o número em código de
+  // barras). Ver LeitorCodigoBarras.tsx.
+  const [lendoCodigo, setLendoCodigo] = useState(false)
   // Combobox único — busca por serial (/fiber_ctl/onu/list no formato
   // "wizard", confirmado ao vivo que filtra por PREFIXO: "ZTEG" já
   // filtrou de 2550 para 764 resultados) e por usuário PPPoE (/cpe/busca,
@@ -183,6 +189,13 @@ export default function OnuStatus() {
   function aoSubmeterBusca(evento: FormEvent) {
     evento.preventDefault()
     if (resultados.length === 1) selecionar(resultados[0])
+  }
+
+  function aoLerCodigo(valor: string) {
+    setLendoCodigo(false)
+    setListaAberta(false)
+    setBusca('')
+    setParams({ serial: valor.trim().toUpperCase() })
   }
 
   function tentarNovamente() {
@@ -383,6 +396,14 @@ export default function OnuStatus() {
             onFocus={() => setListaAberta(true)}
             onBlur={() => setTimeout(() => setListaAberta(false), 150)}
           />
+          <button
+            type="button"
+            onClick={() => setLendoCodigo(true)}
+            aria-label="Ler código de barras ou QR pela câmera"
+            title="Ler código de barras ou QR pela câmera"
+          >
+            <MdQrCodeScanner size={20} />
+          </button>
         </div>
         {listaAberta && busca.trim().length >= 2 && (
           <ul className="onu-combobox-lista">
@@ -709,6 +730,8 @@ export default function OnuStatus() {
           }}
         />
       )}
+
+      {lendoCodigo && <LeitorCodigoBarras onDetectado={aoLerCodigo} onFechar={() => setLendoCodigo(false)} />}
     </div>
   )
 }

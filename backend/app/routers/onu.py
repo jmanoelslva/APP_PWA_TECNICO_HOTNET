@@ -2,9 +2,10 @@ import asyncio
 from typing import Any
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 from ..where import corpo, where_eq
@@ -129,6 +130,7 @@ async def atualizar_info_onu(
 @router.post("/{onu_pk}/reiniciar")
 async def reiniciar_onu(
     onu_pk: int,
+    request: Request,
     olt_pk: int = Query(...),
     slot_id: int = Query(...),
     port_id: int = Query(...),
@@ -142,12 +144,14 @@ async def reiniciar_onu(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível reiniciar a ONU.", resposta))
+    registrar_auditoria(request, ctx.session, "onu.reiniciar", {"onu_pk": onu_pk, "olt_pk": olt_pk})
     return {"success": True, "results": resposta.results}
 
 
 @router.post("/{onu_pk}/remover")
 async def remover_onu(
     onu_pk: int,
+    request: Request,
     olt_pk: int = Query(...),
     slot_id: int = Query(...),
     port_id: int = Query(...),
@@ -161,12 +165,14 @@ async def remover_onu(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível remover a ONU.", resposta))
+    registrar_auditoria(request, ctx.session, "onu.remover", {"onu_pk": onu_pk, "olt_pk": olt_pk})
     return {"success": True, "results": resposta.results}
 
 
 @router.post("/{onu_pk}/renomear")
 async def renomear_onu(
     onu_pk: int,
+    request: Request,
     onu_name: str = Query(..., min_length=1, max_length=64),
     olt_pk: int = Query(...),
     slot_id: int = Query(...),
@@ -185,6 +191,7 @@ async def renomear_onu(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível renomear a ONU.", resposta))
+    registrar_auditoria(request, ctx.session, "onu.renomear", {"onu_pk": onu_pk, "onu_name": onu_name})
     return {"success": True, "results": resposta.results}
 
 

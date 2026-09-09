@@ -6,6 +6,8 @@ backend/.env
 # backend/ — pip cria esse cache aí; sem isso, "git status --porcelain"
 # no install.sh acusaria "alteração local" a cada atualização.
 backend/.cache/
+# Log de auditoria local (app/audit.py) — dado real de produção, não vai pro repo.
+backend/logs/
 
 # Frontend (Node/Vite)
 frontend/node_modules/

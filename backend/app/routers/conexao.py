@@ -1,9 +1,10 @@
 from typing import Any
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 from ..where import OPER_EQ, OPER_GTE, OPER_ILIKE, OPER_IS_NOT, OPER_LTE, corpo, where_and, where_eq
@@ -120,7 +121,7 @@ class WifiCpePayload(BaseModel):
 
 @router.put("/{cpe_pk}/wifi")
 async def atualizar_wifi_cpe(
-    cpe_pk: int, payload: WifiCpePayload, ctx: AuthContext = Depends(get_auth_context)
+    cpe_pk: int, payload: WifiCpePayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     # cpe_wifi_encryption_type/cpe_wifi_encryption_password — confirmado na
     # doc oficial (apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). Não há
@@ -134,6 +135,8 @@ async def atualizar_wifi_cpe(
     resposta = await ctx.controllr.cpe_update(urlencode(campos))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o Wi-Fi.", resposta))
+    # Sem a senha em si no log — só o registro de que foi alterada.
+    registrar_auditoria(request, ctx.session, "cpe.editar_wifi", {"cpe_pk": cpe_pk})
     return {"success": True, "results": resposta.results}
 
 
@@ -152,10 +155,20 @@ class CpeDetalhesPayload(BaseModel):
 
 @router.put("/{cpe_pk}/detalhes")
 async def atualizar_detalhes_cpe(
-    cpe_pk: int, payload: CpeDetalhesPayload, ctx: AuthContext = Depends(get_auth_context)
+    cpe_pk: int, payload: CpeDetalhesPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     campos: dict[str, Any] = {"cpe_pk": cpe_pk, **payload.model_dump(exclude_none=True)}
     resposta = await ctx.controllr.cpe_update(urlencode(campos))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o CPE.", resposta))
+    # Só grava auditoria quando a credencial de acesso ao roteador muda —
+    # editar CTO/observação não é uma ação sensível o bastante pra entrar
+    # no mesmo log (senão fica ruído demais pra achar o que importa).
+    if payload.cpe_access_login is not None or payload.cpe_access_password is not None or payload.cpe_access_port is not None:
+        registrar_auditoria(
+            request,
+            ctx.session,
+            "cpe.editar_acesso_roteador",
+            {"cpe_pk": cpe_pk, "cpe_access_login": payload.cpe_access_login, "cpe_access_port": payload.cpe_access_port},
+        )
     return {"success": True, "results": resposta.results}

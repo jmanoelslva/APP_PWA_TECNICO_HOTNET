@@ -53,11 +53,13 @@
         Header always set Referrer-Policy "strict-origin-when-cross-origin"
         # geolocation=(self): usado na captura de localização do CPE em
         # Endereço/Localização (navigator.geolocation, DetalheCliente.tsx).
-        # O resto vai desligado — o anexo de foto da OS usa
-        # <input type="file" capture="environment"> (DetalheOS.tsx), que
-        # abre o app de câmera do sistema sem precisar de permissão via
-        # API do navegador, mesmo critério do app cliente.
-        Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
+        # camera=(self): usado no leitor de código de barras/QR da tela de
+        # ONU (getUserMedia + BarcodeDetector, ver LeitorCodigoBarras.tsx)
+        # — diferente do anexo de foto da OS, que usa
+        # <input type="file" capture="environment"> (DetalheOS.tsx) e não
+        # precisa de permissão via API do navegador. O resto continua
+        # desligado.
+        Header always set Permissions-Policy "geolocation=(self), camera=(self), microphone=(), payment=(), usb=()"
         Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
         # NUNCA cachear o que vem daqui (index.html, sw.js, workbox-*.js,

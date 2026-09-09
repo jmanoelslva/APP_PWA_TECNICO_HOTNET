@@ -14,6 +14,10 @@ SESSION_TTL_SECONDS = int(os.environ.get("SESSION_TTL_SECONDS", str(12 * 60 * 60
 
 SESSION_COOKIE_NAME = "TECSESSION"
 
+# Log de auditoria próprio (ver app/audit.py) — caminho do arquivo JSON
+# Lines onde cada ação sensível é gravada (técnico, IP real, ação, alvo).
+AUDIT_LOG_PATH = os.environ.get("AUDIT_LOG_PATH", "logs/auditoria.jsonl")
+
 # Origens permitidas em dev (Vite) — em produção o frontend é servido
 # pela mesma origem do backend (ou por um reverse proxy), então CORS
 # deixa de ser necessário; mantido configurável via env.
