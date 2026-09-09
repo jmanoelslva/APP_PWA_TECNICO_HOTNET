@@ -27,17 +27,31 @@ from .config import AUDIT_LOG_PATH
 from .sessions import TechnicianSession
 
 
+# Alguns proxies/CDNs mandam o cabeçalho mesmo sem valor de verdade —
+# vazio ou com um placeholder tipo "(null)"/"unknown" em vez de omitir o
+# cabeçalho. Sem esse filtro, um "(null)" desses era aceito como se fosse
+# um IP de verdade (bug confirmado ao vivo: log gravando "ip": "(null)").
+_VALORES_INVALIDOS = {"", "(null)", "null", "unknown", "-"}
+
+
 def obter_ip_origem(request: Request) -> str:
     """
-    X-Real-IP é setado pelo NOSSO nginx (ver deploy/nginx.conf.example,
-    "proxy_set_header X-Real-IP $remote_addr") — confiável nesse deploy
-    porque o backend só é alcançável através dele (127.0.0.1:8000, sem
-    porta pública própria), nunca por quem chama de fora. Em dev (sem
-    nginx, direto via proxy do Vite) cai no IP da conexão TCP mesmo.
+    Tenta, em ordem: CF-Connecting-IP (se houver Cloudflare na frente),
+    X-Real-IP (setado pelo nosso nginx, ver deploy/nginx.conf.example —
+    "proxy_set_header X-Real-IP $remote_addr") e X-Forwarded-For (primeiro
+    IP da lista "cliente, proxy1, proxy2..."). Cai no IP da conexão TCP
+    só se nenhum desses vier preenchido — dev sem proxy na frente, ou
+    proxy que não define nenhum dos três.
     """
-    ip_real = request.headers.get("x-real-ip")
-    if ip_real:
-        return ip_real
+    x_forwarded_for = request.headers.get("x-forwarded-for") or ""
+    candidatos = [
+        request.headers.get("cf-connecting-ip"),
+        request.headers.get("x-real-ip"),
+        x_forwarded_for.split(",")[0].strip(),
+    ]
+    for candidato in candidatos:
+        if candidato and candidato.strip().lower() not in _VALORES_INVALIDOS:
+            return candidato.strip()
     return request.client.host if request.client else "desconhecido"
 
 

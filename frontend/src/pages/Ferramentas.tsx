@@ -1,5 +1,16 @@
 import type { IconType } from 'react-icons'
-import { MdConstruction, MdDns, MdNetworkCheck, MdOpenInNew, MdPublic, MdSettingsEthernet, MdSpeed } from 'react-icons/md'
+import {
+  MdBolt,
+  MdConstruction,
+  MdDns,
+  MdLooks4,
+  MdLooks6,
+  MdNetworkCheck,
+  MdOpenInNew,
+  MdPublic,
+  MdSettingsEthernet,
+  MdSpeed,
+} from 'react-icons/md'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
 import './Ferramentas.css'
@@ -13,9 +24,9 @@ interface Ferramenta {
 
 const FERRAMENTAS: Ferramenta[] = [
   { nome: 'Speedtest', descricao: 'speedtest.net — teste de velocidade Ookla', url: 'https://www.speedtest.net/', Icone: MdSpeed },
-  { nome: 'Fast.com', descricao: 'Teste de velocidade da Netflix', url: 'https://fast.com/', Icone: MdSpeed },
-  { nome: 'ISP Focus (IPv6)', descricao: 'tcp6.ispfocus.net.br', url: 'https://tcp6.ispfocus.net.br/', Icone: MdSpeed },
-  { nome: 'ISP Focus (IPv4)', descricao: 'tcp4.ispfocus.net.br', url: 'https://tcp4.ispfocus.net.br/', Icone: MdSpeed },
+  { nome: 'Fast.com', descricao: 'Teste de velocidade da Netflix', url: 'https://fast.com/', Icone: MdBolt },
+  { nome: 'ISP Focus (IPv6)', descricao: 'tcp6.ispfocus.net.br', url: 'https://tcp6.ispfocus.net.br/', Icone: MdLooks6 },
+  { nome: 'ISP Focus (IPv4)', descricao: 'tcp4.ispfocus.net.br', url: 'https://tcp4.ispfocus.net.br/', Icone: MdLooks4 },
   // Mostra o IP público de quem abrir a página — útil pro técnico
   // conferir no Wi-Fi do próprio cliente se ele está atrás de CGNAT/IP
   // duplo (pedido explícito do usuário).
