@@ -55,7 +55,9 @@ server {
         # Endereço/Localização (navigator.geolocation) e no
         # compartilhamento de localização da OS.
         # camera=(self): usado no leitor de código de barras/QR da tela de
-        # ONU (getUserMedia + BarcodeDetector, ver LeitorCodigoBarras.tsx)
+        # ONU (getUserMedia + @zxing/library, ver LeitorCodigoBarras.tsx —
+        # funciona em Android e iPhone, diferente da Barcode Detection API
+        # nativa, que não existe no Safari)
         # — diferente do anexo de foto da OS, que usa
         # <input type="file" capture="environment"> (DetalheOS.tsx) e não
         # precisa de permissão via API do navegador. O resto continua
