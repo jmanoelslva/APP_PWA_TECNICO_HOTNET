@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   MdContentCopy,
-  MdDescription,
   MdExpandLess,
   MdExpandMore,
   MdMyLocation,
@@ -749,17 +748,11 @@ export default function Conexao() {
               </div>
               <div className="conexao-linha">
                 <span>Contrato</span>
-                {cpe.client_pk ? (
-                  // Não existe uma tela dedicada de contrato — o detalhe
-                  // fica na página do cliente (mesmo destino do link
-                  // "Cliente" acima), por isso não redirecionava antes:
-                  // faltava o Link, só tinha o número em texto.
-                  <Link to={`/clientes/${cpe.client_pk}`} className="conexao-link" viewTransition>
-                    <MdDescription size={14} /> {cpe.contract_number ?? cpe.contract_pk ?? '—'}
-                  </Link>
-                ) : (
-                  <strong>{cpe.contract_number ?? cpe.contract_pk ?? '—'}</strong>
-                )}
+                {/* Sem Link de propósito — mesmo destino do link "Cliente"
+                    acima (/clientes/{client_pk}), então já dava para chegar
+                    lá clicando no nome; um segundo link redundante aqui só
+                    confundia. */}
+                <strong>{cpe.contract_number ?? cpe.contract_pk ?? '—'}</strong>
               </div>
               <div className="conexao-linha">
                 <span>Plano</span>
@@ -1124,6 +1117,18 @@ export default function Conexao() {
                         <strong>{sessao.session_v4_ip ?? '—'}</strong>
                       </div>
                       <div className="conexao-linha">
+                        <span>IPv6 PX</span>
+                        <strong>{sessao.session_v6_px || '—'}</strong>
+                      </div>
+                      <div className="conexao-linha">
+                        <span>IPv6 PD</span>
+                        <strong>{sessao.session_v6_pd || '—'}</strong>
+                      </div>
+                      <div className="conexao-linha">
+                        <span>NAS Port ID</span>
+                        <strong>{sessao.session_nas_port_id ?? '—'}</strong>
+                      </div>
+                      <div className="conexao-linha">
                         <span>Encerrada por</span>
                         <strong>{rotuloEncerramento(sessao.session_terminate_cause)}</strong>
                       </div>
@@ -1187,7 +1192,7 @@ export default function Conexao() {
                     style={{ '--botao-cor': CORES.onu } as CSSProperties}
                     viewTransition
                   >
-                    <MdRouter size={14} /> Ver detalhes
+                    <MdRouter size={14} /> Detalhes
                   </Link>
                 </div>
                 <div className="conexao-linha">

@@ -162,6 +162,9 @@ a:active,
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  /* Cobre o caso de ".botao" num <Link> (vira <a>) — sem isso, o
+     sublinhado padrão do navegador aparece por baixo do texto do botão. */
+  text-decoration: none;
 }
 
 .botao:disabled {

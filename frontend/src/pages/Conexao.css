@@ -121,9 +121,11 @@
 }
 
 .conexao-historico-toggle {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--cor-borda-suave);
+  /* Sem border-top de propósito — a linha "Última autenticação" logo
+     acima já termina com um separador (deixava de ser :last-child na
+     hora que esse botão passou a vir depois dela), então um border-top
+     aqui virava uma segunda linha coladinha na primeira. */
+  margin-top: 4px;
   font-size: 13px;
   font-weight: 800;
 }
@@ -139,13 +141,18 @@
   min-width: 0;
 }
 
+/* Cada sessão do histórico como um bloco próprio (em vez de linhas soltas
+   dividindo o card inteiro) — mais fácil de separar visualmente uma
+   sessão da outra numa lista que pode ter vários itens. */
 .conexao-historico-item {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--cor-borda-suave);
+  background: var(--cor-fundo);
+  border-radius: 12px;
+  padding: 4px 12px;
+  margin-top: 10px;
 }
 
-.conexao-historico-item:last-of-type {
-  border-bottom: none;
+.conexao-historico-item:first-of-type {
+  margin-top: 8px;
 }
 
 .conexao-sessao-topo {
