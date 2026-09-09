@@ -469,6 +469,7 @@ export default function Conexao() {
   }
 
   const CAMPOS_DESEJADOS: CampoDesejado[] = [
+    { rotulo: 'Usuário PPPoE', extrair: porCandidatos(['session_username', 'cpe_username', 'username']) },
     { rotulo: 'MAC da CPE', extrair: porCandidatos(['session_callingid', 'cpe_mac', 'session_calling_station_id', 'mac']) },
     {
       rotulo: 'Status do contrato',
@@ -478,6 +479,7 @@ export default function Conexao() {
     { rotulo: 'NAS (nome/identificador)', extrair: porCandidatos(['nas_name', 'session_nas_identifier', 'nas_identifier']) },
     { rotulo: 'NAS (endereço/IP)', extrair: porCandidatos(['nas_addr', 'session_nas_ip', 'nas_ip_address', 'nas_address']) },
     { rotulo: 'NAS (porta)', extrair: porCandidatos(['session_nas_port_id', 'nas_port_id']) },
+    { rotulo: 'Circuit ID', extrair: porCandidatos(['session_circuit_id', 'cpe_circuit_id']) },
     { rotulo: 'IPv4', extrair: porCandidatos(['session_v4_ip', 'v4_ip']) },
     { rotulo: 'IPv6 (PX)', extrair: porCandidatos(['session_v6_px', 'v6_px']) },
     { rotulo: 'IPv6 (PD)', extrair: porCandidatos(['session_v6_pd', 'v6_pd']) },
