@@ -48,6 +48,21 @@ function nivelSinalOlt(rx: number | undefined): NivelSinal {
   return 'critica'
 }
 
+// onu_info_timer — contador em ms desde a última coleta feita pelo
+// Controllr (confirmado pelo usuário); zera só quando alguém clica em
+// "Atualizar agora" (ver CONTROLLR_API_NOTES.md).
+function formatarTempoDesdeColeta(ms: number | undefined): string | null {
+  if (ms == null) return null
+  const segundosTotais = Math.floor(ms / 1000)
+  const minutos = Math.floor(segundosTotais / 60)
+  const segundos = segundosTotais % 60
+  if (minutos === 0) return `há ${segundos}s`
+  if (minutos < 60) return `há ${minutos} min`
+  const horas = Math.floor(minutos / 60)
+  const minutosRestantes = minutos % 60
+  return `há ${horas}h${minutosRestantes > 0 ? ` ${minutosRestantes}min` : ''}`
+}
+
 const TEXTO_SINAL: Record<NivelSinal, string> = {
   boa: 'Sinal normal',
   alerta: 'Sinal fraco — atenção',
@@ -605,6 +620,9 @@ export default function OnuStatus() {
             </div>
           </div>
 
+          {!atualizando && formatarTempoDesdeColeta(onu.info_timer) && (
+            <p className="onu-ultima-coleta">Dados coletados {formatarTempoDesdeColeta(onu.info_timer)}</p>
+          )}
           <button className="onu-btn-atualizar" onClick={atualizarAgora} disabled={atualizando}>
             <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
           </button>

@@ -452,6 +452,10 @@ export interface OnuDto {
   name?: string
   state?: string
   cmd_status?: number
+  // Contador em ms desde a última coleta feita pelo Controllr — zera só
+  // quando alguém clica em "Atualizar agora" (confirmado pelo usuário;
+  // ver CONTROLLR_API_NOTES.md).
+  info_timer?: number
   omddm_rx_power?: number
   omddm_tx_power?: number
   omddm_temperature?: number

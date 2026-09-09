@@ -257,6 +257,15 @@ precisa de endpoint extra para buscar isso — já vem no mesmo list.
   payload do `/fiber_ctl/onu/list` normal (confirmado ao vivo: campo
   presente no `store` da grade do painel), que é o mesmo endpoint que
   `buscarOnu()`/`ONUExtended.info_timer` já usam.
+- `onu_info_timer` — **confirmado pelo usuário**: é um contador em ms
+  desde a última coleta feita pelo Controllr (ex.: `167000` = a última
+  coleta desta ONU foi há 2min47s). Só zera quando alguém clica em
+  "Atualizar agora" (reconnect + `onu_update_info`) — não é um
+  timestamp absoluto nem um intervalo de polling configurado. Exibido
+  na tela da ONU do app (`formatarTempoDesdeColeta` em
+  `frontend/src/pages/OnuStatus.tsx`) como "Dados coletados há Xmin",
+  só a partir do valor já trazido por `buscarOnu()` — não há relógio
+  correndo ao vivo no frontend, o texto reflete a última busca feita.
 
 ### 5.1. Reiniciar/Remover/Associar cliente — achados SEM disparar a ação de verdade
 

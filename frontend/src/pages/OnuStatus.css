@@ -260,6 +260,13 @@
   color: var(--cor-texto);
 }
 
+.onu-ultima-coleta {
+  text-align: center;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+  margin: 0 0 8px;
+}
+
 .onu-btn-atualizar {
   display: flex;
   align-items: center;
