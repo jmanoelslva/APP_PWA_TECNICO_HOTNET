@@ -167,6 +167,12 @@ export default function Conexao() {
   async function carregar(chamada: () => ReturnType<typeof buscarCpe> = buscarInicial) {
     setCarregando(true)
     setErro(null)
+    // Zera a sessão da busca anterior — sem isso, trocar de usuário/CPE
+    // com o card "Sessão online" já carregado ficava mostrando a sessão
+    // ANTIGA (só sumia depois de um pull-to-refresh, que por acaso
+    // remonta a busca do zero). Some agora mesmo antes da nova consulta
+    // (abaixo) responder.
+    setSessao(null)
     try {
       const resposta = await chamada()
       const cpeCarregado = resposta.results[0] ?? null
@@ -182,6 +188,11 @@ export default function Conexao() {
       setAcessoLogin(cpeCarregado?.access_login ?? '')
       setAcessoSenha(cpeCarregado?.access_password ?? '')
       setAcessoPorta(cpeCarregado?.access_port != null ? String(cpeCarregado.access_port) : '')
+      // Card "Sessão online" agora carrega sozinho junto com o resto dos
+      // dados — o técnico não precisa mais clicar em "Ver sessão online
+      // agora" pra ver o bloco aberto. Sem await de propósito: não trava
+      // o carregamento do resto da tela por causa dessa consulta à parte.
+      if (cpeCarregado?.pk != null) void carregarSessaoOnline(cpeCarregado.pk)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados de conexão.')
     } finally {
@@ -357,17 +368,21 @@ export default function Conexao() {
     }
   }
 
-  async function verSessaoOnline() {
-    if (!cpe?.pk) return
+  async function carregarSessaoOnline(cpePk: number) {
     setCarregandoSessao(true)
     try {
-      const resposta = await buscarSessaoOnlineCpe(cpe.pk)
+      const resposta = await buscarSessaoOnlineCpe(cpePk)
       setSessao(resposta.results[0] ?? {})
     } catch (excecao) {
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível consultar a sessão online.')
     } finally {
       setCarregandoSessao(false)
     }
+  }
+
+  function verSessaoOnline() {
+    if (!cpe?.pk) return
+    carregarSessaoOnline(cpe.pk)
   }
 
   async function copiar(valor: string | undefined, rotulo: string) {
@@ -838,9 +853,10 @@ export default function Conexao() {
               <div className="conexao-sessao-topo">
                 <h2>Sessão online</h2>
                 <button className="botao botao-secundario" onClick={verSessaoOnline} disabled={carregandoSessao}>
-                  {carregandoSessao ? 'Consultando…' : 'Ver sessão online agora'}
+                  {carregandoSessao ? 'Consultando…' : 'Atualizar'}
                 </button>
               </div>
+              {carregandoSessao && !sessao && <Skeleton width="60%" height={14} />}
               {sessao && camposSessao().length === 0 && (
                 <p className="conexao-sessao-vazio">Cliente sem sessão online no momento.</p>
               )}
@@ -851,7 +867,9 @@ export default function Conexao() {
                     <strong>{valor}</strong>
                   </div>
                 ))}
-              {!sessao && <p className="conexao-sessao-vazio">Toque em "Ver sessão online agora" para consultar em tempo real.</p>}
+              {!carregandoSessao && !sessao && (
+                <p className="conexao-sessao-vazio">Não foi possível consultar a sessão online agora.</p>
+              )}
             </div>
           </>
         )}
