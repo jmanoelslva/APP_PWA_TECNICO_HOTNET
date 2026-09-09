@@ -181,10 +181,16 @@ a:active,
   background: linear-gradient(135deg, var(--botao-cor, var(--cor-primaria)), var(--cor-primaria-escura));
 }
 
+/* Mesma variável --botao-cor do primário (ver acima) — quando a tela não
+   define nada, cai exatamente no cinza neutro de sempre (color-mix de uma
+   cor com ela mesma não muda nada); ações "construtivas" (Salvar,
+   Atualizar...) passam a cor da própria seção, ações de saída/cancelar
+   (Cancelar, Voltar) continuam sem setar a variável — de propósito, para
+   ficar neutro em qualquer tela. */
 .botao-secundario {
-  border-color: var(--cor-borda);
-  background: var(--cor-superficie);
-  color: var(--cor-texto-secundario);
+  border-color: var(--botao-cor, var(--cor-borda));
+  background: color-mix(in srgb, var(--botao-cor, var(--cor-superficie)) 10%, var(--cor-superficie));
+  color: var(--botao-cor, var(--cor-texto-secundario));
 }
 
 /* Preenchimento leve (6%) além do contorno vermelho — ajuda a diferenciar

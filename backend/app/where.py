@@ -17,9 +17,12 @@ from urllib.parse import urlencode
 OPER_EQ = 5
 OPER_ILIKE = 10
 OPER_IN = 21
+OPER_GTE = 4
+OPER_LTE = 3
+OPER_IS_NOT = 8
 
 
-def where_json(condicoes: list[dict[str, Any]]) -> str:
+def where_json(condicoes: list[Any]) -> str:
     # separators sem espaço — igual ao que o próprio navegador gera via
     # JSON.stringify (formato exato confirmado capturando um request real
     # do painel web do Controllr no DevTools). json.dumps por padrão
@@ -43,9 +46,16 @@ def where_in(field: str, values: list[Any]) -> str:
     return where_json([{"field": field, "oper": OPER_IN, "value": values}])
 
 
-def where_and(*condicoes: dict[str, Any]) -> str:
-    """Combina condições com "AND" explícito entre cada uma (formato do Controllr: uma lista plana intercalando condição e {"field":"AND"})."""
-    combinado: list[dict[str, Any]] = []
+def where_and(*condicoes: dict[str, Any] | list[Any]) -> str:
+    """
+    Combina condições com "AND" explícito entre cada uma (formato do
+    Controllr: uma lista plana intercalando condição e {"field":"AND"}).
+    Uma condição também pode ser uma LISTA (grupo aninhado) — usado para
+    faixas de data, ex: [{">=", data1}, {"AND"}, {"<=", data2}] como um
+    único "item" da combinação externa (ver historico_sessoes_cpe em
+    routers/conexao.py, confirmado ao vivo no painel Controllr).
+    """
+    combinado: list[Any] = []
     for i, condicao in enumerate(condicoes):
         if i > 0:
             combinado.append({"field": "AND"})

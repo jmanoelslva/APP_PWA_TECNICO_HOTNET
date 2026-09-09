@@ -120,6 +120,34 @@
   margin: 0;
 }
 
+.conexao-historico-toggle {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cor-borda-suave);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.conexao-historico-intervalo {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.conexao-historico-intervalo .conexao-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.conexao-historico-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cor-borda-suave);
+}
+
+.conexao-historico-item:last-of-type {
+  border-bottom: none;
+}
+
 .conexao-sessao-topo {
   display: flex;
   align-items: center;

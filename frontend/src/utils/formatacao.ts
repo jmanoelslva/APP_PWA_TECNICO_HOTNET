@@ -19,11 +19,27 @@ export function formatarDataHora(data: string | null | undefined): string {
   return data
 }
 
-/** "YYYY-MM-DD HH:mm:ss", mesmo formato usado pelo Controllr — para carimbar mensagens otimistas. */
-export function agoraNoFormatoDoServidor(): string {
-  const agora = new Date()
+/** "YYYY-MM-DD HH:mm:ss" → "DD/MM/YYYY HH:mm:ss" — com segundos, para eventos que exigem mais precisão (ex: última autenticação, histórico de conexão). */
+export function formatarDataHoraSegundos(data: string | null | undefined): string {
+  if (!data) return ''
+  const partes = data.split(' ')
+  const dataParte = partes[0]?.split('-')
+  const horaParte = partes[1]
+  if (dataParte?.length === 3) {
+    return `${dataParte[2]}/${dataParte[1]}/${dataParte[0]}${horaParte ? ` ${horaParte}` : ''}`
+  }
+  return data
+}
+
+/** "YYYY-MM-DD HH:mm:ss", mesmo formato usado pelo Controllr (ver where.py::corpo no backend). */
+export function dataParaFormatoServidor(data: Date): string {
   const par = (n: number) => String(n).padStart(2, '0')
-  return `${agora.getFullYear()}-${par(agora.getMonth() + 1)}-${par(agora.getDate())} ${par(agora.getHours())}:${par(agora.getMinutes())}:${par(agora.getSeconds())}`
+  return `${data.getFullYear()}-${par(data.getMonth() + 1)}-${par(data.getDate())} ${par(data.getHours())}:${par(data.getMinutes())}:${par(data.getSeconds())}`
+}
+
+/** Mesmo formato acima, carimbado com o instante atual — usado para mensagens otimistas. */
+export function agoraNoFormatoDoServidor(): string {
+  return dataParaFormatoServidor(new Date())
 }
 
 /** Mapeamento oficial de contract_status confirmado na doc do Controllr. */

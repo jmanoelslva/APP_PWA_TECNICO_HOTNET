@@ -631,6 +631,7 @@ export default function OnuStatus() {
             <button
               type="button"
               className="botao botao-secundario"
+              style={{ '--botao-cor': CORES.onu } as CSSProperties}
               onClick={() => abrirAcao('reiniciar')}
               disabled={executandoAcao || atualizandoAntesDaAcao}
             >

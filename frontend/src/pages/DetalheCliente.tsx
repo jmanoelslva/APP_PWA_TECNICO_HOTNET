@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MdAdd,
-  MdBuild,
   MdDescription,
   MdEdit,
   MdExpandLess,
@@ -19,15 +18,12 @@ import {
   buscarDetalheCliente,
   buscarOnu,
   criarTelefone,
-  listarOrdensServico,
-  listarTickets,
   type ContratoDto,
   type CpeComboDto,
   type CpeDto,
   type EnderecoDto,
   type OnuDto,
   type TelefoneDto,
-  type TicketDto,
 } from '../api/client'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
@@ -85,14 +81,6 @@ export default function DetalheCliente() {
   const [enderecos, setEnderecos] = useState<EnderecoDto[]>([])
   const [cpes, setCpes] = useState<CpeComboDto[]>([])
   const [resumosConexao, setResumosConexao] = useState<Record<number, ResumoConexao>>({})
-  const [chamados, setChamados] = useState<TicketDto[]>([])
-  // Chamado com OS em aberto já aparece em "OS / Suporte" (Suporte.tsx,
-  // mesmo filtro minhas:false/abertas:true) — pedido explícito pra não
-  // duplicar o mesmo trabalho em dois lugares diferentes da tela do
-  // cliente. Cross-referencia por ticket_pk em vez de filtrar o próprio
-  // /os por ticket_pk (esse filtro ignora "abertas" no backend — ver
-  // ordens_servico.py — então não bateria com o que a tela de OS mostra).
-  const [ticketsComOsAberta, setTicketsComOsAberta] = useState<Set<number>>(new Set())
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   const [telefoneEditando, setTelefoneEditando] = useState<TelefoneDto | null>(null)
   const [adicionandoTelefone, setAdicionandoTelefone] = useState(false)
@@ -127,19 +115,6 @@ export default function DetalheCliente() {
       setContratos(resposta.contratos)
       setEnderecos(resposta.enderecos)
       setCpes(resposta.cpes)
-      // Histórico de chamados/OS do cliente — carregado à parte (endpoint
-      // diferente) e sem travar o resto da tela se falhar, já que é
-      // informação complementar, não o cadastro em si.
-      listarTickets({ minhas: false, clientPk: pk, limit: 10 })
-        .then((r) => setChamados(r.results))
-        .catch(() => setChamados([]))
-      listarOrdensServico({ minhas: false, abertas: true, limit: 100 })
-        .then((r) =>
-          setTicketsComOsAberta(
-            new Set(r.results.map((os) => os.ticket_pk).filter((tp): tp is number => tp != null)),
-          ),
-        )
-        .catch(() => setTicketsComOsAberta(new Set()))
       carregarResumosConexao(resposta.cpes)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados do cliente.')
@@ -175,10 +150,6 @@ export default function DetalheCliente() {
   if (!Number.isFinite(pk)) {
     return <p className="detalhe-cliente-status">Cliente não encontrado.</p>
   }
-
-  const chamadosSemOsAberta = chamados.filter(
-    (chamado) => chamado.ticket_pk == null || !ticketsComOsAberta.has(chamado.ticket_pk),
-  )
 
   return (
     <div className="detalhe-cliente-tela tela-entrada">
@@ -334,35 +305,6 @@ export default function DetalheCliente() {
                 </div>
               )
             })}
-          </section>
-
-          <section className="detalhe-cliente-secao">
-            <h2>Chamados / OS</h2>
-            {/* Chamado com OS aberta some daqui — já aparece em "OS / Suporte" (ver ticketsComOsAberta acima). */}
-            {chamadosSemOsAberta.length === 0 && <p className="detalhe-cliente-vazio">Nenhum chamado encontrado.</p>}
-            {chamadosSemOsAberta.map((chamado) => (
-              <Link
-                key={chamado.ticket_pk}
-                to={`/suporte/${chamado.ticket_pk}`}
-                state={{ chamado }}
-                viewTransition
-                className="detalhe-cliente-item detalhe-cliente-item-link"
-              >
-                <div className="detalhe-cliente-item-topo">
-                  <strong>{chamado.ticket_title ?? `OS #${chamado.ticket_pk}`}</strong>
-                  <span className={`detalhe-cliente-chamado-badge ${chamado.ticket_date_close ? 'fechado' : 'aberto'}`}>
-                    {chamado.ticket_date_close ? 'Fechada' : 'Aberta'}
-                  </span>
-                </div>
-                {chamado.category_name && <p>{chamado.category_name}</p>}
-                <p>Aberta em {formatarData(chamado.ticket_date_create) ?? 'data não informada'}</p>
-              </Link>
-            ))}
-            {chamados.length > 0 && (
-              <Link to="/suporte" className="detalhe-cliente-chip" viewTransition>
-                <MdBuild size={14} /> Ver todas as OS
-              </Link>
-            )}
           </section>
 
           <section className="detalhe-cliente-secao">

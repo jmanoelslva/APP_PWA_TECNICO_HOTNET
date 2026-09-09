@@ -405,6 +405,61 @@ Online" do próprio painel:
 
 ---
 
+## 7.5. Histórico de sessões (`/aaa_ctl/session_history/list`)
+
+**Não documentado em lugar nenhum.** Confirmado ao vivo abrindo
+"Histórico - Acesso" de um CPE no painel (botão no topo da janela de
+cadastro do CPE) e capturando o corpo real enviado pelo grid
+(monkey-patch em `Ext.Ajax.request`, já que `read_network_requests` não
+expõe o body da requisição).
+
+- `where`: `cpe_pk` (oper 5) **AND** `session_username` (oper 10, ILIKE
+  `%termo%`, opcional) **AND** um **grupo aninhado** (uma lista dentro da
+  lista) com `session_date_close >= data_inicio` **AND**
+  `session_date_close <= data_fim` para o período. Exemplo real
+  (usuário `abimael-vsj`, período "Semana Passada" pedido em
+  09/09/2026):
+  ```json
+  [
+    {"field":"cpe_pk","oper":5,"value":4217},
+    {"field":"AND"},
+    {"field":"session_username","oper":10,"value":"%abimael-vsj%"},
+    {"field":"AND"},
+    [
+      {"field":"session_date_close","oper":4,"value":"2026-08-30 00:00:00"},
+      {"field":"AND"},
+      {"field":"session_date_close","oper":3,"value":"2026-09-05 23:59:59"}
+    ]
+  ]
+  ```
+- Sem período nenhum (preset "Desde o Início" no painel) o `where` **não
+  usa faixa nenhuma** — vira só `{"field":"session_date_close","oper":8,"value":null}`
+  (oper 8 = IS NOT NULL) encadeado com AND nas condições acima.
+- Paginação: `start`/`limit`/`page` de sempre, `sort=session_date_close`,
+  `dir=DESC`.
+- Campos confirmados na resposta (`results[]`): `session_date_start`
+  (início da sessão), `session_date_close` (fim), `session_username`,
+  `session_callingid` (MAC), `session_v4_ip`, `session_v6_px`,
+  `session_v6_pd`, `session_nas_port_id`, `session_acct_time` (duração em
+  **segundos**), `session_terminate_cause` (código RFC 2866
+  Acct-Terminate-Cause — `0` = sem causa registrada/ainda ativa, `2` =
+  Lost Carrier, confirmado ao vivo comparando com a coluna "Terminar" da
+  grade real).
+- `session_rx_byte` / `session_tx_byte` — **mesmo quirk de unidade da
+  sessão online** (seção 7): valor em **KB**, não bytes, apesar do nome
+  (confirmado batendo a conta: `7117908` KB × 1024 ≈ 6,79 GB, bate exato
+  com o "RX Byte" mostrado na grade real).
+- **Presets de período do painel** (botão cíclico "Data Fim", confirmado
+  um por um disparando o filtro de verdade e lendo o `where` resultante):
+  semana vai de **domingo a sábado** (pedindo "Essa Semana" em
+  09/09/2026, quarta-feira, o painel devolveu 06/09 dom a 12/09 sáb).
+  Mês/ano seguem o calendário normal (ex: "Mês passado" em setembro/2026
+  devolveu 01/08 a 31/08). Nosso app replica esse cálculo no frontend
+  (`utils/periodos.ts`) em vez de reproduzir o menu cycle button do
+  Controllr.
+
+---
+
 ## 8. Cadastro do cliente
 
 - `client_phones` (e `client_emails`) vêm no formato

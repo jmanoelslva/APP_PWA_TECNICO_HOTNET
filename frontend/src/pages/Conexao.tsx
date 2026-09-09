@@ -18,12 +18,14 @@ import {
   atualizarDetalhesCpe,
   atualizarWifiCpe,
   buscarCpe,
+  buscarHistoricoSessoesCpe,
   buscarOnu,
   buscarSessaoOnlineCpe,
   listarDps,
   type CpeDto,
   type DpDto,
   type OnuDto,
+  type SessaoHistoricoDto,
 } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
@@ -31,8 +33,11 @@ import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarDataHora, formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/formatacao'
+import { formatarDataHoraSegundos, formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/formatacao'
+import { calcularPeriodo, OPCOES_PERIODO, type PeriodoPreset } from '../utils/periodos'
 import './Conexao.css'
+
+const LIMITE_HISTORICO = 10
 
 // Fórmula de Haversine — distância em linha reta (metros) entre a
 // localização do técnico e a coordenada cadastrada da CTO. Suficiente
@@ -117,9 +122,9 @@ export default function Conexao() {
   // Acesso ao roteador, Observação do CPE e Wi-Fi do CPE são usados bem
   // menos que PPPoE/CTO/Rede — ficam recolhidos por padrão pra não
   // ocupar a tela à toa (mesmo padrão de "Contratos" em DetalheCliente).
-  const [blocosAbertos, setBlocosAbertos] = useState<Set<'roteador' | 'obs' | 'wifi'>>(new Set())
+  const [blocosAbertos, setBlocosAbertos] = useState<Set<'roteador' | 'obs' | 'wifi' | 'historico'>>(new Set())
 
-  function alternarBloco(chave: 'roteador' | 'obs' | 'wifi') {
+  function alternarBloco(chave: 'roteador' | 'obs' | 'wifi' | 'historico') {
     setBlocosAbertos((atual) => {
       const novo = new Set(atual)
       if (novo.has(chave)) novo.delete(chave)
@@ -127,6 +132,19 @@ export default function Conexao() {
       return novo
     })
   }
+  const historicoAberto = blocosAbertos.has('historico')
+
+  // Histórico de conexão (aaa_ctl/session_history/list) — recolhido por
+  // padrão (ver alternarBloco acima) e só carregado quando o técnico
+  // abrir o bloco, já que é uma consulta que a maioria das visitas não
+  // precisa. Período default "Esse mês", mesmo default do painel
+  // Controllr (ver CONTROLLR_API_NOTES.md, seção 7.5).
+  const [periodoPreset, setPeriodoPreset] = useState<PeriodoPreset>('esse_mes')
+  const [intervaloInicio, setIntervaloInicio] = useState('')
+  const [intervaloFim, setIntervaloFim] = useState('')
+  const [historico, setHistorico] = useState<SessaoHistoricoDto[]>([])
+  const [carregandoHistorico, setCarregandoHistorico] = useState(false)
+  const [temMaisHistorico, setTemMaisHistorico] = useState(false)
   const dpsFiltradas = (
     dpBusca.trim() ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase())) : dps
   )
@@ -206,6 +224,13 @@ export default function Conexao() {
     // (abaixo) responder.
     setSessao(null)
     setOnuResumo(null)
+    setHistorico([])
+    setBlocosAbertos((atual) => {
+      if (!atual.has('historico')) return atual
+      const novo = new Set(atual)
+      novo.delete('historico')
+      return novo
+    })
     try {
       const resposta = await chamada()
       const cpeCarregado = resposta.results[0] ?? null
@@ -431,6 +456,57 @@ export default function Conexao() {
     } finally {
       setCarregandoOnuResumo(false)
     }
+  }
+
+  // "personalizado" só resolve quando as duas datas estiverem preenchidas;
+  // os demais presets são calculados aqui mesmo (ver utils/periodos.ts) —
+  // "desde_o_inicio" devolve null de propósito (sem faixa, mesmo
+  // comportamento do painel Controllr).
+  function periodoAtual(): { inicio: string; fim: string } | null {
+    if (periodoPreset === 'personalizado') {
+      if (!intervaloInicio || !intervaloFim) return null
+      return { inicio: `${intervaloInicio} 00:00:00`, fim: `${intervaloFim} 23:59:59` }
+    }
+    return calcularPeriodo(periodoPreset)
+  }
+
+  async function carregarHistorico(pagina: number) {
+    if (!cpe?.pk) return
+    setCarregandoHistorico(true)
+    try {
+      const periodo = periodoAtual()
+      const resposta = await buscarHistoricoSessoesCpe(cpe.pk, {
+        username: cpe.username,
+        dataInicio: periodo?.inicio,
+        dataFim: periodo?.fim,
+        page: pagina,
+        limit: LIMITE_HISTORICO,
+      })
+      setHistorico((atual) => (pagina === 1 ? resposta.results : [...atual, ...resposta.results]))
+      setTemMaisHistorico(resposta.results.length === LIMITE_HISTORICO)
+    } catch (excecao) {
+      if (pagina === 1) setHistorico([])
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível consultar o histórico de conexão.')
+    } finally {
+      setCarregandoHistorico(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!historicoAberto || !cpe?.pk) return
+    if (periodoPreset === 'personalizado' && (!intervaloInicio || !intervaloFim)) return
+    carregarHistorico(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historicoAberto, cpe?.pk, periodoPreset, intervaloInicio, intervaloFim])
+
+  function rotuloEncerramento(causa: number | undefined): string {
+    // Só os códigos abaixo foram confirmados ao vivo contra a grade real
+    // do painel Controllr (ver CONTROLLR_API_NOTES.md, seção 7.5) — para
+    // qualquer outro código (RFC 2866 Acct-Terminate-Cause) mostra o
+    // número cru em vez de arriscar uma tradução não confirmada.
+    if (causa == null || causa === 0) return '—'
+    if (causa === 2) return 'Lost Carrier'
+    return `Código ${causa}`
   }
 
   async function copiar(valor: string | undefined, rotulo: string) {
@@ -770,7 +846,12 @@ export default function Conexao() {
                       placeholder="Não informado"
                     />
                   </div>
-                  <button className="botao botao-secundario" onClick={salvarAcessoRoteador} disabled={salvandoAcesso}>
+                  <button
+                    className="botao botao-secundario"
+                    style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                    onClick={salvarAcessoRoteador}
+                    disabled={salvandoAcesso}
+                  >
                     {salvandoAcesso ? 'Salvando…' : 'Salvar acesso'}
                   </button>
                 </>
@@ -800,7 +881,12 @@ export default function Conexao() {
                       rows={3}
                     />
                   </div>
-                  <button className="botao botao-secundario" onClick={salvarObs} disabled={salvandoObs}>
+                  <button
+                    className="botao botao-secundario"
+                    style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                    onClick={salvarObs}
+                    disabled={salvandoObs}
+                  >
                     {salvandoObs ? 'Salvando…' : 'Salvar observação'}
                   </button>
                 </>
@@ -863,7 +949,12 @@ export default function Conexao() {
                       </button>
                     </div>
                   </div>
-                  <button className="botao botao-secundario" onClick={salvarWifi} disabled={salvandoWifi}>
+                  <button
+                    className="botao botao-secundario"
+                    style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                    onClick={salvarWifi}
+                    disabled={salvandoWifi}
+                  >
                     {salvandoWifi ? 'Salvando…' : 'Salvar Wi-Fi'}
                   </button>
                 </>
@@ -936,7 +1027,12 @@ export default function Conexao() {
                   placeholder="Não informado"
                 />
               </div>
-              <button className="botao botao-secundario" onClick={salvarCto} disabled={salvandoCto}>
+              <button
+                className="botao botao-secundario"
+                style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                onClick={salvarCto}
+                disabled={salvandoCto}
+              >
                 {salvandoCto ? 'Salvando…' : 'Salvar CTO'}
               </button>
             </div>
@@ -953,14 +1049,109 @@ export default function Conexao() {
               </div>
               <div className="conexao-linha">
                 <span>Última autenticação</span>
-                <strong>{cpe.date_auth ? formatarDataHora(cpe.date_auth) : '—'}</strong>
+                <strong>{cpe.date_auth ? formatarDataHoraSegundos(cpe.date_auth) : '—'}</strong>
               </div>
+
+              <button
+                type="button"
+                className="conexao-card-toggle conexao-historico-toggle"
+                onClick={() => alternarBloco('historico')}
+                aria-expanded={historicoAberto}
+              >
+                <span>Histórico de conexão</span>
+                {historicoAberto ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
+              </button>
+              {historicoAberto && (
+                <>
+                  <div className="conexao-campo">
+                    <span>Período</span>
+                    <select
+                      className="conexao-input"
+                      value={periodoPreset}
+                      onChange={(e) => setPeriodoPreset(e.target.value as PeriodoPreset)}
+                    >
+                      {OPCOES_PERIODO.map((opcao) => (
+                        <option key={opcao.valor} value={opcao.valor}>
+                          {opcao.rotulo}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {periodoPreset === 'personalizado' && (
+                    <div className="conexao-historico-intervalo">
+                      <input
+                        className="conexao-input"
+                        type="date"
+                        value={intervaloInicio}
+                        onChange={(e) => setIntervaloInicio(e.target.value)}
+                      />
+                      <input
+                        className="conexao-input"
+                        type="date"
+                        value={intervaloFim}
+                        onChange={(e) => setIntervaloFim(e.target.value)}
+                      />
+                    </div>
+                  )}
+                  {carregandoHistorico && historico.length === 0 && <Skeleton width="60%" height={14} />}
+                  {!carregandoHistorico && historico.length === 0 && (
+                    <p className="conexao-sessao-vazio">Nenhuma sessão encontrada no período.</p>
+                  )}
+                  {historico.map((sessao, indice) => (
+                    <div className="conexao-historico-item" key={`${sessao.session_date_close ?? ''}-${indice}`}>
+                      <div className="conexao-linha">
+                        <span>Início</span>
+                        <strong>{sessao.session_date_start ? formatarDataHoraSegundos(sessao.session_date_start) : '—'}</strong>
+                      </div>
+                      <div className="conexao-linha">
+                        <span>Fim</span>
+                        <strong>{sessao.session_date_close ? formatarDataHoraSegundos(sessao.session_date_close) : 'Em andamento'}</strong>
+                      </div>
+                      <div className="conexao-linha">
+                        <span>Duração</span>
+                        <strong>{sessao.session_acct_time != null ? formatarDuracaoSegundos(sessao.session_acct_time) : '—'}</strong>
+                      </div>
+                      <div className="conexao-linha">
+                        <span>Consumo (download / upload)</span>
+                        <strong>
+                          {sessao.session_tx_byte != null && sessao.session_rx_byte != null
+                            ? `${formatarBytes(sessao.session_tx_byte * 1024)} / ${formatarBytes(sessao.session_rx_byte * 1024)}`
+                            : '—'}
+                        </strong>
+                      </div>
+                      <div className="conexao-linha">
+                        <span>IPv4</span>
+                        <strong>{sessao.session_v4_ip ?? '—'}</strong>
+                      </div>
+                      <div className="conexao-linha">
+                        <span>Encerrada por</span>
+                        <strong>{rotuloEncerramento(sessao.session_terminate_cause)}</strong>
+                      </div>
+                    </div>
+                  ))}
+                  {temMaisHistorico && (
+                    <button
+                      className="botao botao-secundario"
+                      style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                      onClick={() => carregarHistorico(Math.floor(historico.length / LIMITE_HISTORICO) + 1)}
+                      disabled={carregandoHistorico}
+                    >
+                      {carregandoHistorico ? 'Carregando…' : 'Carregar mais'}
+                    </button>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="conexao-card">
               <div className="conexao-sessao-topo">
                 <h2>Sessão online</h2>
-                <button className="botao botao-secundario" onClick={verSessaoOnline} disabled={carregandoSessao}>
+                <button
+                  className="botao botao-secundario"
+                  style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                  onClick={verSessaoOnline}
+                  disabled={carregandoSessao}
+                >
                   {carregandoSessao ? 'Consultando…' : 'Atualizar'}
                 </button>
               </div>
@@ -993,6 +1184,7 @@ export default function Conexao() {
                   <Link
                     to={`/onu?username=${encodeURIComponent(cpe.username ?? '')}`}
                     className="botao botao-secundario botao-pequeno"
+                    style={{ '--botao-cor': CORES.onu } as CSSProperties}
                     viewTransition
                   >
                     <MdRouter size={14} /> Ver detalhes

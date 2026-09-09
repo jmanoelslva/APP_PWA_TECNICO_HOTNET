@@ -413,6 +413,47 @@ export function buscarSessaoOnlineCpe(cpePk: number): Promise<SessaoOnlineRespon
   return get<SessaoOnlineResponse>(`cpe/${cpePk}/sessao`)
 }
 
+// Campos confirmados ao vivo capturando uma resposta real de
+// /aaa_ctl/session_history/list no painel Controllr ("Histórico - Acesso"
+// de um CPE) — mesmo quirk de unidade já visto em sessão online: rx/tx
+// byte vêm em KB, não em bytes (confirmado batendo a conta contra o "RX
+// Byte"/"TX Byte" mostrado na grade real do painel).
+export interface SessaoHistoricoDto {
+  session_date_start?: string
+  session_date_close?: string
+  session_username?: string
+  session_callingid?: string
+  session_rx_byte?: number
+  session_tx_byte?: number
+  session_v4_ip?: string
+  session_v6_px?: string
+  session_v6_pd?: string
+  session_acct_time?: number
+  // Acct-Terminate-Cause (RFC 2866) — 0 = sessão sem causa registrada
+  // (ainda ativa ou não informado pelo NAS); os demais códigos seguem o
+  // padrão RADIUS (2 = Lost Carrier, confirmado ao vivo no painel).
+  session_terminate_cause?: number
+  session_nas_port_id?: string
+}
+
+export interface HistoricoSessoesResponse {
+  success: boolean
+  results: SessaoHistoricoDto[]
+}
+
+export function buscarHistoricoSessoesCpe(
+  cpePk: number,
+  opcoes: { username?: string; dataInicio?: string; dataFim?: string; page?: number; limit?: number } = {},
+): Promise<HistoricoSessoesResponse> {
+  return get<HistoricoSessoesResponse>(`cpe/${cpePk}/historico-sessoes`, {
+    username: opcoes.username,
+    data_inicio: opcoes.dataInicio,
+    data_fim: opcoes.dataFim,
+    page: opcoes.page,
+    limit: opcoes.limit,
+  })
+}
+
 export function atualizarWifiCpe(
   cpePk: number,
   dados: { wifi_encryption_type?: number; wifi_encryption_password?: string },

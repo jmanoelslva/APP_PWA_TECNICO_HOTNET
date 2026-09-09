@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_ILIKE, corpo, where_and, where_eq
+from ..where import OPER_EQ, OPER_GTE, OPER_ILIKE, OPER_IS_NOT, OPER_LTE, corpo, where_and, where_eq
 
 router = APIRouter(prefix="/cpe", tags=["conexao"])
 
@@ -62,6 +62,54 @@ async def sessao_online_cpe(cpe_pk: int, ctx: AuthContext = Depends(get_auth_con
     resposta = await ctx.controllr.session_online_list_wizard(search_term="cpe_pk", search_value=str(cpe_pk))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível consultar a sessão online.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
+# /aaa_ctl/session_history/list — sem doc oficial, formato confirmado ao
+# vivo abrindo "Histórico - Acesso" de um CPE no painel Controllr e
+# capturando o corpo real enviado pelo grid (Ext.Ajax.request): where é
+# cpe_pk (=) AND session_username (ILIKE, opcional) AND um grupo aninhado
+# [session_date_close >=, AND, session_date_close <=] para o período. Sem
+# período (data_inicio/data_fim ausentes) o próprio painel usa "Desde o
+# Início": session_date_close IS NOT NULL, sem faixa nenhuma — reproduzido
+# igual aqui em vez de inventar uma data-limite qualquer.
+@router.get("/{cpe_pk}/historico-sessoes")
+async def historico_sessoes_cpe(
+    cpe_pk: int,
+    username: str | None = Query(default=None, description="Filtra pelo usuário PPPoE (contém, mesmo comportamento do painel)"),
+    data_inicio: str | None = Query(default=None, description="'YYYY-MM-DD HH:MM:SS' — início do período (inclusive)"),
+    data_fim: str | None = Query(default=None, description="'YYYY-MM-DD HH:MM:SS' — fim do período (inclusive)"),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=15, ge=1, le=100),
+    ctx: AuthContext = Depends(get_auth_context),
+) -> dict[str, Any]:
+    condicoes: list[Any] = [{"field": "cpe_pk", "oper": OPER_EQ, "value": cpe_pk}]
+    if username:
+        condicoes.append({"field": "session_username", "oper": OPER_ILIKE, "value": f"%{username.strip()}%"})
+    if data_inicio and data_fim:
+        condicoes.append(
+            [
+                {"field": "session_date_close", "oper": OPER_GTE, "value": data_inicio},
+                {"field": "AND"},
+                {"field": "session_date_close", "oper": OPER_LTE, "value": data_fim},
+            ]
+        )
+    else:
+        condicoes.append({"field": "session_date_close", "oper": OPER_IS_NOT, "value": None})
+
+    resposta = await ctx.controllr.call_api_post(
+        "/aaa_ctl/session_history/list",
+        corpo(
+            where_and(*condicoes),
+            start=(page - 1) * limit,
+            limit=limit,
+            page=page,
+            sort="session_date_close",
+            dir="DESC",
+        ),
+    )
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível consultar o histórico de conexão.", resposta))
     return {"success": True, "results": resposta.results}
 
 

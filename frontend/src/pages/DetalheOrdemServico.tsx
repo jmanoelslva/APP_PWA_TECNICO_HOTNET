@@ -529,7 +529,12 @@ export default function DetalheOrdemServico() {
           <div className="detalhe-ordem-card">
             <h2>Anexo</h2>
             <input ref={inputArquivoRef} type="file" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
-            <button className="botao botao-secundario botao-bloco" disabled={enviandoAnexo} onClick={() => inputArquivoRef.current?.click()}>
+            <button
+              className="botao botao-secundario botao-bloco"
+              style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+              disabled={enviandoAnexo}
+              onClick={() => inputArquivoRef.current?.click()}
+            >
               <MdAttachFile size={16} /> {enviandoAnexo ? 'Enviando…' : 'Anexar arquivo ao chamado'}
             </button>
           </div>
