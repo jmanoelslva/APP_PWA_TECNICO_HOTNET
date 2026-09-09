@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   MdContentCopy,
   MdDeleteForever,
+  MdEdit,
   MdPeopleAlt,
   MdPersonAdd,
   MdPowerSettingsNew,
@@ -21,6 +22,7 @@ import {
   buscarOnu,
   reiniciarOnu,
   removerOnu,
+  renomearOnu,
   type BuscaClienteResultado,
   type CpeComboDto,
   type CpeDto,
@@ -86,6 +88,12 @@ export default function OnuStatus() {
   const [confirmandoAcao, setConfirmandoAcao] = useState<'reiniciar' | 'remover' | null>(null)
   const [executandoAcao, setExecutandoAcao] = useState(false)
   const [registrandoCliente, setRegistrandoCliente] = useState(false)
+  // Renomear — mesmo endpoint achado lendo (sem disparar de verdade) o
+  // handler do lápis "Renomear ONU" do painel (ver CONTROLLR_API_NOTES.md):
+  // POST /fiber_ctl/onu/apply_rename com os identificadores OSPO + onu_name.
+  const [renomeando, setRenomeando] = useState(false)
+  const [novoNome, setNovoNome] = useState('')
+  const [salvandoNome, setSalvandoNome] = useState(false)
   // Combobox único — busca por serial (/fiber_ctl/onu/list no formato
   // "wizard", confirmado ao vivo que filtra por PREFIXO: "ZTEG" já
   // filtrou de 2550 para 764 resultados) e por usuário PPPoE (/cpe/busca,
@@ -254,6 +262,43 @@ export default function OnuStatus() {
       toast('Não foi possível atualizar os dados da ONU.')
     } finally {
       setAtualizandoAntesDaAcao(false)
+    }
+  }
+
+  async function abrirRenomear() {
+    setAtualizandoAntesDaAcao(true)
+    try {
+      const atualizada = await recarregarOnuAtual()
+      if (!atualizada) {
+        toast('Não foi possível atualizar os dados da ONU.')
+        return
+      }
+      setNovoNome(atualizada.name ?? '')
+      setRenomeando(true)
+    } catch {
+      toast('Não foi possível atualizar os dados da ONU.')
+    } finally {
+      setAtualizandoAntesDaAcao(false)
+    }
+  }
+
+  async function confirmarRenomear() {
+    const ospo = dadosOspo()
+    const nome = novoNome.trim()
+    if (!onu || onu.pk == null || !ospo || !nome) {
+      toast('Informe um nome válido para a ONU.')
+      return
+    }
+    setSalvandoNome(true)
+    try {
+      await renomearOnu(onu.pk, { ...ospo, onu_name: nome })
+      setOnu((atual) => (atual ? { ...atual, name: nome } : atual))
+      setRenomeando(false)
+      toast('ONU renomeada.', 'sucesso')
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível renomear a ONU.')
+    } finally {
+      setSalvandoNome(false)
     }
   }
 
@@ -507,6 +552,15 @@ export default function OnuStatus() {
               </div>
             )}
             <div className="onu-linha">
+              <span>Nome</span>
+              <div className="onu-campo-valor">
+                <strong>{onu.name ?? '—'}</strong>
+                <button type="button" onClick={abrirRenomear} disabled={atualizandoAntesDaAcao} aria-label="Renomear ONU">
+                  <MdEdit size={16} />
+                </button>
+              </div>
+            </div>
+            <div className="onu-linha">
               <span>Serial</span>
               <strong>{onu.sn ?? '—'}</strong>
             </div>
@@ -596,6 +650,35 @@ export default function OnuStatus() {
                 onClick={executarAcao}
               >
                 {executandoAcao ? 'Aguarde…' : confirmandoAcao === 'reiniciar' ? 'Reiniciar' : 'Remover'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {renomeando && (
+        <div className="onu-modal-fundo" onClick={() => !salvandoNome && setRenomeando(false)}>
+          <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Renomear ONU</h2>
+            <input
+              type="text"
+              className="onu-modal-input"
+              value={novoNome}
+              onChange={(e) => setNovoNome(e.target.value)}
+              maxLength={64}
+              autoFocus
+            />
+            <div className="onu-modal-acoes">
+              <button className="botao botao-secundario" onClick={() => setRenomeando(false)} disabled={salvandoNome}>
+                Cancelar
+              </button>
+              <button
+                className="botao botao-primario"
+                style={{ '--botao-cor': CORES.onu } as CSSProperties}
+                disabled={salvandoNome || !novoNome.trim()}
+                onClick={confirmarRenomear}
+              >
+                {salvandoNome ? 'Salvando…' : 'Salvar'}
               </button>
             </div>
           </div>

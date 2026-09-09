@@ -246,6 +246,17 @@ precisa de endpoint extra para buscar isso — já vem no mesmo list.
   força reler os dados da OLT, não derruba conexão de ninguém. Usado
   no fluxo de "Atualizar agora": reconnect → espera 15s →
   `onu_update_info` → espera 30s.
+- `onu_update_info` (`POST /fiber_ctl/onu/list_info`) **não devolve
+  `results`** — a resposta é só `{"success": true}` (confirmado ao vivo
+  chamando o endpoint direto pelo console, autenticado na sessão do
+  painel). É só um comando assíncrono pro Controllr reler a ONU na OLT;
+  o dado atualizado de verdade só aparece numa chamada posterior a
+  `/fiber_ctl/onu/list` (por isso o fluxo de "Atualizar agora" ignora o
+  retorno desse endpoint e re-busca a ONU depois de esperar). Logo,
+  `onu_info_timer` **não vem** dessa "coleta" — ele só existe no
+  payload do `/fiber_ctl/onu/list` normal (confirmado ao vivo: campo
+  presente no `store` da grade do painel), que é o mesmo endpoint que
+  `buscarOnu()`/`ONUExtended.info_timer` já usam.
 
 ### 5.1. Reiniciar/Remover/Associar cliente — achados SEM disparar a ação de verdade
 
@@ -264,6 +275,11 @@ não dispara nada — conferido lendo `window.__capturas` (nenhuma chamada a
   de `onu_update_info`, **sem** `onu_serial`).
 - **Remover**: `POST /fiber_ctl/onu/delete`, mesmo corpo exato do
   reiniciar (só muda a URL).
+- **Renomear**: `POST /fiber_ctl/onu/apply_rename`, mesmo corpo OSPO
+  do reiniciar/remover mais `onu_name` (confirmado ao vivo lendo o
+  form da janela "ONU - Renomear" e o JS `fiber_onu_rename.js` — o
+  rótulo do campo no painel é "Descrição", mas o form submete
+  `onu_name`, não `onu_desc`).
 - **Associar a um cliente** (pedido do usuário: "se a onu não tiver
   cliente vinculado, registrar ao cliente buscando pelo nome"): não
   existe um endpoint de "associar" dedicado. O painel faz isso através

@@ -164,6 +164,30 @@ async def remover_onu(
     return {"success": True, "results": resposta.results}
 
 
+@router.post("/{onu_pk}/renomear")
+async def renomear_onu(
+    onu_pk: int,
+    onu_name: str = Query(..., min_length=1, max_length=64),
+    olt_pk: int = Query(...),
+    slot_id: int = Query(...),
+    port_id: int = Query(...),
+    onu_id: int = Query(...),
+    frame_id: int = Query(default=1),
+    ctx: AuthContext = Depends(get_auth_context),
+) -> dict[str, Any]:
+    # Mesmo achado dos dois endpoints acima: handler do lápis "Renomear ONU"
+    # da lista, mesmos identificadores OSPO + "onu_name" (rótulo do campo no
+    # painel é "Descrição", mas o form submete "onu_name" — não é o mesmo
+    # campo de "onu_desc" do modelo).
+    resposta = await ctx.controllr.call_api_post(
+        "/fiber_ctl/onu/apply_rename",
+        urlencode({"olt_pk": olt_pk, "frame_id": frame_id, "slot_id": slot_id, "port_id": port_id, "onu_id": onu_id, "onu_name": onu_name}),
+    )
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível renomear a ONU.", resposta))
+    return {"success": True, "results": resposta.results}
+
+
 class AssociarClientePayload(BaseModel):
     client_pk: int
     # O cliente pode ter mais de uma conexão (CPE) cadastrada — o técnico

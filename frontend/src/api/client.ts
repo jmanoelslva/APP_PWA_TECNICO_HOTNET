@@ -550,6 +550,14 @@ export function removerOnu(onuPk: number, parametros: OspoOnu): Promise<{ succes
   return post(`onu/${onuPk}/remover${query}`)
 }
 
+export function renomearOnu(
+  onuPk: number,
+  parametros: OspoOnu & { onu_name: string },
+): Promise<{ success: boolean; results: unknown }> {
+  const query = querystring({ ...parametros, frame_id: parametros.frame_id ?? 1 })
+  return post(`onu/${onuPk}/renomear${query}`)
+}
+
 export interface AssociarClienteOnuPayload extends OspoOnu {
   client_pk: number
   // O cliente pode ter mais de uma conexão (CPE) cadastrada — o técnico
