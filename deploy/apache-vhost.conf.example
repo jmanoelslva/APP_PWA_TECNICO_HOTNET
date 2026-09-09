@@ -54,9 +54,7 @@
         # geolocation=(self): usado na captura de localização do CPE em
         # Endereço/Localização (navigator.geolocation, DetalheCliente.tsx).
         # camera=(self): usado no leitor de código de barras/QR da tela de
-        # ONU (getUserMedia + @zxing/library, ver LeitorCodigoBarras.tsx —
-        # funciona em Android e iPhone, diferente da Barcode Detection API
-        # nativa, que não existe no Safari)
+        # ONU (getUserMedia + BarcodeDetector, ver LeitorCodigoBarras.tsx)
         # — diferente do anexo de foto da OS, que usa
         # <input type="file" capture="environment"> (DetalheOS.tsx) e não
         # precisa de permissão via API do navegador. O resto continua

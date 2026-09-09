@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   MdContentCopy,
@@ -30,18 +30,13 @@ import {
   type OnuDto,
 } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
+import LeitorCodigoBarras from '../components/LeitorCodigoBarras'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { nivelSinalOnu, type NivelSinal } from '../utils/formatacao'
 import './OnuStatus.css'
-
-// Import tardio — @zxing/library sozinha soma ~470 KB ao bundle (decoders
-// de todo formato de código que existe, não só os usados na etiqueta da
-// ONU). Carregar só quando o técnico realmente abre o leitor evita esse
-// peso em toda visita à tela de ONU.
-const LeitorCodigoBarras = lazy(() => import('../components/LeitorCodigoBarras'))
 
 /**
  * Faixa de sinal óptico (dBm) da OLT — mesma origem/critério de
@@ -736,15 +731,7 @@ export default function OnuStatus() {
         />
       )}
 
-      {lendoCodigo && (
-        // Fallback com estilo inline (não via classe) de propósito: a CSS
-        // do próprio componente só chega junto com o chunk carregado tardio
-        // (ver import lazy acima) — uma classe daria um frame sem estilo
-        // nenhum antes disso.
-        <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 200 }} />}>
-          <LeitorCodigoBarras onDetectado={aoLerCodigo} onFechar={() => setLendoCodigo(false)} />
-        </Suspense>
-      )}
+      {lendoCodigo && <LeitorCodigoBarras onDetectado={aoLerCodigo} onFechar={() => setLendoCodigo(false)} />}
     </div>
   )
 }
