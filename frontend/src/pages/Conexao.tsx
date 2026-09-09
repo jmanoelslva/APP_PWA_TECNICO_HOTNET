@@ -1,15 +1,27 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MdContentCopy, MdMyLocation, MdPeopleAlt, MdRouter, MdSearch, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
+import {
+  MdContentCopy,
+  MdDescription,
+  MdMyLocation,
+  MdPeopleAlt,
+  MdRouter,
+  MdSearch,
+  MdVisibility,
+  MdVisibilityOff,
+  MdWifi,
+} from 'react-icons/md'
 import {
   ApiError,
   atualizarDetalhesCpe,
   atualizarWifiCpe,
   buscarCpe,
+  buscarOnu,
   buscarSessaoOnlineCpe,
   listarDps,
   type CpeDto,
   type DpDto,
+  type OnuDto,
 } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
@@ -69,6 +81,11 @@ export default function Conexao() {
   const [mostrarSenhaRoteador, setMostrarSenhaRoteador] = useState(false)
   const [sessao, setSessao] = useState<Record<string, unknown> | null>(null)
   const [carregandoSessao, setCarregandoSessao] = useState(false)
+  // Resumo da ONU vinculada ao cliente (se tiver) — busca pelo mesmo
+  // usuário PPPoE do CPE, jeito confiável já usado na tela de ONU (ver
+  // CONTROLLR_API_NOTES.md: cpe_pk sozinho é ambíguo em /fiber_ctl/onu/list).
+  const [onuResumo, setOnuResumo] = useState<OnuDto | null>(null)
+  const [carregandoOnuResumo, setCarregandoOnuResumo] = useState(false)
   // Campos editáveis de criptografia do Wi-Fi do CPE — pré-preenchidos
   // com o que o sistema fornecer ao carregar, e reenviados ao Controllr
   // só quando o técnico salvar.
@@ -173,6 +190,7 @@ export default function Conexao() {
     // remonta a busca do zero). Some agora mesmo antes da nova consulta
     // (abaixo) responder.
     setSessao(null)
+    setOnuResumo(null)
     try {
       const resposta = await chamada()
       const cpeCarregado = resposta.results[0] ?? null
@@ -193,6 +211,7 @@ export default function Conexao() {
       // agora" pra ver o bloco aberto. Sem await de propósito: não trava
       // o carregamento do resto da tela por causa dessa consulta à parte.
       if (cpeCarregado?.pk != null) void carregarSessaoOnline(cpeCarregado.pk)
+      if (cpeCarregado?.username) void carregarOnuResumo(cpeCarregado.username)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os dados de conexão.')
     } finally {
@@ -385,6 +404,20 @@ export default function Conexao() {
     carregarSessaoOnline(cpe.pk)
   }
 
+  async function carregarOnuResumo(username: string) {
+    setCarregandoOnuResumo(true)
+    try {
+      const resposta = await buscarOnu({ username })
+      setOnuResumo(resposta.results[0] ?? null)
+    } catch {
+      // Resumo é só conveniência — sem cliente vinculado a nenhuma ONU o
+      // card nem aparece, e um erro aqui não deveria travar o resto da tela.
+      setOnuResumo(null)
+    } finally {
+      setCarregandoOnuResumo(false)
+    }
+  }
+
   async function copiar(valor: string | undefined, rotulo: string) {
     if (!valor) return
     try {
@@ -423,11 +456,19 @@ export default function Conexao() {
 
   function formatarDuracaoSegundos(segundos: number): string {
     const total = Math.max(0, Math.floor(segundos))
-    const h = Math.floor(total / 3600)
-    const m = Math.floor((total % 3600) / 60)
+    const dias = Math.floor(total / 86400)
+    const horas = Math.floor((total % 86400) / 3600)
+    const minutos = Math.floor((total % 3600) / 60)
     const s = total % 60
-    if (h > 0) return `${h}h ${m}min`
-    if (m > 0) return `${m}min ${s}s`
+    // Sessões de dias exibidas em "60h 26min" ficam difíceis de ler —
+    // acima de 24h passa para dd/hh/mm com zero à esquerda (ex.:
+    // "02d 12h 26m"), como um cronômetro.
+    if (dias > 0) {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      return `${pad(dias)}d ${pad(horas)}h ${pad(minutos)}m`
+    }
+    if (horas > 0) return `${horas}h ${minutos}min`
+    if (minutos > 0) return `${minutos}min ${s}s`
     return `${s}s`
   }
 
@@ -617,7 +658,17 @@ export default function Conexao() {
               </div>
               <div className="conexao-linha">
                 <span>Contrato</span>
-                <strong>{cpe.contract_number ?? cpe.contract_pk ?? '—'}</strong>
+                {cpe.client_pk ? (
+                  // Não existe uma tela dedicada de contrato — o detalhe
+                  // fica na página do cliente (mesmo destino do link
+                  // "Cliente" acima), por isso não redirecionava antes:
+                  // faltava o Link, só tinha o número em texto.
+                  <Link to={`/clientes/${cpe.client_pk}`} className="conexao-link" viewTransition>
+                    <MdDescription size={14} /> {cpe.contract_number ?? cpe.contract_pk ?? '—'}
+                  </Link>
+                ) : (
+                  <strong>{cpe.contract_number ?? cpe.contract_pk ?? '—'}</strong>
+                )}
               </div>
               <div className="conexao-linha">
                 <span>Plano</span>
@@ -848,6 +899,39 @@ export default function Conexao() {
                 <strong>{cpe.mac ?? cpe.mac_last ?? '—'}</strong>
               </div>
             </div>
+
+            {carregandoOnuResumo && (
+              <div className="conexao-card">
+                <h2>ONU</h2>
+                <Skeleton width="60%" height={14} />
+              </div>
+            )}
+            {!carregandoOnuResumo && onuResumo && (
+              <div className="conexao-card">
+                <div className="conexao-sessao-topo">
+                  <h2>ONU</h2>
+                  <Link
+                    to={`/onu?username=${encodeURIComponent(cpe.username ?? '')}`}
+                    className="botao botao-secundario botao-pequeno"
+                    viewTransition
+                  >
+                    <MdRouter size={14} /> Ver detalhes
+                  </Link>
+                </div>
+                <div className="conexao-linha">
+                  <span>Estado</span>
+                  <strong>{onuResumo.state ?? '—'}</strong>
+                </div>
+                <div className="conexao-linha">
+                  <span>Sinal RX</span>
+                  <strong>{onuResumo.omddm_rx_power != null ? `${onuResumo.omddm_rx_power} dBm` : '—'}</strong>
+                </div>
+                <div className="conexao-linha">
+                  <span>Modelo</span>
+                  <strong>{onuResumo.model ?? '—'}</strong>
+                </div>
+              </div>
+            )}
 
             <div className="conexao-card">
               <div className="conexao-sessao-topo">
