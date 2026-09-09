@@ -66,14 +66,24 @@ const PRECISAO_MAXIMA_ACEITAVEL_M = 30
 const MARGEM_COORDENADA_CTO_M = 5
 // Uma única leitura pode pegar o GPS no pior instante — amostra por
 // alguns segundos via watchPosition e fica com a leitura de menor
-// accuracy da janela, em vez da primeira que chegar.
-const JANELA_AMOSTRAGEM_LOCALIZACAO_MS = 4000
+// accuracy da janela, em vez da primeira que chegar. Em área urbana o
+// primeiro fix do GPS (com enableHighAccuracy, ou seja, rádio GPS em
+// vez de posição por rede) costuma levar bem mais que alguns segundos
+// — a janela precisa ser generosa o bastante pra isso, senão o técnico
+// só vê "não foi possível obter localização" e precisa tentar de novo.
+const JANELA_AMOSTRAGEM_LOCALIZACAO_MS = 10000
 
 function obterMelhorLocalizacao(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
     let melhor: GeolocationPosition | null = null
     let ultimoErro: GeolocationPositionError | null = null
 
+    // Sem "timeout" aqui (fica Infinity por padrão): quem decide quando
+    // parar de esperar é só o setTimeout externo abaixo. Antes os dois
+    // usavam o mesmo valor, então o watchPosition podia errar por
+    // timeout individual bem no instante em que a janela ia fechar de
+    // qualquer forma — sem chance de uma leitura chegar um pouco depois
+    // e ser aproveitada.
     const watchId = navigator.geolocation.watchPosition(
       (posicao) => {
         if (!melhor || posicao.coords.accuracy < melhor.coords.accuracy) melhor = posicao
@@ -81,7 +91,7 @@ function obterMelhorLocalizacao(): Promise<GeolocationPosition> {
       (erro) => {
         ultimoErro = erro
       },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: JANELA_AMOSTRAGEM_LOCALIZACAO_MS },
+      { enableHighAccuracy: true, maximumAge: 0 },
     )
 
     setTimeout(() => {
