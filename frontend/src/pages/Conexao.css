@@ -243,6 +243,13 @@
   font-size: 11px;
 }
 
+.conexao-combobox-precisao {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--cor-texto-terciario);
+}
+
 .conexao-combobox-vazio {
   padding: 8px 10px;
   font-size: 12px;

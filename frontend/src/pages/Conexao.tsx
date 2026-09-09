@@ -57,6 +57,41 @@ function formatarDistancia(metros: number): string {
   return `${(metros / 1000).toFixed(1)} km`
 }
 
+// GPS urbano varia de ~5m (céu aberto) a 30m+ perto de muro/poste metálico
+// — um limiar fixo de metros ignora essa variação: auto-seleciona errado
+// quando o GPS está ruim e força confirmação manual à toa quando está
+// ótimo. Os limiares abaixo usam a própria precisão (accuracy, em metros)
+// relatada pelo GPS a cada leitura em vez de um número fixo.
+const PRECISAO_MAXIMA_ACEITAVEL_M = 30
+const MARGEM_COORDENADA_CTO_M = 5
+// Uma única leitura pode pegar o GPS no pior instante — amostra por
+// alguns segundos via watchPosition e fica com a leitura de menor
+// accuracy da janela, em vez da primeira que chegar.
+const JANELA_AMOSTRAGEM_LOCALIZACAO_MS = 4000
+
+function obterMelhorLocalizacao(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    let melhor: GeolocationPosition | null = null
+    let ultimoErro: GeolocationPositionError | null = null
+
+    const watchId = navigator.geolocation.watchPosition(
+      (posicao) => {
+        if (!melhor || posicao.coords.accuracy < melhor.coords.accuracy) melhor = posicao
+      },
+      (erro) => {
+        ultimoErro = erro
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: JANELA_AMOSTRAGEM_LOCALIZACAO_MS },
+    )
+
+    setTimeout(() => {
+      navigator.geolocation.clearWatch(watchId)
+      if (melhor) resolve(melhor)
+      else reject(ultimoErro ?? new Error('Não foi possível obter a localização.'))
+    }, JANELA_AMOSTRAGEM_LOCALIZACAO_MS)
+  })
+}
+
 export default function Conexao() {
   const [params, setParams] = useSearchParams()
   const cpePkParam = params.get('cpe_pk')
@@ -117,8 +152,11 @@ export default function Conexao() {
   // Localização do técnico (botão "Usar minha localização") — usada só
   // para sugerir/ordenar a CTO mais próxima por distância, nunca para
   // selecionar sozinha sem confirmação em caso de dúvida (ver critério em
-  // usarLocalizacaoAtual).
+  // usarLocalizacaoAtual). precisaoLocalizacaoM é o accuracy (em metros)
+  // relatado pelo GPS na leitura usada — mostrado ao técnico para ele
+  // avaliar a confiança da sugestão.
   const [minhaLocalizacao, setMinhaLocalizacao] = useState<{ lat: number; lng: number } | null>(null)
+  const [precisaoLocalizacaoM, setPrecisaoLocalizacaoM] = useState<number | null>(null)
   const [localizando, setLocalizando] = useState(false)
   // Acesso ao roteador, Observação do CPE e Wi-Fi do CPE são usados bem
   // menos que PPPoE/CTO/Rede — ficam recolhidos por padrão pra não
@@ -292,64 +330,74 @@ export default function Conexao() {
     }
   }
 
-  function usarLocalizacaoAtual() {
+  async function usarLocalizacaoAtual() {
     if (!navigator.geolocation) {
       toast('Este dispositivo/navegador não oferece localização.')
       return
     }
     setLocalizando(true)
-    navigator.geolocation.getCurrentPosition(
-      (posicao) => {
-        const minhaLat = posicao.coords.latitude
-        const minhaLng = posicao.coords.longitude
-        setMinhaLocalizacao({ lat: minhaLat, lng: minhaLng })
+    try {
+      const posicao = await obterMelhorLocalizacao()
+      const minhaLat = posicao.coords.latitude
+      const minhaLng = posicao.coords.longitude
+      const precisaoM = posicao.coords.accuracy
+      setMinhaLocalizacao({ lat: minhaLat, lng: minhaLng })
+      setPrecisaoLocalizacaoM(precisaoM)
 
-        const comCoordenada = dps
-          .filter((dp): dp is DpDto & { lat: number; lng: number } => dp.lat != null && dp.lng != null)
-          .map((dp) => ({ dp, distanciaM: distanciaMetros(minhaLat, minhaLng, dp.lat, dp.lng) }))
-          .sort((a, b) => a.distanciaM - b.distanciaM)
+      const comCoordenada = dps
+        .filter((dp): dp is DpDto & { lat: number; lng: number } => dp.lat != null && dp.lng != null)
+        .map((dp) => ({ dp, distanciaM: distanciaMetros(minhaLat, minhaLng, dp.lat, dp.lng) }))
+        .sort((a, b) => a.distanciaM - b.distanciaM)
 
-        const maisProxima = comCoordenada[0]
-        const segundaMaisProxima = comCoordenada[1]
-        // Só seleciona sozinho quando não há ambiguidade (bem mais perto
-        // que a segunda opção) — perto de caixas/muros o GPS perde
-        // precisão, então em caso de dúvida é melhor abrir a lista
-        // ordenada por distância e deixar o técnico confirmar.
-        const semAmbiguidade =
-          !!maisProxima &&
-          maisProxima.distanciaM < 10 &&
-          (!segundaMaisProxima || segundaMaisProxima.distanciaM - maisProxima.distanciaM > 20)
+      const maisProxima = comCoordenada[0]
+      const segundaMaisProxima = comCoordenada[1]
+      const precisaoRuim = precisaoM > PRECISAO_MAXIMA_ACEITAVEL_M
+      // Só seleciona sozinho quando o GPS está confiável e não há
+      // ambiguidade real: a CTO mais próxima precisa estar dentro do
+      // raio de erro do GPS (senão o técnico só está "perto", não "na"
+      // CTO), e o "círculo de incerteza" da leitura não pode alcançar a
+      // segunda CTO mais próxima. Em qualquer outro caso é melhor abrir
+      // a lista ordenada por distância e deixar o técnico confirmar.
+      const semAmbiguidade =
+        !precisaoRuim &&
+        !!maisProxima &&
+        maisProxima.distanciaM < precisaoM + MARGEM_COORDENADA_CTO_M &&
+        (!segundaMaisProxima || segundaMaisProxima.distanciaM - maisProxima.distanciaM > 2 * precisaoM)
 
-        setDpBusca('')
-        if (semAmbiguidade) {
-          setDpPk(String(maisProxima.dp.pk))
-          setDpBusca(maisProxima.dp.name)
-          setDpListaAberta(false)
-          toast(`CTO mais próxima selecionada: ${maisProxima.dp.name} (${formatarDistancia(maisProxima.distanciaM)}).`, 'sucesso')
-        } else {
-          setDpPk('')
-          setDpListaAberta(true)
-          if (maisProxima) {
-            toast(
-              `CTOs ordenadas pela sua distância. Mais próxima: ${maisProxima.dp.name} (${formatarDistancia(maisProxima.distanciaM)}). Confira e selecione na lista.`,
-              'sucesso',
-            )
-          } else {
-            toast('Nenhuma CTO cadastrada tem coordenada para comparar com sua localização.')
-          }
-        }
-        setLocalizando(false)
-      },
-      (erro) => {
-        setLocalizando(false)
+      setDpBusca('')
+      if (semAmbiguidade && maisProxima) {
+        setDpPk(String(maisProxima.dp.pk))
+        setDpBusca(maisProxima.dp.name)
+        setDpListaAberta(false)
         toast(
-          erro.code === erro.PERMISSION_DENIED
-            ? 'Permissão de localização negada. Habilite a localização para o navegador e tente novamente.'
-            : 'Não foi possível obter sua localização.',
+          `CTO mais próxima selecionada: ${maisProxima.dp.name} (${formatarDistancia(maisProxima.distanciaM)}, GPS ±${Math.round(precisaoM)} m).`,
+          'sucesso',
         )
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
-    )
+      } else {
+        setDpPk('')
+        setDpListaAberta(true)
+        if (precisaoRuim) {
+          toast(
+            `Localização imprecisa (±${Math.round(precisaoM)} m). CTOs ordenadas pela sua distância — confira e selecione na lista.`,
+          )
+        } else if (maisProxima) {
+          toast(
+            `CTOs ordenadas pela sua distância. Mais próxima: ${maisProxima.dp.name} (${formatarDistancia(maisProxima.distanciaM)}, GPS ±${Math.round(precisaoM)} m). Confira e selecione na lista.`,
+            'sucesso',
+          )
+        } else {
+          toast('Nenhuma CTO cadastrada tem coordenada para comparar com sua localização.')
+        }
+      }
+    } catch (erro) {
+      toast(
+        erro instanceof GeolocationPositionError && erro.code === erro.PERMISSION_DENIED
+          ? 'Permissão de localização negada. Habilite a localização para o navegador e tente novamente.'
+          : 'Não foi possível obter sua localização.',
+      )
+    } finally {
+      setLocalizando(false)
+    }
   }
 
   async function salvarCto() {
@@ -983,11 +1031,16 @@ export default function Conexao() {
                     onClick={usarLocalizacaoAtual}
                     disabled={localizando}
                     aria-label="Usar minha localização para sugerir a CTO mais próxima"
-                    title="Usar minha localização para sugerir a CTO mais próxima"
+                    title={localizando ? 'Obtendo localização mais precisa…' : 'Usar minha localização para sugerir a CTO mais próxima'}
                   >
                     <MdMyLocation size={16} />
                   </button>
                 </div>
+                {minhaLocalizacao && precisaoLocalizacaoM != null && (
+                  <span className="conexao-combobox-precisao">
+                    Sua localização: precisão de ±{Math.round(precisaoLocalizacaoM)} m
+                  </span>
+                )}
                 {dpListaAberta && (
                   <ul className="conexao-combobox-lista">
                     {dpsFiltradas.length === 0 && <li className="conexao-combobox-vazio">Nenhuma CTO encontrada.</li>}
