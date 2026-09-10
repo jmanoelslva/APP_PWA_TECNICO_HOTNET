@@ -84,6 +84,8 @@ export default function Login() {
             <MdGetApp size={18} /> Instalar app
           </button>
         )}
+
+        <p className="login-versao">v{__APP_VERSION__}</p>
       </div>
 
       <ModalInstalarIos aberto={modalIosAberto} onFechar={fecharModalIos} />

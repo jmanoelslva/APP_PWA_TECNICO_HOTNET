@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import CORS_ALLOW_ORIGINS
+from .config import APP_VERSION, CORS_ALLOW_ORIGINS
 from .routers import auth, clientes, conexao, dp, enderecos, onu, ordens_servico, suporte, telefones
 
-app = FastAPI(title="HOTNET TECH API")
+app = FastAPI(title="HOTNET TECH API", version=APP_VERSION)
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,5 +26,5 @@ app.include_router(telefones.router)
 
 
 @app.get("/health")
-async def health() -> dict[str, bool]:
-    return {"ok": True}
+async def health() -> dict[str, bool | str]:
+    return {"ok": True, "version": APP_VERSION}
