@@ -9,12 +9,9 @@ from .response import Response
 
 class BrByteAPIBase():
     # authorization (Basic Auth) e cookie são independentes — passe o que
-    # a chamada precisar. Este backend usa cookie (sessão criada no /login,
-    # ver app/deps.py::get_auth_context): chamar com Basic Auth por
-    # requisição criava uma segunda sessão "implícita" no Controllr, sem
-    # nenhum jeito de fechá-la (Basic Auth não devolve token nenhum pra
-    # guardar), aparecendo como sessão duplicada na lista de usuários
-    # online do painel.
+    # a chamada precisar. Este backend usa cookie (ver
+    # app/deps.py::get_auth_context); Basic Auth por requisição criava
+    # uma segunda sessão "implícita" no Controllr, sem token pra fechá-la.
     def __init__(
         self,
         authorization: str | None = None,

@@ -10,10 +10,8 @@ from ..base import BrByteAPIBase
 @dataclass
 class ControllrLoginResult:
     success: bool
-    # Cookie de sessão retornado pelo POST /login (mesmo mecanismo do
-    # painel administrativo) — usado em toda chamada deste backend ao
-    # Controllr (ver app/deps.py::get_auth_context), inclusive pra
-    # encerrar essa mesma sessão depois (POST /session/logout).
+    # Cookie de sessão retornado pelo POST /login — usado em toda chamada
+    # deste backend ao Controllr (ver app/deps.py::get_auth_context).
     cookie_header: str | None = None
 
 
@@ -29,14 +27,10 @@ class ControllrLogin(BrByteAPIBase):
                 sucesso = bool(response_json.get('success', False))
                 cookie_header = None
                 if sucesso:
-                    # response.cookies só traz o Set-Cookie da resposta final
-                    # — se o /login responder com redirect antes do 200, o
-                    # cookie de sessão não aparece ali, embora já esteja no
-                    # cookie jar da ClientSession. filter_cookies(url) lê do
-                    # jar, cobrindo qualquer resposta da cadeia de redirect.
-                    # Esse cookie autentica toda chamada deste backend ao
-                    # Controllr (ver app/deps.py::get_auth_context), então
-                    # sem ele o login não pode prosseguir.
+                    # response.cookies só traz o Set-Cookie da resposta
+                    # final — se o /login redirecionar antes do 200, o
+                    # cookie some ali mas continua no cookie jar da sessão.
+                    # filter_cookies(url) cobre a cadeia de redirect toda.
                     cookies = session.cookie_jar.filter_cookies(url)
                     if cookies:
                         cookie_header = "; ".join(f"{chave}={morsel.value}" for chave, morsel in cookies.items())

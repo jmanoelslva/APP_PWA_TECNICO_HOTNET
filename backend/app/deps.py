@@ -15,22 +15,10 @@ logger = logging.getLogger(__name__)
 async def encerrar_sessao_controllr(username: str, cookie: str) -> None:
     """
     Encerra no Controllr a sessão criada no /login (POST /session/logout,
-    mesmo mecanismo do painel administrativo, autenticado por esse mesmo
-    cookie usado em toda chamada deste backend — ver
-    app/deps.py::get_auth_context). Usado tanto por /auth/logout quanto
-    por get_current_session quando a checagem de liveness detecta sessão
-    inválida — sem isso nos dois lugares, a sessão local some daqui mas
-    fica "presa" ativa no Controllr até o lease dele expirar sozinho
-    (foi exatamente o que aconteceu quando só get_session era limpo aqui:
-    a próxima chamada a /auth/logout não achava mais sessão local pra
-    fechar, e cada login seguinte criava mais uma sessão nova no
-    Controllr, sem nunca fechar as anteriores).
+    mesmo mecanismo do painel administrativo). Usado por /auth/logout e
+    por get_current_session quando a liveness detecta sessão inválida —
+    sem isso, a sessão fica presa ativa no Controllr até o lease expirar.
     """
-    # Nomes dos cookies (nunca o valor — é o token de sessão) logados pra
-    # cruzar com o cookie guardado no login, enquanto investigamos por que
-    # uma segunda sessão continua aparecendo no Controllr mesmo com essa
-    # chamada rodando.
-    nomes_cookie = [par.split("=", 1)[0] for par in cookie.split("; ") if par]
     try:
         timeout = ClientTimeout(10)
         async with ClientSession() as http:
@@ -39,45 +27,27 @@ async def encerrar_sessao_controllr(username: str, cookie: str) -> None:
                 headers={"Cookie": cookie},
                 timeout=timeout,
             ) as resposta:
-                corpo_bruto = await resposta.text()
                 if resposta.status >= 400:
+                    corpo = await resposta.text()
                     logger.warning(
-                        "Falha ao encerrar sessão de %s no Controllr (cookies %s): HTTP %s — corpo: %s",
-                        username, nomes_cookie, resposta.status, corpo_bruto[:300],
-                    )
-                else:
-                    # .warning (não .info) de propósito: sem logging.basicConfig
-                    # configurado neste projeto, o logger raiz fica em WARNING
-                    # por padrão — .info não apareceria em lugar nenhum.
-                    logger.warning(
-                        "Sessão de %s encerrada no Controllr (cookies %s): HTTP %s — corpo: %s",
-                        username, nomes_cookie, resposta.status, corpo_bruto[:300],
+                        "Falha ao encerrar sessão de %s no Controllr: HTTP %s — %s",
+                        username, resposta.status, corpo[:300],
                     )
     except Exception:
-        logger.exception("Erro ao chamar /session/logout no Controllr para %s (cookies %s)", username, nomes_cookie)
+        logger.exception("Erro ao chamar /session/logout no Controllr para %s", username)
 
 
 async def _controllr_sessao_viva(cookie: str) -> bool:
     """
-    Confirma se o cookie de sessão do Controllr (criado no /login, guardado
-    em TechnicianSession.controllr_cookie e usado em toda chamada deste
-    backend) ainda é aceito por ele.
+    Confirma se o cookie de sessão ainda é aceito pelo Controllr — sem
+    isso, uma sessão morta só seria percebida quando alguma chamada de
+    dado falhasse sozinha, com um erro genérico em vez do 401 que
+    redireciona pro login.
 
-    Existe como checagem proativa e periódica (CONTROLLR_LIVENESS_CHECK_SECONDS)
-    em vez de só deixar a próxima chamada de dado falhar sozinha: uma
-    sessão encerrada manualmente no painel (ou expirada por inatividade)
-    ainda assim viraria um erro genérico de "não foi possível carregar"
-    numa tela qualquer, sem a mensagem clara de sessão expirada nem o
-    redirecionamento pro login que o 401 daqui dispara no frontend.
-
-    /web_auth/acl_perm/list (lista as PRÓPRIAS permissões do usuário) é o
-    endpoint usado — precisa funcionar para qualquer sessão válida
-    independente do cargo/ACL, já que o próprio painel usa isso pra decidir
-    o que exibir para qualquer usuário logado. Um candidato mais leve,
-    /sys/message/count, foi testado antes só numa sessão de admin (que tem
-    acesso a tudo) e se mostrou restrito por ACL de módulo — retornava
-    "Access Denied" (HTTP 403) pra um técnico comum mesmo com a sessão
-    perfeitamente viva, derrubando todo mundo à toa.
+    Usa /web_auth/acl_perm/list (lista as próprias permissões do
+    usuário) por precisar funcionar pra qualquer sessão válida,
+    independente do cargo — /sys/message/count, testado antes, é
+    restrito por ACL de módulo e retorna 403 pra técnicos comuns.
     """
     try:
         timeout = ClientTimeout(10)
@@ -87,30 +57,19 @@ async def _controllr_sessao_viva(cookie: str) -> bool:
                 headers={"Cookie": cookie},
                 timeout=timeout,
             ) as resposta:
-                corpo_bruto = await resposta.text()
                 if resposta.status >= 400:
-                    logger.warning(
-                        "Liveness Controllr: HTTP %s — corpo: %s", resposta.status, corpo_bruto[:500]
-                    )
+                    logger.warning("Liveness Controllr: HTTP %s", resposta.status)
                     return False
                 try:
                     corpo = await resposta.json(content_type=None)
                 except Exception:
-                    logger.warning(
-                        "Liveness Controllr: HTTP %s sem JSON válido — corpo: %s",
-                        resposta.status,
-                        corpo_bruto[:500],
-                    )
+                    logger.warning("Liveness Controllr: resposta sem JSON válido")
                     return False
-                viva = bool(corpo.get("success", False))
-                if not viva:
-                    logger.warning("Liveness Controllr: success=false — corpo: %s", corpo_bruto[:500])
-                return viva
+                return bool(corpo.get("success", False))
     except Exception:
         logger.exception("Falha ao checar liveness da sessão do técnico no Controllr")
-        # Falha de rede/timeout não é a mesma coisa que sessão encerrada —
-        # não desloga o técnico por um problema transitório de conexão,
-        # só tenta de novo na próxima checagem.
+        # Falha de rede/timeout não é sessão encerrada — não desloga por
+        # instabilidade, só tenta de novo na próxima checagem.
         return True
 
 
@@ -121,17 +80,11 @@ async def get_current_session(
     if session is None:
         raise HTTPException(status_code=401, detail="Sessão expirada ou inexistente.")
 
-    # Throttlado (não a cada request) pra não dobrar toda chamada deste
-    # backend com uma ida extra ao Controllr — CONTROLLR_LIVENESS_CHECK_SECONDS
-    # é o quanto um técnico deslogado manualmente no painel ainda consegue
-    # usar o app antes disso ser detectado.
+    # Throttlado — CONTROLLR_LIVENESS_CHECK_SECONDS é o quanto uma sessão
+    # encerrada no Controllr ainda funciona aqui antes de ser detectada.
     agora = time.time()
     if (agora - session.controllr_checked_at) > CONTROLLR_LIVENESS_CHECK_SECONDS:
         if not await _controllr_sessao_viva(session.controllr_cookie):
-            # Best-effort: a sessão já não responde como válida, mas ainda
-            # assim tenta fechá-la de verdade no Controllr — sem isso ela
-            # fica "presa" ativa lá até o lease expirar sozinho (ver
-            # encerrar_sessao_controllr).
             await encerrar_sessao_controllr(session.username, session.controllr_cookie)
             delete_session(tecsession)
             raise HTTPException(status_code=401, detail="Sessão encerrada no Controllr.")

@@ -57,18 +57,10 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         return LoginResponse(success=False, message="Usuário ou senha incorretos.")
 
     if resultado_login.cookie_header is None:
-        # Toda chamada deste backend ao Controllr usa esse cookie (ver
-        # deps.py::get_auth_context) — sem ele não tem como autenticar
-        # nada, então o login não pode prosseguir. Login validado acima
-        # (usuário/senha corretos) mas sem cookie é falha do lado do
-        # Controllr/ControllrLogin.login, não do técnico.
-        logger.error("Login de %s sem cookie de sessão do Controllr — não é possível autenticar chamadas", payload.username)
+        # Toda chamada ao Controllr usa esse cookie (ver
+        # deps.py::get_auth_context) — sem ele o login não pode prosseguir.
+        logger.error("Login de %s sem cookie de sessão do Controllr", payload.username)
         return LoginResponse(success=False, message="Não foi possível iniciar a sessão. Tente novamente.")
-
-    # Nomes dos cookies (nunca o valor) — cruzar com o log de
-    # encerrar_sessao_controllr caso a sessão pareça duplicada de novo.
-    nomes_cookie = [par.split("=", 1)[0] for par in resultado_login.cookie_header.split("; ") if par]
-    logger.warning("Login de %s — cookies de sessão do Controllr: %s", payload.username, nomes_cookie)
 
     controllr = AsyncControllr(cookie=resultado_login.cookie_header, server_url=CONTROLLR_URL)
     user_pk: int | None = None

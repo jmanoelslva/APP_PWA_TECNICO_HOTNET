@@ -1,25 +1,17 @@
 """
 Store de sessão do técnico, em memória (processo único).
 
-Guarda o cookie de sessão que o POST /login do Controllr retorna (mesmo
-mecanismo do painel administrativo, cookie BRBOSCookie) e o user_pk do
-ACL do técnico, associados a um session_id opaco que vira o valor do
-cookie TECSESSION no navegador. Esse cookie do Controllr é usado em TODA
-chamada de API deste backend (ver deps.py::get_auth_context) — não Basic
-Auth por requisição como antes: autenticar cada chamada por Basic Auth
-fazia o Controllr abrir e manter uma segunda sessão "implícita" para esse
-uso, sem token nenhum pra guardar e fechar depois, aparecendo como sessão
-duplicada na lista de usuários online do painel administrativo. Com tudo
-pelo mesmo cookie, existe só a sessão de verdade, a mesma que /auth/logout
-encerra e que a checagem periódica de liveness confirma (ver
-CONTROLLR_LIVENESS_CHECK_SECONDS em config.py).
+Guarda o cookie de sessão do POST /login do Controllr (BRBOSCookie) e o
+user_pk do ACL, associados a um session_id opaco que vira o valor do
+cookie TECSESSION no navegador. Esse cookie é usado em toda chamada de
+API deste backend (ver deps.py::get_auth_context) — Basic Auth por
+requisição abria uma segunda sessão "implícita" no Controllr, sem token
+pra fechar, duplicada na lista de usuários online do painel.
 
-Não há TTL próprio aqui: uma TechnicianSession vive enquanto o cookie de
-sessão do Controllr continuar sendo aceito por ele — o Controllr é quem
-decide quando expirar por inatividade. Sessões também não sobrevivem a um
-restart do processo — um técnico logado precisa logar de novo se o
-backend reiniciar. Aceitável para uso interno com poucos técnicos
-simultâneos; trocar por Redis se o volume crescer.
+Sem TTL próprio: uma TechnicianSession vive enquanto o cookie continuar
+sendo aceito pelo Controllr, e não sobrevive a um restart do processo.
+Aceitável para uso interno com poucos técnicos simultâneos; trocar por
+Redis se o volume crescer.
 """
 
 import secrets

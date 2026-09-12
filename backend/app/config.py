@@ -12,24 +12,15 @@ APP_VERSION = "1.4.0"
 # onu, tickets) vive atrás dessa mesma porta administrativa.
 CONTROLLR_URL = os.environ.get("CONTROLLR_URL", "https://controllr.hotnet.net.br:8443")
 
-# Max-Age do cookie TECSESSION no navegador — só limita até quando o
-# navegador guarda o cookie, não a validade da sessão em si. A validade de
-# verdade é decidida pelo Controllr: enquanto o técnico usa o app,
-# CONTROLLR_LIVENESS_CHECK_SECONDS mantém a sessão lá viva (toda checagem é
-# uma requisição autenticada por aquele cookie); parado por tempo
-# suficiente, o próprio Controllr expira a sessão por inatividade e a
-# próxima checagem detecta isso e desloga (ver deps.py::get_current_session).
-# Por isso este valor pode — e deve — ser bem maior que a inatividade
-# tolerada pelo Controllr.
+# Max-Age do cookie TECSESSION no navegador — não é a validade da sessão
+# em si, decidida pelo Controllr (ver deps.py::get_current_session). Por
+# isso pode e deve ser bem maior que a inatividade tolerada por ele.
 SESSION_COOKIE_MAX_AGE_SECONDS = int(os.environ.get("SESSION_COOKIE_MAX_AGE_SECONDS", str(24 * 60 * 60)))
 
-# De quanto em quanto tempo confirmar com o Controllr que a sessão criada
-# no /login ainda está ativa lá (ver deps.py::get_current_session) — sem
-# isso, uma sessão encerrada manualmente no painel ou expirada por
-# inatividade só seria percebida quando a próxima chamada de dado falhasse
-# sozinha, com um erro genérico em vez do 401 que redireciona pro login.
-# Curto o bastante pra detectar rápido, longo o bastante pra não dobrar
-# toda chamada deste backend com uma ida extra ao Controllr.
+# De quanto em quanto tempo confirmar com o Controllr que a sessão do
+# /login ainda está ativa lá (ver deps.py::get_current_session) — curto
+# o bastante pra detectar rápido, longo o bastante pra não dobrar toda
+# chamada deste backend com uma ida extra ao Controllr.
 CONTROLLR_LIVENESS_CHECK_SECONDS = int(os.environ.get("CONTROLLR_LIVENESS_CHECK_SECONDS", "60"))
 
 SESSION_COOKIE_NAME = "TECSESSION"

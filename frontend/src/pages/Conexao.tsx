@@ -324,12 +324,9 @@ export default function Conexao() {
     else buscarPorUsuarioAtual()
   }
 
-  // Usado pelo pull-to-refresh (precisa de uma Promise, diferente de
-  // tentarNovamente) — sem parâmetro na URL, buscarInicial cai no ramo do
-  // contract_pk mesmo sem nenhum tê-lo sido informado (Number(null) = 0),
-  // batendo o 400 "Informe client_pk, contract_pk, cpe_pk ou username" do
-  // backend. Refaz a busca por usuário ao vivo nesse caso, ou não faz nada
-  // se o campo ainda estiver vazio.
+  // Usado pelo pull-to-refresh (precisa de Promise, diferente de
+  // tentarNovamente) — sem parâmetro na URL, buscarInicial cairia no
+  // ramo contract_pk sem ele ter sido informado, batendo 400 no backend.
   async function atualizarTela() {
     if (temParametroInicial) {
       await carregar(buscarInicial)

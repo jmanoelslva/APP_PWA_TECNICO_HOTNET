@@ -541,18 +541,11 @@ cookie_header}` em vez de só `bool`) junto da sessão do técnico
 específico** — não o Basic Auth — para chamar `/session/logout` no
 `/auth/logout` deste backend.
 
-**Atualização:** a decisão de arquitetura de autenticar as demais
-chamadas por Basic Auth por requisição foi abandonada. Descoberto ao
-vivo em produção que Basic Auth, apesar de não ser fechável via
-`/session/logout` (o que já era sabido), ainda assim faz o Controllr
-abrir e manter algum tipo de sessão "implícita" pra esse uso — visível
-como uma segunda entrada pro mesmo técnico na lista de usuários online
-do painel, ao lado da sessão de cookie de verdade. Sem token nenhum
-devolvido por Basic Auth pra guardar e fechar depois, essa segunda
-sessão era inescapável enquanto essa decisão se mantivesse. Migrado
-para usar o cookie de sessão (o mesmo `controllr_cookie`) em TODA
-chamada deste backend (ver `app/deps.py::get_auth_context` e
-`app/brbyteapi/base.py`) — existe só a sessão de cookie agora.
+**Atualização:** a decisão de Basic Auth por requisição foi abandonada.
+Descoberto em produção que ela faz o Controllr abrir uma segunda sessão
+"implícita", sem token pra fechar — aparecia duplicada na lista de
+usuários online do painel. Migrado pra usar o cookie de sessão em toda
+chamada (ver `app/deps.py::get_auth_context` e `app/brbyteapi/base.py`).
 
 ---
 
