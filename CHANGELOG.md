@@ -11,12 +11,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - Checagem de liveness da sessão no Controllr (`deps.py::get_current_session`)
   derrubava a sessão do técnico como "encerrada no Controllr" já na
-  primeira navegação após o login, para todo mundo — a chamada a
-  `/sys/message/count` só tinha sido validada via `fetch` do navegador
-  (que manda outros cookies/headers junto), nunca nessa chamada
-  servidor-a-servidor com só o cookie salvo. Virou fail-open temporário
-  (loga o motivo real em detalhe, mas não derruba mais ninguém) até os
-  logs mostrarem o que o Controllr responde de fato nesse caminho.
+  primeira navegação após o login, para todo mundo. Causa raiz
+  (confirmada em produção via log): o endpoint escolhido,
+  `/sys/message/count`, é restrito por ACL de módulo — só tinha sido
+  testado numa sessão de admin (acesso a tudo) e devolvia `HTTP 403
+  Access Denied` pra um técnico comum mesmo com a sessão perfeitamente
+  viva. Trocado por `/web_auth/acl_perm/list` (lista as próprias
+  permissões do usuário), que precisa funcionar pra qualquer sessão
+  válida independente do cargo.
 
 ### Removido
 

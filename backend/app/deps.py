@@ -21,22 +21,21 @@ async def _controllr_sessao_viva(cookie: str) -> bool:
     Auth por requisição, que não depende de sessão nenhuma (ver
     CONTROLLR_API_NOTES.md, seção 8.5) — então nunca detectariam sozinhas um
     admin encerrando a sessão do técnico manualmente pelo painel.
-    /sys/message/count é o endpoint usado por exigir sessão válida com o
-    menor payload de resposta entre os candidatos (o painel administrativo
-    também chama esse endpoint a cada carregamento de página).
+
+    /web_auth/acl_perm/list (lista as PRÓPRIAS permissões do usuário) é o
+    endpoint usado — precisa funcionar para qualquer sessão válida
+    independente do cargo/ACL, já que o próprio painel usa isso pra decidir
+    o que exibir para qualquer usuário logado. Um candidato mais leve,
+    /sys/message/count, foi testado antes só numa sessão de admin (que tem
+    acesso a tudo) e se mostrou restrito por ACL de módulo — retornava
+    "Access Denied" (HTTP 403) pra um técnico comum mesmo com a sessão
+    perfeitamente viva, derrubando todo mundo à toa.
     """
-    # FAIL-OPEN temporário: logando em detalhe em vez de derrubar a sessão
-    # numa resposta que não seja um success:true claro. A checagem nunca foi
-    # confirmada contra o Controllr de verdade nessa chamada servidor-a-
-    # servidor (só via fetch do próprio navegador, que manda outros cookies/
-    # headers junto) — voltou "sessão encerrada" para todo mundo já na
-    # primeira navegação após o login. Assim que os logs mostrarem o motivo
-    # real (status/corpo abaixo), volta a derrubar de verdade.
     try:
         timeout = ClientTimeout(10)
         async with ClientSession() as http:
             async with http.post(
-                f"{CONTROLLR_URL}/sys/message/count",
+                f"{CONTROLLR_URL}/web_auth/acl_perm/list",
                 headers={"Cookie": cookie},
                 timeout=timeout,
             ) as resposta:
@@ -45,7 +44,7 @@ async def _controllr_sessao_viva(cookie: str) -> bool:
                     logger.warning(
                         "Liveness Controllr: HTTP %s — corpo: %s", resposta.status, corpo_bruto[:500]
                     )
-                    return True
+                    return False
                 try:
                     corpo = await resposta.json(content_type=None)
                 except Exception:
@@ -54,10 +53,11 @@ async def _controllr_sessao_viva(cookie: str) -> bool:
                         resposta.status,
                         corpo_bruto[:500],
                     )
-                    return True
-                if not corpo.get("success", False):
+                    return False
+                viva = bool(corpo.get("success", False))
+                if not viva:
                     logger.warning("Liveness Controllr: success=false — corpo: %s", corpo_bruto[:500])
-                return True
+                return viva
     except Exception:
         logger.exception("Falha ao checar liveness da sessão do técnico no Controllr")
         # Falha de rede/timeout não é a mesma coisa que sessão encerrada —
