@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  MdAccountCircle,
   MdBuild,
   MdConstruction,
   MdDarkMode,
@@ -124,18 +123,13 @@ export default function Home() {
           className="home-cabecalho"
           style={{ background: comAlpha(CORES.primaria, 8), borderColor: comAlpha(CORES.primaria, 20) }}
         >
-          <span className="home-header-icone">
-            <img src="/icons/icon-192.png" alt="HOTNET TECH" />
-          </span>
-
           <div className="home-header-saudacao">
             <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
-            <p className="home-subtitulo">O que você precisa hoje?</p>
           </div>
 
           <div className="home-avatar-wrapper">
             <button className="home-avatar" onClick={() => setMenuAvatarAberto((v) => !v)} aria-label="Menu do usuário">
-              <MdAccountCircle size={26} />
+              <img src="/icons/icon-192.png" alt="Menu" />
             </button>
             {menuAvatarAberto && (
               <>
