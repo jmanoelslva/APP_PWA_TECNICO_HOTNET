@@ -7,6 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- Tela de Financeiro: faturas (cobranças) do cliente, com status (paga,
+  em aberto, atrasada) e indicação de pagamentos em observação, além de
+  ação para registrar uma nova observação numa fatura em aberto. Menu só
+  aparece para o técnico com a liberação correspondente na ACL do
+  Controllr, verificada automaticamente no login.
+
 ## [1.0.0] - 2026-09-10
 
 Primeira versão estável, já validada em uso real pelos técnicos em produção

@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MdAdd,
+  MdAttachMoney,
   MdDescription,
   MdEdit,
   MdExpandLess,
@@ -25,6 +26,7 @@ import {
   type OnuDto,
   type TelefoneDto,
 } from '../api/client'
+import { useSessao } from '../auth/useSessao'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
@@ -71,6 +73,7 @@ export default function DetalheCliente() {
   const { clientPk } = useParams<{ clientPk: string }>()
   const pk = Number(clientPk)
   const { toast } = useToast()
+  const { tecnico } = useSessao()
 
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
@@ -180,6 +183,14 @@ export default function DetalheCliente() {
               {doc && <p>Documento: {doc}</p>}
             </div>
           </div>
+
+          {tecnico?.financeiroLiberado && (
+            <div className="detalhe-cliente-item-acoes">
+              <Link to={`/financeiro?client_pk=${pk}`} className="detalhe-cliente-chip" viewTransition>
+                <MdAttachMoney size={14} /> Financeiro
+              </Link>
+            </div>
+          )}
 
           <section className="detalhe-cliente-secao">
             <h2>Telefones</h2>

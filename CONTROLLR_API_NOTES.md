@@ -590,7 +590,99 @@ manualmente qual é a caixa certa.
 
 ---
 
-## 11. Como investigar um novo caso (técnica que funcionou repetidas vezes)
+## 11. Financeiro — faturas (`/invoice_ctl/invoice/list`) e pagamentos em observação (`/invoice_ctl/observation/*`)
+
+Achados capturando ao vivo (via `Ext.ComponentQuery`) as telas reais
+"Financeiro > Cobranças" (grid de faturas de um cliente) e "Financeiro >
+Cobranças > Pagamentos em observação" do painel Controllr.
+
+### 12.1. Fatura (`/invoice_ctl/invoice/list`)
+
+- Filtrar por cliente é **ambíguo sem prefixo** (mesmo bug da seção 2):
+  o campo certo é `client.client_pk`, não `client_pk` puro — confirmado
+  lendo o `extraParams.where` real do grid "Cobranças" do cliente.
+- `invoice_deleted` (oper 7 = IS) sempre entra no filtro para não trazer
+  faturas removidas.
+- `invoice_date_credit` vazio/null = ainda não paga (mesmo padrão de
+  `contract_sign_date`) — não existe um campo "pago: sim/não" à parte.
+  `invoice_late` (bool) indica atraso.
+- Cada fatura já traz `obs_pk`/`obs_date_end` prontos quando tem um
+  pagamento em observação ativo — não precisa de chamada extra a
+  `observation/list` só para saber se está "em observação".
+- `invoice_is_released` também vem no registro (visto ao vivo, sem
+  descrição confirmada) — não usado ainda no app do técnico.
+
+### 12.2. Pagamento em observação (`/invoice_ctl/observation/*`)
+
+Tela do painel: Financeiro > Cobranças > "Pagamentos em observação" —
+uma anotação presa a uma fatura que segura as consequências de um
+atraso (ex: bloqueio) até uma data ou por N dias, enquanto o cliente
+negocia. Grid real usa `/invoice_ctl/observation/list`, campos
+confirmados no `store.model` do grid: `obs_pk`, `invoice_pk`,
+`contract_pk`, `contract_number`, `client_pk`, `client_complete_name`,
+`invoice_nosso_num`, `invoice_date_due`, `invoice_amount_document`,
+`obs_date_end` ("Liberar"), `obs_date_cad` (cadastro), `obs_text`
+(a observação), `obs_username`, `obs_status`, `obs_deleted`,
+`obs_date_deleted`.
+
+Formulário "Novo" (campos lidos direto do form real via
+`win.query('field')`, não chutados):
+
+| Campo (name) | Label no painel | Observação |
+|---|---|---|
+| `client_pk` | Cliente | combo |
+| `contract_pk` | Contrato | combo |
+| `invoice_pk` | Cobrança | combo, via `/invoice_ctl/invoice/list_combo` |
+| `obs_release_type` | Liberar Tipo | `0` = Data de Validade, `1` = Período |
+| `obs_date_end` | Liberar | datetime, usado só com tipo `0` |
+| `obs_period` | Liberar (Dias) | numérico, usado só com tipo `1` |
+| `obs_status` | Habilitado | checkbox (`1`/`0` no registro) |
+| `obs_text` | Descrição | texto livre — a observação em si |
+
+Ações da grade (icones da coluna de ação, handlers lidos sem clicar,
+mesma técnica da seção 5.1): "Habilitar/Desabilitar" →
+`POST /invoice_ctl/observation/change_status`; "Remover" →
+`POST /invoice_ctl/observation/delete`. Nenhuma das duas foi exposta
+para o técnico no app (só visualizar faturas + criar observação, ver
+`backend/app/routers/financeiro.py`) — o botão "Salvar" do form "Novo"
+não teve o body final capturado (evitado criar registro de teste de
+verdade), só os nomes de campo acima, que já bastam para montar o
+`POST /invoice_ctl/observation/create` (wrapper `observation_create` em
+`brbyteapi/controllr/invoice.py`).
+
+### 12.3. ACL do módulo financeiro — como o Controllr decide quem tem acesso
+
+Não existe um campo solto "liberado: sim/não" no cadastro do técnico
+(`acl_user`) — a permissão é por **role** (`role_pk`/`role_name`, visto em
+`/web_auth/acl_user/list`) e granular por ação, num catálogo GIGANTE
+(819 registros) exposto em `POST /web_auth/acl_perm/list` (aceita
+`role_pk` no body e devolve `view_act_allow` já resolvido para aquela
+role). Confirmado ao vivo comparando roles reais desta operação:
+
+| Role | `invoice_invoice.show` | `invoice_observation.show/create` |
+|---|---|---|
+| Root (1) | 1 | 1 |
+| Administração (3) | 1 | 1 |
+| **Técnico (5)** | **0** | **0** |
+| **Técnico Suporte N1 (8)** | **1** | **1** |
+
+Ou seja, entre as duas roles de técnico já em uso nesta operação, uma
+tem acesso ao financeiro e outra não — confirma que "liberação de ACL"
+é uma diferença real e deliberada, não um capricho. Só que
+`/web_auth/acl_perm/list` e `/web_auth/acl_user/list` (para saber o
+`role_pk` do técnico) são endpoints de administração — nada garante que
+uma conta comum de técnico tenha permissão para chamá-los (não testado
+com uma conta real de técnico). Por isso o backend deste app **não tenta
+replicar essa lógica**: em vez de decidir a permissão pelo nome da role,
+ele pergunta direto pro Controllr fazendo uma leitura real e inofensiva
+em `/invoice_ctl/invoice/list` (`limit=1`, sem where) com o Basic Auth do
+próprio técnico logo no login, e trata um `403 Access Denied` como "sem
+liberação" — mesmo padrão de detecção de ACL já usado no fechamento de OS
+(seção 3). Ver `backend/app/routers/auth.py::_verificar_liberacao_financeiro`.
+
+---
+
+## 12. Como investigar um novo caso (técnica que funcionou repetidas vezes)
 
 1. Pedir para o usuário logar no painel real do Controllr (nunca eu digito
    credencial).

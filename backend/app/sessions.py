@@ -35,6 +35,16 @@ class TechnicianSession:
     user_pk: int | None
     created_at: float
     controllr_cookie: str | None = None
+    # Liberação de ACL do técnico para o módulo financeiro (faturas/
+    # cobranças e pagamentos em observação) — resolvida uma única vez no
+    # login (ver auth.py::_verificar_liberacao_financeiro) chamando de
+    # verdade um endpoint financeiro read-only e conferindo se o Controllr
+    # devolveu 403 "Access Denied". Roles de técnico têm essa liberação
+    # ligada/desligada de forma independente (confirmado ao vivo em
+    # /web_auth/acl_perm/list: role "Técnico" não tem, "Técnico Suporte
+    # N1" tem) — por isso não dá para inferir isso só do username/role_pk,
+    # precisa perguntar ao próprio Controllr.
+    financeiro_liberado: bool = False
 
     def expired(self) -> bool:
         return (time.time() - self.created_at) > SESSION_TTL_SECONDS
@@ -44,7 +54,11 @@ _sessions: dict[str, TechnicianSession] = {}
 
 
 def create_session(
-    username: str, basic_auth: str, user_pk: int | None, controllr_cookie: str | None = None
+    username: str,
+    basic_auth: str,
+    user_pk: int | None,
+    controllr_cookie: str | None = None,
+    financeiro_liberado: bool = False,
 ) -> TechnicianSession:
     session_id = secrets.token_urlsafe(32)
     session = TechnicianSession(
@@ -54,6 +68,7 @@ def create_session(
         user_pk=user_pk,
         created_at=time.time(),
         controllr_cookie=controllr_cookie,
+        financeiro_liberado=financeiro_liberado,
     )
     _sessions[session_id] = session
     return session

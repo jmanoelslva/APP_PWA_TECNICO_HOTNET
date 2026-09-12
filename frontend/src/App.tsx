@@ -13,6 +13,7 @@ const DetalheChamado = lazy(() => import('./pages/DetalheChamado'))
 const DetalheCliente = lazy(() => import('./pages/DetalheCliente'))
 const DetalheOrdemServico = lazy(() => import('./pages/DetalheOrdemServico'))
 const Ferramentas = lazy(() => import('./pages/Ferramentas'))
+const Financeiro = lazy(() => import('./pages/Financeiro'))
 const Home = lazy(() => import('./pages/Home'))
 const Login = lazy(() => import('./pages/Login'))
 const OnuStatus = lazy(() => import('./pages/OnuStatus'))
@@ -105,6 +106,14 @@ function App() {
             element={
               <RotaProtegida>
                 <Ferramentas />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/financeiro"
+            element={
+              <RotaProtegida>
+                <Financeiro />
               </RotaProtegida>
             }
           />

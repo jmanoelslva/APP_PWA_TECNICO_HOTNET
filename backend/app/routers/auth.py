@@ -22,6 +22,7 @@ class LoginRequest(BaseModel):
 class TecnicoDto(BaseModel):
     username: str
     user_pk: int | None = None
+    financeiro_liberado: bool = False
 
 
 class LoginResponse(BaseModel):
@@ -50,6 +51,30 @@ def _find_user_pk(records: list[dict[str, Any]], username: str) -> int | None:
     return None
 
 
+async def _verificar_liberacao_financeiro(controllr: AsyncControllr) -> bool:
+    """
+    Não existe um campo solto tipo "liberado: true/false" no cadastro do
+    técnico (acl_user) para o módulo financeiro — a liberação é decidida
+    pelo Controllr por role, permissão a permissão (confirmado ao vivo em
+    /web_auth/acl_perm/list: a role "Técnico" tem invoice_invoice.show e
+    invoice_observation.show/create com view_act_allow=0, mas a role
+    "Técnico Suporte N1" tem tudo =1 — mesmo dado nunca é exposto para uma
+    conta comum de técnico, só para quem já tem acesso ao módulo de
+    usuários). Em vez de tentar replicar essa lógica de permissões aqui
+    (frágil: quebraria se o Controllr mudasse o nome/estrutura dos nodes),
+    pergunta pro próprio Controllr da forma mais direta possível: faz uma
+    leitura real e inofensiva (limit=1, sem alterar nada) num endpoint
+    financeiro com o Basic Auth do próprio técnico. Um 403 "Access Denied"
+    é a mesma resposta já confirmada noutro fluxo deste app para uma ação
+    sem liberação de ACL (ver CONTROLLR_API_NOTES.md, fechamento de OS).
+    """
+    try:
+        resposta = await controllr.invoice_list("limit=1")
+    except Exception:
+        return False
+    return resposta.status != 403
+
+
 @router.post("/login", response_model=LoginResponse)
 async def login(payload: LoginRequest, response: Response) -> LoginResponse:
     resultado_login = await ControllrLogin.login(CONTROLLR_URL, payload.username, payload.password)
@@ -70,11 +95,14 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         # OS" vai cair para "Todas" até resolvermos o campo certo do ACL.
         user_pk = None
 
+    financeiro_liberado = await _verificar_liberacao_financeiro(controllr)
+
     sessao = create_session(
         username=payload.username,
         basic_auth=basic_auth,
         user_pk=user_pk,
         controllr_cookie=resultado_login.cookie_header,
+        financeiro_liberado=financeiro_liberado,
     )
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
@@ -84,7 +112,10 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         max_age=SESSION_TTL_SECONDS,
         path="/",
     )
-    return LoginResponse(success=True, tecnico=TecnicoDto(username=payload.username, user_pk=user_pk))
+    return LoginResponse(
+        success=True,
+        tecnico=TecnicoDto(username=payload.username, user_pk=user_pk, financeiro_liberado=financeiro_liberado),
+    )
 
 
 @router.post("/logout")
@@ -124,4 +155,8 @@ async def logout(
 
 @router.get("/me", response_model=TecnicoDto)
 async def me(ctx: AuthContext = Depends(get_auth_context)) -> TecnicoDto:
-    return TecnicoDto(username=ctx.session.username, user_pk=ctx.session.user_pk)
+    return TecnicoDto(
+        username=ctx.session.username,
+        user_pk=ctx.session.user_pk,
+        financeiro_liberado=ctx.session.financeiro_liberado,
+    )

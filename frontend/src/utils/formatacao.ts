@@ -118,6 +118,14 @@ export function nivelSinalOnu(rx: number | null | undefined): NivelSinal {
   return 'critica'
 }
 
+/** Valor monetário (number ou string do Controllr) → "1.234,56", sem o "R$" (quem exibe decide o prefixo). */
+export function formatarMoeda(valor: number | string | null | undefined): string {
+  if (valor == null || valor === '') return '—'
+  const numero = typeof valor === 'string' ? Number(valor.replace(',', '.')) : valor
+  if (Number.isNaN(numero)) return String(valor)
+  return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 export const TEXTO_SINAL_ONU: Record<NivelSinal, string> = {
   boa: 'Sinal normal',
   alerta: 'Sinal fraco',

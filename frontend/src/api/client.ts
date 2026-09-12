@@ -116,6 +116,7 @@ async function postForm<T>(path: string, form: FormData): Promise<T> {
 export interface TecnicoDto {
   username: string
   user_pk: number | null
+  financeiro_liberado: boolean
 }
 
 export interface LoginResponse {
@@ -850,4 +851,67 @@ export function reabrirOrdemServico(
   parametros: { opOsPk: number; opDesc?: string },
 ): Promise<{ success: boolean; results: unknown }> {
   return post(`os/${ticketPk}/reabrir`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+}
+
+// ---------------------------------------------------------------------
+// Financeiro — faturas (cobranças) e pagamentos em observação. Tela só
+// aparece para o técnico com liberação de ACL (ver TecnicoDto.
+// financeiro_liberado, resolvido no login) — mesmo assim toda rota do
+// backend confere de novo e repassa um 403 se a liberação não valer mais.
+// Campos crus, confirmados ao vivo em /invoice_ctl/invoice/list (ver
+// backend/app/routers/financeiro.py para a fonte de cada um).
+// ---------------------------------------------------------------------
+
+export interface FaturaDto {
+  invoice_pk?: number
+  contract_pk?: number
+  contract_number?: number
+  invoice_nosso_num?: string
+  invoice_document_number?: string
+  invoice_date_due?: string
+  invoice_date_document?: string
+  // Vazio/null = ainda não paga — é o próprio indicador de status, não
+  // existe um campo "pago: sim/não" separado (mesmo padrão já visto em
+  // contract_sign_date).
+  invoice_date_credit?: string
+  invoice_amount_document?: number
+  invoice_amount_paid?: number
+  invoice_late?: boolean
+  invoice_deleted?: boolean
+  // Presentes quando a fatura tem um pagamento em observação ativo —
+  // vêm prontos no próprio registro, sem precisar de outra chamada.
+  obs_pk?: number
+  obs_date_end?: string
+}
+
+export interface ListarFaturasResponse {
+  success: boolean
+  results: FaturaDto[]
+  total: number
+}
+
+export function listarFaturas(
+  clientPk: number,
+  opcoes: { start?: number; limit?: number } = {},
+): Promise<ListarFaturasResponse> {
+  return get<ListarFaturasResponse>('financeiro/faturas', {
+    client_pk: clientPk,
+    start: opcoes.start ?? 0,
+    limit: opcoes.limit ?? 30,
+  })
+}
+
+export interface CriarObservacaoPayload {
+  client_pk: number
+  contract_pk: number
+  invoice_pk: number
+  obs_text: string
+  // Exatamente um dos dois, igual ao formulário real do painel ("Liberar
+  // Tipo": Data de Validade ou Período).
+  obs_release_date?: string
+  obs_period_dias?: number
+}
+
+export function criarObservacaoFatura(payload: CriarObservacaoPayload): Promise<{ success: boolean; results: unknown }> {
+  return post('financeiro/observacoes', payload)
 }

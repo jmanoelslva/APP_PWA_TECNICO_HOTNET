@@ -34,6 +34,7 @@ export const CORES = {
   onu: 'var(--cor-onu)',
   endereco: 'var(--cor-endereco)',
   ferramentas: 'var(--cor-ferramentas)',
+  financeiro: 'var(--cor-financeiro)',
 } as const
 
 /**
