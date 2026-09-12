@@ -21,8 +21,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Autenticação com o Controllr passou de Basic Auth por requisição
   para o cookie de sessão do login, em toda chamada — Basic Auth abria
   uma segunda sessão "implícita" no Controllr, sem token pra fechar,
-  duplicada na lista de usuários online do painel. `TechnicianSession.
-  basic_auth` removido.
+  duplicada na lista de usuários online do painel.
+  `TechnicianSession.basic_auth` removido.
 - Sessão do técnico não expira mais por TTL fixo (`SESSION_TTL_SECONDS`,
   removido) — validade decidida pelo Controllr via a checagem de
   liveness. `SESSION_COOKIE_MAX_AGE_SECONDS` (24h) limita só o cookie
