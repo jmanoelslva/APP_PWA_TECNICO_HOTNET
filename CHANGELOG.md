@@ -21,11 +21,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   explicitamente. Agora existe só uma sessão por técnico, do login ao
   logout. `TechnicianSession.basic_auth` foi removido (o técnico não
   precisa mais ter a senha guardada, nem reversível, na memória deste
-  backend). Risco conhecido: ACL/permissões podem, em algum endpoint
-  específico, se comportar diferente entre Basic Auth e sessão por
-  cookie — precisa de teste extenso em produção em todos os módulos
-  (clientes, endereços, CPE, ONU, OS, financeiro, telefones) antes de
-  confiar 100% nessa mudança.
+  backend). Testado ao vivo em produção: criação de telefone, busca e
+  renomeação de ONU funcionando normalmente, sem sessão duplicada e com
+  o mesmo cookie mantido ao trocar de módulo/ação no painel — ACL não
+  se mostrou diferente entre Basic Auth e cookie nesses casos. Ainda
+  vale acompanhar os módulos menos testados até agora (financeiro,
+  anexos de ticket, ações de OS) nos próximos dias de uso normal.
 
 ### Corrigido
 
