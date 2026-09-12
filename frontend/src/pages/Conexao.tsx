@@ -324,6 +324,30 @@ export default function Conexao() {
     else buscarPorUsuarioAtual()
   }
 
+  // Usado pelo pull-to-refresh (precisa de uma Promise, diferente de
+  // tentarNovamente) — sem parâmetro na URL, buscarInicial cai no ramo do
+  // contract_pk mesmo sem nenhum tê-lo sido informado (Number(null) = 0),
+  // batendo o 400 "Informe client_pk, contract_pk, cpe_pk ou username" do
+  // backend. Refaz a busca por usuário ao vivo nesse caso, ou não faz nada
+  // se o campo ainda estiver vazio.
+  async function atualizarTela() {
+    if (temParametroInicial) {
+      await carregar(buscarInicial)
+      return
+    }
+    const usuario = buscaUsuario.trim()
+    if (usuario.length < 2) return
+    setBuscandoUsuario(true)
+    try {
+      const resposta = await buscarCpe({ username: usuario })
+      setResultadosBuscaUsuario(resposta.results)
+    } catch {
+      setResultadosBuscaUsuario([])
+    } finally {
+      setBuscandoUsuario(false)
+    }
+  }
+
   async function salvarObs() {
     if (!cpe?.pk) return
     setSalvandoObs(true)
@@ -708,7 +732,7 @@ export default function Conexao() {
   }
 
   return (
-    <PullToRefresh aoAtualizar={carregar}>
+    <PullToRefresh aoAtualizar={atualizarTela}>
       <div className="conexao-tela tela-entrada">
         <CabecalhoTela icone={MdWifi} cor={CORES.conexao} titulo="Conexão" subtitulo="Dados de acesso e sessão do cliente." />
 

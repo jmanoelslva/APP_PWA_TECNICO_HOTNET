@@ -9,6 +9,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- Pull-to-refresh na tela Conexão sem cliente/CPE selecionado (ex: tela
+  ainda no campo de busca por usuário PPPoE) quebrava mostrando "Informe
+  client_pk, contract_pk, cpe_pk ou username": o gesto chamava `carregar`
+  direto, que sem parâmetro nenhum na URL cai no ramo `contract_pk` de
+  `buscarInicial` mesmo sem ele ter sido informado (`Number(null)` vira
+  `0`, e o backend rejeita com 400). Pull-to-refresh agora usa
+  `atualizarTela`, que seguindo a mesma guarda já usada pelo botão
+  "Tentar novamente" (`temParametroInicial`), refaz a busca por usuário
+  ao vivo quando não há parâmetro, em vez de cair nesse ramo inválido.
+
 - Checagem de liveness da sessão no Controllr (`deps.py::get_current_session`)
   derrubava a sessão do técnico como "encerrada no Controllr" já na
   primeira navegação após o login, para todo mundo. Causa raiz
