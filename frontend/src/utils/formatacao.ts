@@ -42,7 +42,7 @@ export function agoraNoFormatoDoServidor(): string {
   return dataParaFormatoServidor(new Date())
 }
 
-/** Mapeamento oficial de contract_status confirmado na doc do Controllr. */
+/** Mapeamento oficial de contract_status, doc do Controllr. */
 const ROTULOS_STATUS_CONTRATO: Record<number, string> = {
   0: 'Desativado',
   1: 'Ativado',
@@ -59,10 +59,8 @@ export function formatarStatusContrato(valor: number | string | null | undefined
 
 /**
  * client_phones vem no formato "Rótulo#-#número", às vezes múltiplos
- * separados por vírgula (ex: "Celular#-#82996267665,Comercial#-#..."),
- * confirmado no app cliente de referência (D:\Desktop\WEB_APPS\
- * HOTNET_WEB_APP\src\api\cadastro.ts::formatarContatos). Aqui só o(s)
- * número(s) interessa(m), sem o rótulo.
+ * separados por vírgula (ex: "Celular#-#82996267665,Comercial#-#...").
+ * Aqui só o(s) número(s) interessa(m), sem o rótulo.
  */
 export function extrairTelefones(raw: string | null | undefined): string | null {
   if (!raw) return null
@@ -75,7 +73,7 @@ export function extrairTelefones(raw: string | null | undefined): string | null 
   return numeros.length > 0 ? numeros.join(', ') : null
 }
 
-/** Tipos de criptografia Wi-Fi do CPE (cpe_wifi_encryption_type), confirmado pelo usuário. */
+/** Tipos de criptografia Wi-Fi do CPE (cpe_wifi_encryption_type). */
 export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> = [
   { valor: 0, rotulo: 'Nenhum' },
   { valor: 1, rotulo: 'WEP' },
@@ -104,12 +102,9 @@ export function detectarTipoBusca(valor: string): { doc?: string; contrato?: num
 export type NivelSinal = 'boa' | 'alerta' | 'critica' | 'desconhecida'
 
 /**
- * Faixas de sinal óptico (dBm) da ONU — confirmadas contra um script de
- * monitoramento (bot de Telegram) já em uso interno na empresa, que usa
- * exatamente esses cortes para classificar RX de ONU (ver também
- * OnuStatus.tsx, que usa a mesma faixa para OLT com cortes diferentes).
- * Não é uma norma GPON genérica — é o critério já calibrado e adotado
- * por esta operação.
+ * Faixas de sinal óptico (dBm) da ONU, calibradas para esta operação —
+ * não é uma norma GPON genérica (ver também OnuStatus.tsx, que usa a
+ * mesma faixa para OLT com cortes diferentes).
  */
 export function nivelSinalOnu(rx: number | null | undefined): NivelSinal {
   if (rx == null) return 'desconhecida'

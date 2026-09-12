@@ -1,18 +1,16 @@
 """
-Log de auditoria PRÓPRIO — não depende do Controllr.
+Log de auditoria próprio — não depende do Controllr.
 
-Motivo (decidido com o usuário): o Controllr autentica cada ação com o
-Basic Auth do próprio técnico (ver deps.py — cada sessão carrega a
-credencial dele, não uma conta compartilhada), então "quem fez" já está
-resolvido do lado de lá. O que o Controllr NÃO registra corretamente é o
-IP de origem: como esse backend fala com o Controllr por trás de um
-proxy, o IP que chega lá é sempre o do nosso servidor — e a API dele não
-aceita um cabeçalho tipo X-Forwarded-For para repassar o IP de verdade.
-Como isso depende do lado do Controllr (fora do nosso controle), a
-auditoria por IP é resolvida aqui: technician + IP real + ação, gravado
-localmente, sem depender de nada externo.
+O Controllr autentica cada ação com o Basic Auth do próprio técnico (ver
+deps.py — cada sessão carrega a credencial dele, não uma conta
+compartilhada), então "quem fez" já está resolvido do lado de lá. O
+Controllr não registra o IP de origem corretamente: como este backend
+fala com ele por trás de um proxy, o IP que chega lá é sempre o do
+servidor, e a API não aceita um cabeçalho tipo X-Forwarded-For para
+repassar o IP real. A auditoria por IP é resolvida aqui: técnico + IP
+real + ação, gravado localmente.
 
-Arquivo local em JSON Lines (uma linha por evento) — mesma filosofia
+Arquivo local em JSON Lines (uma linha por evento) — mesma abordagem
 simples de sessions.py (uso interno, poucos técnicos, sem banco próprio).
 """
 
@@ -29,8 +27,8 @@ from .sessions import TechnicianSession
 
 # Alguns proxies/CDNs mandam o cabeçalho mesmo sem valor de verdade —
 # vazio ou com um placeholder tipo "(null)"/"unknown" em vez de omitir o
-# cabeçalho. Sem esse filtro, um "(null)" desses era aceito como se fosse
-# um IP de verdade (bug confirmado ao vivo: log gravando "ip": "(null)").
+# cabeçalho. Esses valores são descartados para não gravar um "IP"
+# inválido no log.
 _VALORES_INVALIDOS = {"", "(null)", "null", "unknown", "-"}
 
 

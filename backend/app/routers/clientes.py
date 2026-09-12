@@ -14,18 +14,14 @@ def _somente_digitos(valor: str) -> str:
 
 
 async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[int, dict[str, Any]]:
-    # /controllrctl/contract/list filtrado por "client_pk" pode voltar
-    # VAZIO mesmo para cliente com contrato de verdade — bug de backend já
-    # confirmado (comentário em src/api/client.ts do app cliente de
-    # referência, D:\Desktop\WEB_APPS\HOTNET_WEB_APP). Único filtro
-    # confiável ali é por "contract_pk" (oper 5, "="), então busca cada
-    # contrato individualmente em vez de um único "client_pk=X" em lote.
-    # "sign_url=true" — parâmetro extra confirmado capturando a chamada
-    # real do painel do Controllr: sem ele, o servidor nem calcula
-    # contract_sign_doc_link (o campo some da resposta, não vem null).
-    # Junto com "contract.contract_pk" (com prefixo — é o que o painel usa
-    # nessa chamada específica; "contract_pk" bare também funciona, mas
-    # segue exatamente o formato confirmado).
+    # /controllrctl/contract/list filtrado por "client_pk" pode retornar
+    # vazio mesmo para um cliente com contrato existente. Único filtro
+    # confiável é por "contract_pk" (oper 5, "="), então cada contrato é
+    # buscado individualmente em vez de um "client_pk=X" em lote.
+    # "sign_url=true" é obrigatório para contract_sign_doc_link vir na
+    # resposta — sem ele o campo some (não retorna null, some da chave).
+    # "contract.contract_pk" usa o prefixo da tabela; "contract_pk" sem
+    # prefixo também funciona neste endpoint.
     contratos: dict[int, dict[str, Any]] = {}
     for contract_pk in contract_pks:
         resposta = await ctx.controllr.contract_list(
@@ -37,12 +33,10 @@ async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[in
 
 
 async def _itens_contrato(ctx: AuthContext, contract_pk: int) -> list[dict[str, Any]]:
-    # /controllrctl/contract/svclist não tem wrapper no brbyteapi vendorizado
-    # — chamada direta. "item.contract_pk" (com prefixo) confirmado no app
-    # cliente de referência (D:\Desktop\WEB_APPS\HOTNET_WEB_APP\src\api\
-    # client.ts::listarItensContrato); sem o prefixo "item." a ambiguidade
-    # de join (mesmo padrão já visto em client_pk/cpe_pk) provavelmente
-    # também se aplica aqui.
+    # /controllrctl/contract/svclist não tem wrapper no brbyteapi
+    # vendorizado — chamada direta. Filtro usa "item.contract_pk" (com
+    # prefixo da tabela), mesmo padrão de ambiguidade de coluna em joins
+    # já visto em client_pk/cpe_pk.
     resposta = await ctx.controllr.call_api_post(
         "/controllrctl/contract/svclist",
         corpo(where_eq("item.contract_pk", contract_pk), sort="contract_pk", dir="ASC"),
@@ -63,9 +57,8 @@ async def buscar_clientes(
     client_pks: set[int] = set()
 
     if doc:
-        # client_status=0 = ativo (mesmo valor confirmado na busca por
-        # nome abaixo) — sem isso, a busca por CPF/CNPJ trazia clientes
-        # desabilitados junto com os habilitados.
+        # client_status=0 = ativo — sem esse filtro, a busca por CPF/CNPJ
+        # traz clientes desabilitados junto com os habilitados.
         condicoes_doc = where_and(
             {"field": "client_status", "oper": OPER_EQ, "value": 0},
             {"field": "client_doc1", "oper": OPER_EQ, "value": _somente_digitos(doc)},
@@ -82,11 +75,8 @@ async def buscar_clientes(
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
     if nome:
-        # Formato confirmado capturando uma busca por nome real no painel
-        # web do próprio Controllr (DevTools): oper 10 = LIKE, valor com
-        # "%" embutido, combinado com client_status=0 (só ativos) via
-        # "AND" explícito — sem isso (só "limit" sem "where" nenhum) a
-        # chamada voltava vazia mesmo com cliente cadastrado.
+        # oper 10 = ILIKE, valor com "%" embutido, combinado com
+        # client_status=0 (só ativos) via "AND" explícito.
         condicoes = where_and(
             {"field": "client_status", "oper": OPER_EQ, "value": 0},
             {"field": "client_complete_name", "oper": OPER_ILIKE, "value": f"%{nome.strip()}%"},
@@ -104,10 +94,7 @@ async def buscar_clientes(
         cliente_resp = await ctx.controllr.client_list(
             corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)
         )
-        # "aaa_cpe.client_pk" (nome real da tabela é "aaa_cpe", não "cpe"
-        # — confirmado no app cliente de referência, que filtra
-        # aaa_ctl/connection/session por "aaa_cpe.cpe_pk") — "cpe.client_pk"
-        # (tentativa anterior) e "client_pk" puro davam ambos vazio.
+        # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe", não "cpe".
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
         # Filtro final de "só habilitados", válido para qualquer caminho de
         # busca (doc/contrato/nome) — a busca por número de contrato não
@@ -120,8 +107,8 @@ async def buscar_clientes(
         cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
         cpes = cpes_resp.results if cpes_resp.success else []
 
-        # list_combo só traz contract_pk (confirmado na doc oficial), não o
-        # número de contrato — mesmo fix aplicado em detalhe_cliente.
+        # list_combo só traz contract_pk, não o número de contrato — mesmo
+        # tratamento aplicado em detalhe_cliente.
         contract_pks = {cpe["contract_pk"] for cpe in cpes if cpe.get("contract_pk") is not None}
         contratos_por_pk = await _contratos_por_pk(ctx, contract_pks)
         for cpe in cpes:
@@ -140,40 +127,31 @@ async def buscar_clientes(
 
 @router.get("/{client_pk}")
 async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
-    # "client.client_pk" (com prefixo da tabela), não "client_pk" puro —
-    # confirmado no próprio pacote brbyteapi
-    # (controllr/client.py::set_client_category_pk), provavelmente porque
-    # "client_pk" sozinho é ambíguo numa query com joins.
+    # "client.client_pk" (com prefixo da tabela) — "client_pk" sozinho é
+    # ambíguo numa query com joins.
     cliente_resp = await ctx.controllr.client_list(
         corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)
     )
     if not cliente_resp.success or not cliente_resp.results:
         raise HTTPException(status_code=404, detail=detalhe_erro("Cliente não encontrado.", cliente_resp))
 
-    # /controllrctl/addresses/list (NÃO list_combo) — confirmado na doc
-    # oficial (apidoc.brbyte.com/#post-/controllrctl/addresses/list): só
-    # esse endpoint completo traz address_siafi/latitude/longitude, que
-    # o técnico precisa para editar endereço/localização. list_combo
-    # devolve só 5 campos (sem esses). Sem wrapper no brbyteapi vendorizado
-    # (só tem list_combo) — chamada direta. Campo do "where" tem prefixo
-    # "addresses." aqui (diferente de list_combo, que usa "client_pk" puro
-    # — confirmado comparando os dois exemplos da doc oficial).
+    # /controllrctl/addresses/list (não list_combo) — doc oficial em
+    # apidoc.brbyte.com/#post-/controllrctl/addresses/list. Só esse
+    # endpoint completo traz address_siafi/latitude/longitude, necessários
+    # para editar endereço/localização; list_combo devolve só 5 campos.
+    # Sem wrapper no brbyteapi vendorizado (só tem list_combo) — chamada
+    # direta. O "where" usa prefixo "addresses." aqui, diferente de
+    # list_combo (que usa "client_pk" sem prefixo).
     enderecos_resp = await ctx.controllr.call_api_post(
         "/controllrctl/addresses/list", corpo(where_eq("addresses.client_pk", client_pk), action="list", start=0)
     )
-    # "aaa_cpe.client_pk" — mesmo fix já aplicado em buscar_clientes acima
-    # (nome real da tabela é "aaa_cpe", confirmado no app cliente de
-    # referência). Esta segunda ocorrência tinha ficado para trás na
-    # correção anterior — só a de buscar_clientes tinha sido trocada.
+    # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe".
     cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
     cpes = cpes_resp.results if cpes_resp.success else []
 
-    # /aaa_ctl/cpe/list_combo só traz contract_pk (confirmado na doc
-    # oficial), não o número de contrato que o técnico reconhece de
-    # verdade (ex: "1024"). Completa buscando cada contrato individualmente
-    # (ver _contratos_por_pk — filtrar contract_list por "client_pk" pode
-    # voltar vazio mesmo com contrato de verdade, bug de backend confirmado
-    # no app cliente de referência; por "contract_pk" é confiável).
+    # /aaa_ctl/cpe/list_combo só traz contract_pk, não o número de
+    # contrato que o técnico reconhece (ex: "1024"). Completa buscando
+    # cada contrato individualmente (ver _contratos_por_pk).
     contract_pks = {cpe["contract_pk"] for cpe in cpes if cpe.get("contract_pk") is not None}
     contratos_por_pk = await _contratos_por_pk(ctx, contract_pks)
     for cpe in cpes:
@@ -181,20 +159,17 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
         if contrato:
             cpe["contract_number"] = contrato.get("contract_number")
 
-    # Itens do contrato (planos/equipamentos cobrados) — o técnico pediu
-    # para ver tudo, não só o resumo. Anexa em cada contrato como "itens".
+    # Itens do contrato (planos/equipamentos cobrados), anexados a cada
+    # contrato como "itens".
     for contract_pk, contrato in contratos_por_pk.items():
         contrato["itens"] = await _itens_contrato(ctx, contract_pk)
 
-    # Telefone é recurso PRÓPRIO do Controllr (/controllrctl/phone/*), não
-    # um campo solto do cliente — client_phones (client/list, usado antes)
-    # é só um resumo "Rótulo#-#número" sem phone_pk nenhum, então não dava
-    # para editar a partir dele. Busca os registros de verdade aqui para
-    # poder editar o número (ver routers/telefones.py). Nome real da
-    # tabela é "client_phone" (singular) — confirmado ao vivo testando
-    # candidatos: "phone.client_pk" dá 42P01 (tabela errada), "client_pk"
-    # puro dá 42702 (ambíguo, mesmo padrão de client_pk/cpe_pk visto em
-    # outros endpoints).
+    # Telefone é recurso próprio do Controllr (/controllrctl/phone/*), não
+    # um campo solto do cliente — client_phones (client/list) é só um
+    # resumo "Rótulo#-#número" sem phone_pk, sem uso para editar. Busca os
+    # registros de verdade para permitir edição (ver routers/telefones.py).
+    # Nome real da tabela é "client_phone" (singular, com prefixo) — sem
+    # prefixo a coluna é ambígua, mesmo padrão visto em client_pk/cpe_pk.
     telefones_resp = await ctx.controllr.phone_list(
         corpo(where_eq("client_phone.client_pk", client_pk), sort="phone_pk", dir="ASC")
     )
@@ -202,12 +177,10 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     return {
         "success": True,
         "cliente": cliente_resp.results[0],
-        # A seção "Contratos" da tela lista os mesmos contratos usados na
-        # busca acima (um por contract_pk distinto entre as CPEs do
-        # cliente) — não há um jeito confiável de listar TODOS os
-        # contratos do cliente direto (ver comentário acima); na prática,
-        # um contrato sem nenhuma CPE vinculada não interessa muito para o
-        # técnico de campo mesmo (ele trabalha em cima da conexão).
+        # A seção "Contratos" lista um contrato por contract_pk distinto
+        # entre as CPEs do cliente — não há como listar todos os contratos
+        # do cliente diretamente (ver _contratos_por_pk). Um contrato sem
+        # CPE vinculada não é relevante para o técnico de campo.
         "contratos": list(contratos_por_pk.values()),
         "enderecos": enderecos_resp.results if enderecos_resp.success else [],
         "cpes": cpes,

@@ -36,19 +36,15 @@ async def listar_tickets(
     if client_pk is not None:
         # Usado pela tela de detalhe do cliente, para mostrar o histórico
         # de chamados junto com cadastro/contratos/endereços. "ticket.
-        # client_pk" (com prefixo), não "client_pk" puro — mesmo padrão de
-        # ambiguidade já confirmado em client_list ("client.client_pk") e
-        # addresses/list ("addresses.client_pk"): ticket_list também traz
-        # campos via join (client_complete_name, category_name, etc.), o
-        # que torna "client_pk" sozinho ambíguo. Bare "client_pk" aqui era
-        # o motivo dos chamados nunca aparecerem no detalhe do cliente.
+        # client_pk" (com prefixo) — ticket_list traz campos via join
+        # (client_complete_name, category_name etc.), o que torna
+        # "client_pk" sozinho ambíguo.
         where = where_eq("ticket.client_pk", client_pk)
     elif minhas and ctx.session.user_pk is not None:
-        # oper 21 = "IN" (confirmado no README do brbyteapi, exemplo de
-        # ticket_list) — precisa ser esse, não "=" (oper 5), já que o
-        # valor é uma LISTA de um item, não um escalar. Se user_pk ainda
-        # não foi resolvido (ver auth.py::_find_user_pk), cai para "todos"
-        # em vez de mostrar uma lista vazia enganosa.
+        # oper 21 = IN — necessário porque o valor é uma lista de um item,
+        # não um escalar (oper 5 = "="). Se user_pk ainda não foi
+        # resolvido (ver auth.py::_find_user_pk), cai para "todos" em vez
+        # de mostrar uma lista vazia enganosa.
         where = where_in("user_pk", [ctx.session.user_pk])
 
     resposta = await ctx.controllr.ticket_list(montar_corpo(where, action="list", start=start, limit=limit))
@@ -67,8 +63,7 @@ async def detalhe_ticket(ticket_pk: int, ctx: AuthContext = Depends(get_auth_con
 
 @router.get("/tickets/{ticket_pk}/mensagens")
 async def listar_mensagens_ticket(ticket_pk: int, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
-    # support_ctl/op/list não tem wrapper no brbyteapi (só op/create) —
-    # mesmo endpoint que o app cliente usa via listarOperacoesChamado.
+    # support_ctl/op/list não tem wrapper no brbyteapi (só op/create).
     resposta = await ctx.controllr.call_api_post(
         "/support_ctl/op/list", montar_corpo(where_eq("ticket_pk", ticket_pk))
     )
@@ -112,9 +107,8 @@ async def visualizar_anexo_ticket(
     ticket_pk: int, arquivo: str, ctx: AuthContext = Depends(get_auth_context)
 ) -> FastAPIResponse:
     # support_ctl/annex/view não tem wrapper no brbyteapi — proxy simples
-    # com o Basic Auth do técnico, mesmo padrão usado pelo app cliente via
-    # urlAnexoChamado (lá é cookie de sessão; aqui é o header Authorization
-    # que o resto deste backend já usa para toda chamada ao Controllr).
+    # com o Basic Auth do técnico, o mesmo header usado em toda chamada
+    # deste backend ao Controllr.
     url = f"{CONTROLLR_URL}/support_ctl/annex/view/{ticket_pk}/{arquivo}"
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers={"Authorization": ctx.session.basic_auth}) as resposta:

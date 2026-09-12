@@ -1,32 +1,26 @@
 """
 Financeiro do cliente — faturas (cobranças) e pagamentos em observação.
 
-"Pagamento em observação" é um recurso próprio do Controllr: uma anotação
-presa a uma fatura específica que suspende as consequências de um atraso
-(ex: bloqueio automático) até uma data ou por um período em dias, enquanto
-o cliente negocia o pagamento — visto ao vivo no painel real em
-Financeiro > Cobranças > Pagamentos em observação.
+"Pagamento em observação" é um recurso do Controllr: uma anotação presa
+a uma fatura que suspende as consequências de um atraso (ex: bloqueio
+automático) até uma data ou por um período em dias, enquanto o cliente
+negocia o pagamento (Financeiro > Cobranças > Pagamentos em observação
+no painel).
 
-O menu Financeiro aparece para todo técnico — quem decide se ele
-consegue mesmo ver algo é o Controllr: cada rota aqui repassa fielmente
-o 403 "Access Denied" que a chamada real devolve para quem não tem
-liberação de ACL (mesmo padrão já usado no fechamento de OS). Não há
-checagem prévia deste backend tentando adivinhar essa permissão — uma
-tentativa anterior de checar isso no login (uma chamada extra sondando
-o financeiro) se mostrou não confiável (ver histórico de commits) e foi
-removida: mais simples e correto deixar a própria chamada real decidir.
+O acesso é decidido pelo Controllr: cada rota repassa o 403 "Access
+Denied" que a chamada real devolve quando o técnico não tem liberação
+de ACL para o módulo financeiro (mesmo padrão do fechamento de OS).
 
-Nomes de campo confirmados ao vivo (não documentados na doc oficial),
-capturando os grids reais do painel Controllr via Ext.ComponentQuery:
+Nomes de campo não documentados na doc oficial:
 - `/invoice_ctl/invoice/list`: filtro por cliente é `client.client_pk`
-  (com prefixo — mesmo bug de coluna ambígua de outros endpoints, ver
+  (com prefixo — mesmo padrão de coluna ambígua de outros endpoints, ver
   CONTROLLR_API_NOTES.md seção 2). Cada fatura já traz `obs_pk`/
   `obs_date_end` quando está em observação, sem precisar de outra chamada.
-- `/invoice_ctl/observation/create`: campos do formulário real
-  ("Pagamentos em observação" > "Novo") são `client_pk`, `contract_pk`,
-  `invoice_pk`, `obs_release_type` (0 = Data de Validade, usa
-  `obs_date_end`; 1 = Período, usa `obs_period` em dias), `obs_status`
-  (1 = habilitado) e `obs_text` (a observação em si).
+- `/invoice_ctl/observation/create`: campos do formulário ("Pagamentos
+  em observação" > "Novo") são `client_pk`, `contract_pk`, `invoice_pk`,
+  `obs_release_type` (0 = Data de Validade, usa `obs_date_end`; 1 =
+  Período, usa `obs_period` em dias), `obs_status` (0 = habilitado,
+  qualquer outro valor = desabilitado) e `obs_text` (a observação).
 """
 
 from typing import Any
@@ -67,9 +61,9 @@ class ObservacaoPayload(BaseModel):
     contract_pk: int
     invoice_pk: int
     obs_text: str
-    # Exatamente um dos dois — o mesmo par "Liberar Tipo" do formulário
-    # real do painel (obs_release_date = "Data de Validade", obs_period_dias
-    # = "Período").
+    # Exatamente um dos dois — corresponde ao campo "Liberar Tipo" do
+    # painel (obs_release_date = "Data de Validade", obs_period_dias =
+    # "Período").
     obs_release_date: str | None = None
     obs_period_dias: int | None = None
 
@@ -88,11 +82,7 @@ async def criar_observacao(payload: ObservacaoPayload, ctx: AuthContext = Depend
         client_pk=payload.client_pk,
         contract_pk=payload.contract_pk,
         invoice_pk=payload.invoice_pk,
-        # Invertido do que o nome sugere: confirmado ao vivo que o filtro
-        # "Status: Habilitado" da própria grade "Pagamentos em observação"
-        # usa "obs_status = 0" (não 1) — 0 é habilitado, valor diferente
-        # de zero é desabilitado. Toda observação real já existente no
-        # sistema (inclusive criadas pelo próprio painel) tem obs_status=0.
+        # 0 = habilitado; qualquer outro valor = desabilitado.
         obs_status=0,
         obs_text=payload.obs_text,
         **campos_liberacao,

@@ -156,21 +156,19 @@ export interface ClienteDto {
   client_type?: number
 }
 
-// Vem de /aaa_ctl/cpe/list_combo SEM passar pelo modelo Python (o
+// Vem de /aaa_ctl/cpe/list_combo sem passar pelo modelo Python (o
 // backend não faz o cast — ver clientes.py) — os nomes de campo aqui são
-// os NOMES CRUS do Controllr (confirmados na doc oficial:
-// apidoc.brbyte.com/#post-/aaa_ctl/cpe/list_combo), não os nomes
-// "bonitos" que o pacote brbyteapi usaria se passasse pelo modelo
-// (ex: aqui é "cpe_username", não "username" — diferente de CpeDto,
-// que vem de /cpe/busca já cast pelo modelo, ver Conexao.tsx).
+// os nomes crus do Controllr (apidoc.brbyte.com/#post-/aaa_ctl/cpe/
+// list_combo), não os nomes que o pacote brbyteapi usaria se passasse
+// pelo modelo (ex: aqui é "cpe_username", não "username" — diferente de
+// CpeDto, que vem de /cpe/busca já cast pelo modelo, ver Conexao.tsx).
 export interface CpeComboDto {
   cpe_pk?: number
   client_pk?: number
   contract_pk?: number
-  // /aaa_ctl/cpe/list_combo só traz contract_pk (confirmado na doc
-  // oficial) — contract_number é completado pelo próprio backend
-  // cruzando com os contratos do cliente (ver clientes.py), não vem
-  // assim da API do Controllr.
+  // /aaa_ctl/cpe/list_combo só traz contract_pk — contract_number é
+  // completado pelo backend cruzando com os contratos do cliente (ver
+  // clientes.py), não vem assim da API do Controllr.
   contract_number?: number
   cpe_circuit_id?: string
   client_complete_name?: string
@@ -200,13 +198,12 @@ export interface ContratoDto {
   contract_pay_day?: number
   contract_date_activation?: string
   client_pk?: number
-  // Assinatura do contrato (confirmado na doc oficial,
-  // apidoc.brbyte.com/#post-/controllrctl/contract/list): sign_date vem
-  // vazio/null enquanto o contrato não foi assinado — é o indicador de
-  // status. sign_doc_link é o link para ver/assinar o documento. Os demais
-  // contract_sign_* (code/info/draw/ip/hash — vistos numa captura real,
-  // mas sem descrição na doc) chegam soltos via o índice abaixo e são
-  // mostrados de forma genérica (ver DetalheCliente.tsx).
+  // Assinatura do contrato (apidoc.brbyte.com/#post-/controllrctl/
+  // contract/list): sign_date vem vazio/null enquanto o contrato não foi
+  // assinado — é o indicador de status. sign_doc_link é o link para
+  // ver/assinar o documento. Os demais contract_sign_* (code/info/draw/
+  // ip/hash, sem descrição na doc) chegam soltos via o índice abaixo e
+  // são mostrados de forma genérica (ver DetalheCliente.tsx).
   contract_sign_date?: string
   contract_sign_doc_link?: string
   itens?: ItemContratoDto[]
@@ -224,9 +221,9 @@ export interface EnderecoDto {
   address_state?: string
   address_completation?: string
   address_default?: number
-  // Código SIAFI do município — obrigatório para o Controllr aceitar criar/
-  // atualizar o endereço (confirmado na doc oficial), mas não é algo que
-  // o técnico deva digitar: sempre reenviar o valor já carregado.
+  // Código SIAFI do município — obrigatório para o Controllr aceitar
+  // criar/atualizar o endereço; não é algo que o técnico digite, sempre
+  // reenviado com o valor já carregado.
   address_siafi?: number
   address_latitude?: string
   address_longitude?: string
@@ -279,16 +276,16 @@ export function buscarDetalheCliente(clientPk: number): Promise<DetalheClienteRe
   return get<DetalheClienteResponse>(`clientes/${clientPk}`)
 }
 
-// Reenvia o registro inteiro (não só phone_number) — confirmado ao vivo
-// que o Controllr espera o telefone completo no update, mesmo para trocar
-// só o número (ver backend/app/routers/telefones.py).
+// Reenvia o registro inteiro (não só phone_number) — o Controllr exige o
+// telefone completo no update, mesmo para trocar só o número (ver
+// backend/app/routers/telefones.py).
 export function atualizarTelefone(phonePk: number, dados: TelefoneDto): Promise<{ success: boolean; results: unknown }> {
   return put(`telefones/${phonePk}`, dados)
 }
 
 // Só identificação e número — o backend preenche o resto (status,
-// válido, SVA, tipo de contato) com os mesmos valores padrão de um
-// telefone novo no painel (confirmado ao vivo, ver telefones.py).
+// válido, SVA, tipo de contato) com os valores padrão de um telefone
+// novo no painel (ver telefones.py).
 export function criarTelefone(dados: {
   client_pk: number
   phone_identification: string
@@ -303,10 +300,9 @@ export function criarTelefone(dados: {
 
 export interface EnderecoPayload {
   // client_pk, address_zipcode, address_siafi, address e address_default
-  // são obrigatórios para o Controllr (confirmado na doc oficial) — ao
-  // editar um endereço já existente, sempre reenviar os valores já
-  // carregados (ver ModalEditarEndereco em DetalheCliente.tsx), nunca
-  // pedir isso de novo para o técnico.
+  // são obrigatórios para o Controllr — ao editar um endereço existente,
+  // sempre reenviar os valores já carregados (ver ModalEditarEndereco em
+  // DetalheCliente.tsx).
   client_pk?: number
   address?: string
   address_number?: string
@@ -353,10 +349,9 @@ export interface CpeDto {
   pk?: number
   username?: string
   // Senha PPPoE real (cpe_password na API) — é o que o cliente usa para
-  // conectar. access_login/access_password é uma credencial DIFERENTE
-  // (acesso administrativo ao próprio roteador/CPE), confirmado na doc
-  // oficial (apidoc.brbyte.com/#post-/aaa_ctl/cpe/list) — os dois
-  // existem separados, não são a mesma coisa com nomes diferentes.
+  // conectar. access_login/access_password é uma credencial diferente
+  // (acesso administrativo ao próprio roteador/CPE), apidoc.brbyte.com/
+  // #post-/aaa_ctl/cpe/list — os dois campos existem separados.
   password?: string
   access_login?: string
   access_password?: string
@@ -388,10 +383,9 @@ export interface CpeDto {
   dp_port?: number
   obs?: string
   // Criptografia do Wi-Fi do próprio CPE/roteador (cpe_wifi_encryption_type/
-  // password na API — confirmado na doc oficial, apidoc.brbyte.com/#post-
-  // /aaa_ctl/cpe/update). Não há enum documentado para o "type" (a doc só diz
-  // que é number), por isso o app não tenta traduzir o código para um nome
-  // de protocolo — mostra e edita o valor cru que o sistema fornecer.
+  // password na API, apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). Sem
+  // enum documentado para o "type" (a doc só diz que é number) — o valor
+  // é mostrado e editado cru, sem tradução para nome de protocolo.
   wifi_encryption_type?: number
   wifi_encryption_password?: string
 }
@@ -416,11 +410,9 @@ export function buscarSessaoOnlineCpe(cpePk: number): Promise<SessaoOnlineRespon
   return get<SessaoOnlineResponse>(`cpe/${cpePk}/sessao`)
 }
 
-// Campos confirmados ao vivo capturando uma resposta real de
-// /aaa_ctl/session_history/list no painel Controllr ("Histórico - Acesso"
-// de um CPE) — mesmo quirk de unidade já visto em sessão online: rx/tx
-// byte vêm em KB, não em bytes (confirmado batendo a conta contra o "RX
-// Byte"/"TX Byte" mostrado na grade real do painel).
+// Campos de /aaa_ctl/session_history/list (Histórico - Acesso de um CPE
+// no painel). rx/tx byte vêm em KB, não em bytes — mesmo padrão de
+// unidade da sessão online.
 export interface SessaoHistoricoDto {
   session_date_start?: string
   session_date_close?: string
@@ -434,7 +426,7 @@ export interface SessaoHistoricoDto {
   session_acct_time?: number
   // Acct-Terminate-Cause (RFC 2866) — 0 = sessão sem causa registrada
   // (ainda ativa ou não informado pelo NAS); os demais códigos seguem o
-  // padrão RADIUS (2 = Lost Carrier, confirmado ao vivo no painel).
+  // padrão RADIUS (2 = Lost Carrier).
   session_terminate_cause?: number
   session_nas_port_id?: string
 }
@@ -484,8 +476,7 @@ export interface ListarCpeOfflineResponse {
 }
 
 // Clientes com contrato ativo e CPE habilitado, mas sem sessão RADIUS
-// ativa agora — mesmo filtro confirmado ao vivo pelo usuário direto no
-// painel Controllr (ver backend/app/routers/conexao.py::listar_cpe_offline).
+// ativa agora (ver backend/app/routers/conexao.py::listar_cpe_offline).
 export function listarCpeOffline(opcoes: { start?: number; limit?: number } = {}): Promise<ListarCpeOfflineResponse> {
   return get<ListarCpeOfflineResponse>('cpe/offline', { start: opcoes.start ?? 0, limit: opcoes.limit ?? 20 })
 }
@@ -512,8 +503,7 @@ export interface OnuDto {
   state?: string
   cmd_status?: number
   // Contador em ms desde a última coleta feita pelo Controllr — zera só
-  // quando alguém clica em "Atualizar agora" (confirmado pelo usuário;
-  // ver CONTROLLR_API_NOTES.md).
+  // quando alguém clica em "Atualizar agora" (ver CONTROLLR_API_NOTES.md).
   info_timer?: number
   omddm_rx_power?: number
   omddm_tx_power?: number
@@ -535,24 +525,21 @@ export interface OnuDto {
   id?: number
   cpe_pk?: number
   cpe_v4_ip_last?: string
-  // Porta da CTO (mesmo campo cpe_dp_port já usado no CPE — confirmado
-  // no modelo vendorizado; não está na doc oficial de /fiber_ctl/onu/list,
-  // mas o backend já expõe corretamente).
+  // Porta da CTO (mesmo campo cpe_dp_port já usado no CPE) — não está na
+  // doc oficial de /fiber_ctl/onu/list.
   cpe_dp_port?: number
   client_name?: string
   client_pk?: number
   contract_pk?: number
   contract_number?: number
-  // Acesso PPPoE configurado na própria ONU (não no CPE) — confirmado
-  // populado em produção via /fiber_ctl/onu/list.
+  // Acesso PPPoE configurado na própria ONU (não no CPE), via
+  // /fiber_ctl/onu/list.
   wancfg_pppoe_username?: string
   wancfg_pppoe_passwd?: string
   // Resto da config de WAN da ONU (Vlan, Cos, Template etc.) — o técnico
-  // nunca edita isso diretamente, mas precisa ser reenviado ao associar
-  // um cliente (ver associarClienteOnu), senão /fiber_ctl/onu/apply_wan
-  // zeraria a configuração de rede da própria ONU (mesmo endpoint exige
-  // o registro completo, confirmado lendo o handler do botão "Salvar" da
-  // tela "Informações" do painel).
+  // não edita isso diretamente, mas precisa ser reenviado ao associar um
+  // cliente (ver associarClienteOnu): /fiber_ctl/onu/apply_wan exige o
+  // registro completo, senão zeraria a configuração de rede da ONU.
   wancfg_pppoe_svcname?: string
   wancfg_conntype?: number
   wan_tpl_pk?: number
@@ -566,8 +553,8 @@ export interface OnuDto {
   wancfg_scos?: number
   wancfg_pon_profile?: string
   wancfg_local_ip?: string
-  // Wi-Fi e acesso web da própria ONU — confirmados na doc oficial
-  // (apidoc.brbyte.com/#post-/fiber_ctl/onu/list).
+  // Wi-Fi e acesso web da própria ONU (apidoc.brbyte.com/#post-
+  // /fiber_ctl/onu/list).
   wificfg_name?: string
   wificfg_password?: string
   webcfg_login?: string
@@ -668,7 +655,7 @@ export interface TicketDto {
   ticket_date_close?: string
   category_name?: string
   contract_number?: number
-  // Confirmados na doc oficial (apidoc.brbyte.com/#post-/support_ctl/ticket/list)
+  // apidoc.brbyte.com/#post-/support_ctl/ticket/list
   client_pk?: number
   client_complete_name?: string
   address_pk?: number
@@ -703,13 +690,12 @@ export interface OperacaoDto {
   op_type?: number
   op_code?: number
   op_client?: boolean
-  // Confirmados capturando ao vivo — o mesmo /support_ctl/op/list usado
-  // para o chat também traz os eventos de responder/iniciar/finalizar/
-  // desfazer da OS (op_os_pk aponta para o op_pk do registro raiz da OS).
-  // Um "set" grava esse evento com a data preenchida; um "undo" grava
-  // outro evento do MESMO op_type com a data nula — por isso para saber
-  // o estágio atual é preciso olhar o evento mais recente de cada tipo,
-  // não um campo fixo (ver DetalheOrdemServico.tsx).
+  // O mesmo /support_ctl/op/list usado para o chat também traz os
+  // eventos de responder/iniciar/finalizar/desfazer da OS (op_os_pk
+  // aponta para o op_pk do registro raiz da OS). Um "set" grava o evento
+  // com a data preenchida; um "undo" grava outro evento do mesmo
+  // op_type com a data nula — o estágio atual vem do evento mais
+  // recente de cada tipo, não de um campo fixo (ver DetalheOrdemServico.tsx).
   op_os_pk?: number
   op_date_answer?: string
   op_date_start?: string
@@ -731,19 +717,17 @@ export async function enviarAnexoTicket(ticketPk: number, arquivo: File): Promis
 }
 
 // ---------------------------------------------------------------------
-// Ordem de Serviço (OS) — recurso PRÓPRIO do Controllr, diferente de
-// Ticket (confirmado na doc oficial, tag "Ordem de Serviço"): é a OS,
-// não o ticket, que representa o trabalho de campo agendado/atribuído
-// ao técnico (op_date_sched, user_pk) e que de fato se fecha/cancela/
-// reabre via /os/*.
+// Ordem de Serviço (OS) — recurso próprio do Controllr, diferente de
+// Ticket (tag "Ordem de Serviço" na doc oficial): é a OS, não o ticket,
+// que representa o trabalho de campo agendado/atribuído ao técnico
+// (op_date_sched, user_pk) e que se fecha/cancela/reabre via /os/*.
 // ---------------------------------------------------------------------
 
 export interface OrdemServicoDto {
   op_pk?: number
   op_os_pk?: number
-  // Número legível da OS (confirmado na doc oficial e visto ao vivo, ex:
-  // "20260528000013") — diferente de op_pk (id interno) e de
-  // ticket_protocol (número do CHAMADO, outra coisa).
+  // Número legível da OS (ex: "20260528000013") — diferente de op_pk (id
+  // interno) e de ticket_protocol (número do chamado, outra coisa).
   op_number?: string
   ticket_pk?: number
   op_date_sched?: string
@@ -763,15 +747,15 @@ export interface OrdemServicoDto {
   staff_pk?: number
   task_pk?: number
   // Nome da tarefa (ex: "Instalação a Cabo", "Desinstalação Equipamento",
-  // "Viabilidade") — confirmado ao vivo em /support_ctl/os/list, não
+  // "Viabilidade"), retornado por /support_ctl/os/list mas não
   // documentado na doc oficial. É o tipo de serviço definido pelo
   // escritório ao agendar a OS, diferente de op_desc (nota do técnico,
   // preenchida só ao confirmar uma etapa) e de ticket_title (assunto do
   // chamado aberto pelo cliente).
   task_name?: string
-  // Confirmados na doc oficial (apidoc.brbyte.com/#post-/support_ctl/os/list)
-  // — client_pk/contrato/endereço vêm prontos no próprio registro da OS,
-  // sem precisar buscar o cliente à parte para mostrar isso na tela da OS.
+  // apidoc.brbyte.com/#post-/support_ctl/os/list — client_pk/contrato/
+  // endereço vêm prontos no próprio registro da OS, sem precisar buscar
+  // o cliente à parte para mostrar isso na tela da OS.
   client_pk?: number
   client_complete_name?: string
   contract_pk?: number
@@ -805,11 +789,10 @@ export function listarOrdensServico(
   })
 }
 
-// Os 4 estágios reais de uma OS (confirmado com o dono da operação):
-// Agendada (feita pelo escritório) -> Respondida -> Iniciada ->
-// Finalizada, todas pelo técnico. Fechar é etapa à parte, só do
-// escritório (ACL do Controllr não libera para o técnico) — por isso não
-// tem função de fechar aqui, só as 3 de progresso do técnico.
+// Os 4 estágios de uma OS: Agendada (feita pelo escritório) -> Respondida
+// -> Iniciada -> Finalizada, as 3 últimas pelo técnico. Fechar é etapa à
+// parte, só do escritório (ACL do Controllr não libera para o técnico) —
+// por isso só existem as 3 funções de progresso do técnico aqui.
 export function responderOrdemServico(
   ticketPk: number,
   parametros: { opOsPk: number; opDesc?: string },
@@ -831,8 +814,8 @@ export function finalizarOrdemServico(
   return post(`os/${ticketPk}/finalizar`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
 }
 
-// Desfazer exige op_desc (confirmado sondando o endpoint) — sem opcional,
-// diferente das funções de marcar acima.
+// Desfazer exige op_desc — sem opcional, diferente das funções de marcar
+// acima.
 export function desfazerRespostaOrdemServico(
   ticketPk: number,
   parametros: { opOsPk: number; opDesc: string },
@@ -869,12 +852,10 @@ export function reabrirOrdemServico(
 }
 
 // ---------------------------------------------------------------------
-// Financeiro — faturas (cobranças) e pagamentos em observação. Tela só
-// aparece para o técnico com liberação de ACL (ver TecnicoDto.
-// financeiro_liberado, resolvido no login) — mesmo assim toda rota do
-// backend confere de novo e repassa um 403 se a liberação não valer mais.
-// Campos crus, confirmados ao vivo em /invoice_ctl/invoice/list (ver
-// backend/app/routers/financeiro.py para a fonte de cada um).
+// Financeiro — faturas (cobranças) e pagamentos em observação. O acesso
+// é decidido pelo Controllr: cada rota do backend repassa um 403 quando
+// o técnico não tem liberação de ACL para o módulo. Campos crus de
+// /invoice_ctl/invoice/list (ver backend/app/routers/financeiro.py).
 // ---------------------------------------------------------------------
 
 export interface FaturaDto {

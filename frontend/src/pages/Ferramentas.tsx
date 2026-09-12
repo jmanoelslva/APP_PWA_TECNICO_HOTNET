@@ -27,9 +27,9 @@ const FERRAMENTAS: Ferramenta[] = [
   { nome: 'Fast.com', descricao: 'Teste de velocidade da Netflix', url: 'https://fast.com/', Icone: MdBolt },
   { nome: 'ISP Focus (IPv6)', descricao: 'tcp6.ispfocus.net.br', url: 'https://tcp6.ispfocus.net.br/', Icone: MdLooks6 },
   { nome: 'ISP Focus (IPv4)', descricao: 'tcp4.ispfocus.net.br', url: 'https://tcp4.ispfocus.net.br/', Icone: MdLooks4 },
-  // Mostra o IP público de quem abrir a página — útil pro técnico
+  // Mostra o IP público de quem abrir a página — útil para o técnico
   // conferir no Wi-Fi do próprio cliente se ele está atrás de CGNAT/IP
-  // duplo (pedido explícito do usuário).
+  // duplo.
   { nome: 'Qual é meu IP', descricao: 'whatismyip.com — IP público de quem acessar', url: 'https://www.whatismyip.com/', Icone: MdPublic },
   {
     nome: 'Teste de Bufferbloat',

@@ -51,8 +51,8 @@ function nivelSinalOlt(rx: number | undefined): NivelSinal {
 }
 
 // onu_info_timer — contador em ms desde a última coleta feita pelo
-// Controllr (confirmado pelo usuário); zera só quando alguém clica em
-// "Atualizar agora" (ver CONTROLLR_API_NOTES.md).
+// Controllr; zera só quando alguém clica em "Atualizar agora" (ver
+// CONTROLLR_API_NOTES.md).
 function formatarTempoDesdeColeta(ms: number | undefined): string | null {
   if (ms == null) return null
   const segundosTotais = Math.floor(ms / 1000)
@@ -97,17 +97,14 @@ export default function OnuStatus() {
   const [onu, setOnu] = useState<OnuDto | null>(null)
   const [atualizando, setAtualizando] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
-  // Reiniciar/Remover — achados lendo (sem disparar de verdade) o handler
-  // real dos ícones de ação da tela "ONU - Registrado" do painel via
-  // Ext.ComponentQuery; nunca documentados na doc oficial. Confirmação em
-  // 2 passos sempre (mesmo padrão de "Fibra Onu" do próprio painel), já
-  // que os dois afetam a conexão do cliente na hora.
+  // Reiniciar/Remover — endpoints não documentados na doc oficial.
+  // Confirmação em 2 passos sempre, já que os dois afetam a conexão do
+  // cliente na hora.
   const [confirmandoAcao, setConfirmandoAcao] = useState<'reiniciar' | 'remover' | null>(null)
   const [executandoAcao, setExecutandoAcao] = useState(false)
   const [registrandoCliente, setRegistrandoCliente] = useState(false)
-  // Renomear — mesmo endpoint achado lendo (sem disparar de verdade) o
-  // handler do lápis "Renomear ONU" do painel (ver CONTROLLR_API_NOTES.md):
-  // POST /fiber_ctl/onu/apply_rename com os identificadores OSPO + onu_name.
+  // Renomear (ver CONTROLLR_API_NOTES.md): POST /fiber_ctl/onu/apply_rename
+  // com os identificadores OSPO + onu_name.
   const [renomeando, setRenomeando] = useState(false)
   const [novoNome, setNovoNome] = useState('')
   const [salvandoNome, setSalvandoNome] = useState(false)
@@ -116,8 +113,7 @@ export default function OnuStatus() {
   // barras). Ver LeitorCodigoBarras.tsx.
   const [lendoCodigo, setLendoCodigo] = useState(false)
   // Combobox único — busca por serial (/fiber_ctl/onu/list no formato
-  // "wizard", confirmado ao vivo que filtra por PREFIXO: "ZTEG" já
-  // filtrou de 2550 para 764 resultados) e por usuário PPPoE (/cpe/busca,
+  // "wizard", que filtra por prefixo) e por usuário PPPoE (/cpe/busca,
   // que suporta ILIKE parcial) em paralelo, e mistura os dois num só
   // dropdown — o técnico não precisa saber de antemão se tem o serial ou
   // o usuário em mãos. Selecionar um item de serial já é a própria ONU;
@@ -607,9 +603,8 @@ export default function OnuStatus() {
               <strong>{onu.state ?? '—'}</strong>
             </div>
             <div className="onu-linha">
-              {/* onu_distance vem em KM, não metros (confirmado: exemplo
-                  "0.931" na doc oficial só faz sentido para alcance de
-                  GPON como km — 0.931 m seria o cliente colado na OLT). */}
+              {/* onu_distance vem em km, não metros (exemplo "0.931" da doc
+                  oficial só faz sentido como km para alcance de GPON). */}
               <span>Distância</span>
               <strong>{onu.distance != null ? `${onu.distance} km` : '—'}</strong>
             </div>
@@ -750,8 +745,8 @@ function ModalRegistrarCliente({
   const [buscando, setBuscando] = useState(false)
   const [selecionado, setSelecionado] = useState<BuscaClienteResultado | null>(null)
   // Depois de escolher o cliente, o técnico ainda escolhe qual PPPoE
-  // vincular (pedido explícito — o cliente pode ter mais de uma conexão
-  // cadastrada, e nunca deve ser presumido automaticamente qual delas).
+  // vincular — o cliente pode ter mais de uma conexão cadastrada, e não
+  // deve ser presumido automaticamente qual delas.
   const [cpeEscolhida, setCpeEscolhida] = useState<CpeComboDto | null>(null)
   const [associando, setAssociando] = useState(false)
   const { toast } = useToast()
@@ -783,10 +778,10 @@ function ModalRegistrarCliente({
   }, [busca])
 
   async function confirmar() {
-    // onu.pk (onu_pk) vem 0 pra ONU sem cliente vinculado — exatamente o
-    // caso mais comum de usar este modal — válido aqui, não "faltando"
-    // (confirmado ao vivo: uma ONU recém-instalada tem pk=0 até ser
-    // associada a um cliente pela primeira vez).
+    // onu.pk (onu_pk) vem 0 para ONU sem cliente vinculado — o caso mais
+    // comum de usar este modal — válido aqui, não "faltando": uma ONU
+    // recém-instalada tem pk=0 até ser associada a um cliente pela
+    // primeira vez.
     if (
       !selecionado ||
       !cpeEscolhida?.cpe_pk ||

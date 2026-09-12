@@ -9,14 +9,10 @@ class Response(BaseModel, Generic[T]):
     results : list[T]               = Field(default_factory=lambda:[])
     status  : int
     success : bool
-    # Total de registros no SERVIDOR (contando todas as páginas), quando o
-    # Controllr informa isso no próprio corpo (chave "total" do JSON —
-    # confirmado ao vivo: é o que alimenta o rodapé "1 à 15 de 74" das
-    # grades reais do painel, não o tamanho da página atual). None quando
-    # o endpoint não manda esse campo. Antes esse valor era descartado e
-    # "total" virava sempre len(results) — quebrava paginação de verdade
-    # ("carregar mais" nunca aparecia depois da primeira página, porque
-    # total == tamanho da página == len(results) sempre).
+    # Total de registros no servidor, somando todas as páginas — vem do
+    # campo "total" do corpo da resposta, quando o endpoint o informa.
+    # None quando o endpoint não retorna esse campo; nesse caso "total"
+    # (abaixo) cai para len(results).
     total_servidor: int | None = None
 
     @computed_field

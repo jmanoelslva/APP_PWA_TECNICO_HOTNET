@@ -10,18 +10,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Adicionado
 
 - Tela "Clientes Offline": lista clientes com contrato ativo e CPE
-  habilitado que estão sem sessão no momento, para o técnico identificar
-  quedas sem precisar checar cliente por cliente. Acessível pelo menu
-  principal, com atalho direto para a tela de Conexão de cada um. Campo
-  de busca filtra a lista por nome, usuário PPPoE, contrato ou CTO.
+  habilitado sem sessão ativa no momento. Acessível pelo menu principal,
+  com atalho direto para a tela de Conexão de cada cliente. Campo de
+  busca filtra a lista por nome, usuário PPPoE, contrato ou CTO.
 
 ### Corrigido
 
-- `total` das listagens do backend (`brbyteapi`) sempre refletia só o
-  tamanho da página atual, não o total real no servidor — a tela
-  "Clientes Offline" mostrava 20 quando o painel mostrava 105.
-  Corrigido para usar o `total` que o próprio Controllr já manda no
-  corpo da resposta.
+- `total` das listagens do backend (`brbyteapi`) refletia o tamanho da
+  página atual em vez do total real no servidor. Corrigido para usar o
+  `total` retornado pelo próprio Controllr no corpo da resposta.
 
 ## [1.1.0] - 2026-09-11
 
@@ -29,31 +26,24 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - Tela de Financeiro: faturas (cobranças) do cliente, com status (paga,
   em aberto, atrasada) e indicação de pagamentos em observação, além de
-  ação para registrar uma nova observação numa fatura em aberto. O menu
-  aparece para todo técnico; quem decide se os dados carregam é a
-  própria liberação de ACL do técnico no Controllr, na hora do acesso —
-  sem liberação, a tela mostra "sem permissão" em vez dos dados.
+  ação para registrar uma nova observação numa fatura em aberto. O
+  acesso é controlado pela liberação de ACL do técnico no Controllr.
 
 ### Alterado
 
-- Tela de detalhe do cliente: "Financeiro" virou uma seção própria
+- Tela de detalhe do cliente: "Financeiro" passa a ser uma seção própria
   (como Telefones, Endereços etc.), com o botão "Cobranças" abaixo do
-  título levando à tela de faturas — fora do Contrato, sempre visível.
-  O atalho "Conexão" foi removido de dentro do Contrato (já existe por
-  CPE, na seção "Conexões"). Todas as ações de navegação da tela
-  (Cobranças, Conexão, ONU, Ver no Google Maps, Adicionar telefone, Ver
-  contrato assinado) agora usam o mesmo estilo de botão colorido por
-  área já usado na tela de Conexão, em vez do chip cinza neutro.
+  título levando à tela de faturas. O atalho "Conexão" foi removido de
+  dentro do Contrato (mantido por CPE, na seção "Conexões"). As ações de
+  navegação da tela (Cobranças, Conexão, ONU, Ver no Google Maps,
+  Adicionar telefone, Ver contrato assinado) usam o mesmo estilo de
+  botão colorido por área da tela de Conexão, em vez do chip neutro.
 
 ### Corrigido
 
-- Observação de pagamento criada pelo app nascia desabilitada — o campo
-  `obs_status` do Controllr é invertido do que o nome sugere (`0` =
-  habilitado, confirmado ao vivo comparando com o filtro "Status:
-  Habilitado" da própria grade "Pagamentos em observação").
-- Botão "Financeiro" na tela do cliente estava solto, fora do padrão das
-  demais ações da tela — reorganizado até virar a seção própria descrita
-  acima.
+- Observação de pagamento criada pelo app nascia desabilitada. O campo
+  `obs_status` do Controllr usa `0` para habilitado (valor diferente de
+  zero é desabilitado).
 
 ## [1.0.0] - 2026-09-10
 

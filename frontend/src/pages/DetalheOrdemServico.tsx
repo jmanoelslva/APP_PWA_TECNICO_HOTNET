@@ -42,22 +42,20 @@ import {
 import { extrairTelefones, formatarDataHora, formatarStatusContrato } from '../utils/formatacao'
 import './DetalheOrdemServico.css'
 
-// Os 4 estágios reais de uma OS (confirmado com o dono da operação e
-// capturado ao vivo do painel do Controllr — não documentado
-// oficialmente): Agendada (feita pelo escritório, já vem pronta) ->
-// Respondida -> Iniciada -> Finalizada, as 3 últimas marcadas (e
-// desmarcadas) pelo técnico aqui. Fechar é etapa À PARTE, só do
-// escritório (ACL do Controllr não libera para o técnico) — por isso não
-// tem botão de fechar nesta tela.
+// Os 4 estágios de uma OS (não documentado oficialmente): Agendada
+// (feita pelo escritório, já vem pronta) -> Respondida -> Iniciada ->
+// Finalizada, as 3 últimas marcadas (e desmarcadas) pelo técnico aqui.
+// Fechar é etapa à parte, só do escritório (ACL do Controllr não libera
+// para o técnico) — por isso não há botão de fechar nesta tela.
 //
-// IMPORTANTE: os campos op_date_answer/start/finish do registro RAIZ da
-// OS (osAtual) ficam SEMPRE nulos — confirmado ao vivo. Cada clique em
-// marcar/desfazer cria um novo registro de EVENTO em /support_ctl/op/
-// list (mesmo endpoint do chat, ver listarMensagensTicket) vinculado à
-// OS via op_os_pk = op_pk da raiz. Um "marcar" grava esse evento com a
-// data preenchida; um "desfazer" grava outro evento do MESMO op_type
-// com a data nula. Por isso o estágio de cada etapa é calculado a
-// partir do evento mais recente daquele tipo, não de um campo fixo.
+// Os campos op_date_answer/start/finish do registro raiz da OS (osAtual)
+// ficam sempre nulos. Cada clique em marcar/desfazer cria um novo
+// registro de evento em /support_ctl/op/list (mesmo endpoint do chat,
+// ver listarMensagensTicket) vinculado à OS via op_os_pk = op_pk da
+// raiz. Um "marcar" grava esse evento com a data preenchida; um
+// "desfazer" grava outro evento do mesmo op_type com a data nula. O
+// estágio de cada etapa é calculado a partir do evento mais recente
+// daquele tipo, não de um campo fixo.
 type Etapa = 'responder' | 'iniciar' | 'finalizar'
 
 interface ConfigEtapa {
@@ -124,8 +122,8 @@ function etapaConcluida(eventos: OperacaoDto[], osRaizPk: number, etapa: ConfigE
 }
 
 /**
- * As 3 etapas do técnico seguem sequência obrigatória, nos dois sentidos
- * (pedido explícito): não dá para pular direto para "Finalizada" sem
+ * As 3 etapas do técnico seguem sequência obrigatória, nos dois sentidos:
+ * não dá para pular direto para "Finalizada" sem
  * "Respondida"/"Iniciada" antes, e para desfazer uma etapa é preciso
  * desfazer as posteriores primeiro (não dá para desfazer "Respondida"
  * com "Iniciada" ainda de pé). Cada etapa só tem UMA ação disponível
@@ -259,12 +257,10 @@ export default function DetalheOrdemServico() {
   async function confirmarEtapa() {
     const indice = ETAPAS.findIndex((e) => e.chave === acaoConfirmando?.etapa)
     const etapa = ETAPAS[indice]
-    // O parâmetro que a ação espera ("op_os_pk") é, na real, o PRÓPRIO
-    // op_pk da OS raiz (agendada pelo escritório) — confirmado capturando
-    // o clique real no painel do Controllr: o corpo enviado foi
-    // op_os_pk=4227, que era o op_pk do registro agendado (cujo campo
-    // op_os_pk vem null, já que ele não referencia "outra" OS, é a
-    // própria — só os EVENTOS que ela gera têm op_os_pk preenchido).
+    // O parâmetro que a ação espera ("op_os_pk") é o próprio op_pk da OS
+    // raiz (agendada pelo escritório) — o campo op_os_pk do registro
+    // raiz vem null, já que ele não referencia "outra" OS, é a própria;
+    // só os eventos que ela gera têm op_os_pk preenchido.
     if (!etapa || !acaoConfirmando || !osAtual?.op_pk) {
       toast('Nenhuma OS aberta encontrada para este chamado.')
       setAcaoConfirmando(null)
@@ -289,9 +285,9 @@ export default function DetalheOrdemServico() {
       return
     }
     const observacao = observacaoEtapa.trim()
-    // Só "Finalizar" exige descrição (pedido explícito) — "Responder" e
-    // "Iniciar" ficam com o campo opcional, para o técnico usar se quiser.
-    // Desfazer nunca exige (o motivo de desfazer é sempre opcional).
+    // Só "Finalizar" exige descrição — "Responder" e "Iniciar" ficam com
+    // o campo opcional, para o técnico usar se quiser. Desfazer nunca
+    // exige (o motivo de desfazer é sempre opcional).
     const exigeObservacao = etapa.chave === 'finalizar' && !acaoConfirmando.desfazer
     if (exigeObservacao && !observacao) {
       toast(`Descreva o que foi feito antes de confirmar "${etapa.rotulo}".`)
@@ -556,10 +552,10 @@ export default function DetalheOrdemServico() {
                 const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
                 const concluida = concluidas[indice]
                 const situacao = situacaoEtapa(concluidas, indice)
-                // Texto explica POR QUE o botão está bloqueado, em vez de
-                // só desabilitar sem dizer nada — pedido explícito de
-                // deixar claro que a sequência é obrigatória nos dois
-                // sentidos (marcar em ordem, desfazer em ordem reversa).
+                // Texto explica por que o botão está bloqueado, em vez de
+                // só desabilitar sem dizer nada: a sequência é obrigatória
+                // nos dois sentidos (marcar em ordem, desfazer em ordem
+                // reversa).
                 let subtitulo: string
                 if (concluida && evento) {
                   subtitulo = formatarDataHora(evento[etapa.campoData])

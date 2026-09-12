@@ -2,11 +2,9 @@ import { dataParaFormatoServidor } from './formatacao'
 
 /**
  * Presets de período para o histórico de conexão (Conexao.tsx). Cálculo
- * de datas replicado do próprio painel Controllr — confirmado ao vivo
- * disparando cada preset no botão "Data Fim" da tela "Histórico -
- * Acesso" e lendo o filtro real resultante (ver CONTROLLR_API_NOTES.md,
- * seção 7.5): semana vai de domingo a sábado; mês/ano seguem o
- * calendário normal.
+ * de datas replica o do próprio painel Controllr (ver
+ * CONTROLLR_API_NOTES.md, seção 7.5): semana vai de domingo a sábado;
+ * mês/ano seguem o calendário normal.
  */
 export type PeriodoPreset =
   | 'hoje'
@@ -45,7 +43,7 @@ function fimDia(data: Date): Date {
   return r
 }
 
-// Semana domingo-sábado — confirmado ao vivo (ver CONTROLLR_API_NOTES.md).
+// Semana domingo-sábado (ver CONTROLLR_API_NOTES.md).
 function inicioSemana(data: Date): Date {
   const r = inicioDia(data)
   r.setDate(r.getDate() - r.getDay())

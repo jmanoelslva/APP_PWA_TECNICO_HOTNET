@@ -12,12 +12,10 @@ router = APIRouter(tags=["enderecos"])
 
 class EnderecoPayload(BaseModel):
     # client_pk, address_zipcode, address_siafi, address e address_default
-    # são obrigatórios para criar/atualizar no Controllr de verdade
-    # (confirmado na doc oficial, apidoc.brbyte.com/#post-/controllrctl/addresses/update
-    # e /create) — sem "address_siafi" especificamente a chamada falha;
-    # como o técnico normalmente está EDITANDO um endereço já existente,
-    # o frontend deve sempre reenviar o valor já carregado (não editável
-    # na tela), não pedir isso de novo para o técnico.
+    # são obrigatórios em /controllrctl/addresses/update e /create (doc
+    # oficial); sem "address_siafi" a chamada falha. Ao editar um endereço
+    # existente, o frontend reenvia o valor já carregado (campo não
+    # editável na tela).
     client_pk: int | None = None
     address: str | None = None
     address_number: str | None = None
@@ -29,10 +27,10 @@ class EnderecoPayload(BaseModel):
     address_default: int | None = None
     address_completation: str | None = None
     address_identification: str | None = None
-    # Localização do PRÓPRIO endereço (diferente de cpe_latitude/
-    # cpe_longitude, que é a localização do equipamento — ver
-    # atualizar_localizacao_cpe abaixo). Campos opcionais confirmados em
-    # /controllrctl/addresses/update na doc oficial.
+    # Localização do endereço em si (diferente de cpe_latitude/
+    # cpe_longitude, a localização do equipamento — ver
+    # atualizar_localizacao_cpe abaixo). Campos opcionais em
+    # /controllrctl/addresses/update.
     address_latitude: str | None = None
     address_longitude: str | None = None
 
@@ -77,11 +75,9 @@ class LocalizacaoPayload(BaseModel):
 async def atualizar_localizacao_cpe(
     cpe_pk: int, payload: LocalizacaoPayload, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
-    # Campo certo é cpe_latitude/cpe_longitude — confirmado na doc oficial
-    # (apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). "address_latitude"/
-    # "address_longitude" (usado antes) não existe nesse endpoint — o
-    # Controllr provavelmente ignorava o campo desconhecido, então a
-    # localização nunca era salva de verdade, sem erro nenhum para avisar.
+    # Campo certo é cpe_latitude/cpe_longitude (apidoc.brbyte.com/#post-
+    # /aaa_ctl/cpe/update) — "address_latitude"/"address_longitude" não
+    # existe nesse endpoint.
     corpo = urlencode({
         "cpe_pk": cpe_pk,
         "cpe_latitude": payload.address_latitude,

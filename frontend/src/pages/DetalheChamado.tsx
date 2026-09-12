@@ -43,13 +43,12 @@ function converterOperacao(dto: OperacaoDto): Mensagem | null {
 
 /**
  * Chamado (ticket) e Ordem de Serviço são dois recursos/endpoints
- * diferentes no Controllr — misturar tudo numa tela só causava confusão.
- * O envio de mensagem foi removido de propósito: tudo que o técnico
- * precisa registrar sobre o atendimento é feito pela descrição dos
- * botões de Responder/Iniciar/Finalizar na tela da OS (/os/:ticketPk) —
- * essa tela aqui vira só um histórico de leitura (mensagens do
- * escritório/cliente e os próprios eventos da OS, que usam a mesma
- * tabela e aparecem juntos nesta lista).
+ * diferentes no Controllr. O envio de mensagem foi removido de
+ * propósito: tudo que o técnico precisa registrar sobre o atendimento é
+ * feito pela descrição dos botões de Responder/Iniciar/Finalizar na tela
+ * da OS (/os/:ticketPk) — esta tela é só um histórico de leitura
+ * (mensagens do escritório/cliente e os próprios eventos da OS, que
+ * usam a mesma tabela e aparecem juntos nesta lista).
  */
 export default function DetalheChamado() {
   const { ticketPk } = useParams<{ ticketPk: string }>()

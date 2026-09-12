@@ -5,19 +5,18 @@ Guarda o header "Authorization: Basic ..." resolvido no login (não a senha
 em si) e o user_pk do ACL do técnico, associados a um session_id opaco que
 vira o valor do cookie TECSESSION no navegador. Toda chamada de API deste
 backend ao Controllr usa esse Basic Auth, por requisição, sem estado — o
-Controllr não rastreia isso como "sessão" nenhuma (confirmado: testar
-POST /session/logout com só o header Basic, sem cookie, não derruba nada,
-porque não existe sessão para derrubar por esse caminho).
+Controllr não mantém sessão para esse Basic Auth (POST /session/logout
+com só o header Basic, sem cookie, não encerra nada, pois não há sessão
+associada a esse header).
 
 Guarda também o cookie de sessão que o próprio POST /login do Controllr
-devolve no momento do login (mesmo mecanismo do painel administrativo,
-BRBOSCookie) só para poder encerrar ESSA sessão de verdade no /auth/logout
-— usado só para isso, nenhuma chamada de API usa esse cookie.
+retorna (mesmo mecanismo do painel administrativo, BRBOSCookie), usado
+só para encerrar essa sessão no /auth/logout — nenhuma outra chamada de
+API usa esse cookie.
 
-Limitação conhecida (documentada no plano): sessões não sobrevivem a um
-restart do processo — um técnico logado precisa logar de novo se o
-backend reiniciar. Aceitável para v1 (uso interno, poucos técnicos
-simultâneos); trocar por Redis se isso virar um problema real.
+Sessões não sobrevivem a um restart do processo — um técnico logado
+precisa logar de novo se o backend reiniciar. Aceitável para uso interno
+com poucos técnicos simultâneos; trocar por Redis se o volume crescer.
 """
 
 import secrets

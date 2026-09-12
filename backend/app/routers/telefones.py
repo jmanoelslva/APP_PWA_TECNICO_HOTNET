@@ -25,12 +25,10 @@ class NovoTelefonePayload(BaseModel):
 
 @router.post("/telefones")
 async def criar_telefone(payload: NovoTelefonePayload, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
-    # Defaults confirmados ao vivo no formulário "Nova Entrada" do painel
-    # real (criei e apaguei um telefone de teste para capturar): SVA
-    # habilitado, status habilitado, válido, e os 4 tipos de contato
-    # marcados (bitmask 15) — mesmos valores que um telefone novo recebe
-    # lá. O técnico só informa identificação e número; o resto seria só
-    # ruído numa tela de campo.
+    # Defaults do formulário "Nova Entrada" do painel: SVA habilitado,
+    # status habilitado, válido, e os 4 tipos de contato marcados
+    # (bitmask 15). O técnico só informa identificação e número; o resto
+    # seria ruído numa tela de campo.
     campos = {
         "client_pk": payload.client_pk,
         "phone_identification": payload.phone_identification,
@@ -49,13 +47,11 @@ async def criar_telefone(payload: NovoTelefonePayload, ctx: AuthContext = Depend
 
 
 class TelefonePayload(BaseModel):
-    # Telefone é recurso PRÓPRIO do Controllr (/controllrctl/phone/*), não
+    # Telefone é recurso próprio do Controllr (/controllrctl/phone/*), não
     # um campo solto do cliente — client_phones (client/list) é só um
-    # resumo "Rótulo#-#número" montado a partir desses registros. Todos os
-    # campos abaixo são reenviados no update mesmo quando só o número
-    # muda (confirmado ao vivo, capturando um "Salvar" sem alteração
-    # nenhuma no painel real: o formulário sempre reenvia o registro
-    # inteiro) — o técnico só edita o número na tela, os demais valores já
+    # resumo "Rótulo#-#número" montado a partir desses registros. O
+    # update exige o registro completo mesmo quando só o número muda; o
+    # técnico edita apenas o número na tela, os demais valores já
     # carregados são reenviados como estavam.
     client_pk: int | None = None
     phone_identification: str | None = None

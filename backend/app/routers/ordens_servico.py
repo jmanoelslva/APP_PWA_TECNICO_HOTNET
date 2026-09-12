@@ -1,35 +1,31 @@
 """
-Ordem de Serviço (OS) — recurso PRÓPRIO no Controllr, diferente de
-Ticket/Suporte Técnico (ver suporte.py). Confirmado na doc oficial
-(apidoc.brbyte.com, tag "Ordem de Serviço"): uma OS pertence a um ticket
-(ticket_pk), tem data agendada (op_date_sched) e técnico responsável
-(user_pk). É a OS — não o ticket em si — que representa o trabalho de
-campo atribuído ao técnico.
+Ordem de Serviço (OS) — recurso próprio no Controllr, diferente de
+Ticket/Suporte Técnico (ver suporte.py; tag "Ordem de Serviço" na doc
+oficial, apidoc.brbyte.com). Uma OS pertence a um ticket (ticket_pk), tem
+data agendada (op_date_sched) e técnico responsável (user_pk). É a OS —
+não o ticket em si — que representa o trabalho de campo atribuído ao
+técnico.
 
-Ciclo de vida real de uma OS (confirmado com o dono da operação, e as
-ações de responder/iniciar/finalizar/desfazer capturadas ao vivo do
-painel do Controllr, já que não estão na doc oficial):
+Ciclo de vida de uma OS:
 1. Agendamento — feito pelo escritório, já vem pronto.
 2. Respondida — técnico marca que viu a OS (/responder, desfaz em /desfazer-resposta).
 3. Iniciada — técnico marca que começou o atendimento (/iniciar, desfaz em /desfazer-inicio).
 4. Finalizada — técnico marca que terminou o atendimento (/finalizar, desfaz em /desfazer-finalizacao).
-Fechar a OS é uma etapa À PARTE, feita só pelo escritório — o ACL do
+Fechar a OS é uma etapa à parte, feita só pelo escritório — o ACL do
 Controllr não libera essa permissão para o técnico, por isso não existe
-rota de fechar aqui. Cancelar/reabrir continuam disponíveis (não
-mencionados como restritos).
+rota de fechar aqui. Cancelar/reabrir continuam disponíveis.
 
-IMPORTANTE sobre como saber o estágio atual: os campos op_date_answer/
-op_date_start/op_date_finish do registro RAIZ da OS (o que list()
-devolve) ficam SEMPRE nulos — confirmado ao vivo. Cada clique em
-responder/iniciar/finalizar/desfazer cria um novo registro de EVENTO
-(visível só em /support_ctl/op/list, o mesmo endpoint do chat do
+Estágio atual: os campos op_date_answer/op_date_start/op_date_finish do
+registro raiz da OS (o que list() devolve) ficam sempre nulos. Cada
+clique em responder/iniciar/finalizar/desfazer cria um novo registro de
+evento (visível só em /support_ctl/op/list, o mesmo endpoint do chat do
 chamado — ver suporte.py::listar_mensagens_ticket) vinculado à OS via
 op_os_pk = op_pk do registro raiz. Um "set" grava o evento com a data
-correspondente preenchida; um "undo" grava outro evento do MESMO
-op_type só que com a data nula. Ou seja: para saber se uma etapa está
-marcada, o frontend precisa olhar o evento MAIS RECENTE daquele tipo
-entre os registros da OS, não um campo fixo — não tem endpoint próprio
-aqui para isso porque dá para reaproveitar listarMensagensTicket.
+correspondente preenchida; um "undo" grava outro evento do mesmo
+op_type com a data nula. Para saber se uma etapa está marcada, o
+frontend olha o evento mais recente daquele tipo entre os registros da
+OS, não um campo fixo — reaproveita listarMensagensTicket em vez de um
+endpoint próprio.
 
 Nome do arquivo evita "os.py" de propósito — colidiria com o módulo
 "os" da biblioteca padrão do Python dentro deste mesmo pacote.
@@ -46,11 +42,10 @@ from ..where import OPER_EQ, OPER_IN, corpo, where_and, where_in
 
 router = APIRouter(prefix="/os", tags=["ordem-servico"])
 
-# Formato confirmado na doc oficial (exemplo de /support_ctl/os/list):
-# uma OS "aberta" é a que tem data agendada, mas ainda não foi fechada,
-# cancelada, nem apagada. oper 8/7 não estão documentados por nome (só
-# vistos no exemplo oficial), então reproduzidos literalmente — não
-# reinventados.
+# Uma OS "aberta" tem data agendada e ainda não foi fechada, cancelada
+# nem apagada. oper 8/7 não estão documentados por nome na doc oficial
+# (só aparecem no exemplo de /support_ctl/os/list), usados aqui como no
+# exemplo.
 _OPER_DATA_PREENCHIDA = 8
 _OPER_IGUAL_OU_NULO = 7
 
@@ -80,12 +75,9 @@ async def listar_ordens_servico(
         condicoes.extend(_condicoes_abertas())
 
     if minhas and ctx.session.user_pk is not None:
-        # "support_op.user_pk" (com prefixo) — bare "user_pk" é ambíguo em
-        # /support_ctl/os/list (erro real do Postgres confirmado batendo
-        # direto no Controllr: code 42702 = "ambiguous_column"; a tabela
-        # certa, "support_op", foi achada testando candidatos até um dar
-        # 200 em vez de 42P01 "relation does not exist"). Mesmo padrão de
-        # bug já visto em client_pk/contract_pk/dp_port. oper 21 = IN.
+        # "support_op.user_pk" (com prefixo da tabela real, "support_op")
+        # — "user_pk" sem prefixo é ambíguo em /support_ctl/os/list
+        # (Postgres retorna 42702 "ambiguous_column"). oper 21 = IN.
         condicoes.append({"field": "support_op.user_pk", "oper": OPER_IN, "value": [ctx.session.user_pk]})
 
     where = where_and(*condicoes) if condicoes else None
@@ -105,13 +97,11 @@ async def listar_ordens_servico(
 
 async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
-    Tira da lista as OS que o técnico já finalizou — pedido explícito
-    ("após finalizar a OS ela já some da lista"). op_date_finish do
-    registro raiz (o que veio em "ordens") NUNCA reflete isso (fica
-    sempre nulo, ver módulo acima) — o único jeito de saber é olhar o
-    evento op_type=5 mais recente de cada OS em /support_ctl/op/list
-    (mesmo endpoint do chat), pegando todos os tickets de uma vez em vez
-    de uma chamada por OS.
+    Remove da lista as OS já finalizadas pelo técnico. op_date_finish do
+    registro raiz (em "ordens") fica sempre nulo (ver módulo acima) — o
+    estágio real vem do evento op_type=5 mais recente de cada OS em
+    /support_ctl/op/list (mesmo endpoint do chat), buscado para todos os
+    tickets de uma vez em vez de uma chamada por OS.
     """
     tickets_pks = [o["ticket_pk"] for o in ordens if o.get("ticket_pk") is not None]
     if not tickets_pks:
@@ -122,7 +112,7 @@ async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> li
         corpo(where_in("ticket_pk", tickets_pks), sort="op_pk", dir="ASC"),
     )
     if not resposta.success:
-        return ordens  # falhar aberto: melhor mostrar demais do que sumir com OS por engano
+        return ordens  # falha aqui não deve esconder OS: melhor mostrar demais do que a menos
 
     # Ordenado por op_pk ASC — o último write para cada op_os_pk vence.
     ultimo_finish_por_os: dict[int, dict[str, Any]] = {}
@@ -142,24 +132,21 @@ class AcaoOSPayload(BaseModel):
     op_desc: str | None = None
 
 
-# Os 4 estágios reais de uma OS (confirmado pelo usuário, dono da operação):
+# Os 4 estágios de uma OS:
 # 1. Agendamento — feito pelo escritório, já vem pronto (op_date_sched).
-# 2. Respondida — o técnico "viu"/aceitou a OS (op_date_answer).
+# 2. Respondida — o técnico marca que viu a OS (op_date_answer).
 # 3. Iniciada — o técnico começou o atendimento (op_date_start).
 # 4. Finalizada — o técnico terminou o atendimento (op_date_finish).
-# Fechar a OS (op_date_close) é feito SÓ pelo escritório — essa permissão
-# não é liberada para o técnico via ACL do Controllr, por isso não existe
-# rota de "fechar" aqui (nem botão no app): tentar chamar
-# /support_ctl/os/close com a conta de um técnico de verdade daria 403
-# "Access Denied" no próprio Controllr.
+# Fechar a OS (op_date_close) é feito só pelo escritório — o ACL do
+# Controllr não libera essa permissão para o técnico (/support_ctl/
+# os/close retorna 403 "Access Denied" para uma conta de técnico), por
+# isso não existe rota de "fechar" aqui.
 #
-# Os 3 endpoints abaixo (set_answer/set_start/set_finish) NÃO estão
-# documentados na doc oficial (só list/close/cancel/reopen/create estão) —
-# confirmados capturando ao vivo os botões reais "Respondida"/"Iniciada"/
-# "Finalizada" no painel web do Controllr. Cada clique cria um novo
-# registro de evento (op_pk novo) vinculado à OS via op_os_pk (a OS em si
-# não é sobrescrita) — corpo confirmado: só op_os_pk + op_desc (SEM
-# ticket_pk, diferente de close/cancel/reopen).
+# set_answer/set_start/set_finish não estão documentados na doc oficial
+# (só list/close/cancel/reopen/create estão). Cada chamada cria um novo
+# registro de evento (op_pk novo) vinculado à OS via op_os_pk — a OS em
+# si não é sobrescrita. Corpo: op_os_pk + op_desc, sem ticket_pk
+# (diferente de close/cancel/reopen).
 @router.post("/{ticket_pk}/responder")
 async def responder_ordem_servico(
     ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
@@ -198,18 +185,14 @@ class DesfazerEtapaPayload(BaseModel):
     op_desc: str
 
 
-# undo_answer/undo_start/undo_finish — mesmo achado ao vivo que set_*,
-# igualmente fora da doc oficial. Também exigem op_os_pk + op_desc
-# (confirmado sondando o endpoint com corpo vazio: os dois vêm como
-# "Required Field"). O jeito de saber se uma etapa está marcada ou não
-# NÃO é o op_date_* do registro raiz da OS (que fica sempre nulo!) — é
-# olhar para o evento mais recente daquele tipo (respondida/iniciada/
-# finalizada) entre os registros de /support_ctl/op/list dessa OS: um
-# set_* grava esse evento com a data preenchida, um undo_* grava outro
-# evento do MESMO tipo só que com a data nula (confirmado comparando os
-# dois registros criados ao vivo). Por isso o front usa
-# listarMensagensTicket (mesmo endpoint do chat) para calcular o estágio
-# de cada etapa, em vez de confiar em campo nenhum da OS em si.
+# undo_answer/undo_start/undo_finish, igualmente fora da doc oficial.
+# Exigem op_os_pk + op_desc (campos obrigatórios). O estágio de uma
+# etapa não vem do op_date_* do registro raiz da OS (sempre nulo) — vem
+# do evento mais recente daquele tipo (respondida/iniciada/finalizada)
+# em /support_ctl/op/list: um set_* grava o evento com a data
+# preenchida, um undo_* grava outro evento do mesmo tipo com a data
+# nula. O front usa listarMensagensTicket (mesmo endpoint do chat) para
+# calcular o estágio de cada etapa a partir desses eventos.
 @router.post("/{ticket_pk}/desfazer-resposta")
 async def desfazer_resposta_ordem_servico(
     ticket_pk: int, payload: DesfazerEtapaPayload, ctx: AuthContext = Depends(get_auth_context)

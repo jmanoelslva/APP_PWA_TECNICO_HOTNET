@@ -33,32 +33,26 @@ class BrByteAPIBase():
                 success = False
             )
         
-        # Nem todo erro do Controllr vem no formato {"errors": [...]} — em
-        # alguns endpoints (ex: erro de coluna ambígua do Postgres) a
-        # resposta é {"success": false, "code": N, "message": "..."}, sem
-        # "errors" nenhum. Sem isso, esse "message"/"code" era descartado
-        # silenciosamente aqui (nunca guardado em lugar nenhum), e todo
-        # erro assim virava um "não foi possível..." genérico para o
-        # técnico, sem pista nenhuma do motivo real.
+        # Nem todo erro do Controllr vem no formato {"errors": [...]} —
+        # alguns endpoints (ex: erro de coluna ambígua do Postgres)
+        # respondem {"success": false, "code": N, "message": "..."}, sem
+        # "errors". Sintetiza uma entrada equivalente a partir de
+        # "message"/"code" para não perder o motivo real do erro.
         errors = response_json.get('errors', [])
         if not errors and response_json.get('message') is not None:
             errors = [{"id": str(response_json.get('code', '_controllr')), "msg": str(response_json.get('message'))}]
 
-        # Confirmado ao vivo: pelo menos um endpoint (support_ctl/os/
-        # undo_finish) devolve {"success": false, ...} com STATUS HTTP
-        # 200 — decidir sucesso só pelo status HTTP (como era antes)
-        # tratava essa falha como sucesso, sem erro nenhum para o técnico.
-        # Prioriza o "success" do próprio corpo quando presente.
+        # Alguns endpoints (ex: support_ctl/os/undo_finish numa OS que já
+        # não está finalizada) respondem {"success": false, ...} com
+        # status HTTP 200 — o "success" do corpo tem prioridade sobre o
+        # status HTTP quando presente.
         sucesso_http = 200 <= response.status <= 299
         sucesso = response_json.get('success', sucesso_http)
 
-        # "total" no corpo é o total de registros no SERVIDOR (todas as
-        # páginas), não o tamanho de "results" desta página — confirmado
-        # ao vivo comparando com o rodapé "1 à N de <total>" das grades
-        # reais do painel (ex: /invoice_ctl/invoice/list, /web_auth/
-        # acl_role/list). Nem todo endpoint manda esse campo; quando não
-        # manda, Response.total cai de volta para len(results) (ver
-        # response.py).
+        # "total" no corpo é o total de registros no servidor (todas as
+        # páginas), não o tamanho de "results" desta página. Nem todo
+        # endpoint retorna esse campo; quando ausente, Response.total cai
+        # para len(results) (ver response.py).
         total_bruto = response_json.get('total')
         total_servidor = int(total_bruto) if isinstance(total_bruto, (int, float, str)) and str(total_bruto).strip() != '' else None
 

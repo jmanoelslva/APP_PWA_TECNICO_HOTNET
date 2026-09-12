@@ -19,12 +19,9 @@ async def listar_cpe_offline(
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     """
-    Clientes ativos que deveriam estar conectados mas não estão — filtro
-    confirmado ao vivo pelo usuário (captura de rede do próprio painel
-    Controllr): contract_status IN [1] (Ativado — ver seção 6 do
-    CONTROLLR_API_NOTES.md), cpe_status = 1 (CPE habilitado) e
-    cpe_sessions = 0 (sem sessão RADIUS ativa agora). Útil para o técnico
-    identificar quedas sem precisar ir cliente por cliente.
+    Lista clientes com contrato ativo (contract_status IN [1], ver seção
+    6 de CONTROLLR_API_NOTES.md), CPE habilitado (cpe_status = 1) e sem
+    sessão RADIUS ativa (cpe_sessions = 0).
     """
     where = where_and(
         {"field": "contract_status", "oper": OPER_IN, "value": [1]},
@@ -53,13 +50,11 @@ async def buscar_cpe(
         raise HTTPException(status_code=400, detail="Informe client_pk, contract_pk, cpe_pk ou username.")
 
     # "aaa_cpe.client_pk"/"aaa_cpe.contract_pk" — nome real da tabela é
-    # "aaa_cpe", não "cpe" (confirmado no app cliente de referência, que
-    # filtra aaa_ctl/connection/session por "aaa_cpe.cpe_pk"). "contract_pk"
-    # bare (sem prefixo) é ambíguo em /aaa_ctl/cpe/list (junta com a tabela
-    # de contrato) e ficava mudo/sem filtrar de verdade — mesmo padrão de
-    # bug já visto em client_pk; cpe_pk é a única sem esse problema (coluna
-    # própria, sem ambiguidade). username usa ILIKE com "%termo%" (busca
-    # parcial, como a busca por nome de cliente) em vez de EQUAL.
+    # "aaa_cpe", não "cpe". "contract_pk"/"client_pk" sem prefixo são
+    # ambíguos em /aaa_ctl/cpe/list (colidem com a tabela de contrato) e
+    # não filtram de verdade sem o prefixo; cpe_pk é coluna própria, sem
+    # ambiguidade. username usa ILIKE com "%termo%" (busca parcial) em
+    # vez de EQUAL.
     if cpe_pk:
         where = where_eq("cpe_pk", cpe_pk)
         resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
@@ -67,9 +62,9 @@ async def buscar_cpe(
         where = where_eq("aaa_cpe.contract_pk", contract_pk)
         resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
     elif username:
-        # client_status=0 = ativo (mesmo valor confirmado na busca de
-        # cliente por nome) — sem isso, a busca por usuário PPPoE trazia
-        # conexões de clientes desabilitados junto com as habilitadas.
+        # client_status=0 = ativo — sem esse filtro, a busca por usuário
+        # PPPoE traz conexões de clientes desabilitados junto com as
+        # habilitadas.
         where = where_and(
             {"field": "client_status", "oper": OPER_EQ, "value": 0},
             {"field": "cpe_username", "oper": OPER_ILIKE, "value": f"%{username.strip()}%"},
@@ -95,14 +90,11 @@ async def sessao_online_cpe(cpe_pk: int, ctx: AuthContext = Depends(get_auth_con
     return {"success": True, "results": resposta.results}
 
 
-# /aaa_ctl/session_history/list — sem doc oficial, formato confirmado ao
-# vivo abrindo "Histórico - Acesso" de um CPE no painel Controllr e
-# capturando o corpo real enviado pelo grid (Ext.Ajax.request): where é
-# cpe_pk (=) AND session_username (ILIKE, opcional) AND um grupo aninhado
+# /aaa_ctl/session_history/list — sem doc oficial. O where é cpe_pk (=)
+# AND session_username (ILIKE, opcional) AND um grupo aninhado
 # [session_date_close >=, AND, session_date_close <=] para o período. Sem
-# período (data_inicio/data_fim ausentes) o próprio painel usa "Desde o
-# Início": session_date_close IS NOT NULL, sem faixa nenhuma — reproduzido
-# igual aqui em vez de inventar uma data-limite qualquer.
+# período (data_inicio/data_fim ausentes), usa session_date_close IS NOT
+# NULL, sem faixa (equivalente ao preset "Desde o Início" do painel).
 @router.get("/{cpe_pk}/historico-sessoes")
 async def historico_sessoes_cpe(
     cpe_pk: int,
@@ -152,10 +144,10 @@ class WifiCpePayload(BaseModel):
 async def atualizar_wifi_cpe(
     cpe_pk: int, payload: WifiCpePayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
-    # cpe_wifi_encryption_type/cpe_wifi_encryption_password — confirmado na
-    # doc oficial (apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). Não há
-    # enum documentado para o "type" (a doc só diz que é number), então o
-    # técnico edita o valor cru mesmo, sem tradução inventada por nós.
+    # cpe_wifi_encryption_type/cpe_wifi_encryption_password, doc oficial
+    # em apidoc.brbyte.com/#post-/aaa_ctl/cpe/update. Sem enum documentado
+    # para "type" (a doc só diz que é number) — o valor é editado cru,
+    # sem tradução para nome de protocolo.
     campos: dict[str, Any] = {"cpe_pk": cpe_pk}
     if payload.wifi_encryption_type is not None:
         campos["cpe_wifi_encryption_type"] = payload.wifi_encryption_type
@@ -170,10 +162,9 @@ async def atualizar_wifi_cpe(
 
 
 class CpeDetalhesPayload(BaseModel):
-    # Todos confirmados como campos de verdade em /aaa_ctl/cpe/update na
-    # doc oficial. None aqui significa "não mexe nesse campo" — para
-    # limpar um valor (ex: observação), o front manda string vazia, não
-    # None (mesmo padrão já usado em EnderecoPayload).
+    # Campos de /aaa_ctl/cpe/update. None aqui significa "não mexe nesse
+    # campo" — para limpar um valor (ex: observação), o front manda
+    # string vazia, não None (mesmo padrão de EnderecoPayload).
     cpe_obs: str | None = None
     dp_pk: int | None = None
     cpe_dp_port: int | None = None

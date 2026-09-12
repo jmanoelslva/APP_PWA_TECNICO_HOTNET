@@ -44,10 +44,10 @@ interface ResumoConexao {
   onu: OnuDto | null
 }
 
-// contract_sign_code/info/draw/ip/hash — vistos numa captura real da API,
-// mas sem descrição na doc oficial (só sign_date/sign_doc_link têm
-// significado confirmado, tratados à parte). Mostra os demais de forma
-// genérica em vez de inventar um rótulo/tradução que não dá para confirmar.
+// contract_sign_code/info/draw/ip/hash existem na resposta da API mas
+// sem descrição na doc oficial (só sign_date/sign_doc_link têm
+// significado conhecido, tratados à parte). Mostrados de forma genérica
+// em vez de um rótulo/tradução inventado.
 function rotuloCampoAssinatura(chave: string): string {
   return chave
     .replace(/^contract_sign_/, '')
@@ -356,9 +356,9 @@ export default function DetalheCliente() {
                       {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
                       {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
                       {/* contract_sign_date vazio/null = ainda não assinado
-                          (confirmado na doc oficial, apidoc.brbyte.com/#post-
-                          /controllrctl/contract/list) — é o indicador de status
-                          da assinatura, não um campo à parte. */}
+                          (apidoc.brbyte.com/#post-/controllrctl/contract/list)
+                          — é o indicador de status da assinatura, não um
+                          campo à parte. */}
                       <p>Assinatura: {contrato.contract_sign_date ? `Assinado em ${formatarData(contrato.contract_sign_date)}` : 'Não assinado'}</p>
                       {camposAssinaturaExtra(contrato).map(([rotulo, valor]) => (
                         <p key={rotulo} className="detalhe-cliente-campo-extra">
@@ -479,9 +479,9 @@ function ModalEditarTelefone({
     setSalvando(true)
     try {
       // Reenvia o registro inteiro (identificação, operadora, tipo etc.)
-      // como já veio carregado — só phone_number muda aqui (confirmado ao
-      // vivo que o Controllr espera o telefone completo no update, ver
-      // backend/app/routers/telefones.py).
+      // como já veio carregado — só phone_number muda aqui; o Controllr
+      // exige o telefone completo no update (ver backend/app/routers/
+      // telefones.py).
       await atualizarTelefone(telefone.phone_pk, { ...telefone, phone_number: numero })
       onSalvo({ ...telefone, phone_number: numero })
     } catch (excecao) {

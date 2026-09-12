@@ -79,11 +79,10 @@ function obterMelhorLocalizacao(): Promise<GeolocationPosition> {
     let ultimoErro: GeolocationPositionError | null = null
 
     // Sem "timeout" aqui (fica Infinity por padrão): quem decide quando
-    // parar de esperar é só o setTimeout externo abaixo. Antes os dois
-    // usavam o mesmo valor, então o watchPosition podia errar por
-    // timeout individual bem no instante em que a janela ia fechar de
-    // qualquer forma — sem chance de uma leitura chegar um pouco depois
-    // e ser aproveitada.
+    // parar de esperar é só o setTimeout externo abaixo — evita que o
+    // watchPosition erre por timeout individual bem no instante em que a
+    // janela ia fechar de qualquer forma, perdendo uma leitura que
+    // chegaria logo em seguida.
     const watchId = navigator.geolocation.watchPosition(
       (posicao) => {
         if (!melhor || posicao.coords.accuracy < melhor.coords.accuracy) melhor = posicao
@@ -146,8 +145,8 @@ export default function Conexao() {
   const [wifiSenha, setWifiSenha] = useState('')
   const [mostrarSenhaWifi, setMostrarSenhaWifi] = useState(false)
   const [salvandoWifi, setSalvandoWifi] = useState(false)
-  // Observação do CPE — cpe_obs (confirmado na doc oficial de
-  // /aaa_ctl/cpe/update). Card e Salvar próprios, separados da CTO.
+  // Observação do CPE — cpe_obs (/aaa_ctl/cpe/update). Card e Salvar
+  // próprios, separados da CTO.
   const [obs, setObs] = useState('')
   const [salvandoObs, setSalvandoObs] = useState(false)
   // CTO/porta — dp_pk, cpe_dp_port (idem). dpBusca é o texto digitado no
@@ -295,10 +294,9 @@ export default function Conexao() {
       setAcessoLogin(cpeCarregado?.access_login ?? '')
       setAcessoSenha(cpeCarregado?.access_password ?? '')
       setAcessoPorta(cpeCarregado?.access_port != null ? String(cpeCarregado.access_port) : '')
-      // Card "Sessão online" agora carrega sozinho junto com o resto dos
-      // dados — o técnico não precisa mais clicar em "Ver sessão online
-      // agora" pra ver o bloco aberto. Sem await de propósito: não trava
-      // o carregamento do resto da tela por causa dessa consulta à parte.
+      // Card "Sessão online" carrega junto com o resto dos dados, sem
+      // exigir clique. Sem await de propósito: não trava o carregamento
+      // do resto da tela por causa dessa consulta à parte.
       if (cpeCarregado?.pk != null) void carregarSessaoOnline(cpeCarregado.pk)
       if (cpeCarregado?.username) void carregarOnuResumo(cpeCarregado.username)
     } catch (excecao) {
@@ -465,8 +463,8 @@ export default function Conexao() {
     if (!cpe?.pk) return
     setSalvandoWifi(true)
     try {
-      // Tipo 0 (Nenhum) não tem senha — confirmado pelo usuário: se a
-      // criptografia é "Nenhum", o Controllr não deve receber senha nenhuma.
+      // Tipo 0 (Nenhum) não tem senha — se a criptografia é "Nenhum", o
+      // Controllr não deve receber senha nenhuma.
       const senhaParaEnviar = wifiSemCriptografia ? '' : wifiSenha
       await atualizarWifiCpe(cpe.pk, {
         wifi_encryption_type: wifiTipo.trim() ? Number(wifiTipo.trim()) : undefined,
@@ -559,10 +557,10 @@ export default function Conexao() {
   }, [historicoAberto, cpe?.pk, periodoPreset, intervaloInicio, intervaloFim])
 
   function rotuloEncerramento(causa: number | undefined): string {
-    // Só os códigos abaixo foram confirmados ao vivo contra a grade real
-    // do painel Controllr (ver CONTROLLR_API_NOTES.md, seção 7.5) — para
-    // qualquer outro código (RFC 2866 Acct-Terminate-Cause) mostra o
-    // número cru em vez de arriscar uma tradução não confirmada.
+    // Só os códigos abaixo têm tradução conhecida (ver
+    // CONTROLLR_API_NOTES.md, seção 7.5) — para qualquer outro código
+    // (RFC 2866 Acct-Terminate-Cause) mostra o número cru em vez de
+    // arriscar uma tradução não confirmada.
     if (causa == null || causa === 0) return '—'
     if (causa === 2) return 'Lost Carrier'
     return `Código ${causa}`
@@ -578,18 +576,13 @@ export default function Conexao() {
     }
   }
 
-  // /aaa_ctl/session_online/list não tem documentação oficial, mas os
-  // nomes de campo abaixo foram CONFIRMADOS capturando ao vivo a resposta
-  // real da tela "Sessões Online" do próprio Controllr (mesma requisição,
-  // mesmo backend). Formato real de uma sessão (campos usados aqui):
-  // session_callingid (MAC), contract_status, nas_name/nas_addr,
-  // session_nas_port_id, session_v4_ip, session_v6_px/pd,
-  // session_acct_time (segundos conectado) e stats.total.rx_byte/tx_byte
-  // — esses dois últimos vêm ANINHADOS dentro de "stats.total", e o valor
-  // está em KB (não bytes, apesar do nome): confirmado batendo a conta
-  // contra o "Rx Bytes"/"Tx Bytes" mostrado na tela real (346047 ->
-  // 337,9 MB, bate com os 336,84 MB exibidos). Candidatos alternativos
-  // ficam como fallback caso o formato mude.
+  // /aaa_ctl/session_online/list não tem documentação oficial. Campos de
+  // uma sessão (usados aqui): session_callingid (MAC), contract_status,
+  // nas_name/nas_addr, session_nas_port_id, session_v4_ip, session_v6_px/pd,
+  // session_acct_time (segundos conectado) e stats.total.rx_byte/tx_byte —
+  // esses dois últimos vêm aninhados dentro de "stats.total", com o valor
+  // em KB (não bytes, apesar do nome). Candidatos alternativos ficam como
+  // fallback caso o formato mude.
   function formatarBytes(valor: unknown): string {
     const n = Number(valor)
     if (!Number.isFinite(n)) return String(valor)
@@ -851,11 +844,10 @@ export default function Conexao() {
             </div>
 
             <div className="conexao-card">
-              {/* Credencial DIFERENTE do PPPoE acima — acesso administrativo
-                  ao próprio roteador/CPE, não o login de internet do
-                  cliente (confirmado na doc oficial do Controllr:
-                  cpe_access_login/password/port). Editável — antes só dava
-                  para ver o que já vinha cadastrado. Recolhido por padrão. */}
+              {/* Credencial diferente do PPPoE acima — acesso administrativo
+                  ao próprio roteador/CPE, não o login de internet do cliente
+                  (cpe_access_login/password/port, doc oficial do
+                  Controllr). Editável. Recolhido por padrão. */}
               <button
                 type="button"
                 className="conexao-card-toggle"
@@ -912,8 +904,8 @@ export default function Conexao() {
             </div>
 
             <div className="conexao-card">
-              {/* cpe_obs — confirmado na doc oficial de /aaa_ctl/cpe/update.
-                  Recolhido por padrão. */}
+              {/* cpe_obs, doc oficial de /aaa_ctl/cpe/update. Recolhido por
+                  padrão. */}
               <button
                 type="button"
                 className="conexao-card-toggle"
@@ -947,9 +939,9 @@ export default function Conexao() {
             </div>
 
             <div className="conexao-card">
-              {/* cpe_wifi_encryption_type/password (confirmado na doc oficial
-                  do Controllr, valores confirmados pelo usuário: 0 Nenhum,
-                  1 WEP, 2 WPA, 3 EAP). Com "Nenhum" não faz sentido ter
+              {/* cpe_wifi_encryption_type/password (doc oficial do Controllr;
+                  valores: 0 Nenhum, 1 WEP, 2 WPA, 3 EAP). Com "Nenhum" não
+                  faz sentido ter
                   senha — o campo fica desabilitado e é limpo nesse caso.
                   Pré-preenchido com o que o sistema fornecer; só é enviado
                   ao Controllr quando o técnico clicar em Salvar. Recolhido
@@ -1015,8 +1007,8 @@ export default function Conexao() {
             </div>
 
             <div className="conexao-card">
-              {/* dp_pk e cpe_dp_port (CTO/porta da CTO) — confirmados na doc
-                  oficial de /aaa_ctl/cpe/update. A lista de CTOs vem do
+              {/* dp_pk e cpe_dp_port (CTO/porta da CTO), doc oficial de
+                  /aaa_ctl/cpe/update. A lista de CTOs vem do
                   próprio sistema (GET /dp/lista), para selecionar em vez de
                   digitar um pk cru. */}
               <h2>CTO</h2>

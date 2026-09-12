@@ -35,9 +35,8 @@ export default function Financeiro() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   // 403 do Controllr = técnico sem liberação de ACL para o financeiro —
-  // não é um erro para tentar de novo, é permissão mesmo (ver
-  // backend/app/routers/financeiro.py: nenhuma checagem prévia daqui,
-  // quem decide é a chamada real).
+  // estado de permissão, não um erro para tentar de novo (ver
+  // backend/app/routers/financeiro.py).
   const [naoPermitido, setNaoPermitido] = useState(false)
   const [faturaObservando, setFaturaObservando] = useState<FaturaDto | null>(null)
 

@@ -94,17 +94,14 @@ async def logout(
 ) -> dict[str, bool]:
     sessao = get_session(tecsession)
     if sessao is not None and sessao.controllr_cookie:
-        # Encerra de verdade a sessão que o Controllr criou no momento do
-        # /login (mesmo endpoint usado pelo painel administrativo,
-        # confirmado numa captura ao vivo: POST /session/logout, sem
-        # corpo, carregando o cookie da sessão a encerrar). Só faz
-        # sentido com o COOKIE dessa sessão específica — chamar isso com
-        # o Basic Auth do técnico (usado nas outras chamadas deste
-        # backend) não derruba nada, porque Basic Auth não cria sessão
-        # nenhuma no Controllr para existir algo a encerrar. Best-effort:
-        # falhar aqui não pode impedir o logout local, que é o que de
-        # fato protege a conta (apaga a sessão deste backend e o cookie
-        # do navegador).
+        # Encerra a sessão que o Controllr criou no momento do /login
+        # (mesmo endpoint usado pelo painel administrativo: POST
+        # /session/logout, sem corpo, com o cookie da sessão a encerrar).
+        # Exige o COOKIE dessa sessão específica — o Basic Auth usado nas
+        # demais chamadas deste backend não cria sessão no Controllr, então
+        # não há nada para encerrar por esse caminho. Best-effort: uma
+        # falha aqui não impede o logout local, que apaga a sessão deste
+        # backend e o cookie do navegador.
         try:
             timeout = ClientTimeout(10)
             async with ClientSession() as http:

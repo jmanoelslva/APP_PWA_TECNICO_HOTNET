@@ -49,12 +49,10 @@ class CPEExtended(CPE):
     address_completation        : str   | Empty = Field(default_factory=Empty, alias='address_completation')
     address_latitude            : str   | Empty = Field(default_factory=Empty, alias='address_latitude')
     address_longitude           : str   | Empty = Field(default_factory=Empty, alias='address_longitude')
-    # Localização do PRÓPRIO cpe (onde o equipamento foi instalado, ex:
-    # capturada via GPS pelo técnico) — campo distinto de
-    # address_latitude/longitude (que é do endereço cadastral vinculado,
-    # via join). Confirmado como campo de verdade em /aaa_ctl/cpe/list e
-    # aceito em /aaa_ctl/cpe/update (doc oficial); faltava no pacote
-    # original, então uma localização recém-salva nunca voltava na leitura.
+    # Localização do próprio CPE (onde o equipamento foi instalado, capturada
+    # via GPS pelo técnico) — distinto de address_latitude/longitude, que é
+    # do endereço cadastral vinculado (via join). Campo de /aaa_ctl/cpe/list
+    # e /aaa_ctl/cpe/update (doc oficial).
     cpe_latitude                : str   | Empty = Field(default_factory=Empty, alias='cpe_latitude')
     cpe_longitude               : str   | Empty = Field(default_factory=Empty, alias='cpe_longitude')
     address_neighborhood        : str   | Empty = Field(default_factory=Empty, alias='address_neighborhood')
@@ -86,18 +84,13 @@ class CPEExtended(CPE):
     deleted                     : Any   | Empty = Field(default_factory=Empty, alias='cpe_deleted')
     dp_id                       : str   | Empty = Field(default_factory=Empty, alias='dp_id')
     dp_name                     : str   | Empty = Field(default_factory=Empty, alias='dp_name')
-    # Alias correto é "cpe_dp_port", não "dp_port" (confirmado na doc
-    # oficial, apidoc.brbyte.com/#post-/aaa_ctl/cpe/list) — mesmo padrão
-    # de bug já visto em cpe_password/cpe_latitude: o pacote original
-    # usava o nome "bonito" em vez da chave de verdade da resposta, então
-    # esse campo nunca era preenchido.
+    # Alias correto é "cpe_dp_port", não "dp_port" (apidoc.brbyte.com/#post-
+    # /aaa_ctl/cpe/list).
     dp_port                     : Any   | Empty = Field(default_factory=Empty, alias='cpe_dp_port')
     lending                     : Any   | Empty = Field(default_factory=Empty, alias='lending')
-    # Alias correto é "cpe_mac_last", não "mac_last" (confirmado na doc
-    # oficial, apidoc.brbyte.com/#post-/aaa_ctl/cpe/list) — mesmo padrão de
-    # bug já visto em cpe_password/cpe_latitude/cpe_dp_port: quando o
-    # cliente conecta por PPPoE (sem MAC fixo cadastrado), cpe_mac fica
-    # vazio e o MAC de verdade só aparece aqui, no "último MAC visto".
+    # Alias correto é "cpe_mac_last", não "mac_last" (apidoc.brbyte.com/
+    # #post-/aaa_ctl/cpe/list). Quando o cliente conecta por PPPoE sem MAC
+    # fixo cadastrado, cpe_mac fica vazio e o MAC real só aparece aqui.
     mac_last                    : Any   | Empty = Field(default_factory=Empty, alias='cpe_mac_last')
     nas_addr                    : Any   | Empty = Field(default_factory=Empty, alias='nas_addr')
     nas_interface               : Any   | Empty = Field(default_factory=Empty, alias='nas_interface')
@@ -105,11 +98,7 @@ class CPEExtended(CPE):
     notice                      : Any   | Empty = Field(default_factory=Empty, alias='notice')
     offices_pk                  : Any   | Empty = Field(default_factory=Empty, alias='offices_pk')
     # Alias correto é "cpe_password" (senha PPPoE real, pareada com
-    # "cpe_username") — confirmado na doc oficial
-    # (apidoc.brbyte.com/#post-/aaa_ctl/cpe/list). O pacote original vinha
-    # com alias="password" (bare), que nunca bate com a chave de verdade
-    # da resposta ("cpe_password"), então este campo nunca era
-    # preenchido — sempre Empty, mesmo com o dado presente na resposta.
+    # "cpe_username"), apidoc.brbyte.com/#post-/aaa_ctl/cpe/list.
     password                    : Any   | Empty = Field(default_factory=Empty, alias='cpe_password')
     plan_name                   : Any   | Empty = Field(default_factory=Empty, alias='plan_name')
     pool_v4_family              : int   | Empty = Field(default_factory=Empty, alias='pool_v4_family')
