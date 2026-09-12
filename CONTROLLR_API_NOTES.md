@@ -596,7 +596,7 @@ Achados capturando ao vivo (via `Ext.ComponentQuery`) as telas reais
 "Financeiro > Cobranças" (grid de faturas de um cliente) e "Financeiro >
 Cobranças > Pagamentos em observação" do painel Controllr.
 
-### 12.1. Fatura (`/invoice_ctl/invoice/list`)
+### 11.1. Fatura (`/invoice_ctl/invoice/list`)
 
 - Filtrar por cliente é **ambíguo sem prefixo** (mesmo bug da seção 2):
   o campo certo é `client.client_pk`, não `client_pk` puro — confirmado
@@ -612,7 +612,7 @@ Cobranças > Pagamentos em observação" do painel Controllr.
 - `invoice_is_released` também vem no registro (visto ao vivo, sem
   descrição confirmada) — não usado ainda no app do técnico.
 
-### 12.2. Pagamento em observação (`/invoice_ctl/observation/*`)
+### 11.2. Pagamento em observação (`/invoice_ctl/observation/*`)
 
 Tela do painel: Financeiro > Cobranças > "Pagamentos em observação" —
 uma anotação presa a uma fatura que segura as consequências de um
@@ -636,21 +636,29 @@ Formulário "Novo" (campos lidos direto do form real via
 | `obs_release_type` | Liberar Tipo | `0` = Data de Validade, `1` = Período |
 | `obs_date_end` | Liberar | datetime, usado só com tipo `0` |
 | `obs_period` | Liberar (Dias) | numérico, usado só com tipo `1` |
-| `obs_status` | Habilitado | checkbox (`1`/`0` no registro) |
+| `obs_status` | Habilitado | **invertido** — `0` = habilitado, ver abaixo |
 | `obs_text` | Descrição | texto livre — a observação em si |
+
+**`obs_status` é invertido do que o nome/label sugere** — bug real já
+cometido aqui: a primeira versão do backend mandava `obs_status=1`
+"achando" que 1 = habilitado, e toda observação criada pelo app nascia
+desabilitada. Confirmado ao vivo comparando com o próprio filtro
+"Status: Habilitado" da grade "Pagamentos em observação"
+(`extraParams.where` real: `{"field":"obs_status","oper":5,"value":0}`)
+e com TODAS as observações reais já existentes (criadas por staff
+direto no painel, meses antes deste app existir) — sem exceção, têm
+`obs_status: 0`. Ou seja: `0` = habilitado/ativo, qualquer valor
+diferente de zero = desabilitado. Sempre mandar `obs_status=0` ao criar
+uma observação nova (ver `backend/app/routers/financeiro.py`).
 
 Ações da grade (icones da coluna de ação, handlers lidos sem clicar,
 mesma técnica da seção 5.1): "Habilitar/Desabilitar" →
 `POST /invoice_ctl/observation/change_status`; "Remover" →
 `POST /invoice_ctl/observation/delete`. Nenhuma das duas foi exposta
 para o técnico no app (só visualizar faturas + criar observação, ver
-`backend/app/routers/financeiro.py`) — o botão "Salvar" do form "Novo"
-não teve o body final capturado (evitado criar registro de teste de
-verdade), só os nomes de campo acima, que já bastam para montar o
-`POST /invoice_ctl/observation/create` (wrapper `observation_create` em
-`brbyteapi/controllr/invoice.py`).
+`backend/app/routers/financeiro.py`).
 
-### 12.3. ACL do módulo financeiro — como o Controllr decide quem tem acesso
+### 11.3. ACL do módulo financeiro — como o Controllr decide quem tem acesso
 
 Não existe um campo solto "liberado: sim/não" no cadastro do técnico
 (`acl_user`) — a permissão é por **role** (`role_pk`/`role_name`, visto em
@@ -671,14 +679,23 @@ tem acesso ao financeiro e outra não — confirma que "liberação de ACL"
 é uma diferença real e deliberada, não um capricho. Só que
 `/web_auth/acl_perm/list` e `/web_auth/acl_user/list` (para saber o
 `role_pk` do técnico) são endpoints de administração — nada garante que
-uma conta comum de técnico tenha permissão para chamá-los (não testado
-com uma conta real de técnico). Por isso o backend deste app **não tenta
-replicar essa lógica**: em vez de decidir a permissão pelo nome da role,
-ele pergunta direto pro Controllr fazendo uma leitura real e inofensiva
-em `/invoice_ctl/invoice/list` (`limit=1`, sem where) com o Basic Auth do
-próprio técnico logo no login, e trata um `403 Access Denied` como "sem
-liberação" — mesmo padrão de detecção de ACL já usado no fechamento de OS
-(seção 3). Ver `backend/app/routers/auth.py::_verificar_liberacao_financeiro`.
+uma conta comum de técnico tenha permissão para chamá-los.
+
+**Histórico**: uma primeira versão deste app tentou resolver essa
+liberação uma única vez no login, chamando `/invoice_ctl/invoice/list`
+sem `where` (sem filtro nenhum) e tratando um 403 como "sem liberação".
+Isso deu dois problemas em produção: (1) sem filtro, a consulta demorou
+o bastante pra estourar o timeout de 10s em quem TEM liberação — login
+lento, e a exceção do timeout (não o 403 de verdade) fazia a checagem
+sempre cair em "sem liberação"; (2) mesmo depois de trocar por um filtro
+rápido (`client.client_pk = -1`, bate índice), o menu continuou não
+aparecendo em produção — causa exata não isolada, mas a abordagem toda
+de "decidir permissão uma vez no login e guardar numa flag" se mostrou
+frágil o bastante para ser abandonada. Solução atual, mais simples e
+robusta: o menu Financeiro **sempre aparece**; cada rota
+(`backend/app/routers/financeiro.py`) só repassa fielmente o 403 que a
+própria chamada real ao Controllr devolver na hora — mesmo padrão já
+usado no fechamento de OS (seção 3), sem nenhuma pré-checagem.
 
 ---
 

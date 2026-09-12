@@ -7,6 +7,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+
+- Observação de pagamento criada pelo app nascia desabilitada — o campo
+  `obs_status` do Controllr é invertido do que o nome sugere (`0` =
+  habilitado, confirmado ao vivo comparando com o filtro "Status:
+  Habilitado" da própria grade "Pagamentos em observação").
+- Botão "Financeiro" na tela do cliente estava solto, fora do padrão das
+  demais ações da tela — movido para dentro do card de cada Contrato,
+  ao lado do atalho "Conexão".
+
 ### Adicionado
 
 - Tela de Financeiro: faturas (cobranças) do cliente, com status (paga,

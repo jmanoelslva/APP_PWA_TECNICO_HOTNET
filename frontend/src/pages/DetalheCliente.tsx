@@ -182,12 +182,6 @@ export default function DetalheCliente() {
             </div>
           </div>
 
-          <div className="detalhe-cliente-item-acoes">
-            <Link to={`/financeiro?client_pk=${pk}`} className="detalhe-cliente-chip" viewTransition>
-              <MdAttachMoney size={14} /> Financeiro
-            </Link>
-          </div>
-
           <section className="detalhe-cliente-secao">
             <h2>Telefones</h2>
             {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
@@ -379,6 +373,15 @@ export default function DetalheCliente() {
                           {contrato.contract_pk && (
                             <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
                               <MdWifi size={14} /> Conexão
+                            </Link>
+                          )}
+                          {contrato.contract_pk && (
+                            <Link
+                              to={`/financeiro?client_pk=${pk}&contract_pk=${contrato.contract_pk}`}
+                              className="detalhe-cliente-chip"
+                              viewTransition
+                            >
+                              <MdAttachMoney size={14} /> Financeiro
                             </Link>
                           )}
                           {contrato.contract_sign_date && contrato.contract_sign_doc_link && (

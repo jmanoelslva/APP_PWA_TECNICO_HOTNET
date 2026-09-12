@@ -88,7 +88,12 @@ async def criar_observacao(payload: ObservacaoPayload, ctx: AuthContext = Depend
         client_pk=payload.client_pk,
         contract_pk=payload.contract_pk,
         invoice_pk=payload.invoice_pk,
-        obs_status=1,
+        # Invertido do que o nome sugere: confirmado ao vivo que o filtro
+        # "Status: Habilitado" da própria grade "Pagamentos em observação"
+        # usa "obs_status = 0" (não 1) — 0 é habilitado, valor diferente
+        # de zero é desabilitado. Toda observação real já existente no
+        # sistema (inclusive criadas pelo próprio painel) tem obs_status=0.
+        obs_status=0,
         obs_text=payload.obs_text,
         **campos_liberacao,
     )
