@@ -125,7 +125,7 @@ export default function Home() {
           style={{ background: comAlpha(CORES.primaria, 8), borderColor: comAlpha(CORES.primaria, 20) }}
         >
           <span className="home-header-icone">
-            <MdBuild size={22} color={CORES.branco} />
+            <img src="/icons/icon-192.png" alt="HOTNET TECH" />
           </span>
 
           <div className="home-header-saudacao">

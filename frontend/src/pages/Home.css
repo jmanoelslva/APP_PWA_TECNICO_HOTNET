@@ -17,10 +17,17 @@
   width: 44px;
   min-width: 44px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+  overflow: hidden;
+  background: var(--cor-superficie);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.home-header-icone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .home-header-saudacao {
