@@ -3,8 +3,8 @@
 # Serve o build estático do Vite (npm run build -> frontend/dist) e faz o
 # reverse proxy de /api/* para o BACKEND PRÓPRIO (FastAPI/uvicorn, rodando
 # como serviço systemd em 127.0.0.1:8000 — ver deploy/install.sh) — não
-# para o Controllr direto (quem fala com o Controllr é o backend, com HTTP
-# Basic Auth do técnico logado, nunca o navegador).
+# para o Controllr direto (quem fala com o Controllr é o backend, com o
+# cookie de sessão do técnico logado, nunca o navegador).
 #
 # Diferente do vhost do app cliente (cliente.hotnet.net.br): não precisa
 # de "proxy_cookie_domain" nem de proxiar /public, /common, /assets para o

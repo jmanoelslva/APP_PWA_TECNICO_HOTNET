@@ -107,11 +107,11 @@ async def visualizar_anexo_ticket(
     ticket_pk: int, arquivo: str, ctx: AuthContext = Depends(get_auth_context)
 ) -> FastAPIResponse:
     # support_ctl/annex/view não tem wrapper no brbyteapi — proxy simples
-    # com o Basic Auth do técnico, o mesmo header usado em toda chamada
-    # deste backend ao Controllr.
+    # com o cookie de sessão do técnico, o mesmo usado em toda chamada
+    # deste backend ao Controllr (ver deps.py::get_auth_context).
     url = f"{CONTROLLR_URL}/support_ctl/annex/view/{ticket_pk}/{arquivo}"
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers={"Authorization": ctx.session.basic_auth}) as resposta:
+        async with session.get(url, headers={"Cookie": ctx.session.controllr_cookie}) as resposta:
             conteudo = await resposta.read()
             if resposta.status >= 400:
                 raise HTTPException(status_code=resposta.status, detail="Não foi possível carregar o anexo.")

@@ -8,10 +8,27 @@ from typing import Any
 from .response import Response
 
 class BrByteAPIBase():
-    def __init__(self, authorization: str, server_url: str, timeout: int = 10, alias: str = ""):   
+    # authorization (Basic Auth) e cookie são independentes — passe o que
+    # a chamada precisar. Este backend usa cookie (sessão criada no /login,
+    # ver app/deps.py::get_auth_context): chamar com Basic Auth por
+    # requisição criava uma segunda sessão "implícita" no Controllr, sem
+    # nenhum jeito de fechá-la (Basic Auth não devolve token nenhum pra
+    # guardar), aparecendo como sessão duplicada na lista de usuários
+    # online do painel.
+    def __init__(
+        self,
+        authorization: str | None = None,
+        server_url: str = "",
+        timeout: int = 10,
+        alias: str = "",
+        cookie: str | None = None,
+    ):
         self.alias = alias
         self.headers: dict[str, Any] = dict()
-        self.headers['Authorization'] = authorization
+        if authorization:
+            self.headers['Authorization'] = authorization
+        if cookie:
+            self.headers['Cookie'] = cookie
         self.server_url = server_url
         self.timeout: ClientTimeout = ClientTimeout(timeout)
 

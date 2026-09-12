@@ -25,12 +25,11 @@ SESSION_COOKIE_MAX_AGE_SECONDS = int(os.environ.get("SESSION_COOKIE_MAX_AGE_SECO
 
 # De quanto em quanto tempo confirmar com o Controllr que a sessão criada
 # no /login ainda está ativa lá (ver deps.py::get_current_session) — sem
-# isso, um admin encerrando a sessão do técnico manualmente pelo painel
-# nunca seria percebido por este backend, porque as demais chamadas usam
-# Basic Auth por requisição, que não depende de sessão nenhuma no
-# Controllr (CONTROLLR_API_NOTES.md, seção 8.5). Curto o bastante pra
-# detectar rápido, longo o bastante pra não dobrar toda chamada deste
-# backend com uma ida extra ao Controllr.
+# isso, uma sessão encerrada manualmente no painel ou expirada por
+# inatividade só seria percebida quando a próxima chamada de dado falhasse
+# sozinha, com um erro genérico em vez do 401 que redireciona pro login.
+# Curto o bastante pra detectar rápido, longo o bastante pra não dobrar
+# toda chamada deste backend com uma ida extra ao Controllr.
 CONTROLLR_LIVENESS_CHECK_SECONDS = int(os.environ.get("CONTROLLR_LIVENESS_CHECK_SECONDS", "60"))
 
 SESSION_COOKIE_NAME = "TECSESSION"

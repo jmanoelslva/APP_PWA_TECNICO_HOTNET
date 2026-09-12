@@ -14,7 +14,7 @@ completo da arquitetura.
 
 - `backend/` — API em FastAPI, usa o pacote `brbyteapi` (vendorizado em
   `backend/app/brbyteapi/`) para falar com o Controllr/BRbyte em nome do
-  técnico logado (HTTP Basic Auth por sessão, ver `backend/app/sessions.py`).
+  técnico logado (cookie de sessão do Controllr, ver `backend/app/sessions.py`).
 - `frontend/` — PWA em Vite + React + TypeScript, mesma stack e padrões
   de engenharia do app cliente (sessão, toasts, tema, instalação PWA).
 

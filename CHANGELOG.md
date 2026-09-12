@@ -7,6 +7,26 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- Autenticação deste backend com o Controllr deixou de usar Basic Auth
+  por requisição e passou a usar, em toda chamada, o mesmo cookie de
+  sessão criado no login (`TechnicianSession.controllr_cookie`) — antes
+  reservado só para `/auth/logout` e a checagem de liveness. Causa:
+  confirmado em produção que chamadas com Basic Auth faziam o Controllr
+  abrir e manter uma segunda sessão "implícita" pra esse uso, sem
+  nenhum token devolvido pra guardar e fechar depois — aparecia como
+  sessão duplicada na lista de usuários online do painel administrativo,
+  ao lado da sessão de cookie de verdade, e não tinha como ser fechada
+  explicitamente. Agora existe só uma sessão por técnico, do login ao
+  logout. `TechnicianSession.basic_auth` foi removido (o técnico não
+  precisa mais ter a senha guardada, nem reversível, na memória deste
+  backend). Risco conhecido: ACL/permissões podem, em algum endpoint
+  específico, se comportar diferente entre Basic Auth e sessão por
+  cookie — precisa de teste extenso em produção em todos os módulos
+  (clientes, endereços, CPE, ONU, OS, financeiro, telefones) antes de
+  confiar 100% nessa mudança.
+
 ### Corrigido
 
 - Pull-to-refresh na tela Conexão sem cliente/CPE selecionado (ex: tela

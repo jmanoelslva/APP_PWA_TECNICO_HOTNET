@@ -1,9 +1,9 @@
 /**
  * Cliente HTTP para o backend próprio (FastAPI, ver ../../backend) — não fala
  * direto com o Controllr (diferente do portal do cliente): todo dado
- * sensível de técnico (Basic Auth, ACL) fica só no backend. Sessão mantida
- * por cookie httpOnly (TECSESSION), por isso todo request usa
- * credentials: 'include'.
+ * sensível de técnico (cookie de sessão do Controllr, ACL) fica só no
+ * backend. Sessão mantida por cookie httpOnly (TECSESSION), por isso
+ * todo request usa credentials: 'include'.
  */
 
 const API_BASE = '/api'

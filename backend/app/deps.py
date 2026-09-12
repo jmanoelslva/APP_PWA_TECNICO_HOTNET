@@ -12,12 +12,12 @@ from .sessions import TechnicianSession, delete_session, get_session
 logger = logging.getLogger(__name__)
 
 
-async def encerrar_sessao_controllr(username: str, cookie: str | None) -> None:
+async def encerrar_sessao_controllr(username: str, cookie: str) -> None:
     """
     Encerra no Controllr a sessão criada no /login (POST /session/logout,
-    mesmo mecanismo do painel administrativo, autenticado só por esse
-    cookie — não pelo Basic Auth, que não cria sessão nenhuma lá, ver
-    CONTROLLR_API_NOTES.md seção 8.5). Usado tanto por /auth/logout quanto
+    mesmo mecanismo do painel administrativo, autenticado por esse mesmo
+    cookie usado em toda chamada deste backend — ver
+    app/deps.py::get_auth_context). Usado tanto por /auth/logout quanto
     por get_current_session quando a checagem de liveness detecta sessão
     inválida — sem isso nos dois lugares, a sessão local some daqui mas
     fica "presa" ativa no Controllr até o lease dele expirar sozinho
@@ -30,10 +30,7 @@ async def encerrar_sessao_controllr(username: str, cookie: str | None) -> None:
     # cruzar com o cookie guardado no login, enquanto investigamos por que
     # uma segunda sessão continua aparecendo no Controllr mesmo com essa
     # chamada rodando.
-    nomes_cookie = [par.split("=", 1)[0] for par in (cookie or "").split("; ") if par]
-    if not cookie:
-        logger.warning("Sem controllr_cookie salvo para %s — sessão pode ficar ativa no Controllr", username)
-        return
+    nomes_cookie = [par.split("=", 1)[0] for par in cookie.split("; ") if par]
     try:
         timeout = ClientTimeout(10)
         async with ClientSession() as http:
@@ -63,12 +60,15 @@ async def encerrar_sessao_controllr(username: str, cookie: str | None) -> None:
 async def _controllr_sessao_viva(cookie: str) -> bool:
     """
     Confirma se o cookie de sessão do Controllr (criado no /login, guardado
-    em TechnicianSession.controllr_cookie) ainda é aceito por ele.
+    em TechnicianSession.controllr_cookie e usado em toda chamada deste
+    backend) ainda é aceito por ele.
 
-    Existe porque as demais chamadas deste backend ao Controllr usam Basic
-    Auth por requisição, que não depende de sessão nenhuma (ver
-    CONTROLLR_API_NOTES.md, seção 8.5) — então nunca detectariam sozinhas um
-    admin encerrando a sessão do técnico manualmente pelo painel.
+    Existe como checagem proativa e periódica (CONTROLLR_LIVENESS_CHECK_SECONDS)
+    em vez de só deixar a próxima chamada de dado falhar sozinha: uma
+    sessão encerrada manualmente no painel (ou expirada por inatividade)
+    ainda assim viraria um erro genérico de "não foi possível carregar"
+    numa tela qualquer, sem a mensagem clara de sessão expirada nem o
+    redirecionamento pro login que o 401 daqui dispara no frontend.
 
     /web_auth/acl_perm/list (lista as PRÓPRIAS permissões do usuário) é o
     endpoint usado — precisa funcionar para qualquer sessão válida
@@ -126,7 +126,7 @@ async def get_current_session(
     # é o quanto um técnico deslogado manualmente no painel ainda consegue
     # usar o app antes disso ser detectado.
     agora = time.time()
-    if session.controllr_cookie and (agora - session.controllr_checked_at) > CONTROLLR_LIVENESS_CHECK_SECONDS:
+    if (agora - session.controllr_checked_at) > CONTROLLR_LIVENESS_CHECK_SECONDS:
         if not await _controllr_sessao_viva(session.controllr_cookie):
             # Best-effort: a sessão já não responde como válida, mas ainda
             # assim tenta fechá-la de verdade no Controllr — sem isso ela
@@ -147,5 +147,5 @@ class AuthContext:
 
 
 def get_auth_context(session: TechnicianSession = Depends(get_current_session)) -> AuthContext:
-    controllr = AsyncControllr(authorization=session.basic_auth, server_url=CONTROLLR_URL)
+    controllr = AsyncControllr(cookie=session.controllr_cookie, server_url=CONTROLLR_URL)
     return AuthContext(session=session, controllr=controllr)

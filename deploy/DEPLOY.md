@@ -11,7 +11,7 @@ rodando em produção). Aqui tem duas partes:
 1. O build estático do frontend (Vite) — igual ao app cliente.
 2. Um **backend próprio** (FastAPI/uvicorn) que fica rodando o tempo todo
    como serviço systemd, na porta 8000 (só em `127.0.0.1`, nunca exposto
-   direto) — é ele quem fala com o Controllr (HTTP Basic Auth do técnico
+   direto) — é ele quem fala com o Controllr (cookie de sessão do técnico
    logado), não o navegador. O servidor web faz proxy de `/api/*` para
    esse processo LOCAL.
 

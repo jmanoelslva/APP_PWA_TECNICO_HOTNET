@@ -1,9 +1,9 @@
 """
 Log de auditoria próprio — não depende do Controllr.
 
-O Controllr autentica cada ação com o Basic Auth do próprio técnico (ver
-deps.py — cada sessão carrega a credencial dele, não uma conta
-compartilhada), então "quem fez" já está resolvido do lado de lá. O
+O Controllr autentica cada ação pelo cookie de sessão do próprio técnico
+(ver deps.py — cada sessão carrega o cookie criado no login dele, não uma
+conta compartilhada), então "quem fez" já está resolvido do lado de lá. O
 Controllr não registra o IP de origem corretamente: como este backend
 fala com ele por trás de um proxy, o IP que chega lá é sempre o do
 servidor, e a API não aceita um cabeçalho tipo X-Forwarded-For para

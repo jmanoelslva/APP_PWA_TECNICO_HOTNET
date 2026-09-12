@@ -11,9 +11,9 @@ from ..base import BrByteAPIBase
 class ControllrLoginResult:
     success: bool
     # Cookie de sessão retornado pelo POST /login (mesmo mecanismo do
-    # painel administrativo), usado só para encerrar essa sessão depois
-    # (POST /session/logout) — as demais chamadas deste backend usam
-    # Basic Auth por requisição, sem sessão no Controllr.
+    # painel administrativo) — usado em toda chamada deste backend ao
+    # Controllr (ver app/deps.py::get_auth_context), inclusive pra
+    # encerrar essa mesma sessão depois (POST /session/logout).
     cookie_header: str | None = None
 
 
@@ -34,9 +34,9 @@ class ControllrLogin(BrByteAPIBase):
                     # cookie de sessão não aparece ali, embora já esteja no
                     # cookie jar da ClientSession. filter_cookies(url) lê do
                     # jar, cobrindo qualquer resposta da cadeia de redirect.
-                    # Esse cookie é o único jeito de /auth/logout encerrar a
-                    # sessão no Controllr — as demais chamadas usam Basic
-                    # Auth, que não cria sessão nenhuma lá.
+                    # Esse cookie autentica toda chamada deste backend ao
+                    # Controllr (ver app/deps.py::get_auth_context), então
+                    # sem ele o login não pode prosseguir.
                     cookies = session.cookie_jar.filter_cookies(url)
                     if cookies:
                         cookie_header = "; ".join(f"{chave}={morsel.value}" for chave, morsel in cookies.items())

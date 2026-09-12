@@ -1,4 +1,3 @@
-import base64
 import logging
 from typing import Any
 
@@ -57,10 +56,21 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
     if not resultado_login.success:
         return LoginResponse(success=False, message="Usuário ou senha incorretos.")
 
-    credenciais = f"{payload.username}:{payload.password}".encode("utf-8")
-    basic_auth = "Basic " + base64.b64encode(credenciais).decode("ascii")
+    if resultado_login.cookie_header is None:
+        # Toda chamada deste backend ao Controllr usa esse cookie (ver
+        # deps.py::get_auth_context) — sem ele não tem como autenticar
+        # nada, então o login não pode prosseguir. Login validado acima
+        # (usuário/senha corretos) mas sem cookie é falha do lado do
+        # Controllr/ControllrLogin.login, não do técnico.
+        logger.error("Login de %s sem cookie de sessão do Controllr — não é possível autenticar chamadas", payload.username)
+        return LoginResponse(success=False, message="Não foi possível iniciar a sessão. Tente novamente.")
 
-    controllr = AsyncControllr(authorization=basic_auth, server_url=CONTROLLR_URL)
+    # Nomes dos cookies (nunca o valor) — cruzar com o log de
+    # encerrar_sessao_controllr caso a sessão pareça duplicada de novo.
+    nomes_cookie = [par.split("=", 1)[0] for par in resultado_login.cookie_header.split("; ") if par]
+    logger.warning("Login de %s — cookies de sessão do Controllr: %s", payload.username, nomes_cookie)
+
+    controllr = AsyncControllr(cookie=resultado_login.cookie_header, server_url=CONTROLLR_URL)
     user_pk: int | None = None
     try:
         resultado = await controllr.user_list("limit=200")
@@ -71,27 +81,10 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         # OS" vai cair para "Todas" até resolvermos o campo certo do ACL.
         user_pk = None
 
-    if resultado_login.cookie_header is None:
-        # Sem esse cookie, get_current_session não tem como confirmar
-        # periodicamente que a sessão continua ativa no Controllr — a
-        # sessão fica sem expiração própria até o técnico deslogar ou o
-        # backend reiniciar (ver sessions.py). Não deveria mais acontecer
-        # depois da correção em ControllrLogin.login (lê do cookie jar, não
-        # só de response.cookies), mas logado alto para não passar batido
-        # se voltar a ocorrer.
-        logger.warning("Login de %s sem cookie de sessão do Controllr", payload.username)
-    else:
-        # Nomes dos cookies (nunca o valor) — cruzar com o log de
-        # encerrar_sessao_controllr enquanto investigamos a segunda sessão
-        # que continua aparecendo no Controllr.
-        nomes_cookie = [par.split("=", 1)[0] for par in resultado_login.cookie_header.split("; ") if par]
-        logger.warning("Login de %s — cookies de sessão do Controllr: %s", payload.username, nomes_cookie)
-
     sessao = create_session(
         username=payload.username,
-        basic_auth=basic_auth,
-        user_pk=user_pk,
         controllr_cookie=resultado_login.cookie_header,
+        user_pk=user_pk,
     )
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
