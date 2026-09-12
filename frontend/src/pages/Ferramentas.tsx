@@ -26,6 +26,12 @@ interface Ferramenta {
 }
 
 const FERRAMENTAS: Ferramenta[] = [
+  {
+    nome: 'SIMET (NIC.br)',
+    descricao: 'top.nic.br — teste de qualidade da conexão',
+    url: 'https://top.nic.br/connection/',
+    Icone: MdWifiTethering,
+  },
   { nome: 'Speedtest', descricao: 'speedtest.net — teste de velocidade Ookla', url: 'https://www.speedtest.net/', Icone: MdSpeed },
   { nome: 'Fast.com', descricao: 'Teste de velocidade da Netflix', url: 'https://fast.com/', Icone: MdBolt },
   { nome: 'ISP Focus (IPv6)', descricao: 'tcp6.ispfocus.net.br', url: 'https://tcp6.ispfocus.net.br/', Icone: MdLooks6 },
@@ -41,12 +47,6 @@ const FERRAMENTAS: Ferramenta[] = [
     descricao: 'yougetsignal.com — útil pra DVR/câmera não acessando remoto',
     url: 'https://www.yougetsignal.com/tools/open-ports/',
     Icone: MdSettingsEthernet,
-  },
-  {
-    nome: 'SIMET (NIC.br)',
-    descricao: 'top.nic.br — teste de qualidade da conexão',
-    url: 'https://top.nic.br/connection/',
-    Icone: MdWifiTethering,
   },
 ]
 
