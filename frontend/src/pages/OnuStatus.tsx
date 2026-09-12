@@ -637,7 +637,9 @@ export default function OnuStatus() {
           )}
           <button
             className="botao botao-secundario botao-bloco"
-            style={{ '--botao-cor': CORES.onu } as CSSProperties}
+            // Verde (sucesso) — diferencia do leitor de QR e do "Reiniciar"
+            // logo abaixo, que usam CORES.onu (ver onu-acoes-onu).
+            style={{ '--botao-cor': CORES.sucesso } as CSSProperties}
             onClick={atualizarAgora}
             disabled={atualizando}
           >

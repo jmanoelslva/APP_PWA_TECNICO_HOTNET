@@ -14,8 +14,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   `.botao`/`--botao-cor` usado em todo o resto do app, inclusive nos
   outros botões da mesma tela) — destoavam visualmente. Trocados por
   `botao botao-secundario` (os dois — o gradiente de `botao-primario`
-  também destoava, pesado demais pra essa tela) com `--botao-cor:
-  CORES.onu`, igual ao resto.
+  também destoava, pesado demais pra essa tela). Leitor de QR fica com
+  `CORES.onu` (igual a "Reiniciar ONU"); "Atualizar agora" fica com
+  `CORES.sucesso` (verde) pra não repetir a mesma cor de "Reiniciar
+  ONU" e do leitor de QR na mesma tela.
 
 ### Alterado
 
