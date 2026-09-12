@@ -3,7 +3,7 @@ import os
 # Versão do projeto (Versionamento Semântico, https://semver.org/lang/pt-BR/)
 # — mantida em sincronia com "version" em frontend/package.json, que é o
 # valor exibido na tela de login. Ver CHANGELOG.md para o histórico.
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 
 # Acesso de staff/técnico (ACL) ao Controllr acontece pelo painel
 # administrativo, numa porta própria (8443) — diferente do endpoint
