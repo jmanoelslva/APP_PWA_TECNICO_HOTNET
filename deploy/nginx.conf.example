@@ -47,7 +47,10 @@ server {
         # 'unsafe-inline' NÃO é necessário em style-src: o React seta
         # estilo inline via propriedade do DOM (CSSOM), não via atributo
         # "style=" no HTML nem <style> — isso não é bloqueado por CSP.
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+        # connect-src inclui api.ipify.org/api6.ipify.org — a ferramenta
+        # "Meu IP" chama esses dois direto do navegador (endpoints
+        # públicos, sem chave) para descobrir o IPv4/IPv6 do dispositivo.
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.ipify.org https://api6.ipify.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
         add_header X-Frame-Options "DENY" always;
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;

@@ -11,16 +11,26 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - Ferramenta "SIMET (NIC.br)" (top.nic.br/connection) no menu Ferramentas.
 - Ferramenta "Meu IP": consulta o IPv4 e o IPv6 (quando a rede tem os
-  dois) e a localização aproximada de cada um diretamente no app
-  (Geolocation API do ipify), com cidade, estado, país, CEP, fuso
-  horário, provedor, rede/ASN e link para o mapa — em vez de abrir um
-  site externo. Requer `IPIFY_API_KEY` configurada no servidor; o
-  `deploy/install.sh` já grava a chave numa instalação nova.
+  dois) e a localização de cada um diretamente no app (Geolocation API
+  do ipify), com cidade, estado, país, CEP, fuso horário, provedor e
+  rede/ASN — em vez de abrir um site externo. Requer `IPIFY_API_KEY`
+  configurada no servidor; o `deploy/install.sh` já grava a chave numa
+  instalação nova.
+
+### Corrigido
+
+- IPv4/IPv6 da ferramenta "Meu IP" não eram descobertos: a CSP
+  (`connect-src`) dos exemplos de configuração do Nginx/Apache bloqueava
+  a chamada do navegador para api.ipify.org/api6.ipify.org, caindo
+  sempre no IP genérico único detectado pelo servidor. Adicionados os
+  dois domínios ao `connect-src`; também corrigido o rótulo mostrado
+  para cada resultado (IPv4/IPv6/IP genérico, conforme o caso).
 
 ### Removido
 
 - Ferramenta "Teste de DNS" (dnsleaktest.com) do menu Ferramentas.
 - Link externo "Qual é meu IP" — substituído pela consulta inline "Meu IP".
+- Link "Ver localização aproximada no mapa" da ferramenta "Meu IP".
 
 ## [1.2.0] - 2026-09-12
 

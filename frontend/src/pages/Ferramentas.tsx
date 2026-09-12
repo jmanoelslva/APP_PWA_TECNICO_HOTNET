@@ -3,7 +3,6 @@ import type { IconType } from 'react-icons'
 import {
   MdBolt,
   MdConstruction,
-  MdLocationOn,
   MdLooks4,
   MdLooks6,
   MdNetworkCheck,
@@ -73,6 +72,11 @@ const FERRAMENTAS: Ferramenta[] = [
 export default function Ferramentas() {
   const [resultadoV4, setResultadoV4] = useState<MeuIpResponse | null>(null)
   const [resultadoV6, setResultadoV6] = useState<MeuIpResponse | null>(null)
+  // Só preenchido quando nem o IPv4 nem o IPv6 puderam ser descobertos
+  // direto pelo navegador (ex: CSP do servidor bloqueando a saída para
+  // api.ipify.org/api6.ipify.org) — nesse caso o único dado disponível é
+  // o IP que o próprio backend detectar da conexão, sem saber a versão.
+  const [resultadoGenerico, setResultadoGenerico] = useState<MeuIpResponse | null>(null)
   const [consultando, setConsultando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [jaConsultou, setJaConsultou] = useState(false)
@@ -82,6 +86,7 @@ export default function Ferramentas() {
     setErro(null)
     setResultadoV4(null)
     setResultadoV6(null)
+    setResultadoGenerico(null)
     try {
       const [ipv4, ipv6] = await Promise.all([
         buscarIpPublico('https://api.ipify.org?format=json'),
@@ -89,10 +94,8 @@ export default function Ferramentas() {
       ])
 
       if (!ipv4 && !ipv6) {
-        // Endpoints públicos indisponíveis (rede bloqueando saída para
-        // eles) — cai para o IP que o próprio backend detectar da conexão.
         const resposta = await consultarMeuIp()
-        setResultadoV4(resposta)
+        setResultadoGenerico(resposta)
         return
       }
 
@@ -142,10 +145,11 @@ export default function Ferramentas() {
 
         {erro && <p className="ferramentas-ip-erro">{erro}</p>}
 
-        {resultadoV4 && <ResultadoIp titulo={resultadoV6 ? 'IPv4' : 'IP'} resultado={resultadoV4} />}
+        {resultadoGenerico && <ResultadoIp titulo="IP" resultado={resultadoGenerico} />}
+        {resultadoV4 && <ResultadoIp titulo="IPv4" resultado={resultadoV4} />}
         {resultadoV6 && <ResultadoIp titulo="IPv6" resultado={resultadoV6} />}
 
-        {jaConsultou && !consultando && !erro && !resultadoV4 && !resultadoV6 && (
+        {jaConsultou && !consultando && !erro && !resultadoV4 && !resultadoV6 && !resultadoGenerico && (
           <p className="ferramentas-ip-erro">Não foi possível determinar o IP.</p>
         )}
       </div>
@@ -223,16 +227,6 @@ function ResultadoIp({ titulo, resultado }: { titulo: string; resultado: MeuIpRe
             {asInfo.asn ? ` (AS${asInfo.asn})` : ''}
           </strong>
         </div>
-      )}
-      {location?.lat != null && location?.lng != null && (
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lng}`}
-          target="_blank"
-          rel="noreferrer"
-          className="ferramentas-ip-mapa"
-        >
-          <MdLocationOn size={14} /> Ver localização aproximada no mapa
-        </a>
       )}
     </div>
   )
