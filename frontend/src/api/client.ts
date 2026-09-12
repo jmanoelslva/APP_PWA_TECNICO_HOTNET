@@ -911,3 +911,27 @@ export interface CriarObservacaoPayload {
 export function criarObservacaoFatura(payload: CriarObservacaoPayload): Promise<{ success: boolean; results: unknown }> {
   return post('financeiro/observacoes', payload)
 }
+
+// ---------------------------------------------------------------------
+// Ferramentas
+// ---------------------------------------------------------------------
+
+export interface MeuIpResponse {
+  success: boolean
+  ip: string
+  location?: {
+    country?: string
+    region?: string
+    city?: string
+    postalCode?: string
+    timezone?: string
+  }
+  isp?: string
+}
+
+// IP público e localização aproximada da rede em que o dispositivo está
+// conectado agora — o backend detecta o IP (mesma lógica da auditoria) e
+// consulta a Geolocation API do ipify, mantendo a chave só no servidor.
+export function consultarMeuIp(): Promise<MeuIpResponse> {
+  return get<MeuIpResponse>('ferramentas/meu-ip')
+}

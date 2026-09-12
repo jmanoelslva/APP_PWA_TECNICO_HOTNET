@@ -4,6 +4,55 @@
   padding: 24px 20px 48px;
 }
 
+.ferramentas-ip-card {
+  background: var(--cor-superficie);
+  border-radius: 16px;
+  border-left: 4px solid var(--cor-ferramentas);
+  padding: 16px 18px;
+  box-shadow: var(--sombra-card);
+  margin-bottom: 20px;
+}
+
+.ferramentas-ip-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ferramentas-ip-botao {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.ferramentas-ip-erro {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--cor-erro);
+}
+
+.ferramentas-ip-resultado {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ferramentas-ip-resultado div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.ferramentas-ip-resultado span {
+  color: var(--cor-texto-terciario);
+}
+
+.ferramentas-ip-resultado strong {
+  color: var(--cor-texto);
+  text-align: right;
+}
+
 .ferramentas-lista {
   list-style: none;
   margin: 0;

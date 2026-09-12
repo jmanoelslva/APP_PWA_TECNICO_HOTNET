@@ -31,3 +31,8 @@ CORS_ALLOW_ORIGINS = [
     for origin in os.environ.get("CORS_ALLOW_ORIGINS", "http://localhost:5173").split(",")
     if origin.strip()
 ]
+
+# Chave da API de geolocalização por IP (geo.ipify.org) — usada pela
+# ferramenta "Meu IP" (backend/app/routers/ferramentas.py). Vazia por
+# padrão: a rota responde 503 até a chave ser configurada no servidor.
+IPIFY_API_KEY = os.environ.get("IPIFY_API_KEY", "")

@@ -293,6 +293,7 @@ if [ ! -f "$ENV_FILE" ]; then
 CONTROLLR_URL=$CONTROLLR_URL
 SESSION_TTL_SECONDS=43200
 CORS_ALLOW_ORIGINS=https://$DOMINIO
+IPIFY_API_KEY=
 EOF
 else
   ok "$ENV_FILE já existe, mantendo como está (edite manualmente se precisar mudar algo)."

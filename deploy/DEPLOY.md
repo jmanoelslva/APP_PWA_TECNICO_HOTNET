@@ -58,7 +58,12 @@ sobreviver a um `git pull`):
 CONTROLLR_URL=https://controllr.hotnet.net.br:8443
 SESSION_TTL_SECONDS=43200
 CORS_ALLOW_ORIGINS=https://tecnico.hotnet.net.br
+IPIFY_API_KEY=
 ```
+
+`IPIFY_API_KEY` é a chave da Geolocation API do ipify (geo.ipify.org),
+usada pela ferramenta "Meu IP". Sem essa chave, a ferramenta fica
+indisponível (a rota responde 503) — o resto do app funciona normal.
 
 `CONTROLLR_URL` aponta para o **painel administrativo** do Controllr (porta
 `8443`), não para o endpoint público em 443 que o app cliente usa — acesso

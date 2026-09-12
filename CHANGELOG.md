@@ -10,15 +10,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Adicionado
 
 - Ferramenta "SIMET (NIC.br)" (top.nic.br/connection) no menu Ferramentas.
-
-### Alterado
-
-- Ferramenta "Qual é meu IP" passa a usar geo.ipify.org em vez de
-  whatismyip.com.
+- Ferramenta "Meu IP": consulta o IP público e a localização aproximada
+  da rede atual diretamente no app (Geolocation API do ipify), em vez de
+  abrir um site externo. Requer `IPIFY_API_KEY` configurada no servidor.
 
 ### Removido
 
 - Ferramenta "Teste de DNS" (dnsleaktest.com) do menu Ferramentas.
+- Link externo "Qual é meu IP" — substituído pela consulta inline "Meu IP".
 
 ## [1.2.0] - 2026-09-12
 
