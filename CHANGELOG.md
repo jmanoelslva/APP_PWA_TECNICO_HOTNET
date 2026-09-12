@@ -7,34 +7,24 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
-### Corrigido
+## [1.4.0] - 2026-09-12
 
-- Botão "Atualizar agora" e o ícone de leitor de QR/código de barras na
-  tela ONU tinham CSS próprio (gradiente com cor fixa, fora do sistema
-  `.botao`/`--botao-cor` usado em todo o resto do app, inclusive nos
-  outros botões da mesma tela) — destoavam visualmente. Trocados por
-  `botao botao-secundario` (os dois — o gradiente de `botao-primario`
-  também destoava, pesado demais pra essa tela). Leitor de QR fica com
-  `CORES.onu` (igual a "Reiniciar ONU"); "Atualizar agora" fica com
-  `CORES.sucesso` (verde) pra não repetir a mesma cor de "Reiniciar
-  ONU" e do leitor de QR na mesma tela.
-- Auditoria geral por outros botões com o mesmo problema (CSS bespoke
-  duplicando a fórmula de gradiente do `.botao-primario` em vez de
-  reusar a classe): achados e corrigidos o ícone de busca (lupa) do
-  campo de usuário PPPoE em Conexão (idêntico ao caso do leitor de QR
-  da ONU) e o "Entendi" do modal de instalação no iOS. Nova classe
-  utilitária `.botao-quadrado` (ícone sozinho, sem padding de texto)
-  em `index.css`, reusada pelos dois leitores de ícone (ONU e Conexão)
-  em vez de cada tela duplicar o próprio CSS quadrado.
+### Adicionado
+
+- Detecção de sessão do técnico encerrada manualmente no painel
+  Controllr: como as demais chamadas deste backend usavam Basic Auth
+  por requisição (sem sessão nenhuma no Controllr, ver
+  `CONTROLLR_API_NOTES.md` seção 8.5), encerrar a sessão do técnico lá
+  nunca era percebido aqui — o app continuava funcionando normalmente
+  até o TTL local expirar sozinho. Agora `get_current_session` confirma
+  periodicamente (a cada `CONTROLLR_LIVENESS_CHECK_SECONDS`, 60s por
+  padrão) que o cookie de sessão guardado no login ainda é aceito pelo
+  Controllr, chamando `/web_auth/acl_perm/list` — se não for mais
+  aceito, a sessão local também é encerrada na hora (401),
+  reaproveitando o fluxo de "sessão expirada" já existente no frontend.
 
 ### Alterado
 
-- Botão "Tentar novamente" (estado de erro) trocado de `botao-primario`
-  para `botao-secundario` em todas as 8 telas que têm esse estado
-  (Conexão, ONU, Suporte, Financeiro, Clientes Offline, Detalhe de
-  Cliente/Chamado/OS) — o gradiente sólido do primário destoava demais
-  para uma ação de "tentar de novo", mesmo raciocínio já aplicado ao
-  "Atualizar agora" da ONU.
 - Autenticação deste backend com o Controllr deixou de usar Basic Auth
   por requisição e passou a usar, em toda chamada, o mesmo cookie de
   sessão criado no login (`TechnicianSession.controllr_cookie`) — antes
@@ -47,77 +37,24 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   explicitamente. Agora existe só uma sessão por técnico, do login ao
   logout. `TechnicianSession.basic_auth` foi removido (o técnico não
   precisa mais ter a senha guardada, nem reversível, na memória deste
-  backend). Testado ao vivo em produção: criação de telefone, busca e
-  renomeação de ONU funcionando normalmente, sem sessão duplicada e com
-  o mesmo cookie mantido ao trocar de módulo/ação no painel — ACL não
-  se mostrou diferente entre Basic Auth e cookie nesses casos. Ainda
-  vale acompanhar os módulos menos testados até agora (financeiro,
-  anexos de ticket, ações de OS) nos próximos dias de uso normal.
-
-### Corrigido
-
-- Pull-to-refresh na tela Conexão sem cliente/CPE selecionado (ex: tela
-  ainda no campo de busca por usuário PPPoE) quebrava mostrando "Informe
-  client_pk, contract_pk, cpe_pk ou username": o gesto chamava `carregar`
-  direto, que sem parâmetro nenhum na URL cai no ramo `contract_pk` de
-  `buscarInicial` mesmo sem ele ter sido informado (`Number(null)` vira
-  `0`, e o backend rejeita com 400). Pull-to-refresh agora usa
-  `atualizarTela`, que seguindo a mesma guarda já usada pelo botão
-  "Tentar novamente" (`temParametroInicial`), refaz a busca por usuário
-  ao vivo quando não há parâmetro, em vez de cair nesse ramo inválido.
-
-- Checagem de liveness da sessão no Controllr (`deps.py::get_current_session`)
-  derrubava a sessão do técnico como "encerrada no Controllr" já na
-  primeira navegação após o login, para todo mundo. Causa raiz
-  (confirmada em produção via log): o endpoint escolhido,
-  `/sys/message/count`, é restrito por ACL de módulo — só tinha sido
-  testado numa sessão de admin (acesso a tudo) e devolvia `HTTP 403
-  Access Denied` pra um técnico comum mesmo com a sessão perfeitamente
-  viva. Trocado por `/web_auth/acl_perm/list` (lista as próprias
-  permissões do usuário), que precisa funcionar pra qualquer sessão
-  válida independente do cargo.
-
-- Sessões órfãs acumulando no Controllr (o mesmo técnico aparecia
-  "logado" várias vezes na lista de usuários online de lá): quando a
-  checagem de liveness derrubava a sessão local (`delete_session`),
-  ela nunca chamava `/session/logout` no Controllr antes — só
-  `/auth/logout` fazia isso. Resultado: a sessão local sumia, mas a
-  sessão real no Controllr ficava presa ativa; e a próxima chamada de
-  `/auth/logout` do frontend não achava mais sessão local pra fechar,
-  então também pulava a limpeza no Controllr. Cada login seguinte
-  criava mais uma sessão nova lá, sem nunca fechar as anteriores.
-  Extraída `encerrar_sessao_controllr` (compartilhada entre
-  `/auth/logout` e a falha de liveness) para sempre tentar fechar a
-  sessão no Controllr antes de descartar a sessão local, dos dois
-  lugares.
-
-### Removido
-
-- `SESSION_TTL_SECONDS`: a sessão do técnico não expira mais por um
-  tempo fixo desde o login. A validade passa a ser decidida
-  inteiramente pelo Controllr — enquanto o técnico usa o app, a
-  checagem de liveness (`CONTROLLR_LIVENESS_CHECK_SECONDS`) mantém a
-  sessão dele ativa lá; parado por tempo suficiente para o Controllr
-  expirar a sessão por inatividade, a próxima checagem detecta e
-  desloga. Substituída por `SESSION_COOKIE_MAX_AGE_SECONDS` (24h por
-  padrão), que só limita até quando o navegador guarda o cookie
-  `TECSESSION`, sem afetar a validade real da sessão.
-
-### Adicionado
-
-- Detecção de sessão do técnico encerrada manualmente no painel
-  Controllr: como as demais chamadas deste backend usam Basic Auth por
-  requisição (sem sessão nenhuma no Controllr, ver
-  `CONTROLLR_API_NOTES.md` seção 8.5), encerrar a sessão do técnico lá
-  nunca era percebido aqui — o app continuava funcionando normalmente
-  até o TTL local (`SESSION_TTL_SECONDS`) expirar sozinho. Agora
-  `get_current_session` confirma periodicamente (a cada
-  `CONTROLLR_LIVENESS_CHECK_SECONDS`, 60s por padrão) que o cookie de
-  sessão guardado no login ainda é aceito pelo Controllr, chamando
-  `/sys/message/count` (o endpoint de menor payload entre os que exigem
-  sessão válida) — se não for mais aceito, a sessão local também é
-  encerrada na hora (401), reaproveitando o fluxo de "sessão expirada"
-  já existente no frontend.
+  backend). Testado ao vivo em produção: criação de telefone, busca,
+  renomeação de ONU, telas de OS/Suporte e Financeiro funcionando
+  normalmente, sem sessão duplicada e com o mesmo cookie mantido ao
+  trocar de módulo/ação no painel.
+- Sessão do técnico não expira mais por um tempo fixo desde o login
+  (`SESSION_TTL_SECONDS`, removido) — a validade passa a ser decidida
+  inteiramente pelo Controllr, via a checagem de liveness acima.
+  Substituída por `SESSION_COOKIE_MAX_AGE_SECONDS` (24h por padrão),
+  que só limita até quando o navegador guarda o cookie `TECSESSION`,
+  sem afetar a validade real da sessão.
+- Botão "Tentar novamente" (estado de erro) trocado de `botao-primario`
+  para `botao-secundario` em todas as 8 telas que têm esse estado
+  (Conexão, ONU, Suporte, Financeiro, Clientes Offline, Detalhe de
+  Cliente/Chamado/OS) — o gradiente sólido do primário destoava demais
+  para uma ação de "tentar de novo".
+- Ícone que representa ONU trocado de roteador (MdRouter) para cabo
+  (MdCable) em todas as telas, botões e menus — mais próximo do
+  conceito de fibra do que um ícone de roteador genérico.
 
 ### Corrigido
 
@@ -126,19 +63,34 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   `response.cookies`, que só reflete o Set-Cookie da resposta final —
   se o `/login` do Controllr respondesse com redirect antes do 200,
   o cookie ficava vazio e `/auth/logout` pulava a chamada a
-  `/session/logout` silenciosamente (o `except: pass` também escondia
-  qualquer outra falha nessa chamada). A sessão local e o cookie do
-  navegador eram sempre encerrados normalmente, mas a sessão no
-  Controllr ficava "ativa" até o lease dele expirar sozinho. Corrigido
-  lendo o cookie do `cookie_jar` da própria `ClientSession` (reflete
-  qualquer resposta da cadeia de redirect) e trocando o swallow
-  silencioso por log de erro real.
-
-### Alterado
-
-- Ícone que representa ONU trocado de roteador (MdRouter) para cabo
-  (MdCable) em todas as telas, botões e menus — mais próximo do
-  conceito de fibra do que um ícone de roteador genérico.
+  `/session/logout` silenciosamente. Corrigido lendo o cookie do
+  `cookie_jar` da própria `ClientSession` (reflete qualquer resposta da
+  cadeia de redirect).
+- Sessões órfãs acumulando no Controllr (o mesmo técnico aparecia
+  "logado" várias vezes na lista de usuários online de lá): quando a
+  checagem de liveness derrubava a sessão local, ela nunca chamava
+  `/session/logout` no Controllr antes — só `/auth/logout` fazia isso,
+  e como a sessão local já tinha sumido, essa chamada também pulava a
+  limpeza. Extraída `encerrar_sessao_controllr`, compartilhada entre os
+  dois lugares, pra sempre tentar fechar a sessão no Controllr antes de
+  descartar a sessão local.
+- Pull-to-refresh na tela Conexão sem cliente/CPE selecionado (ex: tela
+  ainda no campo de busca por usuário PPPoE) quebrava mostrando "Informe
+  client_pk, contract_pk, cpe_pk ou username" — o gesto chamava
+  `buscarInicial` mesmo sem nenhum parâmetro na URL. Pull-to-refresh
+  agora usa `atualizarTela`, que refaz a busca por usuário ao vivo
+  quando não há parâmetro, em vez de cair nesse ramo inválido.
+- Botão "Atualizar agora" e o ícone de leitor de QR/código de barras na
+  tela ONU, o ícone de busca (lupa) do campo de usuário PPPoE em
+  Conexão e o "Entendi" do modal de instalação no iOS tinham CSS
+  próprio (gradiente com cor fixa, fora do sistema `.botao`/
+  `--botao-cor` usado em todo o resto do app) — destoavam visualmente.
+  Todos convertidos pra `botao-secundario`/`botao-primario` conforme o
+  caso; nova classe utilitária `.botao-quadrado` (ícone sozinho, sem
+  padding de texto) reusada pelos leitores de ícone (ONU e Conexão) em
+  vez de cada tela duplicar o próprio CSS quadrado. "Atualizar agora"
+  fica com `CORES.sucesso` (verde) pra não repetir a cor de "Reiniciar
+  ONU" e do leitor de QR na mesma tela.
 
 ## [1.3.0] - 2026-09-12
 
@@ -284,7 +236,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.3.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.0.0...v1.1.0
