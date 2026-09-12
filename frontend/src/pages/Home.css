@@ -223,14 +223,13 @@
   max-width: 100%;
   padding: 5px 12px;
   border-radius: 10px;
-  background: var(--cor-superficie);
-  border: 1px solid var(--cor-borda-suave);
+  background: color-mix(in srgb, var(--cor-conexao) 10%, var(--cor-superficie));
+  border: 1px solid color-mix(in srgb, var(--cor-conexao) 35%, transparent);
   font-size: 11px;
-  color: var(--cor-texto-terciario);
+  color: var(--cor-conexao);
   overflow-wrap: anywhere;
 }
 
 .home-rodape-ip-item strong {
-  color: var(--cor-texto-fraco);
-  font-weight: 700;
+  font-weight: 800;
 }
