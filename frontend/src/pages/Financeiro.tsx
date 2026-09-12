@@ -34,6 +34,11 @@ export default function Financeiro() {
   const [faturas, setFaturas] = useState<FaturaDto[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  // 403 do Controllr = técnico sem liberação de ACL para o financeiro —
+  // não é um erro para tentar de novo, é permissão mesmo (ver
+  // backend/app/routers/financeiro.py: nenhuma checagem prévia daqui,
+  // quem decide é a chamada real).
+  const [naoPermitido, setNaoPermitido] = useState(false)
   const [faturaObservando, setFaturaObservando] = useState<FaturaDto | null>(null)
 
   useEffect(() => {
@@ -45,11 +50,16 @@ export default function Financeiro() {
   async function carregar() {
     setCarregando(true)
     setErro(null)
+    setNaoPermitido(false)
     try {
       const resposta = await listarFaturas(clientPk)
       setFaturas(resposta.results)
     } catch (excecao) {
-      setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar as faturas.')
+      if (excecao instanceof ApiError && excecao.status === 403) {
+        setNaoPermitido(true)
+      } else {
+        setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar as faturas.')
+      }
     } finally {
       setCarregando(false)
     }
@@ -81,7 +91,13 @@ export default function Financeiro() {
           </ul>
         )}
 
-        {!carregando && erro && (
+        {!carregando && naoPermitido && (
+          <div className="financeiro-status">
+            <p>Você não tem permissão para acessar o financeiro.</p>
+          </div>
+        )}
+
+        {!carregando && !naoPermitido && erro && (
           <div className="financeiro-status">
             <p>{erro}</p>
             <button className="botao botao-primario" style={{ '--botao-cor': CORES.financeiro } as CSSProperties} onClick={carregar}>
@@ -90,9 +106,11 @@ export default function Financeiro() {
           </div>
         )}
 
-        {!carregando && !erro && faturas.length === 0 && <EstadoVazio icone={MdReceipt} titulo="Nenhuma fatura encontrada" />}
+        {!carregando && !naoPermitido && !erro && faturas.length === 0 && (
+          <EstadoVazio icone={MdReceipt} titulo="Nenhuma fatura encontrada" />
+        )}
 
-        {!carregando && !erro && faturas.length > 0 && (
+        {!carregando && !naoPermitido && !erro && faturas.length > 0 && (
           <ul className="financeiro-lista">
             {faturas.map((fatura) => {
               const status = statusFatura(fatura)

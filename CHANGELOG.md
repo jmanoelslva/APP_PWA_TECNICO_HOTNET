@@ -11,9 +11,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - Tela de Financeiro: faturas (cobranças) do cliente, com status (paga,
   em aberto, atrasada) e indicação de pagamentos em observação, além de
-  ação para registrar uma nova observação numa fatura em aberto. Menu só
-  aparece para o técnico com a liberação correspondente na ACL do
-  Controllr, verificada automaticamente no login.
+  ação para registrar uma nova observação numa fatura em aberto. O menu
+  aparece para todo técnico; quem decide se os dados carregam é a
+  própria liberação de ACL do técnico no Controllr, na hora do acesso —
+  sem liberação, a tela mostra "sem permissão" em vez dos dados.
 
 ## [1.0.0] - 2026-09-10
 

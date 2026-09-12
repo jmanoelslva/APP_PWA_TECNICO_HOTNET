@@ -3,7 +3,6 @@ import { createContext } from 'react'
 export interface TecnicoLogado {
   username: string
   userPk: number | null
-  financeiroLiberado: boolean
 }
 
 export interface SessionState {

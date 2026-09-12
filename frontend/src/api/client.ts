@@ -16,9 +16,12 @@ export class SessaoExpiradaError extends Error {
 }
 
 export class ApiError extends Error {
-  constructor(message: string) {
+  status: number
+
+  constructor(message: string, status: number) {
     super(message)
     this.name = 'ApiError'
+    this.status = status
   }
 }
 
@@ -66,7 +69,7 @@ async function tratarResposta<T>(response: Response, path: string): Promise<T> {
     } catch {
       // corpo não era JSON — mantém a mensagem genérica
     }
-    throw new ApiError(mensagem)
+    throw new ApiError(mensagem, response.status)
   }
   return (await response.json()) as T
 }
@@ -116,7 +119,6 @@ async function postForm<T>(path: string, form: FormData): Promise<T> {
 export interface TecnicoDto {
   username: string
   user_pk: number | null
-  financeiro_liberado: boolean
 }
 
 export interface LoginResponse {
