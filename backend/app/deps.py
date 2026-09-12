@@ -12,6 +12,39 @@ from .sessions import TechnicianSession, delete_session, get_session
 logger = logging.getLogger(__name__)
 
 
+async def encerrar_sessao_controllr(username: str, cookie: str | None) -> None:
+    """
+    Encerra no Controllr a sessão criada no /login (POST /session/logout,
+    mesmo mecanismo do painel administrativo, autenticado só por esse
+    cookie — não pelo Basic Auth, que não cria sessão nenhuma lá, ver
+    CONTROLLR_API_NOTES.md seção 8.5). Usado tanto por /auth/logout quanto
+    por get_current_session quando a checagem de liveness detecta sessão
+    inválida — sem isso nos dois lugares, a sessão local some daqui mas
+    fica "presa" ativa no Controllr até o lease dele expirar sozinho
+    (foi exatamente o que aconteceu quando só get_session era limpo aqui:
+    a próxima chamada a /auth/logout não achava mais sessão local pra
+    fechar, e cada login seguinte criava mais uma sessão nova no
+    Controllr, sem nunca fechar as anteriores).
+    """
+    if not cookie:
+        logger.warning("Sem controllr_cookie salvo para %s — sessão pode ficar ativa no Controllr", username)
+        return
+    try:
+        timeout = ClientTimeout(10)
+        async with ClientSession() as http:
+            async with http.post(
+                f"{CONTROLLR_URL}/session/logout",
+                headers={"Cookie": cookie},
+                timeout=timeout,
+            ) as resposta:
+                if resposta.status >= 400:
+                    logger.warning(
+                        "Falha ao encerrar sessão de %s no Controllr: HTTP %s", username, resposta.status
+                    )
+    except Exception:
+        logger.exception("Erro ao chamar /session/logout no Controllr para %s", username)
+
+
 async def _controllr_sessao_viva(cookie: str) -> bool:
     """
     Confirma se o cookie de sessão do Controllr (criado no /login, guardado
@@ -80,6 +113,11 @@ async def get_current_session(
     agora = time.time()
     if session.controllr_cookie and (agora - session.controllr_checked_at) > CONTROLLR_LIVENESS_CHECK_SECONDS:
         if not await _controllr_sessao_viva(session.controllr_cookie):
+            # Best-effort: a sessão já não responde como válida, mas ainda
+            # assim tenta fechá-la de verdade no Controllr — sem isso ela
+            # fica "presa" ativa lá até o lease expirar sozinho (ver
+            # encerrar_sessao_controllr).
+            await encerrar_sessao_controllr(session.username, session.controllr_cookie)
             delete_session(tecsession)
             raise HTTPException(status_code=401, detail="Sessão encerrada no Controllr.")
         session.controllr_checked_at = agora

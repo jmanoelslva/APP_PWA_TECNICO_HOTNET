@@ -20,6 +20,20 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   permissões do usuário), que precisa funcionar pra qualquer sessão
   válida independente do cargo.
 
+- Sessões órfãs acumulando no Controllr (o mesmo técnico aparecia
+  "logado" várias vezes na lista de usuários online de lá): quando a
+  checagem de liveness derrubava a sessão local (`delete_session`),
+  ela nunca chamava `/session/logout` no Controllr antes — só
+  `/auth/logout` fazia isso. Resultado: a sessão local sumia, mas a
+  sessão real no Controllr ficava presa ativa; e a próxima chamada de
+  `/auth/logout` do frontend não achava mais sessão local pra fechar,
+  então também pulava a limpeza no Controllr. Cada login seguinte
+  criava mais uma sessão nova lá, sem nunca fechar as anteriores.
+  Extraída `encerrar_sessao_controllr` (compartilhada entre
+  `/auth/logout` e a falha de liveness) para sempre tentar fechar a
+  sessão no Controllr antes de descartar a sessão local, dos dois
+  lugares.
+
 ### Removido
 
 - `SESSION_TTL_SECONDS`: a sessão do técnico não expira mais por um
