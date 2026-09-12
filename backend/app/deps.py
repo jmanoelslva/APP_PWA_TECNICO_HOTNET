@@ -25,6 +25,13 @@ async def _controllr_sessao_viva(cookie: str) -> bool:
     menor payload de resposta entre os candidatos (o painel administrativo
     também chama esse endpoint a cada carregamento de página).
     """
+    # FAIL-OPEN temporário: logando em detalhe em vez de derrubar a sessão
+    # numa resposta que não seja um success:true claro. A checagem nunca foi
+    # confirmada contra o Controllr de verdade nessa chamada servidor-a-
+    # servidor (só via fetch do próprio navegador, que manda outros cookies/
+    # headers junto) — voltou "sessão encerrada" para todo mundo já na
+    # primeira navegação após o login. Assim que os logs mostrarem o motivo
+    # real (status/corpo abaixo), volta a derrubar de verdade.
     try:
         timeout = ClientTimeout(10)
         async with ClientSession() as http:
@@ -33,10 +40,24 @@ async def _controllr_sessao_viva(cookie: str) -> bool:
                 headers={"Cookie": cookie},
                 timeout=timeout,
             ) as resposta:
+                corpo_bruto = await resposta.text()
                 if resposta.status >= 400:
-                    return False
-                corpo = await resposta.json(content_type=None)
-                return bool(corpo.get("success", False))
+                    logger.warning(
+                        "Liveness Controllr: HTTP %s — corpo: %s", resposta.status, corpo_bruto[:500]
+                    )
+                    return True
+                try:
+                    corpo = await resposta.json(content_type=None)
+                except Exception:
+                    logger.warning(
+                        "Liveness Controllr: HTTP %s sem JSON válido — corpo: %s",
+                        resposta.status,
+                        corpo_bruto[:500],
+                    )
+                    return True
+                if not corpo.get("success", False):
+                    logger.warning("Liveness Controllr: success=false — corpo: %s", corpo_bruto[:500])
+                return True
     except Exception:
         logger.exception("Falha ao checar liveness da sessão do técnico no Controllr")
         # Falha de rede/timeout não é a mesma coisa que sessão encerrada —

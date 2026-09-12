@@ -7,6 +7,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+
+- Checagem de liveness da sessão no Controllr (`deps.py::get_current_session`)
+  derrubava a sessão do técnico como "encerrada no Controllr" já na
+  primeira navegação após o login, para todo mundo — a chamada a
+  `/sys/message/count` só tinha sido validada via `fetch` do navegador
+  (que manda outros cookies/headers junto), nunca nessa chamada
+  servidor-a-servidor com só o cookie salvo. Virou fail-open temporário
+  (loga o motivo real em detalhe, mas não derruba mais ninguém) até os
+  logs mostrarem o que o Controllr responde de fato nesse caminho.
+
 ### Removido
 
 - `SESSION_TTL_SECONDS`: a sessão do técnico não expira mais por um
