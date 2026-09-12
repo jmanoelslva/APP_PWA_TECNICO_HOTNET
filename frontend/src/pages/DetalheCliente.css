@@ -171,30 +171,6 @@
   font-weight: 700;
 }
 
-.detalhe-cliente-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-fundo);
-  color: var(--cor-texto-secundario);
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.detalhe-cliente-chip-botao {
-  font-family: inherit;
-}
-
-.detalhe-cliente-chip-botao:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
 .detalhe-cliente-item-link {
   display: block;
   text-decoration: none;

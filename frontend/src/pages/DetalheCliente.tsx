@@ -182,6 +182,17 @@ export default function DetalheCliente() {
             </div>
           </div>
 
+          <div className="detalhe-cliente-item-acoes">
+            <Link
+              to={`/financeiro?client_pk=${pk}`}
+              className="botao botao-secundario botao-pequeno"
+              style={{ '--botao-cor': CORES.financeiro } as CSSProperties}
+              viewTransition
+            >
+              <MdAttachMoney size={14} /> Financeiro
+            </Link>
+          </div>
+
           <section className="detalhe-cliente-secao">
             <h2>Telefones</h2>
             {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
@@ -196,7 +207,12 @@ export default function DetalheCliente() {
                 <p>{tel.phone_number || 'Número não informado'}</p>
               </div>
             ))}
-            <button type="button" className="detalhe-cliente-chip detalhe-cliente-chip-botao" onClick={() => setAdicionandoTelefone(true)}>
+            <button
+              type="button"
+              className="botao botao-secundario botao-pequeno"
+              style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+              onClick={() => setAdicionandoTelefone(true)}
+            >
               <MdAdd size={14} /> Adicionar telefone
             </button>
           </section>
@@ -227,7 +243,8 @@ export default function DetalheCliente() {
                       href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="detalhe-cliente-chip"
+                      className="botao botao-secundario botao-pequeno"
+                      style={{ '--botao-cor': CORES.endereco } as CSSProperties}
                     >
                       <MdLocationOn size={14} /> Ver no Google Maps
                     </a>
@@ -288,7 +305,12 @@ export default function DetalheCliente() {
                   )}
 
                   <div className="detalhe-cliente-item-acoes">
-                    <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="detalhe-cliente-chip" viewTransition>
+                    <Link
+                      to={`/conexao?cpe_pk=${cpe.cpe_pk}`}
+                      className="botao botao-secundario botao-pequeno"
+                      style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                      viewTransition
+                    >
                       <MdWifi size={14} /> Conexão
                     </Link>
                     <Link
@@ -297,7 +319,8 @@ export default function DetalheCliente() {
                           ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
                           : `/onu?cpe_pk=${cpe.cpe_pk}`
                       }
-                      className="detalhe-cliente-chip"
+                      className="botao botao-secundario botao-pequeno"
+                      style={{ '--botao-cor': CORES.onu } as CSSProperties}
                       viewTransition
                     >
                       <MdRouter size={14} /> ONU
@@ -368,27 +391,17 @@ export default function DetalheCliente() {
                       {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
                         <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível para este contrato.</p>
                       )}
-                      {(contrato.contract_pk || (contrato.contract_sign_date && contrato.contract_sign_doc_link)) && (
+                      {contrato.contract_sign_date && contrato.contract_sign_doc_link && (
                         <div className="detalhe-cliente-item-acoes">
-                          {contrato.contract_pk && (
-                            <Link to={`/conexao?contract_pk=${contrato.contract_pk}`} className="detalhe-cliente-chip" viewTransition>
-                              <MdWifi size={14} /> Conexão
-                            </Link>
-                          )}
-                          {contrato.contract_pk && (
-                            <Link
-                              to={`/financeiro?client_pk=${pk}&contract_pk=${contrato.contract_pk}`}
-                              className="detalhe-cliente-chip"
-                              viewTransition
-                            >
-                              <MdAttachMoney size={14} /> Financeiro
-                            </Link>
-                          )}
-                          {contrato.contract_sign_date && contrato.contract_sign_doc_link && (
-                            <a href={contrato.contract_sign_doc_link} target="_blank" rel="noreferrer" className="detalhe-cliente-chip">
-                              <MdDescription size={14} /> Ver contrato assinado
-                            </a>
-                          )}
+                          <a
+                            href={contrato.contract_sign_doc_link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="botao botao-secundario botao-pequeno"
+                            style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+                          >
+                            <MdDescription size={14} /> Ver contrato assinado
+                          </a>
                         </div>
                       )}
                     </>

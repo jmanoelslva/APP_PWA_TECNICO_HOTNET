@@ -7,6 +7,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- Tela de detalhe do cliente: botão "Financeiro" voltou a ficar visível
+  logo abaixo do card do cliente (fora do Contrato), e o atalho
+  "Conexão" foi removido de dentro do Contrato (já existe por CPE, na
+  seção "Conexões"). Todas as ações de navegação da tela (Financeiro,
+  Conexão, ONU, Ver no Google Maps, Adicionar telefone, Ver contrato
+  assinado) agora usam o mesmo estilo de botão colorido por área já
+  usado na tela de Conexão, em vez do chip cinza neutro.
+
 ### Corrigido
 
 - Observação de pagamento criada pelo app nascia desabilitada — o campo
