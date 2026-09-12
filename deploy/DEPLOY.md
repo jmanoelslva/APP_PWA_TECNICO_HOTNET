@@ -56,7 +56,7 @@ sobreviver a um `git pull`):
 
 ```env
 CONTROLLR_URL=https://controllr.hotnet.net.br:8443
-SESSION_COOKIE_MAX_AGE_SECONDS=2592000
+SESSION_COOKIE_MAX_AGE_SECONDS=86400
 CONTROLLR_LIVENESS_CHECK_SECONDS=60
 CORS_ALLOW_ORIGINS=https://tecnico.hotnet.net.br
 IPIFY_API_KEY=
@@ -72,7 +72,7 @@ este backend confirma a cada `CONTROLLR_LIVENESS_CHECK_SECONDS` (ver
 `backend/app/deps.py::get_current_session`); quem decide quando expirar
 por inatividade é o próprio Controllr. `SESSION_COOKIE_MAX_AGE_SECONDS`
 só limita até quando o **navegador** guarda o cookie `TECSESSION` — por
-isso pode ficar bem alto (30 dias por padrão).
+isso pode ficar bem alto (24h por padrão).
 
 `CONTROLLR_URL` aponta para o **painel administrativo** do Controllr (porta
 `8443`), não para o endpoint público em 443 que o app cliente usa — acesso

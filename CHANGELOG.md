@@ -15,8 +15,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   checagem de liveness (`CONTROLLR_LIVENESS_CHECK_SECONDS`) mantém a
   sessão dele ativa lá; parado por tempo suficiente para o Controllr
   expirar a sessão por inatividade, a próxima checagem detecta e
-  desloga. Substituída por `SESSION_COOKIE_MAX_AGE_SECONDS` (30 dias
-  por padrão), que só limita até quando o navegador guarda o cookie
+  desloga. Substituída por `SESSION_COOKIE_MAX_AGE_SECONDS` (24h por
+  padrão), que só limita até quando o navegador guarda o cookie
   `TECSESSION`, sem afetar a validade real da sessão.
 
 ### Adicionado

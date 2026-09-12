@@ -21,7 +21,7 @@ CONTROLLR_URL = os.environ.get("CONTROLLR_URL", "https://controllr.hotnet.net.br
 # próxima checagem detecta isso e desloga (ver deps.py::get_current_session).
 # Por isso este valor pode — e deve — ser bem maior que a inatividade
 # tolerada pelo Controllr.
-SESSION_COOKIE_MAX_AGE_SECONDS = int(os.environ.get("SESSION_COOKIE_MAX_AGE_SECONDS", str(30 * 24 * 60 * 60)))
+SESSION_COOKIE_MAX_AGE_SECONDS = int(os.environ.get("SESSION_COOKIE_MAX_AGE_SECONDS", str(24 * 60 * 60)))
 
 # De quanto em quanto tempo confirmar com o Controllr que a sessão criada
 # no /login ainda está ativa lá (ver deps.py::get_current_session) — sem
