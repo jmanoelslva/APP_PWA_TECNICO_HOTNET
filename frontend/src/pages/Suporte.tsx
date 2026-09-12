@@ -68,7 +68,7 @@ export default function Suporte() {
         {!carregando && erro && (
           <div className="suporte-status">
             <p>{erro}</p>
-            <button className="botao botao-primario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={carregar}>
+            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={carregar}>
               Tentar novamente
             </button>
           </div>

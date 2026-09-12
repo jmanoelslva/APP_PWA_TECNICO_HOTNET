@@ -164,7 +164,7 @@ export default function DetalheChamado() {
         {!carregando && erro && (
           <div className="detalhe-chamado-status">
             <p>{erro}</p>
-            <button className="botao botao-primario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={() => carregar(true)}>
+            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={() => carregar(true)}>
               Tentar novamente
             </button>
           </div>

@@ -99,7 +99,7 @@ export default function Financeiro() {
         {!carregando && !naoPermitido && erro && (
           <div className="financeiro-status">
             <p>{erro}</p>
-            <button className="botao botao-primario" style={{ '--botao-cor': CORES.financeiro } as CSSProperties} onClick={carregar}>
+            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.financeiro } as CSSProperties} onClick={carregar}>
               Tentar novamente
             </button>
           </div>

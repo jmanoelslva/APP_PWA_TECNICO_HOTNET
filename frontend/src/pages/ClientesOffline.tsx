@@ -122,7 +122,7 @@ export default function ClientesOffline() {
         {!carregando && erro && cpes.length === 0 && (
           <div className="clientes-offline-status">
             <p>{erro}</p>
-            <button className="botao botao-primario" style={{ '--botao-cor': CORES.offline } as CSSProperties} onClick={carregar}>
+            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.offline } as CSSProperties} onClick={carregar}>
               Tentar novamente
             </button>
           </div>

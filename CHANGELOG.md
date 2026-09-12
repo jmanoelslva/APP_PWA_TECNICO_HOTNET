@@ -29,6 +29,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
+- Botão "Tentar novamente" (estado de erro) trocado de `botao-primario`
+  para `botao-secundario` em todas as 8 telas que têm esse estado
+  (Conexão, ONU, Suporte, Financeiro, Clientes Offline, Detalhe de
+  Cliente/Chamado/OS) — o gradiente sólido do primário destoava demais
+  para uma ação de "tentar de novo", mesmo raciocínio já aplicado ao
+  "Atualizar agora" da ONU.
 - Autenticação deste backend com o Controllr deixou de usar Basic Auth
   por requisição e passou a usar, em toda chamada, o mesmo cookie de
   sessão criado no login (`TechnicianSession.controllr_cookie`) — antes

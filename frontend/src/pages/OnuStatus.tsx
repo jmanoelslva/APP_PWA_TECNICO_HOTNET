@@ -447,7 +447,7 @@ export default function OnuStatus() {
       {!carregando && erro && (
         <div className="onu-status-erro">
           <p>{erro}</p>
-          <button className="botao botao-primario" style={{ '--botao-cor': CORES.onu } as CSSProperties} onClick={tentarNovamente}>
+          <button className="botao botao-secundario" style={{ '--botao-cor': CORES.onu } as CSSProperties} onClick={tentarNovamente}>
             Tentar novamente
           </button>
         </div>

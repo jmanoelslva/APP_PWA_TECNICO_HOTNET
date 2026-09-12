@@ -805,7 +805,7 @@ export default function Conexao() {
         {!carregando && erro && (
           <div className="conexao-status">
             <p>{erro}</p>
-            <button className="botao botao-primario" style={{ '--botao-cor': CORES.conexao } as CSSProperties} onClick={tentarNovamente}>
+            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.conexao } as CSSProperties} onClick={tentarNovamente}>
               Tentar novamente
             </button>
           </div>

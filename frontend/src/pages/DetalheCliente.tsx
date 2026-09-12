@@ -164,7 +164,7 @@ export default function DetalheCliente() {
       {!carregando && erro && (
         <div className="detalhe-cliente-status">
           <p>{erro}</p>
-          <button className="botao botao-primario" style={{ '--botao-cor': CORES.cliente } as CSSProperties} onClick={carregar}>
+          <button className="botao botao-secundario" style={{ '--botao-cor': CORES.cliente } as CSSProperties} onClick={carregar}>
             Tentar novamente
           </button>
         </div>
