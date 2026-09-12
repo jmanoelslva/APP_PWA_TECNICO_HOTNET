@@ -60,14 +60,6 @@
   border-color: var(--cor-onu);
 }
 
-/* Botão de ícone (leitor de QR) do ".botao" padrão — que é pensado para
-   texto + ícone, com padding horizontal — vira quadrado, sem texto. */
-.onu-busca-scan {
-  flex-shrink: 0;
-  width: 44px;
-  padding: 0;
-}
-
 .onu-combobox {
   position: relative;
 }

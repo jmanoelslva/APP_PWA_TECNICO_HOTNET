@@ -18,6 +18,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   `CORES.onu` (igual a "Reiniciar ONU"); "Atualizar agora" fica com
   `CORES.sucesso` (verde) pra não repetir a mesma cor de "Reiniciar
   ONU" e do leitor de QR na mesma tela.
+- Auditoria geral por outros botões com o mesmo problema (CSS bespoke
+  duplicando a fórmula de gradiente do `.botao-primario` em vez de
+  reusar a classe): achados e corrigidos o ícone de busca (lupa) do
+  campo de usuário PPPoE em Conexão (idêntico ao caso do leitor de QR
+  da ONU) e o "Entendi" do modal de instalação no iOS. Nova classe
+  utilitária `.botao-quadrado` (ícone sozinho, sem padding de texto)
+  em `index.css`, reusada pelos dois leitores de ícone (ONU e Conexão)
+  em vez de cada tela duplicar o próprio CSS quadrado.
 
 ### Alterado
 

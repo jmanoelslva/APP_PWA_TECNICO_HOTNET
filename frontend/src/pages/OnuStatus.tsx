@@ -394,7 +394,7 @@ export default function OnuStatus() {
           />
           <button
             type="button"
-            className="botao botao-secundario onu-busca-scan"
+            className="botao botao-secundario botao-quadrado"
             style={{ '--botao-cor': CORES.onu } as CSSProperties}
             onClick={() => setLendoCodigo(true)}
             aria-label="Ler código de barras ou QR pela câmera"

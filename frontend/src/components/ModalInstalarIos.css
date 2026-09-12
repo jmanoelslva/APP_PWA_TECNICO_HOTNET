@@ -69,15 +69,6 @@
   color: var(--cor-texto-terciario);
 }
 
-.modal-instalar-ios button {
+.modal-instalar-ios .botao {
   margin-top: 20px;
-  height: 44px;
-  width: 100%;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--cor-branco-fixo);
-  font-weight: 700;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
 }

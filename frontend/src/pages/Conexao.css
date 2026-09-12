@@ -291,20 +291,6 @@
   border-color: var(--cor-conexao);
 }
 
-.conexao-busca-campo button {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--cor-conexao), var(--cor-primaria-escura));
-  color: var(--cor-branco-fixo);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
 .conexao-link {
   display: inline-flex;
   align-items: center;

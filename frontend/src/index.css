@@ -220,6 +220,16 @@ a:active,
   width: 100%;
 }
 
+/* Variante quadrada, sem o padding horizontal do ".botao" normal — ícone
+   sozinho, sem texto (ex.: leitor de QR/busca dentro de um campo).
+   flex-shrink: 0 porque sempre é usado ao lado de um input flexível, que
+   não pode "roubar" a largura fixa do botão. */
+.botao-quadrado {
+  flex-shrink: 0;
+  width: 44px;
+  padding: 0;
+}
+
 /* Transição entre telas — View Transitions API nativa (ver prop
    "viewTransition" do react-router-dom nas páginas). */
 @media (prefers-reduced-motion: no-preference) {

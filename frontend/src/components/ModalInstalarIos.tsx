@@ -26,7 +26,9 @@ export default function ModalInstalarIos({ aberto, onFechar }: Props) {
           Só funciona pelo Safari — não abre pelo app do WhatsApp, Instagram ou outro navegador (Chrome, Firefox
           etc).
         </p>
-        <button onClick={onFechar}>Entendi</button>
+        <button className="botao botao-primario botao-bloco" onClick={onFechar}>
+          Entendi
+        </button>
       </div>
     </div>
   )

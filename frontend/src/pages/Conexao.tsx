@@ -750,7 +750,12 @@ export default function Conexao() {
                   onFocus={() => setListaUsuarioAberta(true)}
                   onBlur={() => setTimeout(() => setListaUsuarioAberta(false), 150)}
                 />
-                <button type="submit" aria-label="Buscar">
+                <button
+                  type="submit"
+                  className="botao botao-secundario botao-quadrado"
+                  style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                  aria-label="Buscar"
+                >
                   <MdSearch size={20} />
                 </button>
               </div>
