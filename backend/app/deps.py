@@ -26,6 +26,11 @@ async def encerrar_sessao_controllr(username: str, cookie: str | None) -> None:
     fechar, e cada login seguinte criava mais uma sessão nova no
     Controllr, sem nunca fechar as anteriores).
     """
+    # Nomes dos cookies (nunca o valor — é o token de sessão) logados pra
+    # cruzar com o cookie guardado no login, enquanto investigamos por que
+    # uma segunda sessão continua aparecendo no Controllr mesmo com essa
+    # chamada rodando.
+    nomes_cookie = [par.split("=", 1)[0] for par in (cookie or "").split("; ") if par]
     if not cookie:
         logger.warning("Sem controllr_cookie salvo para %s — sessão pode ficar ativa no Controllr", username)
         return
@@ -37,12 +42,22 @@ async def encerrar_sessao_controllr(username: str, cookie: str | None) -> None:
                 headers={"Cookie": cookie},
                 timeout=timeout,
             ) as resposta:
+                corpo_bruto = await resposta.text()
                 if resposta.status >= 400:
                     logger.warning(
-                        "Falha ao encerrar sessão de %s no Controllr: HTTP %s", username, resposta.status
+                        "Falha ao encerrar sessão de %s no Controllr (cookies %s): HTTP %s — corpo: %s",
+                        username, nomes_cookie, resposta.status, corpo_bruto[:300],
+                    )
+                else:
+                    # .warning (não .info) de propósito: sem logging.basicConfig
+                    # configurado neste projeto, o logger raiz fica em WARNING
+                    # por padrão — .info não apareceria em lugar nenhum.
+                    logger.warning(
+                        "Sessão de %s encerrada no Controllr (cookies %s): HTTP %s — corpo: %s",
+                        username, nomes_cookie, resposta.status, corpo_bruto[:300],
                     )
     except Exception:
-        logger.exception("Erro ao chamar /session/logout no Controllr para %s", username)
+        logger.exception("Erro ao chamar /session/logout no Controllr para %s (cookies %s)", username, nomes_cookie)
 
 
 async def _controllr_sessao_viva(cookie: str) -> bool:

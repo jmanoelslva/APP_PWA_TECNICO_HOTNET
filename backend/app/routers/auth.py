@@ -80,6 +80,12 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         # só de response.cookies), mas logado alto para não passar batido
         # se voltar a ocorrer.
         logger.warning("Login de %s sem cookie de sessão do Controllr", payload.username)
+    else:
+        # Nomes dos cookies (nunca o valor) — cruzar com o log de
+        # encerrar_sessao_controllr enquanto investigamos a segunda sessão
+        # que continua aparecendo no Controllr.
+        nomes_cookie = [par.split("=", 1)[0] for par in resultado_login.cookie_header.split("; ") if par]
+        logger.warning("Login de %s — cookies de sessão do Controllr: %s", payload.username, nomes_cookie)
 
     sessao = create_session(
         username=payload.username,
