@@ -1,13 +1,13 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
+  MdCable,
   MdContentCopy,
   MdExpandLess,
   MdExpandMore,
   MdMyLocation,
   MdPeopleAlt,
   MdRefresh,
-  MdRouter,
   MdSave,
   MdSearch,
   MdVisibility,
@@ -821,7 +821,7 @@ export default function Conexao() {
                   <strong>{cpe.username ?? '—'}</strong>
                   {cpe.username && (
                     <Link to={`/onu?username=${encodeURIComponent(cpe.username)}`} className="conexao-btn-link" aria-label="Ver ONU deste usuário" viewTransition>
-                      <MdRouter size={16} />
+                      <MdCable size={16} />
                     </Link>
                   )}
                   <button onClick={() => copiar(cpe.username, 'Usuário')} aria-label="Copiar usuário">
@@ -1249,7 +1249,7 @@ export default function Conexao() {
                     style={{ '--botao-cor': CORES.onu } as CSSProperties}
                     viewTransition
                   >
-                    <MdRouter size={14} /> Detalhes
+                    <MdCable size={14} /> Detalhes
                   </Link>
                 </div>
                 <div className="conexao-linha">

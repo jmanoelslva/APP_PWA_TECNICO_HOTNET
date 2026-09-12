@@ -7,6 +7,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- Ícone que representa ONU trocado de roteador (MdRouter) para cabo
+  (MdCable) em todas as telas, botões e menus — mais próximo do
+  conceito de fibra do que um ícone de roteador genérico.
+
 ## [1.3.0] - 2026-09-12
 
 ### Adicionado

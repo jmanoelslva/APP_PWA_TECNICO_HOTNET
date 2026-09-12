@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MdAdd,
+  MdCable,
   MdDescription,
   MdEdit,
   MdExpandLess,
@@ -9,7 +10,6 @@ import {
   MdLocationOn,
   MdPeopleAlt,
   MdReceipt,
-  MdRouter,
   MdWifi,
 } from 'react-icons/md'
 import {
@@ -326,7 +326,7 @@ export default function DetalheCliente() {
                       style={{ '--botao-cor': CORES.onu } as CSSProperties}
                       viewTransition
                     >
-                      <MdRouter size={14} /> ONU
+                      <MdCable size={14} /> ONU
                     </Link>
                   </div>
                 </div>

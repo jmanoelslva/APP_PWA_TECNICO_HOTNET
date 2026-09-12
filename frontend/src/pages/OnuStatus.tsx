@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
+  MdCable,
   MdContentCopy,
   MdDeleteForever,
   MdEdit,
@@ -9,7 +10,6 @@ import {
   MdPowerSettingsNew,
   MdQrCodeScanner,
   MdRefresh,
-  MdRouter,
   MdVisibility,
   MdVisibilityOff,
   MdWifi,
@@ -375,7 +375,7 @@ export default function OnuStatus() {
 
   return (
     <div className="onu-tela tela-entrada">
-      <CabecalhoTela icone={MdRouter} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
+      <CabecalhoTela icone={MdCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
 
       <form className="onu-card onu-busca onu-combobox" onSubmit={aoSubmeterBusca}>
         <label htmlFor="onu-busca-input">Serial da ONU ou usuário PPPoE</label>
@@ -429,7 +429,7 @@ export default function OnuStatus() {
 
       {semSelecao && !erro && (
         <EstadoVazio
-          icone={MdRouter}
+          icone={MdCable}
           titulo="Busque pelo serial da ONU ou pelo usuário PPPoE"
           subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
         />
@@ -452,7 +452,7 @@ export default function OnuStatus() {
       )}
 
       {temParametroInicial && !carregando && !erro && !onu && (
-        <EstadoVazio icone={MdRouter} titulo="Nenhuma ONU encontrada para esta conexão." />
+        <EstadoVazio icone={MdCable} titulo="Nenhuma ONU encontrada para esta conexão." />
       )}
 
       {!carregando && !erro && onu && (
