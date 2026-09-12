@@ -7,6 +7,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Removido
+
+- `SESSION_TTL_SECONDS`: a sessão do técnico não expira mais por um
+  tempo fixo desde o login. A validade passa a ser decidida
+  inteiramente pelo Controllr — enquanto o técnico usa o app, a
+  checagem de liveness (`CONTROLLR_LIVENESS_CHECK_SECONDS`) mantém a
+  sessão dele ativa lá; parado por tempo suficiente para o Controllr
+  expirar a sessão por inatividade, a próxima checagem detecta e
+  desloga. Substituída por `SESSION_COOKIE_MAX_AGE_SECONDS` (30 dias
+  por padrão), que só limita até quando o navegador guarda o cookie
+  `TECSESSION`, sem afetar a validade real da sessão.
+
 ### Adicionado
 
 - Detecção de sessão do técnico encerrada manualmente no painel

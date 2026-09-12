@@ -11,19 +11,23 @@ associada a esse header).
 
 Guarda também o cookie de sessão que o próprio POST /login do Controllr
 retorna (mesmo mecanismo do painel administrativo, BRBOSCookie), usado
-só para encerrar essa sessão no /auth/logout — nenhuma outra chamada de
-API usa esse cookie.
+para duas coisas: encerrar essa sessão no /auth/logout, e confirmar
+periodicamente que ela continua ativa no Controllr (ver
+deps.py::get_current_session) — nenhuma outra chamada de API usa esse
+cookie.
 
-Sessões não sobrevivem a um restart do processo — um técnico logado
-precisa logar de novo se o backend reiniciar. Aceitável para uso interno
-com poucos técnicos simultâneos; trocar por Redis se o volume crescer.
+Não há TTL próprio aqui: uma TechnicianSession vive enquanto o cookie de
+sessão do Controllr continuar sendo aceito por ele (checado
+periodicamente, ver CONTROLLR_LIVENESS_CHECK_SECONDS em config.py) — o
+Controllr é quem decide quando expirar por inatividade. Sessões também
+não sobrevivem a um restart do processo — um técnico logado precisa
+logar de novo se o backend reiniciar. Aceitável para uso interno com
+poucos técnicos simultâneos; trocar por Redis se o volume crescer.
 """
 
 import secrets
 import time
 from dataclasses import dataclass
-
-from .config import SESSION_TTL_SECONDS
 
 
 @dataclass
@@ -38,9 +42,6 @@ class TechnicianSession:
     # é uma sessão válida lá (ver deps.py::get_current_session) — 0.0 força
     # a primeira checagem já na próxima requisição autenticada.
     controllr_checked_at: float = 0.0
-
-    def expired(self) -> bool:
-        return (time.time() - self.created_at) > SESSION_TTL_SECONDS
 
 
 _sessions: dict[str, TechnicianSession] = {}
@@ -65,13 +66,7 @@ def create_session(
 def get_session(session_id: str | None) -> TechnicianSession | None:
     if not session_id:
         return None
-    session = _sessions.get(session_id)
-    if session is None:
-        return None
-    if session.expired():
-        _sessions.pop(session_id, None)
-        return None
-    return session
+    return _sessions.get(session_id)
 
 
 def delete_session(session_id: str | None) -> None:

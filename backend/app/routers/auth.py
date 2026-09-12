@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from ..brbyteapi.controllr import AsyncControllr
 from ..brbyteapi.controllr.login import ControllrLogin
-from ..config import CONTROLLR_URL, SESSION_COOKIE_NAME, SESSION_TTL_SECONDS
+from ..config import CONTROLLR_URL, SESSION_COOKIE_MAX_AGE_SECONDS, SESSION_COOKIE_NAME
 from ..deps import AuthContext, get_auth_context
 from ..sessions import create_session, delete_session, get_session
 
@@ -72,6 +72,16 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         # OS" vai cair para "Todas" até resolvermos o campo certo do ACL.
         user_pk = None
 
+    if resultado_login.cookie_header is None:
+        # Sem esse cookie, get_current_session não tem como confirmar
+        # periodicamente que a sessão continua ativa no Controllr — a
+        # sessão fica sem expiração própria até o técnico deslogar ou o
+        # backend reiniciar (ver sessions.py). Não deveria mais acontecer
+        # depois da correção em ControllrLogin.login (lê do cookie jar, não
+        # só de response.cookies), mas logado alto para não passar batido
+        # se voltar a ocorrer.
+        logger.warning("Login de %s sem cookie de sessão do Controllr", payload.username)
+
     sessao = create_session(
         username=payload.username,
         basic_auth=basic_auth,
@@ -83,7 +93,7 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
         value=sessao.session_id,
         httponly=True,
         samesite="lax",
-        max_age=SESSION_TTL_SECONDS,
+        max_age=SESSION_COOKIE_MAX_AGE_SECONDS,
         path="/",
     )
     return LoginResponse(success=True, tecnico=TecnicoDto(username=payload.username, user_pk=user_pk))

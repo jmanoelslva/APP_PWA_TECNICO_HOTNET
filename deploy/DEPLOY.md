@@ -56,7 +56,8 @@ sobreviver a um `git pull`):
 
 ```env
 CONTROLLR_URL=https://controllr.hotnet.net.br:8443
-SESSION_TTL_SECONDS=43200
+SESSION_COOKIE_MAX_AGE_SECONDS=2592000
+CONTROLLR_LIVENESS_CHECK_SECONDS=60
 CORS_ALLOW_ORIGINS=https://tecnico.hotnet.net.br
 IPIFY_API_KEY=
 ```
@@ -64,6 +65,14 @@ IPIFY_API_KEY=
 `IPIFY_API_KEY` é a chave da Geolocation API do ipify (geo.ipify.org),
 usada pela ferramenta "Meu IP". Sem essa chave, a ferramenta fica
 indisponível (a rota responde 503) — o resto do app funciona normal.
+
+A sessão do técnico não tem TTL próprio — ela vive enquanto o cookie de
+sessão criado no login do Controllr continuar sendo aceito por ele, o que
+este backend confirma a cada `CONTROLLR_LIVENESS_CHECK_SECONDS` (ver
+`backend/app/deps.py::get_current_session`); quem decide quando expirar
+por inatividade é o próprio Controllr. `SESSION_COOKIE_MAX_AGE_SECONDS`
+só limita até quando o **navegador** guarda o cookie `TECSESSION` — por
+isso pode ficar bem alto (30 dias por padrão).
 
 `CONTROLLR_URL` aponta para o **painel administrativo** do Controllr (porta
 `8443`), não para o endpoint público em 443 que o app cliente usa — acesso
