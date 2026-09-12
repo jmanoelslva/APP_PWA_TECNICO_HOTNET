@@ -13,8 +13,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   tela ONU tinham CSS próprio (gradiente com cor fixa, fora do sistema
   `.botao`/`--botao-cor` usado em todo o resto do app, inclusive nos
   outros botões da mesma tela) — destoavam visualmente. Trocados por
-  `botao botao-primario botao-bloco` e `botao botao-secundario`
-  respectivamente, com `--botao-cor: CORES.onu`, igual a todo o resto.
+  `botao botao-secundario` (os dois — o gradiente de `botao-primario`
+  também destoava, pesado demais pra essa tela) com `--botao-cor:
+  CORES.onu`, igual ao resto.
 
 ### Alterado
 

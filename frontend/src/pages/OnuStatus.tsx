@@ -636,7 +636,7 @@ export default function OnuStatus() {
             <p className="onu-ultima-coleta">Dados coletados {formatarTempoDesdeColeta(onu.info_timer)}</p>
           )}
           <button
-            className="botao botao-primario botao-bloco"
+            className="botao botao-secundario botao-bloco"
             style={{ '--botao-cor': CORES.onu } as CSSProperties}
             onClick={atualizarAgora}
             disabled={atualizando}
