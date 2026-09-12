@@ -20,6 +20,7 @@ import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
 import { buscarClientes, type BuscaClienteResultado } from '../api/client'
 import { detectarTipoBusca } from '../utils/formatacao'
+import { buscarIpsPublicos } from '../utils/ipPublico'
 import './Home.css'
 
 function saudacaoPorHorario(nome: string): string {
@@ -58,6 +59,24 @@ export default function Home() {
   const [resultadosBusca, setResultadosBusca] = useState<BuscaClienteResultado[]>([])
   const [buscando, setBuscando] = useState(false)
   const [listaAberta, setListaAberta] = useState(false)
+
+  // Rodapé com IPv4/IPv6 da rede atual — consulta automática ao entrar
+  // na Home, sem precisar de clique (ver Ferramentas.tsx para a versão
+  // com localização/provedor sob demanda).
+  const [ipv4, setIpv4] = useState<string | null>(null)
+  const [ipv6, setIpv6] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelado = false
+    buscarIpsPublicos().then((resultado) => {
+      if (cancelado) return
+      setIpv4(resultado.ipv4)
+      setIpv6(resultado.ipv6)
+    })
+    return () => {
+      cancelado = true
+    }
+  }, [])
 
   useEffect(() => {
     if (busca.trim().length < 2) {
@@ -194,6 +213,13 @@ export default function Home() {
             </Link>
           ))}
         </div>
+
+        {(ipv4 || ipv6) && (
+          <footer className="home-rodape-ip">
+            {ipv4 && <span>IPv4: {ipv4}</span>}
+            {ipv6 && <span>IPv6: {ipv6}</span>}
+          </footer>
+        )}
       </div>
 
       <ModalInstalarIos aberto={modalIosAberto} onFechar={fecharModalIos} />

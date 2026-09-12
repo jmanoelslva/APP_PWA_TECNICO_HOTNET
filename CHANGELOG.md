@@ -9,6 +9,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
+- Rodapé da tela inicial (Home) com IPv4/IPv6 da rede atual, consultados
+  automaticamente ao entrar na tela.
 - Ferramenta "SIMET (NIC.br)" (top.nic.br/connection) no menu Ferramentas.
 - Ferramenta "Meu IP": consulta o IPv4 e o IPv6 (quando a rede tem os
   dois) e a localização de cada um diretamente no app (Geolocation API

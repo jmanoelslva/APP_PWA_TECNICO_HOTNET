@@ -207,3 +207,12 @@
   color: var(--cor-texto);
   text-align: center;
 }
+
+.home-rodape-ip {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--cor-texto-fraco);
+}

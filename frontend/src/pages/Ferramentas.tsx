@@ -15,27 +15,8 @@ import {
 import { ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
+import { buscarIpsPublicos } from '../utils/ipPublico'
 import './Ferramentas.css'
-
-// api.ipify.org/api6.ipify.org são públicos, sem chave, e servem
-// exatamente para isso: descobrir o IPv4 e o IPv6 do dispositivo que faz
-// a chamada, direto do navegador — api6 falha (não cai para IPv4) quando
-// o dispositivo não tem conectividade IPv6. Timeout curto porque uma
-// rede sem IPv6 não retorna erro rápido sozinha, só fica pendurada.
-async function buscarIpPublico(url: string, timeoutMs = 4000): Promise<string | null> {
-  const controlador = new AbortController()
-  const temporizador = setTimeout(() => controlador.abort(), timeoutMs)
-  try {
-    const resposta = await fetch(url, { signal: controlador.signal })
-    if (!resposta.ok) return null
-    const dados = (await resposta.json()) as { ip?: string }
-    return dados.ip ?? null
-  } catch {
-    return null
-  } finally {
-    clearTimeout(temporizador)
-  }
-}
 
 interface Ferramenta {
   nome: string
@@ -88,10 +69,7 @@ export default function Ferramentas() {
     setResultadoV6(null)
     setResultadoGenerico(null)
     try {
-      const [ipv4, ipv6] = await Promise.all([
-        buscarIpPublico('https://api.ipify.org?format=json'),
-        buscarIpPublico('https://api6.ipify.org?format=json'),
-      ])
+      const { ipv4, ipv6 } = await buscarIpsPublicos()
 
       if (!ipv4 && !ipv6) {
         const resposta = await consultarMeuIp()
