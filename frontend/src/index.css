@@ -43,6 +43,7 @@
   --cor-endereco: #4a5c7a;
   --cor-ferramentas: #5c6bc0;
   --cor-financeiro: #b8860b;
+  --cor-offline: #d9463c;
 
   /* Sombra dos cards — token à parte porque no escuro uma sombra preta
      não aparece contra um fundo já escuro (ver bloco dark abaixo). */
@@ -84,6 +85,7 @@
   --cor-onu: #e6a35c;
   --cor-ferramentas: #8890e0;
   --cor-financeiro: #dba93f;
+  --cor-offline: #ef6a5f;
 }
 
 * {

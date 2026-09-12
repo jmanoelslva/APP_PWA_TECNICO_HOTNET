@@ -35,6 +35,7 @@ export const CORES = {
   endereco: 'var(--cor-endereco)',
   ferramentas: 'var(--cor-ferramentas)',
   financeiro: 'var(--cor-financeiro)',
+  offline: 'var(--cor-offline)',
 } as const
 
 /**

@@ -7,9 +7,38 @@ from pydantic import BaseModel
 from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_GTE, OPER_ILIKE, OPER_IS_NOT, OPER_LTE, corpo, where_and, where_eq
+from ..where import OPER_EQ, OPER_GTE, OPER_ILIKE, OPER_IN, OPER_IS_NOT, OPER_LTE, corpo, where_and, where_eq
 
 router = APIRouter(prefix="/cpe", tags=["conexao"])
+
+
+@router.get("/offline")
+async def listar_cpe_offline(
+    start: int = Query(default=0),
+    limit: int = Query(default=20, le=100),
+    ctx: AuthContext = Depends(get_auth_context),
+) -> dict[str, Any]:
+    """
+    Clientes ativos que deveriam estar conectados mas não estão — filtro
+    confirmado ao vivo pelo usuário (captura de rede do próprio painel
+    Controllr): contract_status IN [1] (Ativado — ver seção 6 do
+    CONTROLLR_API_NOTES.md), cpe_status = 1 (CPE habilitado) e
+    cpe_sessions = 0 (sem sessão RADIUS ativa agora). Útil para o técnico
+    identificar quedas sem precisar ir cliente por cliente.
+    """
+    where = where_and(
+        {"field": "contract_status", "oper": OPER_IN, "value": [1]},
+        {"field": "cpe_status", "oper": OPER_EQ, "value": 1},
+        {"field": "cpe_sessions", "oper": OPER_EQ, "value": 0},
+    )
+    resposta = await ctx.controllr.cpe_list(
+        corpo(where, start=start, limit=limit, sort="cpe_username", dir="ASC"),
+        model_return=True,
+        model_extended=True,
+    )
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível listar os clientes offline.", resposta))
+    return {"success": True, "results": [cpe.model_dump(mode="json") for cpe in resposta.results], "total": resposta.total}
 
 
 @router.get("/busca")

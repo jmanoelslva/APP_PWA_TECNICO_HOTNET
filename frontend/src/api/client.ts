@@ -477,6 +477,19 @@ export function atualizarDetalhesCpe(cpePk: number, dados: DetalhesCpePayload): 
   return put(`cpe/${cpePk}/detalhes`, dados)
 }
 
+export interface ListarCpeOfflineResponse {
+  success: boolean
+  results: CpeDto[]
+  total: number
+}
+
+// Clientes com contrato ativo e CPE habilitado, mas sem sessão RADIUS
+// ativa agora — mesmo filtro confirmado ao vivo pelo usuário direto no
+// painel Controllr (ver backend/app/routers/conexao.py::listar_cpe_offline).
+export function listarCpeOffline(opcoes: { start?: number; limit?: number } = {}): Promise<ListarCpeOfflineResponse> {
+  return get<ListarCpeOfflineResponse>('cpe/offline', { start: opcoes.start ?? 0, limit: opcoes.limit ?? 20 })
+}
+
 export interface DpDto {
   pk: number
   name: string

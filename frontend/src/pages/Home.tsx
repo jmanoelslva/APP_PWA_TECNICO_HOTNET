@@ -10,6 +10,7 @@ import {
   MdLogout,
   MdRouter,
   MdWifi,
+  MdWifiOff,
 } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
@@ -34,6 +35,7 @@ const ITENS_MENU = [
   { to: '/suporte', Icone: MdBuild, cor: CORES.suporte, label: 'OS / Suporte' },
   { to: '/conexao', Icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
   { to: '/onu', Icone: MdRouter, cor: CORES.onu, label: 'ONU' },
+  { to: '/offline', Icone: MdWifiOff, cor: CORES.offline, label: 'Clientes Offline' },
   { to: '/ferramentas', Icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
 

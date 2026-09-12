@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- Tela "Clientes Offline": lista clientes com contrato ativo e CPE
+  habilitado que estão sem sessão no momento, para o técnico identificar
+  quedas sem precisar checar cliente por cliente. Acessível pelo menu
+  principal, com atalho direto para a tela de Conexão de cada um.
+
 ## [1.1.0] - 2026-09-11
 
 ### Adicionado

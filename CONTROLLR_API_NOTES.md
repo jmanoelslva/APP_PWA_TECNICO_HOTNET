@@ -214,6 +214,14 @@ precisa de endpoint extra para buscar isso — já vem no mesmo list.
   (sem `contract_number`, só `contract_pk`) — para mostrar o número de
   contrato de verdade é preciso cruzar com `/controllrctl/contract/list`
   filtrado por `contract_pk` (ver seção 6).
+- `cpe_sessions` — contador de sessões RADIUS ativas no momento para
+  aquele CPE (`0` = sem sessão agora). Combinado com `contract_status`
+  (seção 6) e `cpe_status` dá o filtro de "clientes offline que
+  deveriam estar online" usado na tela "Clientes Offline": `where`
+  confirmado pelo próprio usuário (captura de rede do painel):
+  `contract_status IN [1]` (Ativado) **AND** `cpe_status = 1`
+  (habilitado) **AND** `cpe_sessions = 0` — ver
+  `backend/app/routers/conexao.py::listar_cpe_offline`.
 
 ---
 

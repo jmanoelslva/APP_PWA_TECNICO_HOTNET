@@ -8,6 +8,7 @@ import { useSessao } from './auth/useSessao'
 
 // Uma página por chunk — carregada só quando o técnico navega até ela.
 const BuscaCliente = lazy(() => import('./pages/BuscaCliente'))
+const ClientesOffline = lazy(() => import('./pages/ClientesOffline'))
 const Conexao = lazy(() => import('./pages/Conexao'))
 const DetalheChamado = lazy(() => import('./pages/DetalheChamado'))
 const DetalheCliente = lazy(() => import('./pages/DetalheCliente'))
@@ -66,6 +67,14 @@ function App() {
             element={
               <RotaProtegida>
                 <Conexao />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/offline"
+            element={
+              <RotaProtegida>
+                <ClientesOffline />
               </RotaProtegida>
             }
           />
