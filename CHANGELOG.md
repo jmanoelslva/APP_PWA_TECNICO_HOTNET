@@ -7,6 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- Ferramenta "SIMET (NIC.br)" (top.nic.br/connection) no menu Ferramentas.
+
+### Removido
+
+- Ferramenta "Teste de DNS" (dnsleaktest.com) do menu Ferramentas.
+
 ## [1.2.0] - 2026-09-12
 
 ### Adicionado

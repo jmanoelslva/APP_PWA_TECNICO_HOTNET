@@ -2,7 +2,6 @@ import type { IconType } from 'react-icons'
 import {
   MdBolt,
   MdConstruction,
-  MdDns,
   MdLooks4,
   MdLooks6,
   MdNetworkCheck,
@@ -10,6 +9,7 @@ import {
   MdPublic,
   MdSettingsEthernet,
   MdSpeed,
+  MdWifiTethering,
 } from 'react-icons/md'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
@@ -43,7 +43,12 @@ const FERRAMENTAS: Ferramenta[] = [
     url: 'https://www.yougetsignal.com/tools/open-ports/',
     Icone: MdSettingsEthernet,
   },
-  { nome: 'Teste de DNS', descricao: 'dnsleaktest.com', url: 'https://www.dnsleaktest.com/', Icone: MdDns },
+  {
+    nome: 'SIMET (NIC.br)',
+    descricao: 'top.nic.br — teste de qualidade da conexão',
+    url: 'https://top.nic.br/connection/',
+    Icone: MdWifiTethering,
+  },
 ]
 
 export default function Ferramentas() {
