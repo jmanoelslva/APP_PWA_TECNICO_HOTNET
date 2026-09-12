@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from typing import Any
 
@@ -10,6 +11,7 @@ from ..brbyteapi.controllr.login import ControllrLogin
 from ..config import CONTROLLR_URL, SESSION_COOKIE_NAME, SESSION_TTL_SECONDS
 from ..deps import AuthContext, get_auth_context
 from ..sessions import create_session, delete_session, get_session
+from ..where import OPER_EQ, corpo as montar_corpo, where_and
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -63,13 +65,25 @@ async def _verificar_liberacao_financeiro(controllr: AsyncControllr) -> bool:
     usuários). Em vez de tentar replicar essa lógica de permissões aqui
     (frágil: quebraria se o Controllr mudasse o nome/estrutura dos nodes),
     pergunta pro próprio Controllr da forma mais direta possível: faz uma
-    leitura real e inofensiva (limit=1, sem alterar nada) num endpoint
-    financeiro com o Basic Auth do próprio técnico. Um 403 "Access Denied"
-    é a mesma resposta já confirmada noutro fluxo deste app para uma ação
-    sem liberação de ACL (ver CONTROLLR_API_NOTES.md, fechamento de OS).
+    leitura real e inofensiva com o Basic Auth do próprio técnico. Um 403
+    "Access Denied" é a mesma resposta já confirmada noutro fluxo deste
+    app para uma ação sem liberação de ACL (ver CONTROLLR_API_NOTES.md,
+    fechamento de OS).
+
+    IMPORTANTE: a consulta usa `client.client_pk = -1` (nunca existe) em
+    vez de ir sem "where" nenhum — todo outro endpoint deste app sempre
+    filtra por cliente/contrato/ticket específico, nunca lista a tabela
+    inteira; um `invoice_list` sem filtro precisou escanear/juntar tantas
+    faturas que passou dos 10s de timeout (confirmado em produção: login
+    ficando lento e a liberação sempre caindo em False pela exceção do
+    timeout, nunca pelo 403 de verdade). Com um filtro por PK que bate
+    índice, a checagem responde na hora tanto pra quem tem liberação
+    (resultado vazio) quanto pra quem não tem (403, antes mesmo da
+    consulta rodar).
     """
+    where = where_and({"field": "client.client_pk", "oper": OPER_EQ, "value": -1})
     try:
-        resposta = await controllr.invoice_list("limit=1")
+        resposta = await controllr.invoice_list(montar_corpo(where, limit=1))
     except Exception:
         return False
     return resposta.status != 403
@@ -85,17 +99,24 @@ async def login(payload: LoginRequest, response: Response) -> LoginResponse:
     basic_auth = "Basic " + base64.b64encode(credenciais).decode("ascii")
 
     controllr = AsyncControllr(authorization=basic_auth, server_url=CONTROLLR_URL)
-    user_pk: int | None = None
-    try:
-        resultado = await controllr.user_list("limit=200")
-        if resultado.success:
-            user_pk = _find_user_pk(resultado.results, payload.username)
-    except Exception:
-        # Login já foi validado acima; falha aqui só significa que "Minhas
-        # OS" vai cair para "Todas" até resolvermos o campo certo do ACL.
-        user_pk = None
 
-    financeiro_liberado = await _verificar_liberacao_financeiro(controllr)
+    async def _resolver_user_pk() -> int | None:
+        try:
+            resultado = await controllr.user_list("limit=200")
+            if resultado.success:
+                return _find_user_pk(resultado.results, payload.username)
+        except Exception:
+            # Login já foi validado acima; falha aqui só significa que
+            # "Minhas OS" vai cair para "Todas" até resolvermos o campo
+            # certo do ACL.
+            pass
+        return None
+
+    # As duas chamadas são independentes entre si — rodar em paralelo evita
+    # dobrar a espera do login por causa da checagem extra de financeiro.
+    user_pk, financeiro_liberado = await asyncio.gather(
+        _resolver_user_pk(), _verificar_liberacao_financeiro(controllr)
+    )
 
     sessao = create_session(
         username=payload.username,
