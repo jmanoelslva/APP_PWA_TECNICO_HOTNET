@@ -7,6 +7,22 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- Detecção de sessão do técnico encerrada manualmente no painel
+  Controllr: como as demais chamadas deste backend usam Basic Auth por
+  requisição (sem sessão nenhuma no Controllr, ver
+  `CONTROLLR_API_NOTES.md` seção 8.5), encerrar a sessão do técnico lá
+  nunca era percebido aqui — o app continuava funcionando normalmente
+  até o TTL local (`SESSION_TTL_SECONDS`) expirar sozinho. Agora
+  `get_current_session` confirma periodicamente (a cada
+  `CONTROLLR_LIVENESS_CHECK_SECONDS`, 60s por padrão) que o cookie de
+  sessão guardado no login ainda é aceito pelo Controllr, chamando
+  `/sys/message/count` (endpoint mais leve confirmado ao vivo que exige
+  sessão válida) — se não for mais aceito, a sessão local também é
+  encerrada na hora (401), reaproveitando o fluxo de "sessão expirada"
+  já existente no frontend.
+
 ### Corrigido
 
 - Logout do técnico não encerrava a sessão criada no Controllr no

@@ -17,6 +17,16 @@ CONTROLLR_URL = os.environ.get("CONTROLLR_URL", "https://controllr.hotnet.net.br
 # forçar um novo login depois de um período de inatividade).
 SESSION_TTL_SECONDS = int(os.environ.get("SESSION_TTL_SECONDS", str(12 * 60 * 60)))
 
+# De quanto em quanto tempo confirmar com o Controllr que a sessão criada
+# no /login ainda está ativa lá (ver deps.py::get_current_session) — sem
+# isso, um admin encerrando a sessão do técnico manualmente pelo painel
+# nunca seria percebido por este backend, porque as demais chamadas usam
+# Basic Auth por requisição, que não depende de sessão nenhuma no
+# Controllr (CONTROLLR_API_NOTES.md, seção 8.5). Curto o bastante pra
+# detectar rápido, longo o bastante pra não dobrar toda chamada deste
+# backend com uma ida extra ao Controllr.
+CONTROLLR_LIVENESS_CHECK_SECONDS = int(os.environ.get("CONTROLLR_LIVENESS_CHECK_SECONDS", "60"))
+
 SESSION_COOKIE_NAME = "TECSESSION"
 
 # Log de auditoria próprio (ver app/audit.py) — caminho do arquivo JSON

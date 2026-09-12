@@ -34,6 +34,10 @@ class TechnicianSession:
     user_pk: int | None
     created_at: float
     controllr_cookie: str | None = None
+    # Última vez que confirmamos com o Controllr que controllr_cookie ainda
+    # é uma sessão válida lá (ver deps.py::get_current_session) — 0.0 força
+    # a primeira checagem já na próxima requisição autenticada.
+    controllr_checked_at: float = 0.0
 
     def expired(self) -> bool:
         return (time.time() - self.created_at) > SESSION_TTL_SECONDS

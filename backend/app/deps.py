@@ -1,18 +1,68 @@
+import logging
+import time
 from dataclasses import dataclass
 
+from aiohttp import ClientSession, ClientTimeout
 from fastapi import Cookie, Depends, HTTPException
 
 from .brbyteapi.controllr import AsyncControllr
-from .config import CONTROLLR_URL, SESSION_COOKIE_NAME
-from .sessions import TechnicianSession, get_session
+from .config import CONTROLLR_LIVENESS_CHECK_SECONDS, CONTROLLR_URL, SESSION_COOKIE_NAME
+from .sessions import TechnicianSession, delete_session, get_session
+
+logger = logging.getLogger(__name__)
 
 
-def get_current_session(
+async def _controllr_sessao_viva(cookie: str) -> bool:
+    """
+    Confirma se o cookie de sessão do Controllr (criado no /login, guardado
+    em TechnicianSession.controllr_cookie) ainda é aceito por ele.
+
+    Existe porque as demais chamadas deste backend ao Controllr usam Basic
+    Auth por requisição, que não depende de sessão nenhuma (ver
+    CONTROLLR_API_NOTES.md, seção 8.5) — então nunca detectariam sozinhas um
+    admin encerrando a sessão do técnico manualmente pelo painel. /sys/
+    message/count foi escolhido por ser o endpoint mais leve confirmado ao
+    vivo (aba de rede do painel real) que exige sessão válida, chamado
+    sozinho a cada carregamento de página lá.
+    """
+    try:
+        timeout = ClientTimeout(10)
+        async with ClientSession() as http:
+            async with http.post(
+                f"{CONTROLLR_URL}/sys/message/count",
+                headers={"Cookie": cookie},
+                timeout=timeout,
+            ) as resposta:
+                if resposta.status >= 400:
+                    return False
+                corpo = await resposta.json(content_type=None)
+                return bool(corpo.get("success", False))
+    except Exception:
+        logger.exception("Falha ao checar liveness da sessão do técnico no Controllr")
+        # Falha de rede/timeout não é a mesma coisa que sessão encerrada —
+        # não desloga o técnico por um problema transitório de conexão,
+        # só tenta de novo na próxima checagem.
+        return True
+
+
+async def get_current_session(
     tecsession: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
 ) -> TechnicianSession:
     session = get_session(tecsession)
     if session is None:
         raise HTTPException(status_code=401, detail="Sessão expirada ou inexistente.")
+
+    # Throttlado (não a cada request) pra não dobrar toda chamada deste
+    # backend com uma ida extra ao Controllr — CONTROLLR_LIVENESS_CHECK_SECONDS
+    # é o quanto um técnico deslogado manualmente no painel ainda consegue
+    # usar o app antes disso ser detectado.
+    agora = time.time()
+    if session.controllr_cookie and (agora - session.controllr_checked_at) > CONTROLLR_LIVENESS_CHECK_SECONDS:
+        if not await _controllr_sessao_viva(session.controllr_cookie):
+            delete_session(tecsession)
+            raise HTTPException(status_code=401, detail="Sessão encerrada no Controllr.")
+        session.controllr_checked_at = agora
+
     return session
 
 
