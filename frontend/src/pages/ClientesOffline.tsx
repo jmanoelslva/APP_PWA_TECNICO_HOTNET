@@ -1,6 +1,6 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { MdPeopleAlt, MdWifiOff } from 'react-icons/md'
+import { MdPeopleAlt, MdSearch, MdWifiOff } from 'react-icons/md'
 import { ApiError, listarCpeOffline, type CpeDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -10,7 +10,24 @@ import { CORES } from '../utils/cores'
 import { formatarDataHoraSegundos } from '../utils/formatacao'
 import './ClientesOffline.css'
 
-const TAMANHO_PAGINA = 20
+// Página grande de propósito — depois da primeira leva, o efeito abaixo
+// já busca o resto sozinho em segundo plano, então poucas páginas grandes
+// terminam mais rápido que muitas pequenas.
+const TAMANHO_PAGINA = 50
+
+function normalizar(valor: string): string {
+  return valor
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+}
+
+function bateBusca(cpe: CpeDto, termo: string): boolean {
+  const alvo = [cpe.client_complete_name, cpe.username, cpe.dp_name, cpe.contract_number, cpe.contract_pk]
+    .filter((v) => v != null)
+    .map((v) => normalizar(String(v)))
+  return alvo.some((v) => v.includes(termo))
+}
 
 export default function ClientesOffline() {
   const [cpes, setCpes] = useState<CpeDto[]>([])
@@ -18,10 +35,21 @@ export default function ClientesOffline() {
   const [carregandoMais, setCarregandoMais] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
+  const [busca, setBusca] = useState('')
 
   useEffect(() => {
     carregar()
   }, [])
+
+  // Busca só filtra o que a lista já tem — sem isso, digitar antes da
+  // carga em segundo plano terminar escondia clientes que ainda iam
+  // aparecer, parecendo que a busca "não achou" alguém que só ainda não
+  // tinha chegado.
+  useEffect(() => {
+    if (carregando || carregandoMais || erro) return
+    if (cpes.length < total) carregarMais()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carregando, carregandoMais, cpes.length, total, erro])
 
   async function carregar() {
     setCarregando(true)
@@ -44,13 +72,20 @@ export default function ClientesOffline() {
       setCpes((atual) => [...atual, ...resposta.results])
       setTotal(resposta.total)
     } catch (excecao) {
-      // "Carregar mais" falhar não deve apagar a lista já carregada — só
-      // avisa e deixa o técnico tentar de novo.
+      // Falhar aqui não deve apagar a lista já carregada — só avisa e
+      // para de tentar buscar mais sozinho (o pull-to-refresh recomeça).
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar mais clientes.')
     } finally {
       setCarregandoMais(false)
     }
   }
+
+  const termoBusca = normalizar(busca.trim())
+  const cpesFiltrados = useMemo(
+    () => (termoBusca ? cpes.filter((cpe) => bateBusca(cpe, termoBusca)) : cpes),
+    [cpes, termoBusca],
+  )
+  const aindaCarregandoLista = cpes.length < total
 
   return (
     <PullToRefresh aoAtualizar={carregar}>
@@ -61,6 +96,17 @@ export default function ClientesOffline() {
           titulo="Clientes Offline"
           subtitulo="Contrato ativo e CPE habilitado, mas sem sessão agora."
         />
+
+        {!carregando && (cpes.length > 0 || erro == null) && (
+          <div className="clientes-offline-busca">
+            <MdSearch size={18} />
+            <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Filtrar por nome, usuário, contrato ou CTO"
+            />
+          </div>
+        )}
 
         {carregando && (
           <ul className="clientes-offline-lista">
@@ -88,9 +134,17 @@ export default function ClientesOffline() {
 
         {cpes.length > 0 && (
           <>
-            <p className="clientes-offline-total">{total} cliente(s) offline</p>
+            <p className="clientes-offline-total">
+              {termoBusca ? `${cpesFiltrados.length} de ${total}` : `${total} cliente(s) offline`}
+              {aindaCarregandoLista && ' — carregando mais…'}
+            </p>
+
+            {cpesFiltrados.length === 0 && (
+              <EstadoVazio icone={MdSearch} titulo="Nenhum cliente offline bate com essa busca" />
+            )}
+
             <ul className="clientes-offline-lista">
-              {cpes.map((cpe) => (
+              {cpesFiltrados.map((cpe) => (
                 <li key={cpe.pk} className="clientes-offline-card">
                   <div className="clientes-offline-topo">
                     <strong>{cpe.client_complete_name ?? cpe.username ?? `CPE #${cpe.pk}`}</strong>
@@ -119,17 +173,6 @@ export default function ClientesOffline() {
             </ul>
 
             {erro && <p className="clientes-offline-erro-mais">{erro}</p>}
-
-            {cpes.length < total && (
-              <button
-                className="botao botao-secundario clientes-offline-carregar-mais"
-                style={{ '--botao-cor': CORES.offline } as CSSProperties}
-                onClick={carregarMais}
-                disabled={carregandoMais}
-              >
-                {carregandoMais ? 'Carregando…' : 'Carregar mais'}
-              </button>
-            )}
           </>
         )}
       </div>

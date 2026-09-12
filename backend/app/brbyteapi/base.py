@@ -52,11 +52,22 @@ class BrByteAPIBase():
         sucesso_http = 200 <= response.status <= 299
         sucesso = response_json.get('success', sucesso_http)
 
+        # "total" no corpo é o total de registros no SERVIDOR (todas as
+        # páginas), não o tamanho de "results" desta página — confirmado
+        # ao vivo comparando com o rodapé "1 à N de <total>" das grades
+        # reais do painel (ex: /invoice_ctl/invoice/list, /web_auth/
+        # acl_role/list). Nem todo endpoint manda esse campo; quando não
+        # manda, Response.total cai de volta para len(results) (ver
+        # response.py).
+        total_bruto = response_json.get('total')
+        total_servidor = int(total_bruto) if isinstance(total_bruto, (int, float, str)) and str(total_bruto).strip() != '' else None
+
         return Response[dict[str, Any]](
             errors  = errors,
             results = response_json.get('results', []),
             status  = response.status,
-            success = bool(sucesso)
+            success = bool(sucesso),
+            total_servidor = total_servidor,
         )
             
     async def call_api_post(self, api_path: str, data: str | FormData | None = None) -> Response[dict[str, Any]]:

@@ -12,7 +12,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Tela "Clientes Offline": lista clientes com contrato ativo e CPE
   habilitado que estão sem sessão no momento, para o técnico identificar
   quedas sem precisar checar cliente por cliente. Acessível pelo menu
-  principal, com atalho direto para a tela de Conexão de cada um.
+  principal, com atalho direto para a tela de Conexão de cada um. Campo
+  de busca filtra a lista por nome, usuário PPPoE, contrato ou CTO.
+
+### Corrigido
+
+- `total` das listagens do backend (`brbyteapi`) sempre refletia só o
+  tamanho da página atual, não o total real no servidor — a tela
+  "Clientes Offline" mostrava 20 quando o painel mostrava 105.
+  Corrigido para usar o `total` que o próprio Controllr já manda no
+  corpo da resposta.
 
 ## [1.1.0] - 2026-09-11
 

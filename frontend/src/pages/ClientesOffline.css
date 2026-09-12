@@ -15,6 +15,30 @@
   margin-top: 12px;
 }
 
+.clientes-offline-busca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 44px;
+  margin-bottom: 16px;
+  color: var(--cor-texto-terciario);
+}
+
+.clientes-offline-busca input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--cor-texto);
+  height: 100%;
+}
+
 .clientes-offline-total {
   margin: 0 0 12px;
   font-size: 13px;
@@ -72,9 +96,4 @@
   font-size: 13px;
   text-align: center;
   margin: 12px 0 0;
-}
-
-.clientes-offline-carregar-mais {
-  display: block;
-  margin: 20px auto 0;
 }

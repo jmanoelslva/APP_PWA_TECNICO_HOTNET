@@ -568,6 +568,20 @@ mesmo com o dado presente. Todos corrigidos em
    `Response` ficava `[]`, escondendo o motivo real do erro atrás de um
    "não foi possível..." genérico. Corrigido: quando não há `errors`
    mas há `message`, sintetiza uma entrada `{"id": code, "msg": message}`.
+3. `Response.total` era um `computed_field` = `len(results)` — ou seja,
+   sempre o tamanho da PÁGINA atual, nunca o total de verdade no
+   servidor. O corpo real de todo endpoint de listagem já traz um
+   `"total"` próprio, separado de `"results"` (confirmado ao vivo: é o
+   mesmo valor que aparece no rodapé "1 à N de `total`" das grades reais
+   do painel — ex. `/invoice_ctl/invoice/list`, `/web_auth/acl_role/list`)
+   — esse valor estava sendo descartado. Sintoma real: a tela "Clientes
+   Offline" mostrava só 20 (o `limit` da página) quando o painel
+   mostrava 105 no total, e "carregar mais" nunca fazia sentido porque
+   `total` sempre batia com `len(results)`. Corrigido em
+   `brbyteapi/response.py`/`base.py`: `response_json.get('total')` agora
+   é capturado como `total_servidor`, e `Response.total` usa esse valor
+   quando presente, caindo para `len(results)` só quando o endpoint não
+   informa `total` nenhum.
 
 ---
 
