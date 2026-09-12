@@ -3,6 +3,7 @@ import type { IconType } from 'react-icons'
 import {
   MdBolt,
   MdConstruction,
+  MdLocationOn,
   MdLooks4,
   MdLooks6,
   MdNetworkCheck,
@@ -16,6 +17,26 @@ import { ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
 import './Ferramentas.css'
+
+// api.ipify.org/api6.ipify.org são públicos, sem chave, e servem
+// exatamente para isso: descobrir o IPv4 e o IPv6 do dispositivo que faz
+// a chamada, direto do navegador — api6 falha (não cai para IPv4) quando
+// o dispositivo não tem conectividade IPv6. Timeout curto porque uma
+// rede sem IPv6 não retorna erro rápido sozinha, só fica pendurada.
+async function buscarIpPublico(url: string, timeoutMs = 4000): Promise<string | null> {
+  const controlador = new AbortController()
+  const temporizador = setTimeout(() => controlador.abort(), timeoutMs)
+  try {
+    const resposta = await fetch(url, { signal: controlador.signal })
+    if (!resposta.ok) return null
+    const dados = (await resposta.json()) as { ip?: string }
+    return dados.ip ?? null
+  } catch {
+    return null
+  } finally {
+    clearTimeout(temporizador)
+  }
+}
 
 interface Ferramenta {
   nome: string
@@ -50,20 +71,42 @@ const FERRAMENTAS: Ferramenta[] = [
 ]
 
 export default function Ferramentas() {
-  const [resultado, setResultado] = useState<MeuIpResponse | null>(null)
+  const [resultadoV4, setResultadoV4] = useState<MeuIpResponse | null>(null)
+  const [resultadoV6, setResultadoV6] = useState<MeuIpResponse | null>(null)
   const [consultando, setConsultando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [jaConsultou, setJaConsultou] = useState(false)
 
   async function consultar() {
     setConsultando(true)
     setErro(null)
+    setResultadoV4(null)
+    setResultadoV6(null)
     try {
-      const resposta = await consultarMeuIp()
-      setResultado(resposta)
+      const [ipv4, ipv6] = await Promise.all([
+        buscarIpPublico('https://api.ipify.org?format=json'),
+        buscarIpPublico('https://api6.ipify.org?format=json'),
+      ])
+
+      if (!ipv4 && !ipv6) {
+        // Endpoints públicos indisponíveis (rede bloqueando saída para
+        // eles) — cai para o IP que o próprio backend detectar da conexão.
+        const resposta = await consultarMeuIp()
+        setResultadoV4(resposta)
+        return
+      }
+
+      const [respostaV4, respostaV6] = await Promise.allSettled([
+        ipv4 ? consultarMeuIp(ipv4) : Promise.reject(new Error('sem IPv4')),
+        ipv6 ? consultarMeuIp(ipv6) : Promise.reject(new Error('sem IPv6')),
+      ])
+      if (respostaV4.status === 'fulfilled') setResultadoV4(respostaV4.value)
+      if (respostaV6.status === 'fulfilled') setResultadoV6(respostaV6.value)
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível consultar o IP.')
     } finally {
       setConsultando(false)
+      setJaConsultou(true)
     }
   }
 
@@ -99,37 +142,11 @@ export default function Ferramentas() {
 
         {erro && <p className="ferramentas-ip-erro">{erro}</p>}
 
-        {resultado && (
-          <div className="ferramentas-ip-resultado">
-            <div>
-              <span>IP</span>
-              <strong>{resultado.ip}</strong>
-            </div>
-            {resultado.location?.city && (
-              <div>
-                <span>Cidade</span>
-                <strong>{resultado.location.city}</strong>
-              </div>
-            )}
-            {resultado.location?.region && (
-              <div>
-                <span>Estado</span>
-                <strong>{resultado.location.region}</strong>
-              </div>
-            )}
-            {resultado.location?.country && (
-              <div>
-                <span>País</span>
-                <strong>{resultado.location.country}</strong>
-              </div>
-            )}
-            {resultado.isp && (
-              <div>
-                <span>Provedor</span>
-                <strong>{resultado.isp}</strong>
-              </div>
-            )}
-          </div>
+        {resultadoV4 && <ResultadoIp titulo={resultadoV6 ? 'IPv4' : 'IP'} resultado={resultadoV4} />}
+        {resultadoV6 && <ResultadoIp titulo="IPv6" resultado={resultadoV6} />}
+
+        {jaConsultou && !consultando && !erro && !resultadoV4 && !resultadoV6 && (
+          <p className="ferramentas-ip-erro">Não foi possível determinar o IP.</p>
         )}
       </div>
 
@@ -149,6 +166,74 @@ export default function Ferramentas() {
           </li>
         ))}
       </ul>
+    </div>
+  )
+}
+
+function ResultadoIp({ titulo, resultado }: { titulo: string; resultado: MeuIpResponse }) {
+  const { location, as_info: asInfo } = resultado
+  return (
+    <div className="ferramentas-ip-resultado">
+      <span className="ferramentas-ip-resultado-titulo">{titulo}</span>
+      <div>
+        <span>IP</span>
+        <strong>{resultado.ip}</strong>
+      </div>
+      {location?.city && (
+        <div>
+          <span>Cidade</span>
+          <strong>{location.city}</strong>
+        </div>
+      )}
+      {location?.region && (
+        <div>
+          <span>Estado</span>
+          <strong>{location.region}</strong>
+        </div>
+      )}
+      {location?.country && (
+        <div>
+          <span>País</span>
+          <strong>{location.country}</strong>
+        </div>
+      )}
+      {location?.postalCode && (
+        <div>
+          <span>CEP</span>
+          <strong>{location.postalCode}</strong>
+        </div>
+      )}
+      {location?.timezone && (
+        <div>
+          <span>Fuso horário</span>
+          <strong>UTC{location.timezone}</strong>
+        </div>
+      )}
+      {resultado.isp && (
+        <div>
+          <span>Provedor</span>
+          <strong>{resultado.isp}</strong>
+        </div>
+      )}
+      {asInfo?.name && asInfo.name !== resultado.isp && (
+        <div>
+          <span>Rede (ASN)</span>
+          <strong>
+            {asInfo.name}
+            {asInfo.asn ? ` (AS${asInfo.asn})` : ''}
+          </strong>
+        </div>
+      )}
+      {location?.lat != null && location?.lng != null && (
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lng}`}
+          target="_blank"
+          rel="noreferrer"
+          className="ferramentas-ip-mapa"
+        >
+          <MdLocationOn size={14} /> Ver localização aproximada no mapa
+        </a>
+      )}
     </div>
   )
 }

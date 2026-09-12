@@ -923,15 +923,24 @@ export interface MeuIpResponse {
     country?: string
     region?: string
     city?: string
+    lat?: number
+    lng?: number
     postalCode?: string
     timezone?: string
   }
   isp?: string
+  as_info?: {
+    asn?: number
+    name?: string
+    domain?: string
+    type?: string
+  }
 }
 
-// IP público e localização aproximada da rede em que o dispositivo está
-// conectado agora — o backend detecta o IP (mesma lógica da auditoria) e
-// consulta a Geolocation API do ipify, mantendo a chave só no servidor.
-export function consultarMeuIp(): Promise<MeuIpResponse> {
-  return get<MeuIpResponse>('ferramentas/meu-ip')
+// Geolocalização de um IP específico (IPv4 ou IPv6, descoberto no
+// frontend via api.ipify.org/api6.ipify.org) — sem "ip", o backend usa o
+// IP que ele mesmo detectar da conexão (ver audit.py::obter_ip_origem).
+// A chave da Geolocation API do ipify fica só no servidor.
+export function consultarMeuIp(ip?: string): Promise<MeuIpResponse> {
+  return get<MeuIpResponse>('ferramentas/meu-ip', { ip })
 }

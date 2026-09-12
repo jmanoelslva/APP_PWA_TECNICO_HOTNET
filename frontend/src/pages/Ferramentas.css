@@ -32,9 +32,24 @@
 
 .ferramentas-ip-resultado {
   margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cor-borda-suave);
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.ferramentas-ip-resultado:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.ferramentas-ip-resultado-titulo {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cor-ferramentas);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .ferramentas-ip-resultado div {
@@ -51,6 +66,17 @@
 .ferramentas-ip-resultado strong {
   color: var(--cor-texto);
   text-align: right;
+}
+
+.ferramentas-ip-mapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cor-ferramentas);
+  text-decoration: none;
 }
 
 .ferramentas-lista {

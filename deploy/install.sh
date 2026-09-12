@@ -32,6 +32,10 @@ set -euo pipefail
 # --------------------------------------------------------------------------
 REPO_URL="${REPO_URL:-https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET.git}"
 CONTROLLR_URL="${CONTROLLR_URL:-https://controllr.hotnet.net.br:8443}"
+# Chave da Geolocation API do ipify (geo.ipify.org), usada pela ferramenta
+# "Meu IP" — repositório privado, valor real aqui para instalação nova já
+# sair funcionando sem passo manual.
+IPIFY_API_KEY="${IPIFY_API_KEY:-at_VwPTqxffWj0EdyIx2fB5FgvrDNsLL}"
 INSTALL_DIR="/opt/hotnet-tecnico"
 ACME_WEBROOT="/var/www/certbot-acme"
 SERVICE_USER="hotnet-tecnico"
@@ -293,7 +297,7 @@ if [ ! -f "$ENV_FILE" ]; then
 CONTROLLR_URL=$CONTROLLR_URL
 SESSION_TTL_SECONDS=43200
 CORS_ALLOW_ORIGINS=https://$DOMINIO
-IPIFY_API_KEY=
+IPIFY_API_KEY=$IPIFY_API_KEY
 EOF
 else
   ok "$ENV_FILE já existe, mantendo como está (edite manualmente se precisar mudar algo)."

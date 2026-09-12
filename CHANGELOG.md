@@ -10,9 +10,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Adicionado
 
 - Ferramenta "SIMET (NIC.br)" (top.nic.br/connection) no menu Ferramentas.
-- Ferramenta "Meu IP": consulta o IP público e a localização aproximada
-  da rede atual diretamente no app (Geolocation API do ipify), em vez de
-  abrir um site externo. Requer `IPIFY_API_KEY` configurada no servidor.
+- Ferramenta "Meu IP": consulta o IPv4 e o IPv6 (quando a rede tem os
+  dois) e a localização aproximada de cada um diretamente no app
+  (Geolocation API do ipify), com cidade, estado, país, CEP, fuso
+  horário, provedor, rede/ASN e link para o mapa — em vez de abrir um
+  site externo. Requer `IPIFY_API_KEY` configurada no servidor; o
+  `deploy/install.sh` já grava a chave numa instalação nova.
 
 ### Removido
 
