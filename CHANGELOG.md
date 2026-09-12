@@ -7,6 +7,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+
+- Botão "Atualizar agora" e o ícone de leitor de QR/código de barras na
+  tela ONU tinham CSS próprio (gradiente com cor fixa, fora do sistema
+  `.botao`/`--botao-cor` usado em todo o resto do app, inclusive nos
+  outros botões da mesma tela) — destoavam visualmente. Trocados por
+  `botao botao-primario botao-bloco` e `botao botao-secundario`
+  respectivamente, com `--botao-cor: CORES.onu`, igual a todo o resto.
+
 ### Alterado
 
 - Autenticação deste backend com o Controllr deixou de usar Basic Auth

@@ -394,6 +394,8 @@ export default function OnuStatus() {
           />
           <button
             type="button"
+            className="botao botao-secundario onu-busca-scan"
+            style={{ '--botao-cor': CORES.onu } as CSSProperties}
             onClick={() => setLendoCodigo(true)}
             aria-label="Ler código de barras ou QR pela câmera"
             title="Ler código de barras ou QR pela câmera"
@@ -633,7 +635,12 @@ export default function OnuStatus() {
           {!atualizando && formatarTempoDesdeColeta(onu.info_timer) && (
             <p className="onu-ultima-coleta">Dados coletados {formatarTempoDesdeColeta(onu.info_timer)}</p>
           )}
-          <button className="onu-btn-atualizar" onClick={atualizarAgora} disabled={atualizando}>
+          <button
+            className="botao botao-primario botao-bloco"
+            style={{ '--botao-cor': CORES.onu } as CSSProperties}
+            onClick={atualizarAgora}
+            disabled={atualizando}
+          >
             <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
           </button>
 
