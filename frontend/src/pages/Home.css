@@ -210,9 +210,27 @@
 
 .home-rodape-ip {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 16px;
+  gap: 8px;
   margin-top: 24px;
+}
+
+.home-rodape-ip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 5px 12px;
+  border-radius: 10px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda-suave);
   font-size: 11px;
+  color: var(--cor-texto-terciario);
+  overflow-wrap: anywhere;
+}
+
+.home-rodape-ip-item strong {
   color: var(--cor-texto-fraco);
+  font-weight: 700;
 }

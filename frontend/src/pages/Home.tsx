@@ -216,8 +216,16 @@ export default function Home() {
 
         {(ipv4 || ipv6) && (
           <footer className="home-rodape-ip">
-            {ipv4 && <span>IPv4: {ipv4}</span>}
-            {ipv6 && <span>IPv6: {ipv6}</span>}
+            {ipv4 && (
+              <span className="home-rodape-ip-item">
+                <strong>IPv4</strong> {ipv4}
+              </span>
+            )}
+            {ipv6 && (
+              <span className="home-rodape-ip-item">
+                <strong>IPv6</strong> {ipv6}
+              </span>
+            )}
           </footer>
         )}
       </div>
