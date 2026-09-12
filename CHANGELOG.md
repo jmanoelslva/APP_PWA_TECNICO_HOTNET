@@ -11,6 +11,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - Ferramenta "SIMET (NIC.br)" (top.nic.br/connection) no menu Ferramentas.
 
+### Alterado
+
+- Ferramenta "Qual é meu IP" passa a usar geo.ipify.org em vez de
+  whatismyip.com.
+
 ### Removido
 
 - Ferramenta "Teste de DNS" (dnsleaktest.com) do menu Ferramentas.

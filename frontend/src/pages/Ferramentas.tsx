@@ -30,7 +30,7 @@ const FERRAMENTAS: Ferramenta[] = [
   // Mostra o IP público de quem abrir a página — útil para o técnico
   // conferir no Wi-Fi do próprio cliente se ele está atrás de CGNAT/IP
   // duplo.
-  { nome: 'Qual é meu IP', descricao: 'whatismyip.com — IP público de quem acessar', url: 'https://www.whatismyip.com/', Icone: MdPublic },
+  { nome: 'Qual é meu IP', descricao: 'geo.ipify.org — IP público de quem acessar', url: 'https://geo.ipify.org/', Icone: MdPublic },
   {
     nome: 'Teste de Bufferbloat',
     descricao: 'waveform.com — detecta latência sob carga (jogo/chamada travando)',
