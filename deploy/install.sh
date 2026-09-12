@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Instalador do PWA HOTNET TECH num servidor Debian — pensado para
+# Instalador do PWA HOTNET Técnico num servidor Debian — pensado para
 # rodar em PARALELO com o portal do cliente (HOTNET_WEB_APP, instalado via
 # deploy/install.sh daquele projeto): usa outro diretório
 # (/opt/hotnet-tecnico), outro vhost (tecnico.hotnet.net.br em vez de
@@ -80,7 +80,7 @@ trap 'err "Instalação interrompida (linha $LINENO). Nada foi desfeito — corr
 # --------------------------------------------------------------------------
 cat <<'BANNER'
 ==========================================================================
- Instalador do PWA HOTNET TECH
+ Instalador do PWA HOTNET Técnico
 ==========================================================================
  Este script vai, nesta ordem:
    1. Instalar dependências (Node.js, Python 3, git, rsync, Apache OU
@@ -311,7 +311,7 @@ chown "$SERVICE_USER:$SERVICE_USER" "$ENV_FILE"
 info "Configurando o serviço systemd $SERVICE_NAME..."
 cat > "/etc/systemd/system/$SERVICE_NAME.service" <<EOF
 [Unit]
-Description=HOTNET TECH API (FastAPI/uvicorn)
+Description=HOTNET Técnico API (FastAPI/uvicorn)
 After=network.target
 
 [Service]

@@ -29,14 +29,14 @@ class ControllrLogin(BrByteAPIBase):
                 sucesso = bool(response_json.get('success', False))
                 cookie_header = None
                 if sucesso:
-                    # response.cookies só traz o Set-Cookie desta resposta
-                    # específica — se o /login responder com redirect antes
-                    # do 200 final, o cookie de sessão fica perdido (aiohttp
-                    # já o guardou no cookie jar da ClientSession, mas não
-                    # em response.cookies). filter_cookies(url) lê do jar,
-                    # então pega a sessão criada em qualquer resposta da
-                    # cadeia — é por causa desse cookie que /auth/logout
-                    # consegue encerrar a sessão no Controllr de verdade.
+                    # response.cookies só traz o Set-Cookie da resposta final
+                    # — se o /login responder com redirect antes do 200, o
+                    # cookie de sessão não aparece ali, embora já esteja no
+                    # cookie jar da ClientSession. filter_cookies(url) lê do
+                    # jar, cobrindo qualquer resposta da cadeia de redirect.
+                    # Esse cookie é o único jeito de /auth/logout encerrar a
+                    # sessão no Controllr — as demais chamadas usam Basic
+                    # Auth, que não cria sessão nenhuma lá.
                     cookies = session.cookie_jar.filter_cookies(url)
                     if cookies:
                         cookie_header = "; ".join(f"{chave}={morsel.value}" for chave, morsel in cookies.items())

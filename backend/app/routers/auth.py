@@ -104,11 +104,11 @@ async def logout(
             # demais chamadas deste backend não cria sessão no Controllr, então
             # não há nada para encerrar por esse caminho. Best-effort: uma
             # falha aqui não impede o logout local, que apaga a sessão deste
-            # backend e o cookie do navegador — mas fica logada, porque uma
-            # falha silenciosa aqui já causou uma vez a sessão continuar
-            # "ativa" no Controllr até o lease dele expirar sozinho, mesmo
-            # com o técnico já deslogado do app (ver CONTROLLR_API_NOTES.md,
-            # seção 8.5).
+            # backend e o cookie do navegador — mas é logada, porque é a
+            # única chamada que efetivamente encerra a sessão no Controllr;
+            # sem log, uma falha aqui deixaria essa sessão "ativa" lá até o
+            # lease expirar sozinho, sem nenhum sinal disso (ver
+            # CONTROLLR_API_NOTES.md, seção 8.5).
             try:
                 timeout = ClientTimeout(10)
                 async with ClientSession() as http:

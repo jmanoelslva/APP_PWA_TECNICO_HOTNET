@@ -20,10 +20,10 @@ async def _controllr_sessao_viva(cookie: str) -> bool:
     Existe porque as demais chamadas deste backend ao Controllr usam Basic
     Auth por requisição, que não depende de sessão nenhuma (ver
     CONTROLLR_API_NOTES.md, seção 8.5) — então nunca detectariam sozinhas um
-    admin encerrando a sessão do técnico manualmente pelo painel. /sys/
-    message/count foi escolhido por ser o endpoint mais leve confirmado ao
-    vivo (aba de rede do painel real) que exige sessão válida, chamado
-    sozinho a cada carregamento de página lá.
+    admin encerrando a sessão do técnico manualmente pelo painel.
+    /sys/message/count é o endpoint usado por exigir sessão válida com o
+    menor payload de resposta entre os candidatos (o painel administrativo
+    também chama esse endpoint a cada carregamento de página).
     """
     try:
         timeout = ClientTimeout(10)

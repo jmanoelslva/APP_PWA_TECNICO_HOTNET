@@ -18,7 +18,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   `get_current_session` confirma periodicamente (a cada
   `CONTROLLR_LIVENESS_CHECK_SECONDS`, 60s por padrão) que o cookie de
   sessão guardado no login ainda é aceito pelo Controllr, chamando
-  `/sys/message/count` (endpoint mais leve confirmado ao vivo que exige
+  `/sys/message/count` (o endpoint de menor payload entre os que exigem
   sessão válida) — se não for mais aceito, a sessão local também é
   encerrada na hora (401), reaproveitando o fluxo de "sessão expirada"
   já existente no frontend.

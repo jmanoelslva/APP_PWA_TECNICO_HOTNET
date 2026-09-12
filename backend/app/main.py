@@ -16,7 +16,7 @@ from .routers import (
     telefones,
 )
 
-app = FastAPI(title="HOTNET TECH API", version=APP_VERSION)
+app = FastAPI(title="HOTNET Técnico API", version=APP_VERSION)
 
 app.add_middleware(
     CORSMiddleware,

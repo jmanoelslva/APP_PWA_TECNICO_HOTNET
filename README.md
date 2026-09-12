@@ -1,4 +1,4 @@
-# HOTNET TECH
+# HOTNET Técnico
 
 PWA de campo para os técnicos da HOTNET: busca de dados de cliente,
 atualização de endereço/localização, dados de conexão (usuário/senha,
