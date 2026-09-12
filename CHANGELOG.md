@@ -7,6 +7,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.1.0] - 2026-09-11
+
+### Adicionado
+
+- Tela de Financeiro: faturas (cobranças) do cliente, com status (paga,
+  em aberto, atrasada) e indicação de pagamentos em observação, além de
+  ação para registrar uma nova observação numa fatura em aberto. O menu
+  aparece para todo técnico; quem decide se os dados carregam é a
+  própria liberação de ACL do técnico no Controllr, na hora do acesso —
+  sem liberação, a tela mostra "sem permissão" em vez dos dados.
+
 ### Alterado
 
 - Tela de detalhe do cliente: "Financeiro" virou uma seção própria
@@ -25,17 +36,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   habilitado, confirmado ao vivo comparando com o filtro "Status:
   Habilitado" da própria grade "Pagamentos em observação").
 - Botão "Financeiro" na tela do cliente estava solto, fora do padrão das
-  demais ações da tela — movido para dentro do card de cada Contrato,
-  ao lado do atalho "Conexão".
-
-### Adicionado
-
-- Tela de Financeiro: faturas (cobranças) do cliente, com status (paga,
-  em aberto, atrasada) e indicação de pagamentos em observação, além de
-  ação para registrar uma nova observação numa fatura em aberto. O menu
-  aparece para todo técnico; quem decide se os dados carregam é a
-  própria liberação de ACL do técnico no Controllr, na hora do acesso —
-  sem liberação, a tela mostra "sem permissão" em vez dos dados.
+  demais ações da tela — reorganizado até virar a seção própria descrita
+  acima.
 
 ## [1.0.0] - 2026-09-10
 
@@ -112,5 +114,6 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.0.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/releases/tag/v1.0.0
