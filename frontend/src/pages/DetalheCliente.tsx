@@ -2,13 +2,13 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MdAdd,
-  MdAttachMoney,
   MdDescription,
   MdEdit,
   MdExpandLess,
   MdExpandMore,
   MdLocationOn,
   MdPeopleAlt,
+  MdReceipt,
   MdRouter,
   MdWifi,
 } from 'react-icons/md'
@@ -182,16 +182,19 @@ export default function DetalheCliente() {
             </div>
           </div>
 
-          <div className="detalhe-cliente-item-acoes">
-            <Link
-              to={`/financeiro?client_pk=${pk}`}
-              className="botao botao-secundario botao-pequeno"
-              style={{ '--botao-cor': CORES.financeiro } as CSSProperties}
-              viewTransition
-            >
-              <MdAttachMoney size={14} /> Financeiro
-            </Link>
-          </div>
+          <section className="detalhe-cliente-secao">
+            <h2>Financeiro</h2>
+            <div className="detalhe-cliente-item-acoes">
+              <Link
+                to={`/financeiro?client_pk=${pk}`}
+                className="botao botao-secundario botao-pequeno"
+                style={{ '--botao-cor': CORES.financeiro } as CSSProperties}
+                viewTransition
+              >
+                <MdReceipt size={14} /> Cobranças
+              </Link>
+            </div>
+          </section>
 
           <section className="detalhe-cliente-secao">
             <h2>Telefones</h2>
