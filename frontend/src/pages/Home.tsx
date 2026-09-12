@@ -230,8 +230,11 @@ export default function Home() {
         onCancelar={() => setConfirmarSairAberto(false)}
         onConfirmar={() => {
           setConfirmarSairAberto(false)
+          // Não navega manualmente pro /login — RotaProtegida já redireciona
+          // sozinho assim que "logado" vira false (ver RotaProtegida.tsx).
+          // Navegar aqui, sem esperar sair() terminar, arriscava desmontar
+          // a tela antes do POST /auth/logout ser realmente disparado.
           sair()
-          navigate('/login', { viewTransition: true })
         }}
       />
     </div>

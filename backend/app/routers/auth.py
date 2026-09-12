@@ -1,4 +1,5 @@
 import base64
+import logging
 from typing import Any
 
 from aiohttp import ClientSession, ClientTimeout
@@ -12,6 +13,7 @@ from ..deps import AuthContext, get_auth_context
 from ..sessions import create_session, delete_session, get_session
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 
 class LoginRequest(BaseModel):
@@ -93,26 +95,41 @@ async def logout(
     tecsession: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
 ) -> dict[str, bool]:
     sessao = get_session(tecsession)
-    if sessao is not None and sessao.controllr_cookie:
-        # Encerra a sessão que o Controllr criou no momento do /login
-        # (mesmo endpoint usado pelo painel administrativo: POST
-        # /session/logout, sem corpo, com o cookie da sessão a encerrar).
-        # Exige o COOKIE dessa sessão específica — o Basic Auth usado nas
-        # demais chamadas deste backend não cria sessão no Controllr, então
-        # não há nada para encerrar por esse caminho. Best-effort: uma
-        # falha aqui não impede o logout local, que apaga a sessão deste
-        # backend e o cookie do navegador.
-        try:
-            timeout = ClientTimeout(10)
-            async with ClientSession() as http:
-                async with http.post(
-                    f"{CONTROLLR_URL}/session/logout",
-                    headers={"Cookie": sessao.controllr_cookie},
-                    timeout=timeout,
-                ):
-                    pass
-        except Exception:
-            pass
+    if sessao is not None:
+        if sessao.controllr_cookie:
+            # Encerra a sessão que o Controllr criou no momento do /login
+            # (mesmo endpoint usado pelo painel administrativo: POST
+            # /session/logout, sem corpo, com o cookie da sessão a encerrar).
+            # Exige o COOKIE dessa sessão específica — o Basic Auth usado nas
+            # demais chamadas deste backend não cria sessão no Controllr, então
+            # não há nada para encerrar por esse caminho. Best-effort: uma
+            # falha aqui não impede o logout local, que apaga a sessão deste
+            # backend e o cookie do navegador — mas fica logada, porque uma
+            # falha silenciosa aqui já causou uma vez a sessão continuar
+            # "ativa" no Controllr até o lease dele expirar sozinho, mesmo
+            # com o técnico já deslogado do app (ver CONTROLLR_API_NOTES.md,
+            # seção 8.5).
+            try:
+                timeout = ClientTimeout(10)
+                async with ClientSession() as http:
+                    async with http.post(
+                        f"{CONTROLLR_URL}/session/logout",
+                        headers={"Cookie": sessao.controllr_cookie},
+                        timeout=timeout,
+                    ) as resposta_controllr:
+                        if resposta_controllr.status >= 400:
+                            logger.warning(
+                                "Falha ao encerrar sessão do técnico %s no Controllr: HTTP %s",
+                                sessao.username,
+                                resposta_controllr.status,
+                            )
+            except Exception:
+                logger.exception("Erro ao chamar /session/logout no Controllr para %s", sessao.username)
+        else:
+            # Sem cookie guardado, não há como encerrar a sessão do
+            # Controllr — a sessão local ainda é apagada abaixo, mas essa
+            # sessão específica no Controllr só vai cair pelo lease dele.
+            logger.warning("Logout de %s sem controllr_cookie salvo — sessão pode ficar ativa no Controllr", sessao.username)
 
     delete_session(tecsession)
     response.delete_cookie(SESSION_COOKIE_NAME, path="/")

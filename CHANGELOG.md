@@ -7,6 +7,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+
+- Logout do técnico não encerrava a sessão criada no Controllr no
+  momento do login: `ControllrLogin.login` lia o cookie de sessão em
+  `response.cookies`, que só reflete o Set-Cookie da resposta final —
+  se o `/login` do Controllr respondesse com redirect antes do 200,
+  o cookie ficava vazio e `/auth/logout` pulava a chamada a
+  `/session/logout` silenciosamente (o `except: pass` também escondia
+  qualquer outra falha nessa chamada). A sessão local e o cookie do
+  navegador eram sempre encerrados normalmente, mas a sessão no
+  Controllr ficava "ativa" até o lease dele expirar sozinho. Corrigido
+  lendo o cookie do `cookie_jar` da própria `ClientSession` (reflete
+  qualquer resposta da cadeia de redirect) e trocando o swallow
+  silencioso por log de erro real.
+
 ### Alterado
 
 - Ícone que representa ONU trocado de roteador (MdRouter) para cabo
