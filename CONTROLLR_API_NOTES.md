@@ -274,6 +274,17 @@ precisa de endpoint extra para buscar isso — já vem no mesmo list.
   `frontend/src/pages/OnuStatus.tsx`) como "Dados coletados há Xmin",
   só a partir do valor já trazido por `buscarOnu()` — não há relógio
   correndo ao vivo no frontend, o texto reflete a última busca feita.
+- `onu_last_down_reason` / `onu_last_down_time` — **confirmado pelo
+  usuário**, não documentados na doc oficial. `onu_last_down_reason` já
+  vem como texto legível pronto (não é código numérico, não precisa de
+  tradução no frontend). `onu_last_down_time` vem como string no formato
+  `yyyy-mm-dd hh:mm:ss UTC-3` (hora local do servidor, não é ISO puro nem
+  epoch) — os dois ficam tipados como `str` no model vendorizado
+  (`ONUExtended`), sem parsing no backend; o frontend reformata o horário
+  para `dd/mm/yyyy hh:mm:ss` (`formatarUltimaQueda` em `OnuStatus.tsx`,
+  troca só a ordem dos campos da data, sem conversão de fuso — técnico e
+  servidor estão no mesmo horário) antes de exibir no card de status da
+  tela ONU.
 
 ### 5.1. Reiniciar/Remover/Associar cliente — achados SEM disparar a ação de verdade
 

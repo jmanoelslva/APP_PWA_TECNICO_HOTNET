@@ -7,6 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.5.0] - 2026-09-15
+
+### Adicionado
+
+- Motivo e data/hora da última queda da ONU (`onu_last_down_reason`/
+  `onu_last_down_time`, campos não documentados do Controllr) exibidos
+  no card de status da tela ONU.
+
 ## [1.4.0] - 2026-09-12
 
 ### Adicionado

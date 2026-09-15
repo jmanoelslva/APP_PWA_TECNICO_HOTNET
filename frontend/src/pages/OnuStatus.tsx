@@ -65,6 +65,18 @@ function formatarTempoDesdeColeta(ms: number | undefined): string | null {
   return `há ${horas}h${minutosRestantes > 0 ? ` ${minutosRestantes}min` : ''}`
 }
 
+// onu_last_down_time vem como "yyyy-mm-dd hh:mm:ss UTC-3" (hora local do
+// servidor) — reformatado para dd/mm/yyyy hh:mm:ss sem conversão de fuso
+// (o técnico está no mesmo fuso do servidor). Se o formato não bater com o
+// esperado, exibe o valor cru em vez de esconder o dado.
+function formatarUltimaQueda(valor: string | undefined): string | null {
+  if (!valor) return null
+  const match = valor.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2}:\d{2})/)
+  if (!match) return valor
+  const [, ano, mes, dia, hora] = match
+  return `${dia}/${mes}/${ano} ${hora}`
+}
+
 const TEXTO_SINAL: Record<NivelSinal, string> = {
   boa: 'Sinal normal',
   alerta: 'Sinal fraco — atenção',
@@ -604,6 +616,18 @@ export default function OnuStatus() {
               <span>Estado</span>
               <strong>{onu.state ?? '—'}</strong>
             </div>
+            {onu.last_down_reason && (
+              <div className="onu-linha">
+                <span>Motivo da última queda</span>
+                <strong>{onu.last_down_reason}</strong>
+              </div>
+            )}
+            {formatarUltimaQueda(onu.last_down_time) && (
+              <div className="onu-linha">
+                <span>Última queda</span>
+                <strong>{formatarUltimaQueda(onu.last_down_time)}</strong>
+              </div>
+            )}
             <div className="onu-linha">
               {/* onu_distance vem em km, não metros (exemplo "0.931" da doc
                   oficial só faz sentido como km para alcance de GPON). */}

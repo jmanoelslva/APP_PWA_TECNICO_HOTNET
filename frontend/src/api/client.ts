@@ -505,6 +505,12 @@ export interface OnuDto {
   // Contador em ms desde a última coleta feita pelo Controllr — zera só
   // quando alguém clica em "Atualizar agora" (ver CONTROLLR_API_NOTES.md).
   info_timer?: number
+  // Já vem prontos do Controllr — reason em texto legível; time no
+  // formato "yyyy-mm-dd hh:mm:ss UTC-3", reformatado no frontend para
+  // dd/mm/yyyy hh:mm:ss (ver formatarUltimaQueda em OnuStatus.tsx e
+  // CONTROLLR_API_NOTES.md).
+  last_down_reason?: string
+  last_down_time?: string
   omddm_rx_power?: number
   omddm_tx_power?: number
   omddm_temperature?: number

@@ -57,6 +57,12 @@ class ONUExtended(ONU):
     ds_pk						: int	    | Empty = Field(default_factory=Empty, alias='ds_pk')
     info_timer				    : int	    | Empty = Field(default_factory=Empty, alias='onu_info_timer')
     ip						    : str	    | Empty = Field(default_factory=Empty, alias='onu_ip')
+    last_down_reason			: str	    | Empty = Field(default_factory=Empty, alias='onu_last_down_reason')
+    # Vem do Controllr como "yyyy-mm-dd hh:mm:ss UTC-3" (hora local do
+    # servidor) — nem ISO puro nem epoch, então fica como string aqui; o
+    # frontend reformata para dd/mm/yyyy hh:mm:ss (formatarUltimaQueda em
+    # OnuStatus.tsx).
+    last_down_time				: str	    | Empty = Field(default_factory=Empty, alias='onu_last_down_time')
     line_profile			    : str	    | Empty = Field(default_factory=Empty, alias='onu_line_profile')
     manager_pk					: int	    | Empty = Field(default_factory=Empty, alias='manager_pk')
     model					    : str	    | Empty = Field(default_factory=Empty, alias='onu_model')
