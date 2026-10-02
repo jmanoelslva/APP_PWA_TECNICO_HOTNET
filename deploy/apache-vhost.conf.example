@@ -30,6 +30,12 @@
 
     DocumentRoot /var/www/hotnet-tecnico/dist
 
+    # Coletor de OLTs (opcional, projeto COLETA-OLT): quando instalado no modo
+    # "dentro do app técnico", ele grava aqui o trecho que publica /olt/ (com
+    # o login do técnico). IncludeOptional ignora se não existir — sem o
+    # coletor o app segue igual.
+    IncludeOptional /etc/coletor-olt/web/apache-*.conf
+
     # OBRIGATÓRIO: o pacote apache2 do Debian já vem com um
     # "Alias /icons/ ..." global (mods-enabled/alias.conf, usado para os
     # ícones de listagem de diretório) que intercepta /icons/* antes de

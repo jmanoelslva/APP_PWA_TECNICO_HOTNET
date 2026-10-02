@@ -125,6 +125,14 @@ Ajuste nos dois exemplos: os caminhos do certificado TLS, o `root`/
 `DocumentRoot` para o local real onde `dist/` for publicado, e a porta do
 backend se não for a 8000.
 
+Os dois exemplos também têm uma linha de include **opcional** para o
+Coletor de OLTs (projeto COLETA-OLT): `include /etc/coletor-olt/web/nginx-*.conf;`
+no Nginx e `IncludeOptional /etc/coletor-olt/web/apache-*.conf` no Apache.
+Sem o coletor instalado ela não inclui nada e o app funciona igual. Com o
+coletor instalado no modo "dentro do app técnico", ele fica em
+`https://tecnico.hotnet.net.br/olt/`, usa o login do técnico e aparece o
+menu **OLTs** no painel. Não remova a linha.
+
 ## 4. Certificado TLS
 
 `tecnico.hotnet.net.br` precisa de um certificado válido (ex: via

@@ -24,7 +24,16 @@ export default function Login() {
   async function aoEnviar(evento: FormEvent) {
     evento.preventDefault()
     const sucesso = await entrar(usuario, senha)
-    if (sucesso) navigate('/', { viewTransition: true })
+    if (!sucesso) return
+    // Veio do Coletor de OLTs (/olt/) sem sessão: volta para onde estava.
+    // Só aceita caminhos do coletor, para o parâmetro não virar um
+    // redirecionamento para qualquer lugar.
+    const voltar = new URLSearchParams(window.location.search).get('voltar')
+    if (voltar && /^\/olt(\/|$)/.test(voltar) && !voltar.startsWith('//')) {
+      window.location.assign(voltar)
+      return
+    }
+    navigate('/', { viewTransition: true })
   }
 
   return (

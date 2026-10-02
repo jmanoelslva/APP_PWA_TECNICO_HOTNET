@@ -7,6 +7,25 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.6.0] - 2026-10-02
+
+### Adicionado
+
+- Integração opcional com o Coletor de OLTs (projeto COLETA-OLT) no mesmo
+  domínio, em `/olt/`: o menu **OLTs** só aparece no painel quando o coletor
+  está instalado (`/olt/api/saude` responde) — sem ele, nada muda. O coletor
+  aceita a sessão do técnico (cookie `TECSESSION`, validado no `/auth/me`),
+  então quem está logado no PWA entra direto, sem outra senha.
+- Login aceita `?voltar=/olt/...`: quem abre o coletor sem sessão entra no
+  técnico e volta para onde estava (só caminhos de `/olt/`).
+- Vhosts de exemplo (Nginx e Apache) incluem, se existir, o trecho que o
+  coletor grava em `/etc/coletor-olt/web/` — sem o coletor, o include não
+  acha nada.
+
+### Alterado
+
+- Service worker não responde navegações de `/olt/` com o app do técnico.
+
 ## [1.5.0] - 2026-09-15
 
 ### Adicionado
@@ -199,7 +218,9 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.4.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.1.0...v1.2.0

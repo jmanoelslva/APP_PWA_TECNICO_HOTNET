@@ -44,6 +44,8 @@
   --cor-ferramentas: #5c6bc0;
   --cor-financeiro: #b8860b;
   --cor-offline: #d9463c;
+  /* Menu "OLTs" (Coletor de OLTs, opcional — ver hooks/useColetorOlt.ts). */
+  --cor-olts: #7b5ea7;
 
   /* Sombra dos cards — token à parte porque no escuro uma sombra preta
      não aparece contra um fundo já escuro (ver bloco dark abaixo). */
@@ -86,6 +88,7 @@
   --cor-ferramentas: #8890e0;
   --cor-financeiro: #dba93f;
   --cor-offline: #ef6a5f;
+  --cor-olts: #a88bd6;
 }
 
 * {

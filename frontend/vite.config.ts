@@ -29,7 +29,10 @@ export default defineConfig({
       workbox: {
         // Nunca cachear /api/* — dados dinâmicos e ligados à sessão do
         // técnico (clientes, OS, conexão, ONU).
-        navigateFallbackDenylist: [/^\/api\//],
+        // /olt/ é o Coletor de OLTs (outro app, mesmo domínio, opcional): o
+        // service worker não pode responder essas navegações com o
+        // index.html do técnico.
+        navigateFallbackDenylist: [/^\/api\//, /^\/olt(\/|$)/],
         skipWaiting: true,
         clientsClaim: true,
       },

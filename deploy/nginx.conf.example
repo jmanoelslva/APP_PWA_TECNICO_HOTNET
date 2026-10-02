@@ -37,6 +37,12 @@ server {
     root /var/www/hotnet-tecnico/dist;
     index index.html;
 
+    # Coletor de OLTs (opcional, projeto COLETA-OLT): quando instalado no modo
+    # "dentro do app técnico", ele grava aqui o trecho que publica /olt/ (com
+    # o login do técnico). Sem o coletor o glob não acha nada e o app segue
+    # igual — não remova esta linha, o instalador do técnico a mantém.
+    include /etc/coletor-olt/web/nginx-*.conf;
+
     # SPA: qualquer rota que não bata em um arquivo real cai no
     # index.html (o roteamento de fato acontece no react-router-dom, no
     # navegador) — sem isso, recarregar a página numa rota interna (ex:

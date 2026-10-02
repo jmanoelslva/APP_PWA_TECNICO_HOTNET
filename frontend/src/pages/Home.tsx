@@ -8,6 +8,7 @@ import {
   MdGetApp,
   MdLightMode,
   MdLogout,
+  MdRouter,
   MdWifi,
   MdWifiOff,
 } from 'react-icons/md'
@@ -15,6 +16,7 @@ import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
 import { useTema } from '../hooks/useTema'
+import { useColetorOlt } from '../hooks/useColetorOlt'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
 import { buscarClientes, type BuscaClienteResultado } from '../api/client'
@@ -46,6 +48,7 @@ export default function Home() {
   const { tema, alternarTema } = useTema()
   const [menuAvatarAberto, setMenuAvatarAberto] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
+  const coletorOlt = useColetorOlt()
 
   // Mesmo combobox de busca ao vivo já usado em Conexão (usuário PPPoE) e
   // ONU/CTO: digita um pedaço do nome/contrato/documento e a lista vai
@@ -206,6 +209,17 @@ export default function Home() {
               <span className="home-menu-label">{item.label}</span>
             </Link>
           ))}
+          {/* Coletor de OLTs: outro app no mesmo domínio (/olt/), opcional —
+              só aparece se estiver instalado. Link normal (não do router):
+              sai do PWA do técnico e abre o coletor, que usa a mesma sessão. */}
+          {coletorOlt && (
+            <a href="/olt/" className="home-menu-item">
+              <span className="home-menu-icone" style={{ background: CORES.olts }}>
+                <MdRouter size={26} color={CORES.branco} />
+              </span>
+              <span className="home-menu-label">OLTs</span>
+            </a>
+          )}
         </div>
 
         {(ipv4 || ipv6) && (
