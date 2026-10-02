@@ -7,6 +7,20 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.7.0] - 2026-10-02
+
+### Adicionado
+
+- Rotas `GET /coletor/onu` e `POST /coletor/onu/atualizar` no backend: pelo
+  serial da ONU (igual no Controllr e na OLT) buscam no Coletor de OLTs o
+  histórico de sinal (RX/TX da ONU e RX na OLT), as quedas com motivo, hora e
+  duração, os alarmes e a situação da PON. O backend chama o coletor na mesma
+  máquina com o token de serviço dele; o navegador não fala com o coletor.
+  Sem o coletor configurado, as rotas respondem 503 e nada muda no app.
+- O instalador copia `COLETOR_URL` e `COLETOR_SERVICO_TOKEN` de
+  `/etc/coletor-olt/coletor.env` quando o coletor (1.5.0 ou mais novo) está
+  no mesmo servidor.
+
 ## [1.6.1] - 2026-10-02
 
 ### Corrigido
@@ -226,7 +240,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.4.0...v1.5.0

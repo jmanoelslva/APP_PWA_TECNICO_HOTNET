@@ -309,6 +309,23 @@ EOF
 else
   ok "$ENV_FILE já existe, mantendo como está (edite manualmente se precisar mudar algo)."
 fi
+# Coletor de OLTs (opcional) neste servidor: copia o endereço e o token de
+# serviço dele, para a tela da ONU mostrar o histórico. Rode este instalador
+# de novo depois de instalar/atualizar o coletor.
+COLETOR_ENV="/etc/coletor-olt/coletor.env"
+if [ -f "$COLETOR_ENV" ] && grep -q "^COLETOR_SERVICO_TOKEN=." "$COLETOR_ENV"; then
+  definir_env_tec() {  # troca a linha ou acrescenta, sem mostrar o valor
+    if grep -q "^$1=" "$ENV_FILE"; then
+      sed -i -E "s#^$1=.*#$1=$2#" "$ENV_FILE"
+    else
+      echo "$1=$2" >> "$ENV_FILE"
+    fi
+  }
+  COLETOR_PORTA_LIDA="$(sed -nE 's/^COLETOR_PORTA=([0-9]+).*/\1/p' "$COLETOR_ENV")"
+  definir_env_tec COLETOR_URL "http://127.0.0.1:${COLETOR_PORTA_LIDA:-8090}"
+  definir_env_tec COLETOR_SERVICO_TOKEN "$(sed -nE 's/^COLETOR_SERVICO_TOKEN=(.*)/\1/p' "$COLETOR_ENV")"
+  ok "Coletor de OLTs encontrado: histórico da ONU ativado na tela do técnico."
+fi
 chmod 600 "$ENV_FILE"
 chown "$SERVICE_USER:$SERVICE_USER" "$ENV_FILE"
 
