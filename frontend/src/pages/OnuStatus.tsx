@@ -33,6 +33,7 @@ import CabecalhoTela from '../components/CabecalhoTela'
 import LeitorCodigoBarras from '../components/LeitorCodigoBarras'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
+import HistoricoOnu from '../components/HistoricoOnu'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { nivelSinalOnu, type NivelSinal } from '../utils/formatacao'
@@ -500,6 +501,10 @@ export default function OnuStatus() {
               </div>
             </div>
           )}
+
+          {/* Histórico de sinal e quedas lido direto das OLTs pelo Coletor
+              de OLTs (opcional; some se não estiver configurado). */}
+          {onu.sn && <HistoricoOnu key={onu.sn} sn={onu.sn} />}
 
           {onu.wancfg_pppoe_username && (
             <div className="onu-card">

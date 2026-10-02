@@ -7,6 +7,26 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.8.0] - 2026-10-02
+
+### Adicionado
+
+- Tela da ONU ganha o **Histórico na OLT** (do Coletor de OLTs, lido direto
+  das OLTs a cada 15 minutos): gráfico do RX da ONU e do RX na OLT em 24 h,
+  3, 7 ou 30 dias, com o limite crítico de cada lado e leitura ponto a ponto
+  ao tocar; TX da ONU; quedas com motivo (falta de energia, sem sinal...),
+  hora e quanto tempo ficou fora, juntando oscilações seguidas numa linha só;
+  alarmes ativos; diagnóstico do sinal; e a situação da PON, com aviso quando
+  várias ONUs da mesma porta caíram juntas (problema da rede, não do cliente).
+- Botão **Ler na OLT agora**: lê só esta ONU na OLT em segundos, sem
+  reconectar a OLT inteira.
+- Sem o coletor configurado no servidor, a seção não aparece.
+
+### Removido
+
+- Menu **OLTs** do painel: os dados do coletor agora aparecem na própria tela
+  da ONU. O coletor continua acessível em `/olt/` para quem administra a rede.
+
 ## [1.7.0] - 2026-10-02
 
 ### Adicionado
@@ -240,7 +260,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.0
