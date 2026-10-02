@@ -40,6 +40,16 @@ redigitar; o script já para o serviço antigo sozinho antes de checar se
 a porta está livre, senão a checagem sempre acusaria "em uso" contra o
 próprio serviço da instalação anterior.
 
+Vindo da versão 1.6.0 ou anterior, atualize o repositório **antes** de rodar
+o instalador, para já executar a versão nova dele (até a 1.6.0 o script
+fazia `git pull` de si mesmo no meio da execução e podia rodar a versão
+nova pela metade):
+
+```bash
+sudo git -C /opt/hotnet-tecnico pull --ff-only
+sudo bash /opt/hotnet-tecnico/deploy/install.sh
+```
+
 O passo a passo manual abaixo continua válido para quem preferir controle
 fino, outro sistema operacional, ou não usar Debian.
 
