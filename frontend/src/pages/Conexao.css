@@ -314,3 +314,9 @@
   flex-shrink: 0;
   text-decoration: none;
 }
+
+.conexao-fonte {
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--cor-texto-terciario);
+}

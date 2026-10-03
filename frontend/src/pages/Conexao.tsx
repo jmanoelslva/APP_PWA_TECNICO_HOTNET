@@ -22,9 +22,11 @@ import {
   buscarHistoricoSessoesCpe,
   buscarOnu,
   buscarSessaoOnlineCpe,
+  historicoOnu,
   listarDps,
   type CpeDto,
   type DpDto,
+  type HistoricoOnuDto,
   type OnuDto,
   type SessaoHistoricoDto,
 } from '../api/client'
@@ -33,6 +35,7 @@ import Skeleton from '../components/Skeleton'
 import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
+import { dataHora, haQuanto, motivoCurto } from '../utils/coletor'
 import { CORES } from '../utils/cores'
 import { formatarDataHoraSegundos, formatarStatusContrato, OPCOES_CRIPTOGRAFIA_WIFI } from '../utils/formatacao'
 import { calcularPeriodo, OPCOES_PERIODO, type PeriodoPreset } from '../utils/periodos'
@@ -138,6 +141,9 @@ export default function Conexao() {
   // CONTROLLR_API_NOTES.md: cpe_pk sozinho é ambíguo em /fiber_ctl/onu/list).
   const [onuResumo, setOnuResumo] = useState<OnuDto | null>(null)
   const [carregandoOnuResumo, setCarregandoOnuResumo] = useState(false)
+  // Mesma fonte da tela da ONU quando o Coletor de OLTs está configurado:
+  // sinal lido direto na OLT e última queda com motivo.
+  const [coletorResumo, setColetorResumo] = useState<{ dados: HistoricoOnuDto; agora: number } | null>(null)
   // Campos editáveis de criptografia do Wi-Fi do CPE — pré-preenchidos
   // com o que o sistema fornecer ao carregar, e reenviados ao Controllr
   // só quando o técnico salvar.
@@ -272,6 +278,7 @@ export default function Conexao() {
     // (abaixo) responder.
     setSessao(null)
     setOnuResumo(null)
+    setColetorResumo(null)
     setHistorico([])
     setBlocosAbertos((atual) => {
       if (!atual.has('historico')) return atual
@@ -526,7 +533,14 @@ export default function Conexao() {
     setCarregandoOnuResumo(true)
     try {
       const resposta = await buscarOnu({ username })
-      setOnuResumo(resposta.results[0] ?? null)
+      const onu = resposta.results[0] ?? null
+      setOnuResumo(onu)
+      setColetorResumo(null)
+      if (onu?.sn) {
+        historicoOnu(onu.sn, 24 * 7)
+          .then((dados) => setColetorResumo({ dados, agora: Date.now() }))
+          .catch(() => setColetorResumo(null)) // sem coletor: fica o dado do Controllr
+      }
     } catch {
       // Resumo é só conveniência — sem cliente vinculado a nenhuma ONU o
       // card nem aparece, e um erro aqui não deveria travar o resto da tela.
@@ -1284,8 +1298,32 @@ export default function Conexao() {
                 </div>
                 <div className="conexao-linha">
                   <span>Sinal RX</span>
-                  <strong>{onuResumo.omddm_rx_power != null ? `${onuResumo.omddm_rx_power} dBm` : '—'}</strong>
+                  {coletorResumo ? (
+                    <strong>
+                      {coletorResumo.dados.onu.rx != null ? `${coletorResumo.dados.onu.rx} dBm` : '—'}
+                      <small className="conexao-fonte"> {haQuanto(coletorResumo.dados.onu.sinal_em, coletorResumo.agora)}</small>
+                    </strong>
+                  ) : (
+                    <strong>{onuResumo.omddm_rx_power != null ? `${onuResumo.omddm_rx_power} dBm` : '—'}</strong>
+                  )}
                 </div>
+                {coletorResumo && coletorResumo.dados.quedas.length > 0 ? (
+                  <div className="conexao-linha">
+                    <span>Última queda</span>
+                    <strong>
+                      {motivoCurto(coletorResumo.dados.quedas[0].motivo)}
+                      <small className="conexao-fonte"> {dataHora(coletorResumo.dados.quedas[0].caiu_em)}</small>
+                    </strong>
+                  </div>
+                ) : (
+                  !coletorResumo &&
+                  onuResumo.last_down_reason && (
+                    <div className="conexao-linha">
+                      <span>Última queda</span>
+                      <strong>{onuResumo.last_down_reason}</strong>
+                    </div>
+                  )
+                )}
                 <div className="conexao-linha">
                   <span>Modelo</span>
                   <strong>{onuResumo.model ?? '—'}</strong>

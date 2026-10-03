@@ -618,6 +618,7 @@ export interface HistoricoOnuDto {
     rx: number | null
     tx: number | null
     rx_olt: number | null
+    sfp_tx: number | null
     sinal_em: string | null
     online: boolean
     alertas: string[]

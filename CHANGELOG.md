@@ -7,6 +7,24 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.8.1] - 2026-10-02
+
+### Corrigido
+
+- Tela da ONU mostrava o sinal duas vezes, de fontes diferentes: os cartões
+  ONU/OLT (Controllr) e a legenda do gráfico (coletor), às vezes com valores
+  diferentes. Com o Coletor de OLTs, os cartões ONU e OLT passam a mostrar a
+  leitura feita direto na OLT (a mesma do gráfico), com a indicação de quando
+  foi lida; sem ele, continuam com o Controllr. O gráfico mostra só a
+  evolução.
+- Um só **Atualizar agora**: com o coletor, lê a ONU na OLT em segundos e
+  relê o Controllr sem reconectar a OLT; sem ele, o fluxo antigo (~1 min).
+- Quedas em um só lugar: com o coletor, "Motivo da última queda" e "Última
+  queda" do Controllr saem da ficha (a lista de quedas tem motivo, hora e
+  duração).
+- Resumo da ONU na tela **Conexão** usa a mesma fonte: sinal RX lido na OLT
+  (com há quanto tempo) e a última queda com motivo e hora.
+
 ## [1.8.0] - 2026-10-02
 
 ### Adicionado
@@ -260,7 +278,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...HEAD
+[1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...v1.6.1

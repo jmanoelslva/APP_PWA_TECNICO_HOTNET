@@ -171,8 +171,14 @@
   background: currentColor;
 }
 
-.historico-legenda .legenda-hora::before {
+.historico-legenda .legenda-hora::before,
+.historico-legenda .legenda-dica::before {
   display: none;
+}
+
+.historico-legenda .legenda-dica {
+  color: var(--cor-texto-terciario);
+  font-size: 11px;
 }
 
 .historico-legenda .legenda-hora {
@@ -291,22 +297,6 @@
   color: var(--cor-texto-terciario);
 }
 
-.historico-rodape {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 14px;
-  font-size: 12px;
-  color: var(--cor-texto-terciario);
-}
-
-.historico-rodape .botao {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
 
 .historico-quedas .queda-vezes {
   font-size: 12px;

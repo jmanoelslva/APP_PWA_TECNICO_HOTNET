@@ -379,3 +379,14 @@
 .onu-modal-acoes .botao {
   flex: 1;
 }
+
+.onu-fonte-sinal {
+  margin: -8px 0 16px;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+  text-align: center;
+}
+
+.onu-fonte-sinal:empty {
+  display: none;
+}

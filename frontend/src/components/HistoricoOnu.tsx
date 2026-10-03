@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState, type CSSProperties, type PointerEvent } from 'react'
-import { MdHistory, MdRefresh, MdWarningAmber } from 'react-icons/md'
-import { ApiError, historicoOnu, lerOnuNaOlt, type HistoricoOnuDto, type QuedaOnu } from '../api/client'
-import { useToast } from './Toast/useToast'
+import { useMemo, useState, type PointerEvent } from 'react'
+import { MdHistory, MdWarningAmber } from 'react-icons/md'
+import type { HistoricoOnuDto } from '../api/client'
+import type { EstadoHistorico } from '../hooks/useHistoricoOnu'
 import Skeleton from './Skeleton'
-import { CORES } from '../utils/cores'
+import { agruparQuedas, classeQueda, dataHora, duracao, motivoCurto, resumirQuedas, voltaTexto } from '../utils/coletor'
 import './HistoricoOnu.css'
 
 /**
  * Histórico da ONU vindo do Coletor de OLTs (projeto COLETA-OLT): gráfico do
  * sinal, quedas com motivo e hora e situação da PON — o que o Controllr não
- * guarda. Some sozinho quando o coletor não está configurado neste servidor
- * (503); ONU fora das OLTs coletadas (404) mostra só um aviso curto.
+ * guarda. O sinal atual fica nos cartões ONU/OLT da tela (mesma fonte); aqui
+ * só a evolução. Não aparece quando o coletor não está configurado.
  */
 
 const PERIODOS = [
@@ -23,53 +23,19 @@ const PERIODOS = [
 // Mais que isso sem leitura = buraco na linha (OLT sem coleta ou ONU offline).
 const BURACO_MS = 50 * 60 * 1000
 // Muitas ONUs da mesma PON caindo juntas = problema da rede, não do cliente.
-const PON_CAIDA_MINIMO = 3
+export const PON_CAIDA_MINIMO = 3
 
-type Estado =
-  | { tipo: 'carregando' }
-  | { tipo: 'oculto' }
-  | { tipo: 'fora'; mensagem: string }
-  | { tipo: 'erro'; mensagem: string }
-  // agora: hora da resposta — referência do gráfico ("últimas N horas") e do "há X min".
-  | { tipo: 'ok'; dados: HistoricoOnuDto; agora: number }
-
-export default function HistoricoOnu({ sn }: { sn: string }) {
-  const [horas, setHoras] = useState(72)
-  const [estado, setEstado] = useState<Estado>({ tipo: 'carregando' })
-  const [lendo, setLendo] = useState(false)
+export default function HistoricoOnu({
+  estado,
+  horas,
+  onHoras,
+}: {
+  estado: EstadoHistorico
+  horas: number
+  onHoras: (horas: number) => void
+}) {
   const [todasQuedas, setTodasQuedas] = useState(false)
-  const { toast } = useToast()
-
-  useEffect(() => {
-    let cancelado = false
-    setEstado((atual) => (atual.tipo === 'ok' ? atual : { tipo: 'carregando' }))
-    historicoOnu(sn, horas)
-      .then((dados) => !cancelado && setEstado({ tipo: 'ok', dados, agora: Date.now() }))
-      .catch((e) => {
-        if (cancelado) return
-        if (e instanceof ApiError && e.status === 503 && /não configurado/i.test(e.message)) setEstado({ tipo: 'oculto' })
-        else if (e instanceof ApiError && e.status === 404) setEstado({ tipo: 'fora', mensagem: e.message })
-        else setEstado({ tipo: 'erro', mensagem: e instanceof ApiError ? e.message : 'Não foi possível carregar o histórico.' })
-      })
-    return () => {
-      cancelado = true
-    }
-  }, [sn, horas])
-
-  async function lerAgora() {
-    setLendo(true)
-    try {
-      const dados = await lerOnuNaOlt(sn, horas)
-      setEstado({ tipo: 'ok', dados, agora: Date.now() })
-      toast('Leitura feita na OLT agora.', 'sucesso')
-    } catch (e) {
-      toast(e instanceof ApiError ? e.message : 'Não foi possível ler a ONU na OLT.')
-    } finally {
-      setLendo(false)
-    }
-  }
-
-  if (estado.tipo === 'oculto') return null
+  if (estado.tipo === 'indisponivel') return null
 
   return (
     <section className="onu-card historico-onu" aria-label="Histórico da ONU">
@@ -83,7 +49,7 @@ export default function HistoricoOnu({ sn }: { sn: string }) {
               key={p.horas}
               type="button"
               className={p.horas === horas ? 'ativo' : ''}
-              onClick={() => setHoras(p.horas)}
+              onClick={() => onHoras(p.horas)}
               aria-pressed={p.horas === horas}
             >
               {p.rotulo}
@@ -107,8 +73,6 @@ export default function HistoricoOnu({ sn }: { sn: string }) {
           horas={horas}
           todasQuedas={todasQuedas}
           onTodasQuedas={() => setTodasQuedas(true)}
-          lendo={lendo}
-          onLerAgora={lerAgora}
         />
       )}
     </section>
@@ -121,16 +85,12 @@ function Conteudo({
   horas,
   todasQuedas,
   onTodasQuedas,
-  lendo,
-  onLerAgora,
 }: {
   dados: HistoricoOnuDto
   agora: number
   horas: number
   todasQuedas: boolean
   onTodasQuedas: () => void
-  lendo: boolean
-  onLerAgora: () => void
 }) {
   const { onu, pon, quedas, alarmes_ativos: alarmes } = dados
   const ponCaiu = pon.caidas_15min >= PON_CAIDA_MINIMO
@@ -221,18 +181,6 @@ function Conteudo({
         </>
       )}
 
-      <div className="historico-rodape">
-        <span>Coletor leu {haQuanto(onu.sinal_em ?? dados.atualizado_em.onus, agora)}</span>
-        <button
-          type="button"
-          className="botao botao-secundario"
-          style={{ '--botao-cor': CORES.olts } as CSSProperties}
-          onClick={onLerAgora}
-          disabled={lendo}
-        >
-          <MdRefresh size={16} className={lendo ? 'onu-girando' : ''} /> {lendo ? 'Lendo na OLT…' : 'Ler na OLT agora'}
-        </button>
-      </div>
     </>
   )
 }
@@ -304,7 +252,6 @@ function GraficoSinal({ dados, agora, horas }: { dados: HistoricoOnuDto; agora: 
           null,
         )
   const leituras = series.map((s) => ({ s, p: proximo(s) }))
-  const ultimo = (s: Serie) => [...s.pontos].reverse().find((p) => p.v != null)?.v
 
   return (
     <figure className="historico-grafico">
@@ -358,15 +305,15 @@ function GraficoSinal({ dados, agora, horas }: { dados: HistoricoOnuDto; agora: 
           <>
             {series.map((s) => (
               <span key={s.nome} className={s.classe}>
-                {s.nome} {ultimo(s) != null ? `${ultimo(s)!.toFixed(1)} dBm` : '—'}
+                {s.nome}
               </span>
             ))}
-            {tx.length > 0 && (
+            {tx.length > 1 && Math.max(...tx) - Math.min(...tx) >= 0.5 && (
               <span className="serie-tx">
-                TX ONU {tx[tx.length - 1].toFixed(1)} dBm
-                {Math.max(...tx) - Math.min(...tx) >= 0.5 && ` (${Math.min(...tx).toFixed(1)} a ${Math.max(...tx).toFixed(1)})`}
+                TX ONU variou de {Math.min(...tx).toFixed(1)} a {Math.max(...tx).toFixed(1)} dBm
               </span>
             )}
+            <span className="legenda-dica">Toque no gráfico para ver cada leitura</span>
           </>
         )}
       </figcaption>
@@ -374,79 +321,9 @@ function GraficoSinal({ dados, agora, horas }: { dados: HistoricoOnuDto; agora: 
   )
 }
 
-// ------------------------------------------------------------------ textos
-
-function dataHora(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-}
-
 function rotuloEixo(t: number, horas: number): string {
   const d = new Date(t)
   return horas <= 24
     ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     : d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-}
-
-function duracao(s: number): string {
-  if (s < 60) return `${s} s`
-  const min = Math.round(s / 60)
-  if (min < 60) return `${min} min`
-  const h = Math.floor(min / 60)
-  if (h < 48) return `${h} h${min % 60 ? ` ${min % 60} min` : ''}`
-  return `${Math.floor(h / 24)} dias`
-}
-
-function haQuanto(iso: string | null, agora: number): string {
-  if (!iso) return 'ainda não'
-  const min = Math.round((agora - Date.parse(iso)) / 60000)
-  if (min < 1) return 'agora'
-  if (min < 60) return `há ${min} min`
-  return `há ${duracao(min * 60)}`
-}
-
-// "ONU caiu: falta de energia (dying gasp)" → "Falta de energia (dying gasp)"
-function motivoCurto(motivo: string): string {
-  const texto = motivo.replace(/^ONU caiu:?\s*/i, '').replace(/^ONU\s+/i, '')
-  return texto ? texto[0].toUpperCase() + texto.slice(1) : 'Queda'
-}
-
-function voltaTexto(q: QuedaOnu, aindaFora: boolean): string {
-  if (q.duracao_s != null) return q.duracao_s < 5 ? 'Voltou na hora (oscilação)' : `Ficou fora ${duracao(q.duracao_s)}`
-  return aindaFora ? 'Ainda fora' : 'Volta não registrada'
-}
-
-function classeQueda(q: QuedaOnu): string {
-  if (q.codigos.includes('dgi')) return 'energia'
-  if (q.codigos.some((c) => c === 'losi' || c === 'lofi')) return 'sinal'
-  return 'outra'
-}
-
-// Quedas do mesmo tipo com menos de 15 min entre si viram uma linha só
-// ("oscilou N vezes") — senão uma ONU instável enche a tela.
-const JANELA_OSCILACAO_MS = 15 * 60_000
-
-function agruparQuedas(quedas: QuedaOnu[]): { q: QuedaOnu; n: number; primeira: string }[] {
-  const grupos: { q: QuedaOnu; n: number; primeira: string }[] = []
-  for (const q of quedas) {
-    const g = grupos[grupos.length - 1]
-    if (g && classeQueda(g.q) === classeQueda(q) && Date.parse(g.primeira) - Date.parse(q.caiu_em) <= JANELA_OSCILACAO_MS) {
-      g.n += 1
-      g.primeira = q.caiu_em
-    } else {
-      grupos.push({ q, n: 1, primeira: q.caiu_em })
-    }
-  }
-  return grupos
-}
-
-function resumirQuedas(quedas: QuedaOnu[]): string {
-  if (quedas.length === 0) return ''
-  const energia = quedas.filter((q) => classeQueda(q) === 'energia').length
-  const sinal = quedas.filter((q) => classeQueda(q) === 'sinal').length
-  const partes = [`${quedas.length} no período`]
-  if (energia) partes.push(`${energia} por energia`)
-  if (sinal) partes.push(`${sinal} sem sinal`)
-  return partes.join(', ')
 }
