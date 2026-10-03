@@ -3,7 +3,7 @@ import os
 # Versão do projeto (Versionamento Semântico, https://semver.org/lang/pt-BR/)
 # — mantida em sincronia com "version" em frontend/package.json, que é o
 # valor exibido na tela de login. Ver CHANGELOG.md para o histórico.
-APP_VERSION = "1.8.1"
+APP_VERSION = "1.9.0"
 
 # Acesso de staff/técnico (ACL) ao Controllr acontece pelo painel
 # administrativo, numa porta própria (8443) — diferente do endpoint
@@ -42,10 +42,3 @@ CORS_ALLOW_ORIGINS = [
 # ferramenta "Meu IP" (backend/app/routers/ferramentas.py). Vazia por
 # padrão: a rota responde 503 até a chave ser configurada no servidor.
 IPIFY_API_KEY = os.environ.get("IPIFY_API_KEY", "")
-
-# Coletor de OLTs (projeto COLETA-OLT), opcional — histórico de sinal e quedas
-# da ONU (ver routers/coletor.py). O instalador copia os dois valores de
-# /etc/coletor-olt/coletor.env quando o coletor está neste servidor; token
-# vazio = integração desligada.
-COLETOR_URL = os.environ.get("COLETOR_URL", "http://127.0.0.1:8090").rstrip("/")
-COLETOR_SERVICO_TOKEN = os.environ.get("COLETOR_SERVICO_TOKEN", "").strip()

@@ -5,7 +5,6 @@ from .config import APP_VERSION, CORS_ALLOW_ORIGINS
 from .routers import (
     auth,
     clientes,
-    coletor,
     conexao,
     dp,
     enderecos,
@@ -29,7 +28,6 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(clientes.router)
-app.include_router(coletor.router)
 app.include_router(enderecos.router)
 app.include_router(financeiro.router)
 app.include_router(ferramentas.router)

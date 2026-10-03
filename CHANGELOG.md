@@ -7,6 +7,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.9.0] - 2026-10-02
+
+### Revertido
+
+- O app volta a ser exatamente o da versão 1.6.1. Saem as mudanças da 1.7.0,
+  1.8.0 e 1.8.1: rotas `/coletor/onu`, cópia do token do coletor pelo
+  instalador, seção "Histórico na OLT" na tela da ONU, troca da fonte do sinal
+  e do "Atualizar agora" (volta a rodar sempre a atualização do Controllr,
+  que grava no cadastro do cliente) e mudanças no resumo da ONU na tela
+  Conexão. O menu **OLTs** volta ao painel.
+- O número de versão segue subindo (1.9.0) para o instalador e o histórico
+  continuarem em ordem; o conteúdo é o da 1.6.1.
+
 ## [1.8.1] - 2026-10-02
 
 ### Corrigido
@@ -278,7 +291,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0

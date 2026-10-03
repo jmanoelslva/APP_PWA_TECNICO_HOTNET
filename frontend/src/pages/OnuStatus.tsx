@@ -33,11 +33,8 @@ import CabecalhoTela from '../components/CabecalhoTela'
 import LeitorCodigoBarras from '../components/LeitorCodigoBarras'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
-import HistoricoOnu from '../components/HistoricoOnu'
 import { useToast } from '../components/Toast/useToast'
-import { useHistoricoOnu } from '../hooks/useHistoricoOnu'
 import { CORES } from '../utils/cores'
-import { haQuanto } from '../utils/coletor'
 import { nivelSinalOnu, type NivelSinal } from '../utils/formatacao'
 import './OnuStatus.css'
 
@@ -111,11 +108,6 @@ export default function OnuStatus() {
   const [erro, setErro] = useState<string | null>(null)
   const [onu, setOnu] = useState<OnuDto | null>(null)
   const [atualizando, setAtualizando] = useState(false)
-  // Coletor de OLTs (opcional): sinal atual e histórico lidos direto da OLT.
-  // Com ele, os cartões ONU/OLT, o gráfico e as quedas saem da mesma fonte.
-  const [horasHistorico, setHorasHistorico] = useState(72)
-  const historico = useHistoricoOnu(onu?.sn, horasHistorico)
-  const hist = historico.estado.tipo === 'ok' ? historico.estado : null
   const [mostrarSenha, setMostrarSenha] = useState(false)
   // Reiniciar/Remover — endpoints não documentados na doc oficial.
   // Confirmação em 2 passos sempre, já que os dois afetam a conexão do
@@ -219,22 +211,6 @@ export default function OnuStatus() {
   }
 
   async function atualizarAgora() {
-    if (hist) {
-      // Com o coletor: lê só esta ONU na OLT (segundos) e relê o Controllr
-      // sem reconectar a OLT inteira.
-      setAtualizando(true)
-      try {
-        await historico.lerNaOlt()
-        const resposta = temParametroInicial ? await buscarInicial() : onu?.sn ? await buscarOnu({ serial: onu.sn }) : null
-        if (resposta) setOnu(resposta.results[0] ?? null)
-        toast('ONU lida na OLT agora.', 'sucesso')
-      } catch (excecao) {
-        toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível ler a ONU na OLT.')
-      } finally {
-        setAtualizando(false)
-      }
-      return
-    }
     // onu.pk (onu_pk) vem 0 pra ONU registrada na OLT mas ainda sem
     // cliente vinculado — 0 é um pk válido aqui, não "faltando". Usar
     // "!onu.pk" (falsy) tratava esse caso real como dado insuficiente.
@@ -405,15 +381,8 @@ export default function OnuStatus() {
     }
   }
 
-  // Fonte do sinal atual: a leitura da OLT pelo coletor (no máximo 15 min,
-  // a mesma do gráfico) quando houver; senão a do Controllr.
-  const lido = hist?.dados.onu
-  const rxOnu = lido ? (lido.rx ?? undefined) : onu?.omddm_rx_power
-  const txOnu = lido ? (lido.tx ?? undefined) : onu?.omddm_tx_power
-  const rxOlt = lido ? (lido.rx_olt ?? undefined) : onu?.olt_omddm_rx_power
-  const txOlt = lido?.sfp_tx ?? onu?.olt_omddm_tx_power
-  const statusOnu = nivelSinalOnu(rxOnu)
-  const statusOlt = nivelSinalOlt(rxOlt)
+  const statusOnu = nivelSinalOnu(onu?.omddm_rx_power)
+  const statusOlt = nivelSinalOlt(onu?.olt_omddm_rx_power)
   const semSelecao = !temParametroInicial && !onu && !carregando
 
   return (
@@ -507,41 +476,30 @@ export default function OnuStatus() {
             <div className="onu-sinal-grid">
               <div>
                 <span>RX</span>
-                <strong>{rxOnu != null ? `${rxOnu} dBm` : '—'}</strong>
+                <strong>{onu.omddm_rx_power != null ? `${onu.omddm_rx_power} dBm` : '—'}</strong>
               </div>
               <div>
                 <span>TX</span>
-                <strong>{txOnu != null ? `${txOnu} dBm` : '—'}</strong>
+                <strong>{onu.omddm_tx_power != null ? `${onu.omddm_tx_power} dBm` : '—'}</strong>
               </div>
             </div>
           </div>
 
-          {(rxOlt != null || txOlt != null) && (
+          {(onu.olt_omddm_rx_power != null || onu.olt_omddm_tx_power != null) && (
             <div className={`onu-card onu-sinal onu-sinal-${statusOlt}`}>
               <span className="onu-sinal-titulo">OLT — {TEXTO_SINAL[statusOlt]}</span>
               <div className="onu-sinal-grid">
                 <div>
                   <span>RX</span>
-                  <strong>{rxOlt != null ? `${rxOlt} dBm` : '—'}</strong>
+                  <strong>{onu.olt_omddm_rx_power != null ? `${onu.olt_omddm_rx_power} dBm` : '—'}</strong>
                 </div>
                 <div>
                   <span>TX</span>
-                  <strong>{txOlt != null ? `${txOlt} dBm` : '—'}</strong>
+                  <strong>{onu.olt_omddm_tx_power != null ? `${onu.olt_omddm_tx_power} dBm` : '—'}</strong>
                 </div>
               </div>
             </div>
           )}
-          <p className="onu-fonte-sinal">
-            {hist && lido
-              ? `Sinal lido direto na OLT ${haQuanto(lido.sinal_em, hist.agora)}${lido.online ? '' : ' (ONU offline agora)'}`
-              : formatarTempoDesdeColeta(onu.info_timer)
-                ? `Sinal do Controllr, coletado ${formatarTempoDesdeColeta(onu.info_timer)}`
-                : null}
-          </p>
-
-          {/* Histórico de sinal e quedas lido direto das OLTs pelo Coletor
-              de OLTs (opcional; some se não estiver configurado). */}
-          <HistoricoOnu estado={historico.estado} horas={horasHistorico} onHoras={setHorasHistorico} />
 
           {onu.wancfg_pppoe_username && (
             <div className="onu-card">
@@ -658,14 +616,13 @@ export default function OnuStatus() {
               <span>Estado</span>
               <strong>{onu.state ?? '—'}</strong>
             </div>
-            {/* Com o coletor, as quedas estão no histórico (motivo, hora e duração). */}
-            {!hist && onu.last_down_reason && (
+            {onu.last_down_reason && (
               <div className="onu-linha">
                 <span>Motivo da última queda</span>
                 <strong>{onu.last_down_reason}</strong>
               </div>
             )}
-            {!hist && formatarUltimaQueda(onu.last_down_time) && (
+            {formatarUltimaQueda(onu.last_down_time) && (
               <div className="onu-linha">
                 <span>Última queda</span>
                 <strong>{formatarUltimaQueda(onu.last_down_time)}</strong>
@@ -699,6 +656,9 @@ export default function OnuStatus() {
             </div>
           </div>
 
+          {!atualizando && formatarTempoDesdeColeta(onu.info_timer) && (
+            <p className="onu-ultima-coleta">Dados coletados {formatarTempoDesdeColeta(onu.info_timer)}</p>
+          )}
           <button
             className="botao botao-secundario botao-bloco"
             // Verde (sucesso) — diferencia do leitor de QR e do "Reiniciar"
@@ -707,7 +667,7 @@ export default function OnuStatus() {
             onClick={atualizarAgora}
             disabled={atualizando}
           >
-            <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? (hist ? 'Lendo na OLT…' : 'Reconectando OLT… (~1 min)') : 'Atualizar agora'}
+            <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
           </button>
 
           <div className="onu-acoes-onu">
