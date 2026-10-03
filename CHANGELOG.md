@@ -7,71 +7,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
-## [1.9.0] - 2026-10-02
-
-### Revertido
-
-- O app volta a ser exatamente o da versão 1.6.1. Saem as mudanças da 1.7.0,
-  1.8.0 e 1.8.1: rotas `/coletor/onu`, cópia do token do coletor pelo
-  instalador, seção "Histórico na OLT" na tela da ONU, troca da fonte do sinal
-  e do "Atualizar agora" (volta a rodar sempre a atualização do Controllr,
-  que grava no cadastro do cliente) e mudanças no resumo da ONU na tela
-  Conexão. O menu **OLTs** volta ao painel.
-- O número de versão segue subindo (1.9.0) para o instalador e o histórico
-  continuarem em ordem; o conteúdo é o da 1.6.1.
-
-## [1.8.1] - 2026-10-02
-
-### Corrigido
-
-- Tela da ONU mostrava o sinal duas vezes, de fontes diferentes: os cartões
-  ONU/OLT (Controllr) e a legenda do gráfico (coletor), às vezes com valores
-  diferentes. Com o Coletor de OLTs, os cartões ONU e OLT passam a mostrar a
-  leitura feita direto na OLT (a mesma do gráfico), com a indicação de quando
-  foi lida; sem ele, continuam com o Controllr. O gráfico mostra só a
-  evolução.
-- Um só **Atualizar agora**: com o coletor, lê a ONU na OLT em segundos e
-  relê o Controllr sem reconectar a OLT; sem ele, o fluxo antigo (~1 min).
-- Quedas em um só lugar: com o coletor, "Motivo da última queda" e "Última
-  queda" do Controllr saem da ficha (a lista de quedas tem motivo, hora e
-  duração).
-- Resumo da ONU na tela **Conexão** usa a mesma fonte: sinal RX lido na OLT
-  (com há quanto tempo) e a última queda com motivo e hora.
-
-## [1.8.0] - 2026-10-02
-
-### Adicionado
-
-- Tela da ONU ganha o **Histórico na OLT** (do Coletor de OLTs, lido direto
-  das OLTs a cada 15 minutos): gráfico do RX da ONU e do RX na OLT em 24 h,
-  3, 7 ou 30 dias, com o limite crítico de cada lado e leitura ponto a ponto
-  ao tocar; TX da ONU; quedas com motivo (falta de energia, sem sinal...),
-  hora e quanto tempo ficou fora, juntando oscilações seguidas numa linha só;
-  alarmes ativos; diagnóstico do sinal; e a situação da PON, com aviso quando
-  várias ONUs da mesma porta caíram juntas (problema da rede, não do cliente).
-- Botão **Ler na OLT agora**: lê só esta ONU na OLT em segundos, sem
-  reconectar a OLT inteira.
-- Sem o coletor configurado no servidor, a seção não aparece.
-
-### Removido
-
-- Menu **OLTs** do painel: os dados do coletor agora aparecem na própria tela
-  da ONU. O coletor continua acessível em `/olt/` para quem administra a rede.
-
-## [1.7.0] - 2026-10-02
-
-### Adicionado
-
-- Rotas `GET /coletor/onu` e `POST /coletor/onu/atualizar` no backend: pelo
-  serial da ONU (igual no Controllr e na OLT) buscam no Coletor de OLTs o
-  histórico de sinal (RX/TX da ONU e RX na OLT), as quedas com motivo, hora e
-  duração, os alarmes e a situação da PON. O backend chama o coletor na mesma
-  máquina com o token de serviço dele; o navegador não fala com o coletor.
-  Sem o coletor configurado, as rotas respondem 503 e nada muda no app.
-- O instalador copia `COLETOR_URL` e `COLETOR_SERVICO_TOKEN` de
-  `/etc/coletor-olt/coletor.env` quando o coletor (1.5.0 ou mais novo) está
-  no mesmo servidor.
-
 ## [1.6.1] - 2026-10-02
 
 ### Corrigido
@@ -291,11 +226,7 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.0...HEAD
-[1.9.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...v1.9.0
-[1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1
-[1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.8.0
-[1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...HEAD
 [1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.4.0...v1.5.0
