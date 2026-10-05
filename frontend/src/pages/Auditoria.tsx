@@ -22,14 +22,34 @@ const ACOES: { valor: string; rotulo: string }[] = [
 ]
 const ROTULO = Object.fromEntries(ACOES.map((a) => [a.valor, a.rotulo]))
 
-// Campos do "alvo" que ajudam a achar o caso; o resto (ids internos) fica de fora.
-const CAMPOS_ALVO: Record<string, string> = {
-  onu_name: 'Nome',
-  cpe_access_login: 'Login do roteador',
-  cpe_access_port: 'Porta',
-  onu_pk: 'ONU',
-  cpe_pk: 'Conexão',
-  olt_pk: 'OLT',
+type Alvo = Record<string, unknown>
+const tem = (v: unknown) => v != null && v !== ''
+
+/**
+ * O que foi alterado, do jeito que aparece na tela da ONU: OLT pelo nome,
+ * PON e número da ONU, serial e o nome novo (renomear). Registros antigos
+ * só têm os números internos do Controllr — aí mostra "nº" deles.
+ */
+function descrever(alvo: Alvo): { rotulo: string; valor: string }[] {
+  const itens: { rotulo: string; valor: string }[] = []
+  if (tem(alvo.olt_nome)) itens.push({ rotulo: 'OLT', valor: String(alvo.olt_nome) })
+  else if (tem(alvo.olt_pk)) itens.push({ rotulo: 'OLT', valor: `nº ${alvo.olt_pk}` })
+  if (tem(alvo.onu_id)) {
+    itens.push({ rotulo: 'ONU', valor: tem(alvo.porta) ? `PON ${alvo.porta} · ${alvo.onu_id}` : String(alvo.onu_id) })
+  } else if (tem(alvo.onu_pk)) {
+    itens.push({ rotulo: 'ONU', valor: `nº ${alvo.onu_pk}` })
+  }
+  if (tem(alvo.serial)) itens.push({ rotulo: 'Serial', valor: String(alvo.serial) })
+  if (tem(alvo.onu_name)) {
+    itens.push({
+      rotulo: 'Nome',
+      valor: tem(alvo.nome_anterior) ? `${alvo.nome_anterior} → ${alvo.onu_name}` : String(alvo.onu_name),
+    })
+  }
+  if (tem(alvo.cpe_pk)) itens.push({ rotulo: 'Conexão', valor: `nº ${alvo.cpe_pk}` })
+  if (tem(alvo.cpe_access_login)) itens.push({ rotulo: 'Login do roteador', valor: String(alvo.cpe_access_login) })
+  if (tem(alvo.cpe_access_port)) itens.push({ rotulo: 'Porta de acesso', valor: String(alvo.cpe_access_port) })
+  return itens
 }
 
 const PASSO = 100
@@ -139,15 +159,13 @@ export default function Auditoria() {
                 <span>{ev.tecnico}</span>
                 <span className="auditoria-ip">IP {ev.ip}</span>
               </div>
-              {Object.entries(CAMPOS_ALVO).some(([k]) => ev.alvo?.[k] != null && ev.alvo[k] !== '') && (
+              {descrever(ev.alvo ?? {}).length > 0 && (
                 <div className="auditoria-alvo">
-                  {Object.entries(CAMPOS_ALVO)
-                    .filter(([k]) => ev.alvo?.[k] != null && ev.alvo[k] !== '')
-                    .map(([k, rotulo]) => (
-                      <span key={k}>
-                        {rotulo}: <strong>{String(ev.alvo[k])}</strong>
-                      </span>
-                    ))}
+                  {descrever(ev.alvo ?? {}).map((item) => (
+                    <span key={item.rotulo}>
+                      {item.rotulo}: <strong>{item.valor}</strong>
+                    </span>
+                  ))}
                 </div>
               )}
             </li>

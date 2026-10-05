@@ -7,6 +7,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.7.1] - 2026-10-05
+
+### Alterado
+
+- Auditoria mostra a ONU como ela aparece na tela: **OLT pelo nome**, PON e
+  número da ONU, serial e, ao renomear, o nome anterior → novo. Reiniciar,
+  remover e renomear passam a gravar esses dados; nos registros antigos o
+  nome da OLT é buscado no Controllr pelo número (se não der, aparece "nº").
+
 ## [1.7.0] - 2026-10-05
 
 ### Adicionado
@@ -258,7 +267,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.1...HEAD
+[1.7.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.0

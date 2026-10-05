@@ -594,6 +594,9 @@ interface OspoOnu {
   port_id: number
   onu_id: number
   frame_id?: number
+  // Só para a auditoria: como a ONU aparece na tela no momento da ação.
+  olt_nome?: string
+  onu_serial?: string
 }
 
 export function reiniciarOnu(onuPk: number, parametros: OspoOnu): Promise<{ success: boolean; results: unknown }> {
@@ -608,7 +611,7 @@ export function removerOnu(onuPk: number, parametros: OspoOnu): Promise<{ succes
 
 export function renomearOnu(
   onuPk: number,
-  parametros: OspoOnu & { onu_name: string },
+  parametros: OspoOnu & { onu_name: string; nome_anterior?: string },
 ): Promise<{ success: boolean; results: unknown }> {
   const query = querystring({ ...parametros, frame_id: parametros.frame_id ?? 1 })
   return post(`onu/${onuPk}/renomear${query}`)

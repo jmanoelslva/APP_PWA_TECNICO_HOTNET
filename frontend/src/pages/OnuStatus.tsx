@@ -243,7 +243,15 @@ export default function OnuStatus() {
 
   function dadosOspo() {
     if (!onu || onu.olt_pk == null || onu.slot == null || onu.pon == null || onu.id == null) return null
-    return { olt_pk: onu.olt_pk, slot_id: onu.slot, port_id: onu.pon, onu_id: onu.id, frame_id: onu.frame ?? 1 }
+    return {
+      olt_pk: onu.olt_pk,
+      slot_id: onu.slot,
+      port_id: onu.pon,
+      onu_id: onu.id,
+      frame_id: onu.frame ?? 1,
+      olt_nome: onu.olt_name,
+      onu_serial: onu.sn,
+    }
   }
 
   // Antes de reiniciar/remover/associar, releem a ONU do zero — mesmo
@@ -327,7 +335,7 @@ export default function OnuStatus() {
     }
     setSalvandoNome(true)
     try {
-      await renomearOnu(onu.pk, { ...ospo, onu_name: nome })
+      await renomearOnu(onu.pk, { ...ospo, onu_name: nome, nome_anterior: onu.name })
       setOnu((atual) => (atual ? { ...atual, name: nome } : atual))
       setRenomeando(false)
       toast('ONU renomeada.', 'sucesso')

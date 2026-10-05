@@ -121,3 +121,35 @@ def test_rota_so_para_usuarios_liberados(pasta, monkeypatch):
         assert c.get("/auditoria").json() == {"eventos": [], "mais": False}
     finally:
         app.dependency_overrides.clear()
+
+
+def test_alvo_da_onu_com_nome_da_olt():
+    from app.routers.onu import _alvo_onu
+
+    assert _alvo_onu(55, 3, 2, 12, "OLT-FLX", "ZTEG00000001", onu_name="CLIENTE", nome_anterior=None) == {
+        "onu_pk": 55, "olt_pk": 3, "olt_nome": "OLT-FLX", "porta": 2, "onu_id": 12,
+        "serial": "ZTEG00000001", "onu_name": "CLIENTE"}
+
+
+def test_nome_da_olt_completado_em_registro_antigo(pasta, monkeypatch):
+    from app.deps import get_current_session
+    from app.main import app
+    from app.routers import auditoria
+
+    (pasta / "auditoria.jsonl").write_text(json.dumps(
+        {"quando": "2026-09-01 10:00:00", "tecnico": "maria", "acao": "onu.reiniciar",
+         "alvo": {"onu_pk": 1, "olt_pk": 3}}) + "\n", encoding="utf-8")
+    monkeypatch.setattr(auditoria, "AUDITORIA_USUARIOS", {"chefe"})
+    monkeypatch.setattr(auditoria, "_olts", (0.0, {}))
+
+    async def falsa_lista(self, body, model_return=False):
+        return SimpleNamespace(success=True, results=[{"olt_pk": 3, "olt_name": "OLT-FLX"}])
+
+    from app.brbyteapi.controllr import AsyncControllr
+    monkeypatch.setattr(AsyncControllr, "olt_list", falsa_lista)
+    app.dependency_overrides[get_current_session] = lambda: sessao("chefe")
+    try:
+        ev = TestClient(app).get("/auditoria").json()["eventos"][0]
+    finally:
+        app.dependency_overrides.clear()
+    assert ev["alvo"]["olt_nome"] == "OLT-FLX"

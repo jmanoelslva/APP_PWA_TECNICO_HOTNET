@@ -114,6 +114,16 @@ async def atualizar_info_onu(
     return {"success": True, "results": resposta.results}
 
 
+def _alvo_onu(onu_pk: int, olt_pk: int, porta: int, onu_id: int, olt_nome: str | None,
+              onu_serial: str | None, **extra: Any) -> dict[str, Any]:
+    """O que vai para a auditoria: além dos pks do Controllr, o que a pessoa
+    reconhece na tela — nome da OLT, PON e número da ONU nela, serial (o nome
+    e o serial vêm da tela, como estavam no momento da ação)."""
+    alvo = {"onu_pk": onu_pk, "olt_pk": olt_pk, "olt_nome": olt_nome, "porta": porta, "onu_id": onu_id,
+            "serial": onu_serial, **extra}
+    return {k: v for k, v in alvo.items() if v not in (None, "")}
+
+
 # Endpoints não documentados na doc oficial. Corpo dos dois:
 # olt_pk/frame_id/slot_id/port_id/onu_id — mesmos identificadores OSPO já
 # usados por onu_update_info acima, sem o serial.
@@ -126,6 +136,8 @@ async def reiniciar_onu(
     port_id: int = Query(...),
     onu_id: int = Query(...),
     frame_id: int = Query(default=1),
+    olt_nome: str | None = Query(default=None, max_length=128),
+    onu_serial: str | None = Query(default=None, max_length=64),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     resposta = await ctx.controllr.call_api_post(
@@ -134,7 +146,8 @@ async def reiniciar_onu(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível reiniciar a ONU.", resposta))
-    registrar_auditoria(request, ctx.session, "onu.reiniciar", {"onu_pk": onu_pk, "olt_pk": olt_pk})
+    registrar_auditoria(request, ctx.session, "onu.reiniciar",
+                        _alvo_onu(onu_pk, olt_pk, port_id, onu_id, olt_nome, onu_serial))
     return {"success": True, "results": resposta.results}
 
 
@@ -147,6 +160,8 @@ async def remover_onu(
     port_id: int = Query(...),
     onu_id: int = Query(...),
     frame_id: int = Query(default=1),
+    olt_nome: str | None = Query(default=None, max_length=128),
+    onu_serial: str | None = Query(default=None, max_length=64),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     resposta = await ctx.controllr.call_api_post(
@@ -155,7 +170,8 @@ async def remover_onu(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível remover a ONU.", resposta))
-    registrar_auditoria(request, ctx.session, "onu.remover", {"onu_pk": onu_pk, "olt_pk": olt_pk})
+    registrar_auditoria(request, ctx.session, "onu.remover",
+                        _alvo_onu(onu_pk, olt_pk, port_id, onu_id, olt_nome, onu_serial))
     return {"success": True, "results": resposta.results}
 
 
@@ -169,6 +185,9 @@ async def renomear_onu(
     port_id: int = Query(...),
     onu_id: int = Query(...),
     frame_id: int = Query(default=1),
+    olt_nome: str | None = Query(default=None, max_length=128),
+    onu_serial: str | None = Query(default=None, max_length=64),
+    nome_anterior: str | None = Query(default=None, max_length=64),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     # Mesmos identificadores OSPO dos dois endpoints acima + "onu_name"
@@ -180,7 +199,9 @@ async def renomear_onu(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível renomear a ONU.", resposta))
-    registrar_auditoria(request, ctx.session, "onu.renomear", {"onu_pk": onu_pk, "onu_name": onu_name})
+    registrar_auditoria(request, ctx.session, "onu.renomear",
+                        _alvo_onu(onu_pk, olt_pk, port_id, onu_id, olt_nome, onu_serial,
+                                  onu_name=onu_name, nome_anterior=nome_anterior))
     return {"success": True, "results": resposta.results}
 
 
