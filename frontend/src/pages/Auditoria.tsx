@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import type { IconType } from 'react-icons'
-import { MdArrowForward, MdDeleteOutline, MdEdit, MdManageSearch, MdRestartAlt, MdRouter, MdWifi } from 'react-icons/md'
+import { MdArrowForward, MdDeleteOutline, MdEdit, MdLink, MdManageSearch, MdRestartAlt, MdRouter, MdWifi } from 'react-icons/md'
 import { ApiError, listarAuditoria } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -11,7 +11,7 @@ import './Auditoria.css'
 
 /**
  * Quem fez o quê, de qual IP: ações que mexem no equipamento do cliente
- * (reiniciar/remover/renomear ONU, Wi-Fi e acesso ao roteador). Só para os
+ * (reiniciar/remover/renomear/associar ONU, Wi-Fi e acesso ao roteador). Só para os
  * usuários liberados em AUDITORIA_USUARIOS no servidor.
  */
 
@@ -19,6 +19,7 @@ const ACOES: { valor: string; rotulo: string; filtro: string; icone: IconType; c
   { valor: 'onu.remover', rotulo: 'Removeu ONU', filtro: 'Remoções', icone: MdDeleteOutline, cor: CORES.erro },
   { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU', filtro: 'Reinícios', icone: MdRestartAlt, cor: CORES.alerta },
   { valor: 'onu.renomear', rotulo: 'Renomeou ONU', filtro: 'Renomeações', icone: MdEdit, cor: CORES.primaria },
+  { valor: 'onu.associar_cliente', rotulo: 'Associou ONU a cliente', filtro: 'Associações', icone: MdLink, cor: CORES.cliente },
   { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi', filtro: 'Wi-Fi', icone: MdWifi, cor: CORES.conexao },
   {
     valor: 'cpe.editar_acesso_roteador',
@@ -148,8 +149,8 @@ export default function Auditoria() {
                 const acao = POR_ACAO[ev.acao]
                 const Icone = acao?.icone ?? MdManageSearch
                 const alvo = ev.alvo ?? {}
-                const listaMudancas = mudancas(alvo)
-                const listaDetalhes = detalhes(alvo)
+                const listaMudancas = mudancas(alvo, ev.acao)
+                const listaDetalhes = detalhes(alvo, ev.acao)
                 return (
                   <li
                     key={`${ev.quando}-${i}`}

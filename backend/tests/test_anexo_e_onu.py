@@ -127,3 +127,33 @@ def test_associar_recusa_quando_nao_confere(cliente, monkeypatch, linhas):
     aplicados = _cpes(monkeypatch, linhas)
     assert cliente.post("/onu/77/associar-cliente", json=PAYLOAD).status_code == 404
     assert aplicados == []
+
+
+def test_associar_grava_auditoria_com_antes_e_depois(cliente, monkeypatch, tmp_path):
+    from app import audit
+
+    monkeypatch.setattr(audit, "AUDIT_LOG_PATH", str(tmp_path / "auditoria.jsonl"))
+    monkeypatch.setattr(audit, "_ultimo_mes_limpo", None)
+    aplicados = _cpes(monkeypatch, [
+        {"cpe_pk": 20, "client_pk": 10, "client_complete_name": "Maria da Silva",
+         "cpe_username": "maria.silva", "cpe_password": "segredo"},
+    ])
+    contexto = {"olt_nome": "OLT-CENTRO", "cliente_anterior": "José Souza", "pppoe_anterior": "jose.souza"}
+    assert cliente.post("/onu/77/associar-cliente", json={**PAYLOAD, "auditoria": contexto}).status_code == 200
+
+    assert "OLT-CENTRO" not in aplicados[0]  # o contexto não vai para o Controllr
+    (ev,), _ = audit.consultar()
+    assert ev["acao"] == "onu.associar_cliente" and ev["tecnico"] == "joao"
+    assert ev["alvo"] == {"onu_pk": 77, "olt_pk": 1, "olt_nome": "OLT-CENTRO", "porta": 2, "onu_id": 3,
+                          "serial": "ZTEG1", "cpe_pk": 20, "cliente": "Maria da Silva", "pppoe": "maria.silva",
+                          "cliente_anterior": "José Souza", "pppoe_anterior": "jose.souza"}
+    assert "segredo" not in str(ev)
+
+
+def test_associacao_recusada_nao_grava_auditoria(cliente, monkeypatch, tmp_path):
+    from app import audit
+
+    monkeypatch.setattr(audit, "AUDIT_LOG_PATH", str(tmp_path / "auditoria.jsonl"))
+    _cpes(monkeypatch, [{"cpe_pk": 20, "client_pk": 55}])
+    assert cliente.post("/onu/77/associar-cliente", json=PAYLOAD).status_code == 404
+    assert audit.consultar() == ([], False)

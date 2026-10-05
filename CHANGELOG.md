@@ -7,6 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.10.0] - 2026-10-05
+
+### Adicionado
+
+- Auditoria registra a **associação de ONU a cliente**: OLT, PON e número
+  da ONU, serial, e cliente e usuário PPPoE em antes → depois (o novo vem
+  da conexão conferida no Controllr). Novo filtro **Associações** na tela.
+
 ## [1.9.1] - 2026-10-05
 
 ### Segurança
@@ -334,6 +342,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.10.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.1...v1.10.0
 [1.9.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1

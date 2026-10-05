@@ -42,8 +42,15 @@ function senha(rotulo: string, alterada: unknown): Mudanca | null {
   return { rotulo, depois: alterada ? 'alterada' : 'mantida', nota: alterada ? 'o valor não é gravado' : undefined }
 }
 
-export function mudancas(alvo: Alvo): Mudanca[] {
+// Na associação de ONU o cliente e o PPPoE SÃO a mudança (antes → depois);
+// nas outras ações são só o "onde" (detalhes).
+const ASSOCIACAO = 'onu.associar_cliente'
+
+export function mudancas(alvo: Alvo, acao?: string): Mudanca[] {
+  const associacao = acao === ASSOCIACAO
   return [
+    associacao ? mudou('Cliente', alvo.cliente_anterior, alvo.cliente) : null,
+    associacao ? mudou('PPPoE', alvo.pppoe_anterior, alvo.pppoe) : null,
     mudou('Nome', alvo.nome_anterior, alvo.onu_name),
     mudou('Criptografia', alvo.wifi_tipo_anterior, alvo.wifi_tipo, rotuloCriptografia),
     senha('Senha do Wi-Fi', alvo.senha_wifi_alterada),
@@ -53,7 +60,8 @@ export function mudancas(alvo: Alvo): Mudanca[] {
   ].filter((m): m is Mudanca => m !== null)
 }
 
-export function detalhes(alvo: Alvo): Detalhe[] {
+export function detalhes(alvo: Alvo, acao?: string): Detalhe[] {
+  const associacao = acao === ASSOCIACAO
   const itens: Detalhe[] = []
   // OLT sempre que for ação em ONU: pelo nome; sem ele, o número interno.
   if (tem(alvo.onu_pk) || tem(alvo.onu_id) || tem(alvo.olt_pk)) {
@@ -65,6 +73,7 @@ export function detalhes(alvo: Alvo): Detalhe[] {
     itens.push({ rotulo: 'ONU', valor: texto(alvo.onu_pk) })
   }
   if (tem(alvo.serial)) itens.push({ rotulo: 'Serial', valor: texto(alvo.serial) })
+  if (associacao) return itens
   if (tem(alvo.cliente)) itens.push({ rotulo: 'Cliente', valor: texto(alvo.cliente) })
   if (tem(alvo.pppoe)) itens.push({ rotulo: 'PPPoE', valor: texto(alvo.pppoe) })
   // Registros antigos de Wi-Fi/roteador só têm o número interno da conexão.

@@ -860,6 +860,11 @@ function ModalRegistrarCliente({
         wancfg_pon_profile: onu.wancfg_pon_profile,
         wancfg_pppoe_svcname: onu.wancfg_pppoe_svcname,
         wancfg_local_ip: onu.wancfg_local_ip,
+        auditoria: {
+          olt_nome: onu.olt_name,
+          cliente_anterior: onu.client_name,
+          pppoe_anterior: onu.wancfg_pppoe_username,
+        },
       })
       onAssociado(selecionado.client_pk, selecionado.cliente.client_complete_name)
     } catch (excecao) {

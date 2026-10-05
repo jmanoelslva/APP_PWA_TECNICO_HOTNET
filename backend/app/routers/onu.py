@@ -3,7 +3,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
@@ -212,6 +212,14 @@ def _mesmo_pk(valor: Any, esperado: int) -> bool:
         return False
 
 
+class ContextoAuditoriaAssociacao(BaseModel):
+    """Como a ONU estava na tela antes de associar — só vai para a auditoria."""
+
+    olt_nome: str | None = Field(default=None, max_length=128)
+    cliente_anterior: str | None = Field(default=None, max_length=128)
+    pppoe_anterior: str | None = Field(default=None, max_length=64)
+
+
 class AssociarClientePayload(BaseModel):
     client_pk: int
     # O cliente pode ter mais de uma conexão (CPE) cadastrada — o técnico
@@ -242,11 +250,12 @@ class AssociarClientePayload(BaseModel):
     wancfg_pon_profile: str | None = None
     wancfg_pppoe_svcname: str | None = None
     wancfg_local_ip: str | None = None
+    auditoria: ContextoAuditoriaAssociacao | None = None
 
 
 @router.post("/{onu_pk}/associar-cliente")
 async def associar_cliente_onu(
-    onu_pk: int, payload: AssociarClientePayload, ctx: AuthContext = Depends(get_auth_context)
+    onu_pk: int, payload: AssociarClientePayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     # Reproduz a tela "Informações" da ONU do painel (sem documentação
     # oficial): busca as CPEs do cliente via /aaa_ctl/cpe/list_combo e usa
@@ -290,4 +299,12 @@ async def associar_cliente_onu(
     resposta = await ctx.controllr.call_api_post("/fiber_ctl/onu/apply_wan", urlencode(campos))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível associar a ONU a este cliente.", resposta))
+    # Cliente e PPPoE novos vêm da conexão já conferida acima (Controllr), o
+    # anterior e o nome da OLT vêm da tela.
+    antes = payload.auditoria or ContextoAuditoriaAssociacao()
+    registrar_auditoria(request, ctx.session, "onu.associar_cliente",
+                        _alvo_onu(onu_pk, payload.olt_pk, payload.port_id, payload.onu_id, antes.olt_nome,
+                                  payload.onu_serial, cpe_pk=payload.cpe_pk,
+                                  cliente=cpe.get("client_complete_name"), pppoe=cpe.get("cpe_username"),
+                                  cliente_anterior=antes.cliente_anterior, pppoe_anterior=antes.pppoe_anterior))
     return {"success": True, "results": resposta.results}

@@ -649,6 +649,8 @@ export interface AssociarClienteOnuPayload extends OspoOnu {
   wancfg_pon_profile?: string
   wancfg_pppoe_svcname?: string
   wancfg_local_ip?: string
+  // Como a ONU estava na tela — só vai para a auditoria (onu.py).
+  auditoria?: { olt_nome?: string; cliente_anterior?: string; pppoe_anterior?: string }
 }
 
 export function associarClienteOnu(

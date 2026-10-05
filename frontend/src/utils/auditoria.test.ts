@@ -34,6 +34,28 @@ describe('mudancas', () => {
   })
 })
 
+describe('associação de ONU', () => {
+  const alvo = {
+    onu_pk: 77, olt_pk: 1, olt_nome: 'OLT-CENTRO', porta: 2, onu_id: 3, serial: 'ZTEG1', cpe_pk: 20,
+    cliente: 'Maria da Silva', pppoe: 'maria.silva', cliente_anterior: 'José Souza', pppoe_anterior: 'jose.souza',
+  }
+
+  it('cliente e PPPoE viram antes → depois, não detalhe', () => {
+    expect(mudancas(alvo, 'onu.associar_cliente')).toEqual([
+      { rotulo: 'Cliente', antes: 'José Souza', depois: 'Maria da Silva' },
+      { rotulo: 'PPPoE', antes: 'jose.souza', depois: 'maria.silva' },
+    ])
+    expect(detalhes(alvo, 'onu.associar_cliente').map((d) => d.rotulo)).toEqual(['OLT', 'ONU', 'Serial'])
+  })
+
+  it('ONU nova, sem cliente antes: só o novo', () => {
+    expect(mudancas({ cliente: 'Maria', pppoe: 'maria' }, 'onu.associar_cliente')).toEqual([
+      { rotulo: 'Cliente', antes: undefined, depois: 'Maria' },
+      { rotulo: 'PPPoE', antes: undefined, depois: 'maria' },
+    ])
+  })
+})
+
 describe('detalhes', () => {
   it('ONU: OLT, PON e número, serial', () => {
     expect(detalhes({ onu_pk: 55, olt_pk: 3, olt_nome: 'OLT-FLX', porta: 2, onu_id: 12, serial: 'ZTEG1' })).toEqual([
