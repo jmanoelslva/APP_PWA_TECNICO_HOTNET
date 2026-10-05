@@ -131,25 +131,34 @@ def test_alvo_da_onu_com_nome_da_olt():
         "serial": "ZTEG00000001", "onu_name": "CLIENTE"}
 
 
-def test_nome_da_olt_completado_em_registro_antigo(pasta, monkeypatch):
+def test_registro_antigo_completado_pela_onu(pasta, monkeypatch):
+    from app.brbyteapi.controllr import AsyncControllr
     from app.deps import get_current_session
     from app.main import app
     from app.routers import auditoria
 
-    (pasta / "auditoria.jsonl").write_text(json.dumps(
-        {"quando": "2026-09-01 10:00:00", "tecnico": "maria", "acao": "onu.reiniciar",
-         "alvo": {"onu_pk": 1, "olt_pk": 3}}) + "\n", encoding="utf-8")
+    linhas = [
+        {"quando": "2026-09-01 10:00:00", "tecnico": "maria", "acao": "onu.renomear",
+         "alvo": {"onu_pk": 55, "onu_name": "CLIENTE"}},           # só o pk da ONU
+        {"quando": "2026-09-01 09:00:00", "tecnico": "maria", "acao": "onu.remover",
+         "alvo": {"onu_pk": 99, "olt_pk": 3}},                     # ONU já removida
+    ]
+    (pasta / "auditoria.jsonl").write_text("".join(json.dumps(x) + "\n" for x in linhas), encoding="utf-8")
     monkeypatch.setattr(auditoria, "AUDITORIA_USUARIOS", {"chefe"})
-    monkeypatch.setattr(auditoria, "_olts", (0.0, {}))
+    monkeypatch.setattr(auditoria, "_cache", {})
+    onus = [{"pk": 55, "olt_pk": 3, "olt_name": "OLT-FLX", "pon": 2, "id": 12, "sn": "ZTEG00000001"},
+            {"pk": 70, "olt_pk": 3, "olt_name": "OLT-FLX", "pon": 1, "id": 1, "sn": "ZTEG00000002"}]
 
-    async def falsa_lista(self, body, model_return=False):
-        return SimpleNamespace(success=True, results=[{"olt_pk": 3, "olt_name": "OLT-FLX"}])
+    async def falsa_lista(self, body, model_return=False, model_extended=False):
+        # Controllr "ignora" o filtro e devolve todas: só vale a que confere.
+        return SimpleNamespace(success=True, results=[SimpleNamespace(model_dump=lambda mode=None, o=o: o) for o in onus])
 
-    from app.brbyteapi.controllr import AsyncControllr
-    monkeypatch.setattr(AsyncControllr, "olt_list", falsa_lista)
+    monkeypatch.setattr(AsyncControllr, "onu_list", falsa_lista)
     app.dependency_overrides[get_current_session] = lambda: sessao("chefe")
     try:
-        ev = TestClient(app).get("/auditoria").json()["eventos"][0]
+        evs = TestClient(app).get("/auditoria").json()["eventos"]
     finally:
         app.dependency_overrides.clear()
-    assert ev["alvo"]["olt_nome"] == "OLT-FLX"
+    assert evs[0]["alvo"] == {"onu_pk": 55, "onu_name": "CLIENTE", "olt_nome": "OLT-FLX",
+                              "porta": 2, "onu_id": 12, "serial": "ZTEG00000001"}
+    assert evs[1]["alvo"]["olt_nome"] == "OLT-FLX" and "onu_id" not in evs[1]["alvo"]

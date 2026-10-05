@@ -28,16 +28,17 @@ const tem = (v: unknown) => v != null && v !== ''
 /**
  * O que foi alterado, do jeito que aparece na tela da ONU: OLT pelo nome,
  * PON e número da ONU, serial e o nome novo (renomear). Registros antigos
- * só têm os números internos do Controllr — aí mostra "nº" deles.
+ * só têm os números internos do Controllr; o backend completa o que achar.
  */
 function descrever(alvo: Alvo): { rotulo: string; valor: string }[] {
   const itens: { rotulo: string; valor: string }[] = []
-  if (tem(alvo.olt_nome)) itens.push({ rotulo: 'OLT', valor: String(alvo.olt_nome) })
-  else if (tem(alvo.olt_pk)) itens.push({ rotulo: 'OLT', valor: `nº ${alvo.olt_pk}` })
+  // OLT sempre: pelo nome; sem ele (ONU e OLT já fora do Controllr), o número.
+  const ehOnu = tem(alvo.onu_pk) || tem(alvo.onu_id) || tem(alvo.olt_pk)
+  if (ehOnu) itens.push({ rotulo: 'OLT', valor: tem(alvo.olt_nome) ? String(alvo.olt_nome) : tem(alvo.olt_pk) ? String(alvo.olt_pk) : '—' })
   if (tem(alvo.onu_id)) {
     itens.push({ rotulo: 'ONU', valor: tem(alvo.porta) ? `PON ${alvo.porta} · ${alvo.onu_id}` : String(alvo.onu_id) })
   } else if (tem(alvo.onu_pk)) {
-    itens.push({ rotulo: 'ONU', valor: `nº ${alvo.onu_pk}` })
+    itens.push({ rotulo: 'ONU', valor: String(alvo.onu_pk) })
   }
   if (tem(alvo.serial)) itens.push({ rotulo: 'Serial', valor: String(alvo.serial) })
   if (tem(alvo.onu_name)) {
@@ -46,7 +47,7 @@ function descrever(alvo: Alvo): { rotulo: string; valor: string }[] {
       valor: tem(alvo.nome_anterior) ? `${alvo.nome_anterior} → ${alvo.onu_name}` : String(alvo.onu_name),
     })
   }
-  if (tem(alvo.cpe_pk)) itens.push({ rotulo: 'Conexão', valor: `nº ${alvo.cpe_pk}` })
+  if (tem(alvo.cpe_pk)) itens.push({ rotulo: 'Conexão', valor: String(alvo.cpe_pk) })
   if (tem(alvo.cpe_access_login)) itens.push({ rotulo: 'Login do roteador', valor: String(alvo.cpe_access_login) })
   if (tem(alvo.cpe_access_port)) itens.push({ rotulo: 'Porta de acesso', valor: String(alvo.cpe_access_port) })
   return itens
