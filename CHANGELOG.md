@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- Notas das releases no GitHub montadas pelo `tools/notas_release.py` a partir
+  deste CHANGELOG: título "v1.6.1 · assunto", seções com ícones, cada item numa
+  linha só, comando de atualização copiável e link para comparar com a versão
+  anterior. Aplicado a todas as releases.
+
 ## [1.6.1] - 2026-10-02
 
 ### Corrigido

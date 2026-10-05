@@ -79,3 +79,12 @@ Abre em `http://localhost:5173`; o Vite repassa `/api/*` para o backend em
 - `controllrctl/addresses/*` não expõe um `address_list` puro por
   `client_pk` — o backend usa `address_list_combo` com esse filtro; a
   confirmar contra a API real.
+
+## Versões
+
+Histórico em [CHANGELOG.md](CHANGELOG.md). A nota de cada release do GitHub é montada a partir dele:
+
+```bash
+python tools/notas_release.py 1.6.1            # mostra a nota
+python tools/notas_release.py 1.6.1 --aplicar  # grava título e nota na release (gh)
+```
