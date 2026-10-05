@@ -25,7 +25,7 @@ async function inscricaoAtual(): Promise<PushSubscription | null> {
   return (await registro?.pushManager.getSubscription()) ?? null
 }
 
-/** Desliga os avisos deste celular (usado também no "Sair" do técnico). Nunca falha. */
+/** Desliga os avisos deste celular (interruptor do avatar). Nunca falha. */
 export async function desligarAvisosDesteCelular(): Promise<void> {
   try {
     if (!navegadorSuporta()) return

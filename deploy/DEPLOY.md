@@ -207,6 +207,7 @@ cada OS nova. Precisa, no `/etc/hotnet-tecnico/backend.env`:
   (padrão 60, mínimo 30). Mudou? `systemctl restart hotnet-tecnico-api`.
 
 Celulares inscritos e OS já vistas ficam em `backend/dados/` (fora do git).
-Só o **Sair** tocado pelo técnico desliga os avisos daquele celular; a
-sessão expirar sozinha não. No iPhone, só com o app instalado na tela
+Os avisos continuam chegando mesmo depois do **Sair** e com o app fechado;
+só o interruptor **Avisos de OS** (menu do avatar) desliga. Se outro
+técnico entrar no mesmo celular, os avisos passam a ser dele. No iPhone, só com o app instalado na tela
 inicial (iOS 16.4 ou mais novo).

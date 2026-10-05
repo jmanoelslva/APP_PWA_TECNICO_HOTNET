@@ -19,7 +19,7 @@ import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
 import { useTema } from '../hooks/useTema'
 import { useColetorOlt } from '../hooks/useColetorOlt'
-import { desligarAvisosDesteCelular, useAvisos } from '../hooks/useAvisos'
+import { useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
 import MinhasOsHoje from '../components/MinhasOsHoje'
@@ -283,10 +283,9 @@ export default function Home() {
           // RotaProtegida já redireciona pro /login sozinho assim que
           // "logado" vira false (ver RotaProtegida.tsx) — navegar aqui
           // manualmente, sem esperar sair() terminar, desmontaria a tela
-          // antes do POST /auth/logout ser disparado. Os avisos de OS deste
-          // celular desligam só aqui, no "Sair" do técnico — não quando a
-          // sessão expira sozinha (aí os avisos têm que continuar chegando).
-          void desligarAvisosDesteCelular().finally(() => sair())
+          // antes do POST /auth/logout ser disparado. Os avisos de OS
+          // continuam ligados (só o interruptor do avatar desliga).
+          sair()
         }}
       />
     </div>

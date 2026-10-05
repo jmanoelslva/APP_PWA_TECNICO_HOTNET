@@ -7,6 +7,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.12.1] - 2026-10-05
+
+### Alterado
+
+- Avisos de OS continuam chegando depois do **Sair** (antes o Sair do menu
+  do avatar desligava, e o da barra de baixo não — ficou igual nos dois).
+  Para parar, o interruptor **Avisos de OS** no avatar. Se outro técnico
+  entrar no mesmo celular, os avisos passam a ser dele.
+
 ## [1.12.0] - 2026-10-05
 
 ### Adicionado
@@ -386,6 +395,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.12.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.0...v1.12.1
 [1.12.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.1...v1.10.0

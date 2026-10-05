@@ -15,6 +15,9 @@ export interface SessionState {
   erro: string | null
   tecnico: TecnicoLogado | null
   entrar: (usuario: string, senha: string) => Promise<boolean>
+  // Encerra a sessão. Não mexe nos avisos de OS: continuam chegando neste
+  // celular até o técnico desligar no interruptor (menu do avatar) ou outro
+  // técnico entrar no aparelho (ver hooks/useAvisos.ts).
   sair: () => Promise<void>
 }
 
