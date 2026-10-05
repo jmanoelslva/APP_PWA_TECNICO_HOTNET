@@ -7,6 +7,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.8.0] - 2026-10-05
+
+### Adicionado
+
+- **Minhas OS de hoje** na tela inicial: a próxima OS do técnico em destaque
+  (horário, tipo de serviço, cliente e endereço) com os botões **Rota**
+  (Google Maps já em modo navegação até o endereço), **Ligar** (primeiro
+  telefone do cliente) e **Abrir OS**; abaixo, as demais OS do dia. OS de
+  dias anteriores ainda em aberto aparecem no topo como **Atrasada**. Só
+  aparece quando o login identificou o técnico no Controllr.
+
 ## [1.7.2] - 2026-10-05
 
 ### Alterado
@@ -278,6 +289,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...v1.8.0
 [1.7.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0

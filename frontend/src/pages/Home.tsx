@@ -19,6 +19,7 @@ import { useTema } from '../hooks/useTema'
 import { useColetorOlt } from '../hooks/useColetorOlt'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
+import MinhasOsHoje from '../components/MinhasOsHoje'
 import { buscarClientes, type BuscaClienteResultado } from '../api/client'
 import { detectarTipoBusca } from '../utils/formatacao'
 import { buscarIpsPublicos } from '../utils/ipPublico'
@@ -199,6 +200,10 @@ export default function Home() {
             </ul>
           )}
         </form>
+
+        {/* Só com o técnico identificado no Controllr (user_pk): sem ele o
+            filtro "minhas" do backend não se aplica e viriam OS de todos. */}
+        {tecnico?.userPk != null && <MinhasOsHoje />}
 
         <div className="home-menu">
           {ITENS_MENU.map((item) => (

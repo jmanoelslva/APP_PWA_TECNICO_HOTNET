@@ -1,0 +1,166 @@
+.minhas-os {
+  margin-bottom: 16px;
+}
+
+.minhas-os-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--cor-texto);
+}
+
+.minhas-os-contagem {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--cor-suporte);
+  /* --cor-fundo: claro no tema claro, escuro no escuro (o verde clareia no escuro). */
+  color: var(--cor-fundo);
+  font-size: 11px;
+  text-align: center;
+}
+
+.minhas-os-vazio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-card);
+  font-size: 13px;
+  color: var(--cor-texto-terciario);
+}
+
+.minhas-os-proxima {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--cor-suporte) 8%, var(--cor-superficie));
+  border: 1.5px solid color-mix(in srgb, var(--cor-suporte) 35%, transparent);
+  box-shadow: var(--sombra-card);
+}
+
+.minhas-os-proxima-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.minhas-os-rotulo {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-suporte);
+}
+
+.minhas-os-hora {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cor-texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.minhas-os-atrasada {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cor-erro) 14%, transparent);
+  color: var(--cor-erro);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.minhas-os-tipo {
+  font-size: 15px;
+  color: var(--cor-texto);
+}
+
+.minhas-os-cliente,
+.minhas-os-endereco {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.minhas-os-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.minhas-os-acao {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1.5px solid color-mix(in srgb, var(--cor-suporte) 45%, transparent);
+  background: var(--cor-superficie);
+  color: var(--cor-suporte);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.minhas-os-acao-principal {
+  background: var(--cor-suporte);
+  border-color: var(--cor-suporte);
+  color: var(--cor-fundo);
+}
+
+.minhas-os-lista {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border-radius: 16px;
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-card);
+  overflow: hidden;
+}
+
+.minhas-os-lista li + li {
+  border-top: 1px solid var(--cor-borda);
+}
+
+.minhas-os-lista button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  color: var(--cor-texto);
+  cursor: pointer;
+}
+
+.minhas-os-linha {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.minhas-os-linha strong {
+  font-size: 13px;
+}
+
+.minhas-os-linha span {
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
