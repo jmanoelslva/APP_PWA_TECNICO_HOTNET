@@ -159,8 +159,9 @@ export default function Auditoria() {
                       <div className="auditoria-titulo">
                         <strong>{acao?.rotulo ?? ev.acao}</strong>
                         <span>
-                          {ev.tecnico} · {hora(ev.quando)} · IP {ev.ip}
+                          {ev.tecnico} · {hora(ev.quando)}
                         </span>
+                        <span>IP {ev.ip}</span>
                       </div>
                     </div>
 

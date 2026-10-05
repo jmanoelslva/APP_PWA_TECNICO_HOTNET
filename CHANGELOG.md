@@ -20,7 +20,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - Tela de **Auditoria** mais fácil de ler: ações agrupadas por dia (Hoje,
   Ontem...), ícone e cor por tipo de ação (remoção em destaque), quadro de
-  **antes → depois** com o valor antigo riscado e o novo em verde, detalhes
+  **antes → depois** com o valor antigo riscado e o novo em verde, o IP
+  (IPv4 ou IPv6) numa linha própria abaixo do técnico, detalhes
   (OLT, ONU, serial, cliente, PPPoE) em grade, e filtro por tipo de ação em
   botões no topo, no lugar da lista suspensa.
 
