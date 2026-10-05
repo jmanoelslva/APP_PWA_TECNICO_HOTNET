@@ -178,3 +178,39 @@ def test_registro_antigo_completado_pela_onu(pasta, monkeypatch):
     assert evs[0]["alvo"] == {"onu_pk": 55, "onu_name": "CLIENTE", "olt_nome": "OLT-FLX",
                               "porta": 2, "onu_id": 12, "serial": "ZTEG00000001"}
     assert evs[1]["alvo"]["olt_nome"] == "OLT-FLX" and "onu_id" not in evs[1]["alvo"]
+
+
+def test_wifi_e_acesso_gravam_antes_e_depois_sem_senha(pasta, monkeypatch):
+    from app.brbyteapi.controllr import AsyncControllr
+    from app.deps import get_current_session
+    from app.main import app
+
+    enviados = []
+
+    async def falso_update(self, body):
+        enviados.append(body)
+        return SimpleNamespace(success=True, results=[])
+
+    monkeypatch.setattr(AsyncControllr, "cpe_update", falso_update)
+    app.dependency_overrides[get_current_session] = lambda: sessao("joao")
+    contexto = {"cliente": "Maria da Silva", "pppoe": "maria.silva"}
+    try:
+        c = TestClient(app)
+        assert c.put("/cpe/9/wifi", json={
+            "wifi_encryption_type": 2, "wifi_encryption_password": "segredo1",
+            "auditoria": {**contexto, "wifi_tipo_anterior": 0, "senha_wifi_alterada": True},
+        }).status_code == 200
+        assert c.put("/cpe/9/detalhes", json={
+            "cpe_access_login": "admin2", "cpe_access_password": "segredo2", "cpe_access_port": 8080,
+            "auditoria": {**contexto, "login_anterior": "admin", "porta_anterior": 80, "senha_acesso_alterada": False},
+        }).status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+
+    # O contexto da auditoria não vai para o Controllr.
+    assert all("auditoria" not in b and "cliente" not in b for b in enviados)
+    wifi, acesso = reversed(audit.consultar()[0])
+    assert wifi["alvo"] == {"cpe_pk": 9, **contexto, "wifi_tipo_anterior": 0, "senha_wifi_alterada": True, "wifi_tipo": 2}
+    assert acesso["alvo"] == {"cpe_pk": 9, **contexto, "login_anterior": "admin", "porta_anterior": 80,
+                              "senha_acesso_alterada": False, "cpe_access_login": "admin2", "cpe_access_port": 8080}
+    assert "segredo" not in json.dumps([wifi, acesso])

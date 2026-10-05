@@ -7,6 +7,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.9.0] - 2026-10-05
+
+### Adicionado
+
+- Auditoria grava, nas alterações de Wi-Fi e de acesso ao roteador, o
+  cliente e o usuário PPPoE, o tipo de criptografia antes e depois, o login
+  e a porta anteriores e se a senha foi trocada (a senha em si nunca é
+  gravada).
+
+### Alterado
+
+- Tela de **Auditoria** mais fácil de ler: ações agrupadas por dia (Hoje,
+  Ontem...), ícone e cor por tipo de ação (remoção em destaque), quadro de
+  **antes → depois** com o valor antigo riscado e o novo em verde, detalhes
+  (OLT, ONU, serial, cliente, PPPoE) em grade, e filtro por tipo de ação em
+  botões no topo, no lugar da lista suspensa.
+
 ## [1.8.1] - 2026-10-05
 
 ### Adicionado
@@ -296,6 +313,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.9.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...v1.8.0
 [1.7.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.1...v1.7.2

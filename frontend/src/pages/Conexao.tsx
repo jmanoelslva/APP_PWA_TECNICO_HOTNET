@@ -464,6 +464,13 @@ export default function Conexao() {
         cpe_access_login: acessoLogin,
         cpe_access_password: acessoSenha,
         cpe_access_port: acessoPorta.trim() ? Number(acessoPorta.trim()) : undefined,
+        auditoria: {
+          cliente: cpe.client_complete_name,
+          pppoe: cpe.username,
+          login_anterior: cpe.access_login,
+          porta_anterior: cpe.access_port,
+          senha_acesso_alterada: acessoSenha !== (cpe.access_password ?? ''),
+        },
       })
       setCpe((atual) =>
         atual
@@ -490,6 +497,12 @@ export default function Conexao() {
       await atualizarWifiCpe(cpe.pk, {
         wifi_encryption_type: wifiTipo.trim() ? Number(wifiTipo.trim()) : undefined,
         wifi_encryption_password: senhaParaEnviar,
+        auditoria: {
+          cliente: cpe.client_complete_name,
+          pppoe: cpe.username,
+          wifi_tipo_anterior: cpe.wifi_encryption_type,
+          senha_wifi_alterada: senhaParaEnviar !== (cpe.wifi_encryption_password ?? ''),
+        },
       })
       setWifiSenha(senhaParaEnviar)
       setCpe((atual) =>

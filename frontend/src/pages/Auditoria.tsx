@@ -1,9 +1,11 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
-import { MdManageSearch } from 'react-icons/md'
-import { ApiError, listarAuditoria, type EventoAuditoria } from '../api/client'
+import type { IconType } from 'react-icons'
+import { MdArrowForward, MdDeleteOutline, MdEdit, MdManageSearch, MdRestartAlt, MdRouter, MdWifi } from 'react-icons/md'
+import { ApiError, listarAuditoria } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
 import Skeleton from '../components/Skeleton'
+import { agruparPorDia, detalhes, hora, mudancas, type DiaAuditoria } from '../utils/auditoria'
 import { CORES } from '../utils/cores'
 import './Auditoria.css'
 
@@ -13,61 +15,34 @@ import './Auditoria.css'
  * usuários liberados em AUDITORIA_USUARIOS no servidor.
  */
 
-const ACOES: { valor: string; rotulo: string }[] = [
-  { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU' },
-  { valor: 'onu.remover', rotulo: 'Removeu ONU' },
-  { valor: 'onu.renomear', rotulo: 'Renomeou ONU' },
-  { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi' },
-  { valor: 'cpe.editar_acesso_roteador', rotulo: 'Alterou acesso ao roteador' },
+const ACOES: { valor: string; rotulo: string; filtro: string; icone: IconType; cor: string }[] = [
+  { valor: 'onu.remover', rotulo: 'Removeu ONU', filtro: 'Remoções', icone: MdDeleteOutline, cor: CORES.erro },
+  { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU', filtro: 'Reinícios', icone: MdRestartAlt, cor: CORES.alerta },
+  { valor: 'onu.renomear', rotulo: 'Renomeou ONU', filtro: 'Renomeações', icone: MdEdit, cor: CORES.primaria },
+  { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi', filtro: 'Wi-Fi', icone: MdWifi, cor: CORES.conexao },
+  {
+    valor: 'cpe.editar_acesso_roteador',
+    rotulo: 'Alterou acesso ao roteador',
+    filtro: 'Acesso ao roteador',
+    icone: MdRouter,
+    cor: CORES.ferramentas,
+  },
 ]
-const ROTULO = Object.fromEntries(ACOES.map((a) => [a.valor, a.rotulo]))
-
-type Alvo = Record<string, unknown>
-const tem = (v: unknown) => v != null && v !== ''
-
-/**
- * O que foi alterado, do jeito que aparece na tela da ONU: OLT pelo nome,
- * PON e número da ONU, serial e o nome novo (renomear). Registros antigos
- * só têm os números internos do Controllr; o backend completa o que achar.
- */
-function descrever(alvo: Alvo): { rotulo: string; valor: string }[] {
-  const itens: { rotulo: string; valor: string }[] = []
-  // OLT sempre: pelo nome; sem ele (ONU e OLT já fora do Controllr), o número.
-  const ehOnu = tem(alvo.onu_pk) || tem(alvo.onu_id) || tem(alvo.olt_pk)
-  if (ehOnu) itens.push({ rotulo: 'OLT', valor: tem(alvo.olt_nome) ? String(alvo.olt_nome) : tem(alvo.olt_pk) ? String(alvo.olt_pk) : '—' })
-  if (tem(alvo.onu_id)) {
-    itens.push({ rotulo: 'ONU', valor: tem(alvo.porta) ? `PON ${alvo.porta} · ${alvo.onu_id}` : String(alvo.onu_id) })
-  } else if (tem(alvo.onu_pk)) {
-    itens.push({ rotulo: 'ONU', valor: String(alvo.onu_pk) })
-  }
-  if (tem(alvo.serial)) itens.push({ rotulo: 'Serial', valor: String(alvo.serial) })
-  if (tem(alvo.onu_name)) {
-    itens.push({
-      rotulo: 'Nome',
-      valor: tem(alvo.nome_anterior) ? `${alvo.nome_anterior} → ${alvo.onu_name}` : String(alvo.onu_name),
-    })
-  }
-  if (tem(alvo.cpe_pk)) itens.push({ rotulo: 'Conexão', valor: String(alvo.cpe_pk) })
-  if (tem(alvo.cpe_access_login)) itens.push({ rotulo: 'Login do roteador', valor: String(alvo.cpe_access_login) })
-  if (tem(alvo.cpe_access_port)) itens.push({ rotulo: 'Porta de acesso', valor: String(alvo.cpe_access_port) })
-  return itens
-}
+const POR_ACAO = Object.fromEntries(ACOES.map((a) => [a.valor, a]))
 
 const PASSO = 100
 
-function dataHora(quando: string): string {
-  const m = quando.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})/)
-  return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}` : quando
+function plural(n: number): string {
+  return n === 1 ? '1 ação' : `${n} ações`
 }
 
 export default function Auditoria() {
   const [tecnico, setTecnico] = useState('')
-  const [acao, setAcao] = useState('')
   const [de, setDe] = useState('')
   const [ate, setAte] = useState('')
   const [filtro, setFiltro] = useState({ tecnico: '', acao: '', de: '', ate: '' })
   const [limite, setLimite] = useState(PASSO)
-  const [eventos, setEventos] = useState<EventoAuditoria[] | null>(null)
+  const [dias, setDias] = useState<DiaAuditoria[] | null>(null)
   const [mais, setMais] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [carregando, setCarregando] = useState(true)
@@ -84,7 +59,7 @@ export default function Auditoria() {
     })
       .then((r) => {
         if (cancelado) return
-        setEventos(r.eventos)
+        setDias(agruparPorDia(r.eventos))
         setMais(r.mais)
         setErro(null)
       })
@@ -98,7 +73,13 @@ export default function Auditoria() {
   function buscar(e: FormEvent) {
     e.preventDefault()
     setLimite(PASSO)
-    setFiltro({ tecnico: tecnico.trim(), acao, de, ate })
+    setFiltro((f) => ({ ...f, tecnico: tecnico.trim(), de, ate }))
+  }
+
+  // O tipo de ação filtra na hora; técnico e datas esperam o "Filtrar".
+  function escolherAcao(acao: string) {
+    setLimite(PASSO)
+    setFiltro((f) => ({ ...f, acao }))
   }
 
   return (
@@ -110,21 +91,24 @@ export default function Auditoria() {
         subtitulo="Quem mexeu no equipamento do cliente, quando e de qual IP."
       />
 
+      <div className="auditoria-chips" role="group" aria-label="Tipo de ação">
+        {[{ valor: '', filtro: 'Todas' }, ...ACOES].map((a) => (
+          <button
+            key={a.valor}
+            type="button"
+            className="auditoria-chip"
+            aria-pressed={filtro.acao === a.valor}
+            onClick={() => escolherAcao(a.valor)}
+          >
+            {a.filtro}
+          </button>
+        ))}
+      </div>
+
       <form className="auditoria-filtros" onSubmit={buscar}>
         <label>
           Técnico
           <input value={tecnico} onChange={(e) => setTecnico(e.target.value)} placeholder="Usuário" />
-        </label>
-        <label>
-          Ação
-          <select value={acao} onChange={(e) => setAcao(e.target.value)}>
-            <option value="">Todas</option>
-            {ACOES.map((a) => (
-              <option key={a.valor} value={a.valor}>
-                {a.rotulo}
-              </option>
-            ))}
-          </select>
         </label>
         <label>
           De
@@ -140,39 +124,80 @@ export default function Auditoria() {
       </form>
 
       {erro && <p className="auditoria-erro">{erro}</p>}
-      {!erro && carregando && !eventos && (
+      {!erro && carregando && !dias && (
         <div className="auditoria-item">
           <Skeleton width="60%" height={14} />
           <Skeleton width="40%" height={12} />
         </div>
       )}
-      {!erro && eventos?.length === 0 && <EstadoVazio icone={MdManageSearch} titulo="Nenhuma ação encontrada." />}
+      {!erro && dias?.length === 0 && <EstadoVazio icone={MdManageSearch} titulo="Nenhuma ação encontrada." />}
 
-      {!erro && eventos && eventos.length > 0 && (
-        <ul className="auditoria-lista">
-          {eventos.map((ev, i) => (
-            <li key={`${ev.quando}-${i}`} className="auditoria-item">
-              <div className="auditoria-topo">
-                <strong>{ROTULO[ev.acao] ?? ev.acao}</strong>
-                <time>{dataHora(ev.quando)}</time>
-              </div>
-              <div className="auditoria-quem">
-                <span>{ev.tecnico}</span>
-                <span className="auditoria-ip">IP {ev.ip}</span>
-              </div>
-              {descrever(ev.alvo ?? {}).length > 0 && (
-                <div className="auditoria-alvo">
-                  {descrever(ev.alvo ?? {}).map((item) => (
-                    <span key={item.rotulo}>
-                      {item.rotulo}: <strong>{item.valor}</strong>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      {!erro &&
+        dias?.map((grupo) => (
+          <section key={grupo.dia} className="auditoria-dia">
+            <h2 className="auditoria-dia-titulo">
+              <span>{grupo.titulo}</span>
+              <span>{plural(grupo.eventos.length)}</span>
+            </h2>
+            <ul className="auditoria-lista">
+              {grupo.eventos.map((ev, i) => {
+                const acao = POR_ACAO[ev.acao]
+                const Icone = acao?.icone ?? MdManageSearch
+                const alvo = ev.alvo ?? {}
+                const listaMudancas = mudancas(alvo)
+                const listaDetalhes = detalhes(alvo)
+                return (
+                  <li
+                    key={`${ev.quando}-${i}`}
+                    className={`auditoria-item${ev.acao === 'onu.remover' ? ' auditoria-item-grave' : ''}`}
+                    style={{ '--acao-cor': acao?.cor ?? CORES.ferramentas } as CSSProperties}
+                  >
+                    <div className="auditoria-topo">
+                      <span className="auditoria-icone" aria-hidden="true">
+                        <Icone size={18} />
+                      </span>
+                      <div className="auditoria-titulo">
+                        <strong>{acao?.rotulo ?? ev.acao}</strong>
+                        <span>
+                          {ev.tecnico} · {hora(ev.quando)} · IP {ev.ip}
+                        </span>
+                      </div>
+                    </div>
+
+                    {listaMudancas.length > 0 && (
+                      <div className="auditoria-mudancas">
+                        {listaMudancas.map((m) => (
+                          <div key={m.rotulo} className="auditoria-mudanca">
+                            <span className="auditoria-rotulo">{m.rotulo}</span>
+                            {m.antes !== undefined && (
+                              <>
+                                <s className="auditoria-antes">{m.antes}</s>
+                                <MdArrowForward size={14} aria-label="para" />
+                              </>
+                            )}
+                            <strong className="auditoria-depois">{m.depois}</strong>
+                            {m.nota && <span className="auditoria-nota">({m.nota})</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {listaDetalhes.length > 0 && (
+                      <dl className="auditoria-detalhes">
+                        {listaDetalhes.map((d) => (
+                          <div key={d.rotulo}>
+                            <dt>{d.rotulo}</dt>
+                            <dd>{d.valor}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
 
       {!erro && mais && (
         <button

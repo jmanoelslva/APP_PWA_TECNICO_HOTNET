@@ -2,7 +2,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
@@ -135,9 +135,28 @@ async def historico_sessoes_cpe(
     return {"success": True, "results": resposta.results}
 
 
+class ContextoAuditoriaCpe(BaseModel):
+    """Como a conexão estava na tela antes de salvar — só vai para a
+    auditoria, nunca para o Controllr. Senha nenhuma: só se foi trocada."""
+
+    cliente: str | None = Field(default=None, max_length=128)
+    pppoe: str | None = Field(default=None, max_length=64)
+    wifi_tipo_anterior: int | None = None
+    senha_wifi_alterada: bool | None = None
+    login_anterior: str | None = Field(default=None, max_length=64)
+    porta_anterior: int | None = None
+    senha_acesso_alterada: bool | None = None
+
+
+def _alvo_cpe(cpe_pk: int, contexto: ContextoAuditoriaCpe | None, **depois: Any) -> dict[str, Any]:
+    alvo = {"cpe_pk": cpe_pk, **(contexto.model_dump() if contexto else {}), **depois}
+    return {k: v for k, v in alvo.items() if v not in (None, "")}
+
+
 class WifiCpePayload(BaseModel):
     wifi_encryption_type: int | None = None
     wifi_encryption_password: str | None = None
+    auditoria: ContextoAuditoriaCpe | None = None
 
 
 @router.put("/{cpe_pk}/wifi")
@@ -157,7 +176,8 @@ async def atualizar_wifi_cpe(
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o Wi-Fi.", resposta))
     # Sem a senha em si no log — só o registro de que foi alterada.
-    registrar_auditoria(request, ctx.session, "cpe.editar_wifi", {"cpe_pk": cpe_pk})
+    registrar_auditoria(request, ctx.session, "cpe.editar_wifi",
+                        _alvo_cpe(cpe_pk, payload.auditoria, wifi_tipo=payload.wifi_encryption_type))
     return {"success": True, "results": resposta.results}
 
 
@@ -171,13 +191,14 @@ class CpeDetalhesPayload(BaseModel):
     cpe_access_login: str | None = None
     cpe_access_password: str | None = None
     cpe_access_port: int | None = None
+    auditoria: ContextoAuditoriaCpe | None = None
 
 
 @router.put("/{cpe_pk}/detalhes")
 async def atualizar_detalhes_cpe(
     cpe_pk: int, payload: CpeDetalhesPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
-    campos: dict[str, Any] = {"cpe_pk": cpe_pk, **payload.model_dump(exclude_none=True)}
+    campos: dict[str, Any] = {"cpe_pk": cpe_pk, **payload.model_dump(exclude_none=True, exclude={"auditoria"})}
     resposta = await ctx.controllr.cpe_update(urlencode(campos))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o CPE.", resposta))
@@ -189,6 +210,7 @@ async def atualizar_detalhes_cpe(
             request,
             ctx.session,
             "cpe.editar_acesso_roteador",
-            {"cpe_pk": cpe_pk, "cpe_access_login": payload.cpe_access_login, "cpe_access_port": payload.cpe_access_port},
+            _alvo_cpe(cpe_pk, payload.auditoria,
+                      cpe_access_login=payload.cpe_access_login, cpe_access_port=payload.cpe_access_port),
         )
     return {"success": True, "results": resposta.results}

@@ -449,9 +449,21 @@ export function buscarHistoricoSessoesCpe(
   })
 }
 
+// Como a conexão estava na tela antes de salvar — só vai para a auditoria
+// (backend/app/routers/conexao.py::ContextoAuditoriaCpe), nunca senha.
+export interface ContextoAuditoriaCpe {
+  cliente?: string
+  pppoe?: string
+  wifi_tipo_anterior?: number
+  senha_wifi_alterada?: boolean
+  login_anterior?: string
+  porta_anterior?: number
+  senha_acesso_alterada?: boolean
+}
+
 export function atualizarWifiCpe(
   cpePk: number,
-  dados: { wifi_encryption_type?: number; wifi_encryption_password?: string },
+  dados: { wifi_encryption_type?: number; wifi_encryption_password?: string; auditoria?: ContextoAuditoriaCpe },
 ): Promise<{ success: boolean; results: unknown }> {
   return put(`cpe/${cpePk}/wifi`, dados)
 }
@@ -463,6 +475,7 @@ export interface DetalhesCpePayload {
   cpe_access_login?: string
   cpe_access_password?: string
   cpe_access_port?: number
+  auditoria?: ContextoAuditoriaCpe
 }
 
 export function atualizarDetalhesCpe(cpePk: number, dados: DetalhesCpePayload): Promise<{ success: boolean; results: unknown }> {
