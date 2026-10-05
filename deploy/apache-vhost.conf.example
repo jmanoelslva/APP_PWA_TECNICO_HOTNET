@@ -106,7 +106,10 @@
     # não para o Controllr. "/api" some da URL antes de chegar no backend
     # (as rotas lá são tipo /auth/login, não /api/auth/login).
     ProxyPreserveHost off
-    RequestHeader set X-Real-IP "%{REMOTE_ADDR}e"
+    # IP real do técnico para a auditoria e o limite de login (ver
+    # backend/app/audit.py). "expr=" pega o IP da conexão; o antigo
+    # "%{REMOTE_ADDR}e" chegava como "(null)".
+    RequestHeader set X-Real-IP "expr=%{REMOTE_ADDR}"
 
     # "Atualizar agora" na tela de ONU reconecta a OLT e espera ela
     # recarregar antes de reler (~45s de espera de propósito, ver

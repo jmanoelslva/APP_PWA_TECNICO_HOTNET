@@ -309,6 +309,15 @@ EOF
 else
   ok "$ENV_FILE já existe, mantendo como está (edite manualmente se precisar mudar algo)."
 fi
+# Auditoria no app (Ferramentas → Auditoria): pergunta uma vez quem pode ver.
+if ! grep -q "^AUDITORIA_USUARIOS=" "$ENV_FILE"; then
+  echo "Usuários do Controllr que podem consultar a auditoria no app (quem reiniciou/removeu ONU, mudou Wi-Fi...),"
+  echo "separados por vírgula. Enter = ninguém (o log continua gravado no servidor)."
+  read -rp "Usuários da auditoria: " AUDITORIA_USUARIOS
+  AUDITORIA_USUARIOS="$(echo "$AUDITORIA_USUARIOS" | tr -d ' ')"
+  [[ "$AUDITORIA_USUARIOS" =~ ^[A-Za-z0-9._@,-]*$ ]] || err "Usuários inválidos: '$AUDITORIA_USUARIOS'."
+  echo "AUDITORIA_USUARIOS=$AUDITORIA_USUARIOS" >> "$ENV_FILE"
+fi
 chmod 600 "$ENV_FILE"
 chown "$SERVICE_USER:$SERVICE_USER" "$ENV_FILE"
 

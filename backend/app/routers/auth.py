@@ -1,12 +1,14 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Cookie, Depends, Response
+from fastapi import APIRouter, Cookie, Depends, Request, Response
 from pydantic import BaseModel
 
+from .. import limite_login
+from ..audit import obter_ip_origem
 from ..brbyteapi.controllr import AsyncControllr
 from ..brbyteapi.controllr.login import ControllrLogin
-from ..config import CONTROLLR_URL, SESSION_COOKIE_MAX_AGE_SECONDS, SESSION_COOKIE_NAME
+from ..config import CONTROLLR_URL, LOGIN_BLOQUEIO_MINUTOS, SESSION_COOKIE_MAX_AGE_SECONDS, SESSION_COOKIE_NAME
 from ..deps import AuthContext, encerrar_sessao_controllr, get_auth_context
 from ..sessions import create_session, delete_session, get_session
 
@@ -51,10 +53,21 @@ def _find_user_pk(records: list[dict[str, Any]], username: str) -> int | None:
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login(payload: LoginRequest, response: Response) -> LoginResponse:
+async def login(payload: LoginRequest, request: Request, response: Response) -> LoginResponse:
+    ip = obter_ip_origem(request)
+    # Bloqueado: nem chega a tentar no Controllr (ver limite_login.py).
+    if limite_login.bloqueado(ip, payload.username):
+        logger.warning("Login bloqueado por excesso de tentativas: usuário %r, IP %s", payload.username, ip)
+        return LoginResponse(
+            success=False,
+            message=f"Muitas tentativas erradas. Aguarde {LOGIN_BLOQUEIO_MINUTOS} minutos e tente de novo.",
+        )
     resultado_login = await ControllrLogin.login(CONTROLLR_URL, payload.username, payload.password)
     if not resultado_login.success:
+        limite_login.falhou(ip, payload.username)
+        logger.info("Login recusado pelo Controllr: usuário %r, IP %s", payload.username, ip)
         return LoginResponse(success=False, message="Usuário ou senha incorretos.")
+    limite_login.acertou(ip, payload.username)
 
     if resultado_login.cookie_header is None:
         # Toda chamada ao Controllr usa esse cookie (ver

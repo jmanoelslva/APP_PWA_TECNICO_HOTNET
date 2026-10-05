@@ -1,0 +1,4 @@
+# Só para desenvolvimento/testes (o servidor usa requirements.txt).
+-r requirements.txt
+pytest>=8
+httpx>=0.27

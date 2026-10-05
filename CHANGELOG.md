@@ -7,8 +7,33 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.7.0] - 2026-10-05
+
+### Adicionado
+
+- **Consulta da auditoria no app** (Ferramentas → Auditoria): quem
+  reiniciou, removeu ou renomeou ONU e quem alterou Wi-Fi ou o acesso ao
+  roteador, quando e de qual IP, com filtro por técnico, ação e período. Só
+  para os usuários em `AUDITORIA_USUARIOS` (o instalador pergunta uma vez).
+- **Limite de tentativas no login**: 5 senhas erradas do mesmo IP, ou 10 do
+  mesmo usuário, bloqueiam por 15 minutos sem nem tentar no Controllr —
+  protege as senhas dos técnicos e evita bloqueio da conta lá.
+- Primeiros testes do backend (`backend/tests`, `requirements-dev.txt`).
+
+### Corrigido
+
+- **IP da auditoria podia ser falsificado**: o app confiava primeiro em
+  `CF-Connecting-IP` e no primeiro IP do `X-Forwarded-For`, que o navegador
+  pode mandar com qualquer valor. Agora usa o `X-Real-IP` do proxy ou o
+  último IP do `X-Forwarded-For` (o que o proxy acrescenta). No Apache, o
+  `X-Real-IP` chegava como "(null)": o vhost passa a usar
+  `expr=%{REMOTE_ADDR}`.
+
 ### Alterado
 
+- Log de auditoria dividido por mês (`logs/auditoria-AAAA-MM.jsonl`), com os
+  de mais de 12 meses apagados automaticamente (`AUDITORIA_RETENCAO_MESES`).
+  O arquivo antigo continua aparecendo na consulta.
 - Notas das releases no GitHub montadas pelo `tools/notas_release.py` a partir
   deste CHANGELOG: título "v1.6.1 · assunto", seções com ícones, cada item numa
   linha só, comando de atualização copiável e link para comparar com a versão
@@ -233,7 +258,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.4.0...v1.5.0

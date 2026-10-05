@@ -1,10 +1,13 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import type { IconType } from 'react-icons'
 import {
   MdBolt,
+  MdChevronRight,
   MdConstruction,
   MdLooks4,
   MdLooks6,
+  MdManageSearch,
   MdNetworkCheck,
   MdOpenInNew,
   MdPublic,
@@ -12,7 +15,7 @@ import {
   MdSpeed,
   MdWifiTethering,
 } from 'react-icons/md'
-import { ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
+import { acessoAuditoria, ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
 import { buscarIpsPublicos } from '../utils/ipPublico'
@@ -51,6 +54,13 @@ const FERRAMENTAS: Ferramenta[] = [
 ]
 
 export default function Ferramentas() {
+  // Atalho da auditoria só para quem está liberado no servidor (AUDITORIA_USUARIOS).
+  const [podeAuditoria, setPodeAuditoria] = useState(false)
+  useEffect(() => {
+    acessoAuditoria()
+      .then((r) => setPodeAuditoria(r.permitido))
+      .catch(() => setPodeAuditoria(false))
+  }, [])
   const [resultadoV4, setResultadoV4] = useState<MeuIpResponse | null>(null)
   const [resultadoV6, setResultadoV6] = useState<MeuIpResponse | null>(null)
   // Só preenchido quando nem o IPv4 nem o IPv6 puderam ser descobertos
@@ -133,6 +143,20 @@ export default function Ferramentas() {
       </div>
 
       <ul className="ferramentas-lista">
+        {podeAuditoria && (
+          <li>
+            <Link to="/auditoria" className="ferramentas-item" viewTransition>
+              <span className="ferramentas-item-icone">
+                <MdManageSearch size={22} />
+              </span>
+              <span className="ferramentas-item-texto">
+                <strong>Auditoria</strong>
+                <span>Quem reiniciou, removeu ou alterou ONU e Wi-Fi, quando e de qual IP</span>
+              </span>
+              <MdChevronRight size={18} className="ferramentas-item-seta" />
+            </Link>
+          </li>
+        )}
         {FERRAMENTAS.map((ferramenta) => (
           <li key={ferramenta.url}>
             <a href={ferramenta.url} target="_blank" rel="noreferrer" className="ferramentas-item">

@@ -948,3 +948,30 @@ export interface MeuIpResponse {
 export function consultarMeuIp(ip?: string): Promise<MeuIpResponse> {
   return get<MeuIpResponse>('ferramentas/meu-ip', { ip })
 }
+
+// ---------------------------------------------------------------------
+// Auditoria (só para os usuários em AUDITORIA_USUARIOS no servidor)
+// ---------------------------------------------------------------------
+
+export interface EventoAuditoria {
+  quando: string
+  tecnico: string
+  user_pk?: number | null
+  ip: string
+  acao: string
+  alvo: Record<string, unknown>
+}
+
+export function acessoAuditoria(): Promise<{ permitido: boolean }> {
+  return get<{ permitido: boolean }>('auditoria/acesso')
+}
+
+export function listarAuditoria(filtro: {
+  tecnico?: string
+  acao?: string
+  de?: string
+  ate?: string
+  limite?: number
+}): Promise<{ eventos: EventoAuditoria[]; mais: boolean }> {
+  return get<{ eventos: EventoAuditoria[]; mais: boolean }>('auditoria', filtro)
+}

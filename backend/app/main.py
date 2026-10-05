@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import APP_VERSION, CORS_ALLOW_ORIGINS
 from .routers import (
+    auditoria,
     auth,
     clientes,
     conexao,
@@ -26,6 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auditoria.router)
 app.include_router(auth.router)
 app.include_router(clientes.router)
 app.include_router(enderecos.router)
