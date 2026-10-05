@@ -123,6 +123,22 @@ def test_rota_so_para_usuarios_liberados(pasta, monkeypatch):
         app.dependency_overrides.clear()
 
 
+@pytest.mark.parametrize("termo", ["*", "todos"])
+def test_termo_libera_todos(pasta, monkeypatch, termo):
+    from app.deps import get_current_session
+    from app.main import app
+    from app.routers import auditoria
+
+    monkeypatch.setattr(auditoria, "AUDITORIA_USUARIOS", {"chefe", termo})
+    app.dependency_overrides[get_current_session] = lambda: sessao("qualquer")
+    try:
+        c = TestClient(app)
+        assert c.get("/auditoria/acesso").json() == {"permitido": True}
+        assert c.get("/auditoria").status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_alvo_da_onu_com_nome_da_olt():
     from app.routers.onu import _alvo_onu
 

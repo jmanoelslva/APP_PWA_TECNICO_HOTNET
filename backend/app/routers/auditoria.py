@@ -73,8 +73,12 @@ router = APIRouter(prefix="/auditoria", tags=["auditoria"])
 _DATA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
+# Em AUDITORIA_USUARIOS, "*" ou "todos" libera qualquer técnico logado.
+LIBERA_TODOS = {"*", "todos"}
+
+
 def _pode(session: TechnicianSession) -> bool:
-    return session.username.strip().lower() in AUDITORIA_USUARIOS
+    return bool(AUDITORIA_USUARIOS & LIBERA_TODOS) or session.username.strip().lower() in AUDITORIA_USUARIOS
 
 
 @router.get("/acesso")

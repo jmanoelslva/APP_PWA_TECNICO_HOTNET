@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.8.1] - 2026-10-05
+
+### Adicionado
+
+- Auditoria: `AUDITORIA_USUARIOS=*` (ou `todos`) libera a consulta para
+  qualquer técnico logado, sem precisar listar cada usuário.
+
 ## [1.8.0] - 2026-10-05
 
 ### Adicionado
@@ -289,6 +296,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...v1.8.0
 [1.7.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.7.1

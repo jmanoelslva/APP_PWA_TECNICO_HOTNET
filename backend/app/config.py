@@ -3,7 +3,7 @@ import os
 # Versão do projeto (Versionamento Semântico, https://semver.org/lang/pt-BR/)
 # — mantida em sincronia com "version" em frontend/package.json, que é o
 # valor exibido na tela de login. Ver CHANGELOG.md para o histórico.
-APP_VERSION = "1.8.0"
+APP_VERSION = "1.8.1"
 
 # Acesso de staff/técnico (ACL) ao Controllr acontece pelo painel
 # administrativo, numa porta própria (8443) — diferente do endpoint
@@ -31,7 +31,8 @@ AUDIT_LOG_PATH = os.environ.get("AUDIT_LOG_PATH", "logs/auditoria.jsonl")
 # Um arquivo por mês (auditoria-AAAA-MM.jsonl); os mais antigos que isto são apagados.
 AUDITORIA_RETENCAO_MESES = int(os.environ.get("AUDITORIA_RETENCAO_MESES", "12"))
 # Usuários do Controllr que podem consultar a auditoria no app (separados por
-# vírgula). Vazio = ninguém (o arquivo continua sendo gravado no servidor).
+# vírgula). "*" ou "todos" = qualquer técnico logado. Vazio = ninguém (o
+# arquivo continua sendo gravado no servidor).
 AUDITORIA_USUARIOS = {
     u.strip().lower() for u in os.environ.get("AUDITORIA_USUARIOS", "").split(",") if u.strip()
 }
