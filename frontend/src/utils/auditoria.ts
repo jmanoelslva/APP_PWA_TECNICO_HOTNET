@@ -46,9 +46,19 @@ function senha(rotulo: string, alterada: unknown): Mudanca | null {
 // nas outras ações são só o "onde" (detalhes).
 const ASSOCIACAO = 'onu.associar_cliente'
 
+// Ações gravadas com a lista pronta (endereço, telefone, localização):
+// [{ rotulo, antes?, depois }] montada pelo backend.
+function lista(alvo: Alvo): Mudanca[] {
+  if (!Array.isArray(alvo.alteracoes)) return []
+  return alvo.alteracoes
+    .filter((a): a is Record<string, unknown> => !!a && typeof a === 'object' && tem((a as Alvo).depois))
+    .map((a) => ({ rotulo: texto(a.rotulo), antes: tem(a.antes) ? texto(a.antes) : undefined, depois: texto(a.depois) }))
+}
+
 export function mudancas(alvo: Alvo, acao?: string): Mudanca[] {
   const associacao = acao === ASSOCIACAO
   return [
+    ...lista(alvo),
     associacao ? mudou('Cliente', alvo.cliente_anterior, alvo.cliente) : null,
     associacao ? mudou('PPPoE', alvo.pppoe_anterior, alvo.pppoe) : null,
     mudou('Nome', alvo.nome_anterior, alvo.onu_name),
@@ -74,6 +84,10 @@ export function detalhes(alvo: Alvo, acao?: string): Detalhe[] {
   }
   if (tem(alvo.serial)) itens.push({ rotulo: 'Serial', valor: texto(alvo.serial) })
   if (associacao) return itens
+  if (tem(alvo.endereco)) itens.push({ rotulo: 'Endereço', valor: texto(alvo.endereco) })
+  if (tem(alvo.telefone)) itens.push({ rotulo: 'Telefone', valor: texto(alvo.telefone) })
+  if (tem(alvo.ticket_pk)) itens.push({ rotulo: 'Chamado', valor: `#${alvo.ticket_pk}` })
+  if (tem(alvo.motivo)) itens.push({ rotulo: 'Motivo', valor: texto(alvo.motivo) })
   if (tem(alvo.cliente)) itens.push({ rotulo: 'Cliente', valor: texto(alvo.cliente) })
   if (tem(alvo.pppoe)) itens.push({ rotulo: 'PPPoE', valor: texto(alvo.pppoe) })
   // Registros antigos de Wi-Fi/roteador só têm o número interno da conexão.

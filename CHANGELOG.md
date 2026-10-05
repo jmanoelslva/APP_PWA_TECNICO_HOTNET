@@ -7,6 +7,29 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.11.0] - 2026-10-05
+
+### Adicionado
+
+- Auditoria registra também: criar, editar e excluir **endereço** (com o
+  antes → depois de cada campo e da localização), localização do
+  equipamento, criar e editar **telefone**, e cancelar e reabrir **OS** (com
+  o motivo). O "como estava" e o nome do cliente são lidos no próprio
+  Controllr. Novos filtros na tela: Endereços, Localização, Telefones e OS.
+
+### Corrigido
+
+- Excluir endereço que o Controllr recusa agora responde erro; antes
+  respondia sucesso e a tela podia dizer que excluiu sem ter excluído.
+
+### Alterado
+
+- Busca de cliente e detalhe do cliente mais rápidos: as consultas ao
+  Controllr saem em paralelo (no máximo 6 ao mesmo tempo por pedido) em vez
+  de uma de cada vez.
+- Telas de Conexão e de ONU divididas em partes menores (`pages/conexao/` e
+  `pages/onu/`), sem mudança no que aparece na tela.
+
 ## [1.10.0] - 2026-10-05
 
 ### Adicionado
@@ -342,6 +365,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.11.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.1...v1.10.0
 [1.9.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...v1.9.0

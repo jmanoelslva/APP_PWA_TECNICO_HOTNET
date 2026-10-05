@@ -1,91 +1,26 @@
-import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import {
-  MdCable,
-  MdContentCopy,
-  MdDeleteForever,
-  MdEdit,
-  MdPeopleAlt,
-  MdPersonAdd,
-  MdPowerSettingsNew,
-  MdQrCodeScanner,
-  MdRefresh,
-  MdVisibility,
-  MdVisibilityOff,
-  MdWifi,
-} from 'react-icons/md'
-import {
-  ApiError,
-  associarClienteOnu,
-  atualizarInfoOnu,
-  buscarClientes,
-  buscarCpe,
-  buscarOnu,
-  reiniciarOnu,
-  removerOnu,
-  renomearOnu,
-  type BuscaClienteResultado,
-  type CpeComboDto,
-  type CpeDto,
-  type OnuDto,
-} from '../api/client'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { MdCable, MdDeleteForever, MdPowerSettingsNew, MdRefresh } from 'react-icons/md'
+import { ApiError, atualizarInfoOnu, buscarOnu, reiniciarOnu, removerOnu, renomearOnu, type OnuDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
-import LeitorCodigoBarras from '../components/LeitorCodigoBarras'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { nivelSinalOnu, type NivelSinal } from '../utils/formatacao'
+import BuscaOnu from './onu/BuscaOnu'
+import CardDetalhesOnu from './onu/CardDetalhesOnu'
+import CardsCredenciais from './onu/CardsCredenciais'
+import CardsSinal from './onu/CardsSinal'
+import { formatarTempoDesdeColeta } from './onu/formato'
+import { ModalConfirmarAcao, ModalRenomear } from './onu/ModaisAcaoOnu'
+import ModalRegistrarCliente from './onu/ModalRegistrarCliente'
 import './OnuStatus.css'
 
 /**
- * Faixa de sinal óptico (dBm) da OLT — mesma origem/critério de
- * nivelSinalOnu (utils/formatacao.ts), mas com cortes diferentes (não é
- * a mesma faixa da ONU, ver comentário lá).
+ * Sinal óptico e status da ONU, e as ações nela (atualizar, reiniciar,
+ * remover, renomear, registrar cliente). Esta página carrega a ONU e faz as
+ * ações; os cartões e modais ficam em pages/onu/.
  */
-function nivelSinalOlt(rx: number | undefined): NivelSinal {
-  if (rx == null) return 'desconhecida'
-  if (rx >= -25) return 'boa'
-  if (rx >= -27) return 'alerta'
-  return 'critica'
-}
-
-// onu_info_timer — contador em ms desde a última coleta feita pelo
-// Controllr; zera só quando alguém clica em "Atualizar agora" (ver
-// CONTROLLR_API_NOTES.md).
-function formatarTempoDesdeColeta(ms: number | undefined): string | null {
-  if (ms == null) return null
-  const segundosTotais = Math.floor(ms / 1000)
-  const minutos = Math.floor(segundosTotais / 60)
-  const segundos = segundosTotais % 60
-  if (minutos === 0) return `há ${segundos}s`
-  if (minutos < 60) return `há ${minutos} min`
-  const horas = Math.floor(minutos / 60)
-  const minutosRestantes = minutos % 60
-  return `há ${horas}h${minutosRestantes > 0 ? ` ${minutosRestantes}min` : ''}`
-}
-
-// onu_last_down_time vem como "yyyy-mm-dd hh:mm:ss UTC-3" (hora local do
-// servidor) — reformatado para dd/mm/yyyy hh:mm:ss sem conversão de fuso
-// (o técnico está no mesmo fuso do servidor). Se o formato não bater com o
-// esperado, exibe o valor cru em vez de esconder o dado.
-function formatarUltimaQueda(valor: string | undefined): string | null {
-  if (!valor) return null
-  const match = valor.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2}:\d{2})/)
-  if (!match) return valor
-  const [, ano, mes, dia, hora] = match
-  return `${dia}/${mes}/${ano} ${hora}`
-}
-
-const TEXTO_SINAL: Record<NivelSinal, string> = {
-  boa: 'Sinal normal',
-  alerta: 'Sinal fraco — atenção',
-  critica: 'Sinal crítico',
-  desconhecida: 'Sinal não informado',
-}
-
-type ResultadoCombo = { tipo: 'serial'; item: OnuDto } | { tipo: 'usuario'; item: CpeDto }
-
 export default function OnuStatus() {
   const [params, setParams] = useSearchParams()
   const cpePkParam = params.get('cpe_pk')
@@ -108,32 +43,21 @@ export default function OnuStatus() {
   const [erro, setErro] = useState<string | null>(null)
   const [onu, setOnu] = useState<OnuDto | null>(null)
   const [atualizando, setAtualizando] = useState(false)
-  const [mostrarSenha, setMostrarSenha] = useState(false)
   // Reiniciar/Remover — endpoints não documentados na doc oficial.
   // Confirmação em 2 passos sempre, já que os dois afetam a conexão do
   // cliente na hora.
   const [confirmandoAcao, setConfirmandoAcao] = useState<'reiniciar' | 'remover' | null>(null)
   const [executandoAcao, setExecutandoAcao] = useState(false)
   const [registrandoCliente, setRegistrandoCliente] = useState(false)
-  // Renomear (ver CONTROLLR_API_NOTES.md): POST /fiber_ctl/onu/apply_rename
-  // com os identificadores OSPO + onu_name.
-  const [renomeando, setRenomeando] = useState(false)
-  const [novoNome, setNovoNome] = useState('')
+  // Nome atual ao abrir o "Renomear"; null = modal fechado.
+  const [renomeando, setRenomeando] = useState<string | null>(null)
   const [salvandoNome, setSalvandoNome] = useState(false)
-  // Leitor de código de barras/QR pela câmera — alternativa a digitar o
-  // serial na mão (etiqueta da ONU costuma ter o número em código de
-  // barras). Ver LeitorCodigoBarras.tsx.
-  const [lendoCodigo, setLendoCodigo] = useState(false)
-  // Combobox único — busca por serial (/fiber_ctl/onu/list no formato
-  // "wizard", que filtra por prefixo) e por usuário PPPoE (/cpe/busca,
-  // que suporta ILIKE parcial) em paralelo, e mistura os dois num só
-  // dropdown — o técnico não precisa saber de antemão se tem o serial ou
-  // o usuário em mãos. Selecionar um item de serial já é a própria ONU;
-  // selecionar um item de usuário busca a ONU pelo usuário exato dele.
-  const [busca, setBusca] = useState('')
-  const [resultados, setResultados] = useState<ResultadoCombo[]>([])
-  const [buscandoCombo, setBuscandoCombo] = useState(false)
-  const [listaAberta, setListaAberta] = useState(false)
+  // Antes de reiniciar/remover/associar/renomear, releem a ONU do zero —
+  // mesmo efeito que o técnico buscar de novo manualmente (contornava um
+  // bug observado em produção: os identificadores olt_pk/slot/port/onu_id
+  // às vezes vêm incompletos na primeira leitura da ONU, e uma segunda
+  // busca sempre trazia os dados corretos).
+  const [atualizandoAntesDaAcao, setAtualizandoAntesDaAcao] = useState(false)
 
   useEffect(() => {
     if (!temParametroInicial) {
@@ -143,36 +67,6 @@ export default function OnuStatus() {
     carregar(buscarInicial)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cpePkParam, usernameParam, serialParam])
-
-  useEffect(() => {
-    const valor = busca.trim()
-    if (valor.length < 2) {
-      setResultados([])
-      return
-    }
-    let cancelado = false
-    setBuscandoCombo(true)
-    const temporizador = setTimeout(() => {
-      Promise.all([
-        buscarOnu({ serial: valor }).catch(() => ({ results: [] as OnuDto[] })),
-        buscarCpe({ username: valor }).catch(() => ({ results: [] as CpeDto[] })),
-      ])
-        .then(([respostaOnu, respostaCpe]) => {
-          if (cancelado) return
-          setResultados([
-            ...respostaOnu.results.map((item): ResultadoCombo => ({ tipo: 'serial', item })),
-            ...respostaCpe.results.map((item): ResultadoCombo => ({ tipo: 'usuario', item })),
-          ])
-        })
-        .finally(() => {
-          if (!cancelado) setBuscandoCombo(false)
-        })
-    }, 350)
-    return () => {
-      cancelado = true
-      clearTimeout(temporizador)
-    }
-  }, [busca])
 
   async function carregar(chamada: () => ReturnType<typeof buscarOnu>) {
     setCarregando(true)
@@ -185,29 +79,6 @@ export default function OnuStatus() {
     } finally {
       setCarregando(false)
     }
-  }
-
-  function selecionar(resultado: ResultadoCombo) {
-    setListaAberta(false)
-    setBusca('')
-    if (resultado.tipo === 'serial' && resultado.item.sn) setParams({ serial: resultado.item.sn })
-    else if (resultado.tipo === 'usuario' && resultado.item.username) setParams({ username: resultado.item.username })
-  }
-
-  function aoSubmeterBusca(evento: FormEvent) {
-    evento.preventDefault()
-    if (resultados.length === 1) selecionar(resultados[0])
-  }
-
-  function aoLerCodigo(valor: string) {
-    setLendoCodigo(false)
-    setListaAberta(false)
-    setBusca('')
-    setParams({ serial: valor.trim().toUpperCase() })
-  }
-
-  function tentarNovamente() {
-    carregar(buscarInicial)
   }
 
   async function atualizarAgora() {
@@ -254,13 +125,6 @@ export default function OnuStatus() {
     }
   }
 
-  // Antes de reiniciar/remover/associar, releem a ONU do zero — mesmo
-  // efeito que o técnico buscar de novo manualmente (contornava um bug
-  // observado em produção: os identificadores olt_pk/slot/port/onu_id
-  // às vezes vêm incompletos na primeira leitura da ONU, e uma segunda
-  // busca sempre trazia os dados corretos).
-  const [atualizandoAntesDaAcao, setAtualizandoAntesDaAcao] = useState(false)
-
   async function recarregarOnuAtual(): Promise<OnuDto | null> {
     if (temParametroInicial) {
       const resposta = await buscarInicial()
@@ -277,7 +141,8 @@ export default function OnuStatus() {
     return onu
   }
 
-  async function abrirAcao(acao: 'reiniciar' | 'remover') {
+  /** Relê a ONU e, se veio, abre a ação; senão avisa. */
+  async function abrirDepoisDeReler(abrir: (atualizada: OnuDto) => void) {
     setAtualizandoAntesDaAcao(true)
     try {
       const atualizada = await recarregarOnuAtual()
@@ -285,7 +150,7 @@ export default function OnuStatus() {
         toast('Não foi possível atualizar os dados da ONU.')
         return
       }
-      setConfirmandoAcao(acao)
+      abrir(atualizada)
     } catch {
       toast('Não foi possível atualizar os dados da ONU.')
     } finally {
@@ -293,42 +158,8 @@ export default function OnuStatus() {
     }
   }
 
-  async function abrirRegistrarCliente() {
-    setAtualizandoAntesDaAcao(true)
-    try {
-      const atualizada = await recarregarOnuAtual()
-      if (!atualizada) {
-        toast('Não foi possível atualizar os dados da ONU.')
-        return
-      }
-      setRegistrandoCliente(true)
-    } catch {
-      toast('Não foi possível atualizar os dados da ONU.')
-    } finally {
-      setAtualizandoAntesDaAcao(false)
-    }
-  }
-
-  async function abrirRenomear() {
-    setAtualizandoAntesDaAcao(true)
-    try {
-      const atualizada = await recarregarOnuAtual()
-      if (!atualizada) {
-        toast('Não foi possível atualizar os dados da ONU.')
-        return
-      }
-      setNovoNome(atualizada.name ?? '')
-      setRenomeando(true)
-    } catch {
-      toast('Não foi possível atualizar os dados da ONU.')
-    } finally {
-      setAtualizandoAntesDaAcao(false)
-    }
-  }
-
-  async function confirmarRenomear() {
+  async function confirmarRenomear(nome: string) {
     const ospo = dadosOspo()
-    const nome = novoNome.trim()
     if (!onu || onu.pk == null || !ospo || !nome) {
       toast('Informe um nome válido para a ONU.')
       return
@@ -337,7 +168,7 @@ export default function OnuStatus() {
     try {
       await renomearOnu(onu.pk, { ...ospo, onu_name: nome, nome_anterior: onu.name })
       setOnu((atual) => (atual ? { ...atual, name: nome } : atual))
-      setRenomeando(false)
+      setRenomeando(null)
       toast('ONU renomeada.', 'sucesso')
     } catch (excecao) {
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível renomear a ONU.')
@@ -379,75 +210,14 @@ export default function OnuStatus() {
     }
   }
 
-  async function copiar(valor: string | undefined, rotulo: string) {
-    if (!valor) return
-    try {
-      await navigator.clipboard.writeText(valor)
-      toast(`${rotulo} copiado.`, 'sucesso')
-    } catch {
-      toast('Não foi possível copiar.')
-    }
-  }
-
-  const statusOnu = nivelSinalOnu(onu?.omddm_rx_power)
-  const statusOlt = nivelSinalOlt(onu?.olt_omddm_rx_power)
   const semSelecao = !temParametroInicial && !onu && !carregando
+  const tempoDesdeColeta = onu ? formatarTempoDesdeColeta(onu.info_timer) : null
 
   return (
     <div className="onu-tela tela-entrada">
       <CabecalhoTela icone={MdCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
 
-      <form className="onu-card onu-busca onu-combobox" onSubmit={aoSubmeterBusca}>
-        <label htmlFor="onu-busca-input">Serial da ONU ou usuário PPPoE</label>
-        <div className="onu-busca-campo">
-          <input
-            id="onu-busca-input"
-            type="text"
-            placeholder="Digite o serial ou o usuário"
-            value={busca}
-            onChange={(e) => {
-              setBusca(e.target.value)
-              setListaAberta(true)
-            }}
-            onFocus={() => setListaAberta(true)}
-            onBlur={() => setTimeout(() => setListaAberta(false), 150)}
-          />
-          <button
-            type="button"
-            className="botao botao-secundario botao-quadrado"
-            style={{ '--botao-cor': CORES.onu } as CSSProperties}
-            onClick={() => setLendoCodigo(true)}
-            aria-label="Ler código de barras ou QR pela câmera"
-            title="Ler código de barras ou QR pela câmera"
-          >
-            <MdQrCodeScanner size={20} />
-          </button>
-        </div>
-        {listaAberta && busca.trim().length >= 2 && (
-          <ul className="onu-combobox-lista">
-            {buscandoCombo && <li className="onu-combobox-vazio">Buscando…</li>}
-            {!buscandoCombo && resultados.length === 0 && <li className="onu-combobox-vazio">Nada encontrado.</li>}
-            {!buscandoCombo &&
-              resultados.map((resultado) => (
-                <li key={`${resultado.tipo}-${resultado.item.pk}`}>
-                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => selecionar(resultado)}>
-                    {resultado.tipo === 'serial' ? (
-                      <>
-                        <strong>{resultado.item.sn}</strong>
-                        {resultado.item.client_name && ` — ${resultado.item.client_name}`}
-                      </>
-                    ) : (
-                      <>
-                        <strong>{resultado.item.username}</strong>
-                        {resultado.item.client_complete_name && ` — ${resultado.item.client_complete_name}`}
-                      </>
-                    )}
-                  </button>
-                </li>
-              ))}
-          </ul>
-        )}
-      </form>
+      <BuscaOnu onEscolher={(parametros) => setParams(parametros)} />
 
       {semSelecao && !erro && (
         <EstadoVazio
@@ -467,7 +237,7 @@ export default function OnuStatus() {
       {!carregando && erro && (
         <div className="onu-status-erro">
           <p>{erro}</p>
-          <button className="botao botao-secundario" style={{ '--botao-cor': CORES.onu } as CSSProperties} onClick={tentarNovamente}>
+          <button className="botao botao-secundario" style={{ '--botao-cor': CORES.onu } as CSSProperties} onClick={() => carregar(buscarInicial)}>
             Tentar novamente
           </button>
         </div>
@@ -479,194 +249,16 @@ export default function OnuStatus() {
 
       {!carregando && !erro && onu && (
         <>
-          <div className={`onu-card onu-sinal onu-sinal-${statusOnu}`}>
-            <span className="onu-sinal-titulo">ONU — {TEXTO_SINAL[statusOnu]}</span>
-            <div className="onu-sinal-grid">
-              <div>
-                <span>RX</span>
-                <strong>{onu.omddm_rx_power != null ? `${onu.omddm_rx_power} dBm` : '—'}</strong>
-              </div>
-              <div>
-                <span>TX</span>
-                <strong>{onu.omddm_tx_power != null ? `${onu.omddm_tx_power} dBm` : '—'}</strong>
-              </div>
-            </div>
-          </div>
+          <CardsSinal onu={onu} />
+          <CardsCredenciais onu={onu} />
+          <CardDetalhesOnu
+            onu={onu}
+            ocupado={atualizandoAntesDaAcao}
+            onRegistrarCliente={() => abrirDepoisDeReler(() => setRegistrandoCliente(true))}
+            onRenomear={() => abrirDepoisDeReler((atualizada) => setRenomeando(atualizada.name ?? ''))}
+          />
 
-          {(onu.olt_omddm_rx_power != null || onu.olt_omddm_tx_power != null) && (
-            <div className={`onu-card onu-sinal onu-sinal-${statusOlt}`}>
-              <span className="onu-sinal-titulo">OLT — {TEXTO_SINAL[statusOlt]}</span>
-              <div className="onu-sinal-grid">
-                <div>
-                  <span>RX</span>
-                  <strong>{onu.olt_omddm_rx_power != null ? `${onu.olt_omddm_rx_power} dBm` : '—'}</strong>
-                </div>
-                <div>
-                  <span>TX</span>
-                  <strong>{onu.olt_omddm_tx_power != null ? `${onu.olt_omddm_tx_power} dBm` : '—'}</strong>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {onu.wancfg_pppoe_username && (
-            <div className="onu-card">
-              <h2>Acesso PPPoE (ONU)</h2>
-              <div className="onu-campo">
-                <span>Usuário</span>
-                <div className="onu-campo-valor">
-                  <strong>{onu.wancfg_pppoe_username}</strong>
-                  <Link
-                    to={`/conexao?username=${encodeURIComponent(onu.wancfg_pppoe_username)}`}
-                    className="onu-btn-link"
-                    aria-label="Ver conexão deste usuário"
-                    viewTransition
-                  >
-                    <MdWifi size={16} />
-                  </Link>
-                  <button onClick={() => copiar(onu.wancfg_pppoe_username, 'Usuário')} aria-label="Copiar usuário">
-                    <MdContentCopy size={16} />
-                  </button>
-                </div>
-              </div>
-              {onu.wancfg_pppoe_passwd && (
-                <div className="onu-campo">
-                  <span>Senha</span>
-                  <div className="onu-campo-valor">
-                    <strong>{mostrarSenha ? onu.wancfg_pppoe_passwd : '••••••••'}</strong>
-                    <button onClick={() => setMostrarSenha((v) => !v)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
-                      {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
-                    </button>
-                    <button onClick={() => copiar(onu.wancfg_pppoe_passwd, 'Senha')} aria-label="Copiar senha">
-                      <MdContentCopy size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {onu.wificfg_name && (
-            <div className="onu-card">
-              <h2>Wi-Fi</h2>
-              <div className="onu-campo">
-                <span>Rede (SSID)</span>
-                <div className="onu-campo-valor">
-                  <strong>{onu.wificfg_name}</strong>
-                  <button onClick={() => copiar(onu.wificfg_name, 'Nome da rede')} aria-label="Copiar nome da rede">
-                    <MdContentCopy size={16} />
-                  </button>
-                </div>
-              </div>
-              {onu.wificfg_password && (
-                <div className="onu-campo">
-                  <span>Senha</span>
-                  <div className="onu-campo-valor">
-                    <strong>{mostrarSenha ? onu.wificfg_password : '••••••••'}</strong>
-                    <button onClick={() => setMostrarSenha((v) => !v)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
-                      {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
-                    </button>
-                    <button onClick={() => copiar(onu.wificfg_password, 'Senha da rede')} aria-label="Copiar senha da rede">
-                      <MdContentCopy size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="onu-card">
-            <div className="onu-linha">
-              <span>Cliente</span>
-              {onu.client_pk ? (
-                <Link to={`/clientes/${onu.client_pk}`} className="onu-link" viewTransition>
-                  <MdPeopleAlt size={14} /> {onu.client_name ?? '—'}
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  className="onu-btn-registrar-cliente"
-                  onClick={abrirRegistrarCliente}
-                  disabled={atualizandoAntesDaAcao}
-                >
-                  <MdPersonAdd size={14} /> Registrar cliente
-                </button>
-              )}
-            </div>
-            {(onu.contract_number ?? onu.contract_pk) != null && (
-              <div className="onu-linha">
-                <span>Contrato</span>
-                <strong>{onu.contract_number ?? onu.contract_pk}</strong>
-              </div>
-            )}
-            <div className="onu-linha">
-              <span>Nome</span>
-              <div className="onu-campo-valor">
-                <strong>{onu.name ?? '—'}</strong>
-                <button type="button" onClick={abrirRenomear} disabled={atualizandoAntesDaAcao} aria-label="Renomear ONU">
-                  <MdEdit size={16} />
-                </button>
-              </div>
-            </div>
-            <div className="onu-linha">
-              <span>Serial</span>
-              <strong>{onu.sn ?? '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>Modelo</span>
-              <strong>{onu.model ?? '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>Fabricante</span>
-              <strong>{onu.vendor ?? '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>Estado</span>
-              <strong>{onu.state ?? '—'}</strong>
-            </div>
-            {onu.last_down_reason && (
-              <div className="onu-linha">
-                <span>Motivo da última queda</span>
-                <strong>{onu.last_down_reason}</strong>
-              </div>
-            )}
-            {formatarUltimaQueda(onu.last_down_time) && (
-              <div className="onu-linha">
-                <span>Última queda</span>
-                <strong>{formatarUltimaQueda(onu.last_down_time)}</strong>
-              </div>
-            )}
-            <div className="onu-linha">
-              {/* onu_distance vem em km, não metros (exemplo "0.931" da doc
-                  oficial só faz sentido como km para alcance de GPON). */}
-              <span>Distância</span>
-              <strong>{onu.distance != null ? `${onu.distance} km` : '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>Temperatura</span>
-              <strong>{onu.omddm_temperature != null ? `${onu.omddm_temperature} °C` : '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>IP</span>
-              <strong>{onu.cpe_v4_ip_last ?? '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>OLT</span>
-              <strong>{onu.olt_name ?? '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>Splitter (DP)</span>
-              <strong>{onu.dp_name ?? '—'}</strong>
-            </div>
-            <div className="onu-linha">
-              <span>Porta da CTO</span>
-              <strong>{onu.cpe_dp_port ?? '—'}</strong>
-            </div>
-          </div>
-
-          {!atualizando && formatarTempoDesdeColeta(onu.info_timer) && (
-            <p className="onu-ultima-coleta">Dados coletados {formatarTempoDesdeColeta(onu.info_timer)}</p>
-          )}
+          {!atualizando && tempoDesdeColeta && <p className="onu-ultima-coleta">Dados coletados {tempoDesdeColeta}</p>}
           <button
             className="botao botao-secundario botao-bloco"
             // Verde (sucesso) — diferencia do leitor de QR e do "Reiniciar"
@@ -683,7 +275,7 @@ export default function OnuStatus() {
               type="button"
               className="botao botao-secundario"
               style={{ '--botao-cor': CORES.onu } as CSSProperties}
-              onClick={() => abrirAcao('reiniciar')}
+              onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('reiniciar'))}
               disabled={executandoAcao || atualizandoAntesDaAcao}
             >
               <MdPowerSettingsNew size={16} /> Reiniciar ONU
@@ -691,7 +283,7 @@ export default function OnuStatus() {
             <button
               type="button"
               className="botao botao-perigo"
-              onClick={() => abrirAcao('remover')}
+              onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('remover'))}
               disabled={executandoAcao || atualizandoAntesDaAcao}
             >
               <MdDeleteForever size={16} /> Remover ONU
@@ -701,58 +293,21 @@ export default function OnuStatus() {
       )}
 
       {confirmandoAcao && (
-        <div className="onu-modal-fundo" onClick={() => !executandoAcao && setConfirmandoAcao(null)}>
-          <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{confirmandoAcao === 'reiniciar' ? 'Reiniciar esta ONU?' : 'Remover esta ONU?'}</h2>
-            <p className="onu-modal-texto">
-              {confirmandoAcao === 'reiniciar'
-                ? 'O equipamento vai reiniciar agora — o cliente fica sem conexão por alguns instantes.'
-                : 'A ONU sai do registro do painel — o cliente fica sem conexão até ela ser cadastrada de novo.'}
-            </p>
-            <div className="onu-modal-acoes">
-              <button className="botao botao-secundario" onClick={() => setConfirmandoAcao(null)} disabled={executandoAcao}>
-                Cancelar
-              </button>
-              <button
-                className="botao botao-primario"
-                style={{ '--botao-cor': confirmandoAcao === 'remover' ? CORES.erro : CORES.onu } as CSSProperties}
-                disabled={executandoAcao}
-                onClick={executarAcao}
-              >
-                {executandoAcao ? 'Aguarde…' : confirmandoAcao === 'reiniciar' ? 'Reiniciar' : 'Remover'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalConfirmarAcao
+          acao={confirmandoAcao}
+          executando={executandoAcao}
+          onConfirmar={executarAcao}
+          onCancelar={() => setConfirmandoAcao(null)}
+        />
       )}
 
-      {renomeando && (
-        <div className="onu-modal-fundo" onClick={() => !salvandoNome && setRenomeando(false)}>
-          <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Renomear ONU</h2>
-            <input
-              type="text"
-              className="onu-modal-input"
-              value={novoNome}
-              onChange={(e) => setNovoNome(e.target.value)}
-              maxLength={64}
-              autoFocus
-            />
-            <div className="onu-modal-acoes">
-              <button className="botao botao-secundario" onClick={() => setRenomeando(false)} disabled={salvandoNome}>
-                Cancelar
-              </button>
-              <button
-                className="botao botao-primario"
-                style={{ '--botao-cor': CORES.onu } as CSSProperties}
-                disabled={salvandoNome || !novoNome.trim()}
-                onClick={confirmarRenomear}
-              >
-                {salvandoNome ? 'Salvando…' : 'Salvar'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {renomeando !== null && (
+        <ModalRenomear
+          nomeAtual={renomeando}
+          salvando={salvandoNome}
+          onSalvar={confirmarRenomear}
+          onCancelar={() => setRenomeando(null)}
+        />
       )}
 
       {registrandoCliente && onu && (
@@ -766,200 +321,6 @@ export default function OnuStatus() {
           }}
         />
       )}
-
-      {lendoCodigo && <LeitorCodigoBarras onDetectado={aoLerCodigo} onFechar={() => setLendoCodigo(false)} />}
-    </div>
-  )
-}
-
-function ModalRegistrarCliente({
-  onu,
-  onFechar,
-  onAssociado,
-}: {
-  onu: OnuDto
-  onFechar: () => void
-  onAssociado: (clientPk: number, clientNome: string | undefined) => void
-}) {
-  const [busca, setBusca] = useState('')
-  const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
-  const [buscando, setBuscando] = useState(false)
-  const [selecionado, setSelecionado] = useState<BuscaClienteResultado | null>(null)
-  // Depois de escolher o cliente, o técnico ainda escolhe qual PPPoE
-  // vincular — o cliente pode ter mais de uma conexão cadastrada, e não
-  // deve ser presumido automaticamente qual delas.
-  const [cpeEscolhida, setCpeEscolhida] = useState<CpeComboDto | null>(null)
-  const [associando, setAssociando] = useState(false)
-  const { toast } = useToast()
-
-  useEffect(() => {
-    const nome = busca.trim()
-    if (nome.length < 2) {
-      setResultados([])
-      return
-    }
-    let cancelado = false
-    setBuscando(true)
-    const temporizador = setTimeout(() => {
-      buscarClientes({ nome })
-        .then((resposta) => {
-          if (!cancelado) setResultados(resposta.results)
-        })
-        .catch(() => {
-          if (!cancelado) setResultados([])
-        })
-        .finally(() => {
-          if (!cancelado) setBuscando(false)
-        })
-    }, 350)
-    return () => {
-      cancelado = true
-      clearTimeout(temporizador)
-    }
-  }, [busca])
-
-  async function confirmar() {
-    // onu.pk (onu_pk) vem 0 para ONU sem cliente vinculado — o caso mais
-    // comum de usar este modal — válido aqui, não "faltando": uma ONU
-    // recém-instalada tem pk=0 até ser associada a um cliente pela
-    // primeira vez.
-    if (
-      !selecionado ||
-      !cpeEscolhida?.cpe_pk ||
-      onu.pk == null ||
-      !onu.sn ||
-      onu.olt_pk == null ||
-      onu.slot == null ||
-      onu.pon == null ||
-      onu.id == null
-    ) {
-      toast('Dados insuficientes para associar esta ONU.')
-      return
-    }
-    setAssociando(true)
-    try {
-      await associarClienteOnu(onu.pk, {
-        client_pk: selecionado.client_pk,
-        cpe_pk: cpeEscolhida.cpe_pk,
-        olt_pk: onu.olt_pk,
-        slot_id: onu.slot,
-        port_id: onu.pon,
-        onu_id: onu.id,
-        onu_serial: onu.sn,
-        frame_id: onu.frame ?? 1,
-        wancfg_conntype: onu.wancfg_conntype,
-        wan_tpl_pk: onu.wan_tpl_pk,
-        wancfg_vlanid: onu.wancfg_vlanid,
-        wancfg_user_vlanid: onu.wancfg_user_vlanid,
-        wancfg_cos: onu.wancfg_cos,
-        wancfg_tcont: onu.wancfg_tcont,
-        wancfg_gemport: onu.wancfg_gemport,
-        wancfg_svlan: onu.wancfg_svlan,
-        wancfg_stpid: onu.wancfg_stpid,
-        wancfg_scos: onu.wancfg_scos,
-        wancfg_pon_profile: onu.wancfg_pon_profile,
-        wancfg_pppoe_svcname: onu.wancfg_pppoe_svcname,
-        wancfg_local_ip: onu.wancfg_local_ip,
-        auditoria: {
-          olt_nome: onu.olt_name,
-          cliente_anterior: onu.client_name,
-          pppoe_anterior: onu.wancfg_pppoe_username,
-        },
-      })
-      onAssociado(selecionado.client_pk, selecionado.cliente.client_complete_name)
-    } catch (excecao) {
-      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível associar esta ONU ao cliente.')
-    } finally {
-      setAssociando(false)
-    }
-  }
-
-  return (
-    <div className="onu-modal-fundo" onClick={onFechar}>
-      <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Registrar cliente nesta ONU</h2>
-        {!selecionado && (
-          <>
-            <p className="onu-modal-texto">
-              Busque o cliente pelo nome. Depois de escolher, será possível selecionar qual conexão (PPPoE) dele
-              vincular a esta ONU.
-            </p>
-            <input
-              type="text"
-              className="onu-modal-input"
-              placeholder="Nome do cliente"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              autoFocus
-            />
-            <ul className="onu-modal-lista">
-              {buscando && <li className="onu-combobox-vazio">Buscando…</li>}
-              {!buscando && busca.trim().length >= 2 && resultados.length === 0 && (
-                <li className="onu-combobox-vazio">Nenhum cliente encontrado.</li>
-              )}
-              {!buscando &&
-                resultados.map((resultado) => (
-                  <li key={resultado.client_pk}>
-                    <button type="button" onClick={() => setSelecionado(resultado)}>
-                      {resultado.cliente.client_complete_name ?? `Cliente #${resultado.client_pk}`}
-                    </button>
-                  </li>
-                ))}
-            </ul>
-            <div className="onu-modal-acoes">
-              <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
-            </div>
-          </>
-        )}
-
-        {selecionado && !cpeEscolhida && (
-          <>
-            <p className="onu-modal-texto">
-              Qual conexão (usuário PPPoE) de <strong>{selecionado.cliente.client_complete_name}</strong> deseja
-              vincular a esta ONU?
-            </p>
-            {selecionado.cpes.length === 0 ? (
-              <p className="onu-modal-texto">Este cliente não tem nenhuma conexão (CPE) cadastrada.</p>
-            ) : (
-              <ul className="onu-modal-lista">
-                {selecionado.cpes.map((cpe) => (
-                  <li key={cpe.cpe_pk}>
-                    <button type="button" onClick={() => setCpeEscolhida(cpe)}>
-                      <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
-                      {cpe.contract_number != null && ` — Contrato ${cpe.contract_number}`}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="onu-modal-acoes">
-              <button className="botao botao-secundario" onClick={() => setSelecionado(null)}>Voltar</button>
-            </div>
-          </>
-        )}
-
-        {selecionado && cpeEscolhida && (
-          <>
-            <p className="onu-modal-texto">
-              Associar esta ONU a <strong>{selecionado.cliente.client_complete_name}</strong>, usando o PPPoE{' '}
-              <strong>{cpeEscolhida.cpe_username}</strong>?
-            </p>
-            <div className="onu-modal-acoes">
-              <button className="botao botao-secundario" onClick={() => setCpeEscolhida(null)} disabled={associando}>
-                Voltar
-              </button>
-              <button
-                className="botao botao-primario"
-                style={{ '--botao-cor': CORES.onu } as CSSProperties}
-                disabled={associando}
-                onClick={confirmar}
-              >
-                {associando ? 'Associando…' : 'Associar'}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
     </div>
   )
 }

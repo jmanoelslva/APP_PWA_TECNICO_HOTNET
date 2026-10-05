@@ -1,4 +1,6 @@
-from typing import Any
+import asyncio
+from collections.abc import Awaitable, Iterable
+from typing import Any, TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -7,6 +9,22 @@ from ..http_errors import detalhe_erro
 from ..where import OPER_EQ, OPER_ILIKE, corpo, where_and, where_eq
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
+
+T = TypeVar("T")
+
+# Chamadas ao Controllr ao mesmo tempo por requisição: antes iam uma de cada
+# vez (busca com 15 clientes = dezenas de idas e voltas em sequência).
+_PARALELO = 6
+
+
+async def _em_paralelo(tarefas: Iterable[Awaitable[T]]) -> list[T]:
+    limite = asyncio.Semaphore(_PARALELO)
+
+    async def uma(tarefa: Awaitable[T]) -> T:
+        async with limite:
+            return await tarefa
+
+    return list(await asyncio.gather(*(uma(t) for t in tarefas)))
 
 
 def _somente_digitos(valor: str) -> str:
@@ -22,14 +40,11 @@ async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[in
     # resposta — sem ele o campo some (não retorna null, some da chave).
     # "contract.contract_pk" usa o prefixo da tabela; "contract_pk" sem
     # prefixo também funciona neste endpoint.
-    contratos: dict[int, dict[str, Any]] = {}
-    for contract_pk in contract_pks:
-        resposta = await ctx.controllr.contract_list(
-            corpo(where_eq("contract.contract_pk", contract_pk), sign_url="true")
-        )
-        if resposta.success and resposta.results:
-            contratos[contract_pk] = resposta.results[0]
-    return contratos
+    pks = list(contract_pks)
+    respostas = await _em_paralelo(
+        ctx.controllr.contract_list(corpo(where_eq("contract.contract_pk", pk), sign_url="true")) for pk in pks
+    )
+    return {pk: r.results[0] for pk, r in zip(pks, respostas) if r.success and r.results}
 
 
 async def _itens_contrato(ctx: AuthContext, contract_pk: int) -> list[dict[str, Any]]:
@@ -56,7 +71,9 @@ async def buscar_clientes(
 
     client_pks: set[int] = set()
 
-    if doc:
+    async def por_doc() -> None:
+        if not doc:
+            return
         # client_status=0 = ativo — sem esse filtro, a busca por CPF/CNPJ
         # traz clientes desabilitados junto com os habilitados.
         condicoes_doc = where_and(
@@ -67,14 +84,18 @@ async def buscar_clientes(
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
-    if contrato:
+    async def por_contrato() -> None:
+        if not contrato:
+            return
         resposta = await ctx.controllr.contract_list(
             corpo(where_eq("contract_number", contrato), action="list", start=0, limit=10)
         )
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
-    if nome:
+    async def por_nome() -> None:
+        if not nome:
+            return
         # oper 10 = ILIKE, valor com "%" embutido, combinado com
         # client_status=0 (só ativos) via "AND" explícito.
         condicoes = where_and(
@@ -89,10 +110,12 @@ async def buscar_clientes(
                 if registro.get("client_pk"):
                     client_pks.add(int(registro["client_pk"]))
 
-    resultados = []
-    for client_pk in client_pks:
-        cliente_resp = await ctx.controllr.client_list(
-            corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)
+    await asyncio.gather(por_doc(), por_contrato(), por_nome())
+
+    async def montar(client_pk: int) -> dict[str, Any] | None:
+        cliente_resp, cpes_resp = await asyncio.gather(
+            ctx.controllr.client_list(corpo(where_eq("client.client_pk", client_pk), action="list", start=0, limit=1)),
+            ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20)),
         )
         # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe", não "cpe".
         cliente = cliente_resp.results[0] if cliente_resp.success and cliente_resp.results else {}
@@ -102,9 +125,8 @@ async def buscar_clientes(
         # não tem esse campo), então garante aqui, depois de já ter o
         # cadastro do cliente em mãos.
         if cliente.get("client_status") != 0:
-            continue
+            return None
 
-        cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
         cpes = cpes_resp.results if cpes_resp.success else []
 
         # list_combo só traz contract_pk, não o número de contrato — mesmo
@@ -116,13 +138,21 @@ async def buscar_clientes(
             if contrato:
                 cpe["contract_number"] = contrato.get("contract_number")
 
-        resultados.append({
+        return {
             "client_pk": client_pk,
             "cliente": cliente,
             "cpes": cpes,
-        })
+        }
 
-    return {"success": True, "results": resultados}
+    # Cada cliente já faz 2+ chamadas em paralelo; poucos clientes de cada vez.
+    limite = asyncio.Semaphore(3)
+
+    async def montar_limitado(client_pk: int) -> dict[str, Any] | None:
+        async with limite:
+            return await montar(client_pk)
+
+    montados = await asyncio.gather(*(montar_limitado(pk) for pk in sorted(client_pks)))
+    return {"success": True, "results": [m for m in montados if m is not None]}
 
 
 @router.get("/{client_pk}")
@@ -142,11 +172,15 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
     # Sem wrapper no brbyteapi vendorizado (só tem list_combo) — chamada
     # direta. O "where" usa prefixo "addresses." aqui, diferente de
     # list_combo (que usa "client_pk" sem prefixo).
-    enderecos_resp = await ctx.controllr.call_api_post(
-        "/controllrctl/addresses/list", corpo(where_eq("addresses.client_pk", client_pk), action="list", start=0)
+    # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe". Telefones: ver
+    # comentário mais abaixo. As três buscas saem juntas.
+    enderecos_resp, cpes_resp, telefones_resp = await asyncio.gather(
+        ctx.controllr.call_api_post(
+            "/controllrctl/addresses/list", corpo(where_eq("addresses.client_pk", client_pk), action="list", start=0)
+        ),
+        ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20)),
+        ctx.controllr.phone_list(corpo(where_eq("client_phone.client_pk", client_pk), sort="phone_pk", dir="ASC")),
     )
-    # "aaa_cpe.client_pk" — nome real da tabela é "aaa_cpe".
-    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.client_pk", client_pk), limit=20))
     cpes = cpes_resp.results if cpes_resp.success else []
 
     # /aaa_ctl/cpe/list_combo só traz contract_pk, não o número de
@@ -161,18 +195,17 @@ async def detalhe_cliente(client_pk: int, ctx: AuthContext = Depends(get_auth_co
 
     # Itens do contrato (planos/equipamentos cobrados), anexados a cada
     # contrato como "itens".
-    for contract_pk, contrato in contratos_por_pk.items():
-        contrato["itens"] = await _itens_contrato(ctx, contract_pk)
+    itens = await _em_paralelo(_itens_contrato(ctx, pk) for pk in contratos_por_pk)
+    for contrato, itens_do_contrato in zip(contratos_por_pk.values(), itens):
+        contrato["itens"] = itens_do_contrato
 
     # Telefone é recurso próprio do Controllr (/controllrctl/phone/*), não
     # um campo solto do cliente — client_phones (client/list) é só um
     # resumo "Rótulo#-#número" sem phone_pk, sem uso para editar. Busca os
-    # registros de verdade para permitir edição (ver routers/telefones.py).
-    # Nome real da tabela é "client_phone" (singular, com prefixo) — sem
-    # prefixo a coluna é ambígua, mesmo padrão visto em client_pk/cpe_pk.
-    telefones_resp = await ctx.controllr.phone_list(
-        corpo(where_eq("client_phone.client_pk", client_pk), sort="phone_pk", dir="ASC")
-    )
+    # registros de verdade (buscados acima, junto com endereços e CPEs) para
+    # permitir edição (ver routers/telefones.py). Nome real da tabela é
+    # "client_phone" (singular, com prefixo) — sem prefixo a coluna é
+    # ambígua, mesmo padrão visto em client_pk/cpe_pk.
 
     return {
         "success": True,

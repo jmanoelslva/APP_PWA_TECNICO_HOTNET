@@ -33,9 +33,10 @@ Nome do arquivo evita "os.py" de propósito — colidiria com o módulo
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 from ..where import OPER_EQ, OPER_IN, corpo, where_and, where_in
@@ -130,6 +131,11 @@ async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> li
 class AcaoOSPayload(BaseModel):
     op_os_pk: int
     op_desc: str | None = None
+
+
+def _alvo_os(ticket_pk: int, payload: AcaoOSPayload) -> dict[str, Any]:
+    alvo = {"ticket_pk": ticket_pk, "op_os_pk": payload.op_os_pk, "motivo": (payload.op_desc or "").strip()[:300]}
+    return {k: v for k, v in alvo.items() if v not in (None, "")}
 
 
 # Os 4 estágios de uma OS:
@@ -228,21 +234,23 @@ async def desfazer_finalizacao_ordem_servico(
 
 @router.post("/{ticket_pk}/cancelar")
 async def cancelar_ordem_servico(
-    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: AcaoOSPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, ticket_pk=ticket_pk, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/cancel", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível cancelar a OS.", resposta))
+    registrar_auditoria(request, ctx.session, "os.cancelar", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}
 
 
 @router.post("/{ticket_pk}/reabrir")
 async def reabrir_ordem_servico(
-    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: AcaoOSPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, ticket_pk=ticket_pk, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/reopen", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível reabrir a OS.", resposta))
+    registrar_auditoria(request, ctx.session, "os.reabrir", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}

@@ -89,3 +89,30 @@ describe('dias', () => {
     ])
   })
 })
+
+describe('endereço, telefone e OS', () => {
+  it('lista de alterações pronta do backend vira antes → depois', () => {
+    const alvo = {
+      cliente: 'Maria', endereco: 'Rua B, 12 - Centro',
+      alteracoes: [{ rotulo: 'Logradouro', antes: 'Rua A', depois: 'Rua B' }, { rotulo: 'Localização', depois: '-5, -42' }],
+    }
+    expect(mudancas(alvo, 'endereco.editar')).toEqual([
+      { rotulo: 'Logradouro', antes: 'Rua A', depois: 'Rua B' },
+      { rotulo: 'Localização', antes: undefined, depois: '-5, -42' },
+    ])
+    expect(detalhes(alvo, 'endereco.editar')).toEqual([
+      { rotulo: 'Endereço', valor: 'Rua B, 12 - Centro' },
+      { rotulo: 'Cliente', valor: 'Maria' },
+    ])
+  })
+
+  it('telefone e OS nos detalhes; lista malformada é ignorada', () => {
+    expect(detalhes({ telefone: 'Casa: 8632220000' })).toEqual([{ rotulo: 'Telefone', valor: 'Casa: 8632220000' }])
+    expect(detalhes({ ticket_pk: 300, op_os_pk: 31, motivo: 'Cliente desistiu' })).toEqual([
+      { rotulo: 'Chamado', valor: '#300' },
+      { rotulo: 'Motivo', valor: 'Cliente desistiu' },
+    ])
+    expect(mudancas({ alteracoes: 'x' })).toEqual([])
+    expect(mudancas({ alteracoes: [null, { rotulo: 'X' }] })).toEqual([])
+  })
+})

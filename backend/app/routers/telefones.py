@@ -2,9 +2,11 @@ import random
 from typing import Any
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
+from .. import contexto_auditoria as contexto
+from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 
@@ -24,7 +26,9 @@ class NovoTelefonePayload(BaseModel):
 
 
 @router.post("/telefones")
-async def criar_telefone(payload: NovoTelefonePayload, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
+async def criar_telefone(
+    payload: NovoTelefonePayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
     # Defaults do formulário "Nova Entrada" do painel: SVA habilitado,
     # status habilitado, válido, e os 4 tipos de contato marcados
     # (bitmask 15). O técnico só informa identificação e número; o resto
@@ -43,6 +47,13 @@ async def criar_telefone(payload: NovoTelefonePayload, ctx: AuthContext = Depend
     resposta = await ctx.controllr.phone_create(urlencode(campos))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível adicionar o telefone.", resposta))
+    registrar_auditoria(request, ctx.session, "telefone.criar", {
+        k: v for k, v in {
+            "client_pk": payload.client_pk,
+            "cliente": await contexto.nome_cliente(ctx, payload.client_pk),
+            "telefone": contexto.texto_telefone(payload.model_dump()),
+        }.items() if v not in (None, "")
+    })
     return {"success": True, "results": resposta.results}
 
 
@@ -73,9 +84,20 @@ def _corpo(payload: TelefonePayload, extras: dict[str, Any] | None = None) -> st
 
 @router.put("/telefones/{phone_pk}")
 async def atualizar_telefone(
-    phone_pk: int, payload: TelefonePayload, ctx: AuthContext = Depends(get_auth_context)
+    phone_pk: int, payload: TelefonePayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
+    antes = await contexto.telefone(ctx, phone_pk)
     resposta = await ctx.controllr.phone_update(_corpo(payload, {"phone_pk": phone_pk}))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o telefone.", resposta))
+    client_pk = payload.client_pk or (antes or {}).get("client_pk")
+    registrar_auditoria(request, ctx.session, "telefone.editar", {
+        k: v for k, v in {
+            "client_pk": client_pk,
+            "cliente": await contexto.nome_cliente(ctx, client_pk),
+            "phone_pk": phone_pk,
+            "alteracoes": contexto.alteracoes(antes, payload.model_dump(),
+                                              {"phone_identification": "Identificação", "phone_number": "Número"}),
+        }.items() if v not in (None, "", [])
+    })
     return {"success": True, "results": resposta.results}

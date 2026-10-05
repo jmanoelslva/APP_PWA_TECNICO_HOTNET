@@ -1,6 +1,22 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import type { IconType } from 'react-icons'
-import { MdArrowForward, MdDeleteOutline, MdEdit, MdLink, MdManageSearch, MdRestartAlt, MdRouter, MdWifi } from 'react-icons/md'
+import {
+  MdAddLocationAlt,
+  MdArrowForward,
+  MdCancel,
+  MdDeleteOutline,
+  MdEdit,
+  MdEditLocationAlt,
+  MdLink,
+  MdLocationOff,
+  MdManageSearch,
+  MdMyLocation,
+  MdPhone,
+  MdReplay,
+  MdRestartAlt,
+  MdRouter,
+  MdWifi,
+} from 'react-icons/md'
 import { ApiError, listarAuditoria } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -10,26 +26,46 @@ import { CORES } from '../utils/cores'
 import './Auditoria.css'
 
 /**
- * Quem fez o quê, de qual IP: ações que mexem no equipamento do cliente
- * (reiniciar/remover/renomear/associar ONU, Wi-Fi e acesso ao roteador). Só para os
- * usuários liberados em AUDITORIA_USUARIOS no servidor.
+ * Quem fez o quê, de qual IP: ações que mexem no cadastro e no equipamento
+ * do cliente (ONU, Wi-Fi, acesso ao roteador, endereço, telefone, OS). Só
+ * para os usuários liberados em AUDITORIA_USUARIOS no servidor.
  */
 
-const ACOES: { valor: string; rotulo: string; filtro: string; icone: IconType; cor: string }[] = [
-  { valor: 'onu.remover', rotulo: 'Removeu ONU', filtro: 'Remoções', icone: MdDeleteOutline, cor: CORES.erro },
-  { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU', filtro: 'Reinícios', icone: MdRestartAlt, cor: CORES.alerta },
-  { valor: 'onu.renomear', rotulo: 'Renomeou ONU', filtro: 'Renomeações', icone: MdEdit, cor: CORES.primaria },
-  { valor: 'onu.associar_cliente', rotulo: 'Associou ONU a cliente', filtro: 'Associações', icone: MdLink, cor: CORES.cliente },
-  { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi', filtro: 'Wi-Fi', icone: MdWifi, cor: CORES.conexao },
-  {
-    valor: 'cpe.editar_acesso_roteador',
-    rotulo: 'Alterou acesso ao roteador',
-    filtro: 'Acesso ao roteador',
-    icone: MdRouter,
-    cor: CORES.ferramentas,
-  },
+const ACOES: { valor: string; rotulo: string; icone: IconType; cor: string }[] = [
+  { valor: 'onu.remover', rotulo: 'Removeu ONU', icone: MdDeleteOutline, cor: CORES.erro },
+  { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU', icone: MdRestartAlt, cor: CORES.alerta },
+  { valor: 'onu.renomear', rotulo: 'Renomeou ONU', icone: MdEdit, cor: CORES.primaria },
+  { valor: 'onu.associar_cliente', rotulo: 'Associou ONU a cliente', icone: MdLink, cor: CORES.cliente },
+  { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi', icone: MdWifi, cor: CORES.conexao },
+  { valor: 'cpe.editar_acesso_roteador', rotulo: 'Alterou acesso ao roteador', icone: MdRouter, cor: CORES.ferramentas },
+  { valor: 'cpe.localizacao', rotulo: 'Alterou localização do equipamento', icone: MdMyLocation, cor: CORES.endereco },
+  { valor: 'endereco.criar', rotulo: 'Criou endereço', icone: MdAddLocationAlt, cor: CORES.endereco },
+  { valor: 'endereco.editar', rotulo: 'Editou endereço', icone: MdEditLocationAlt, cor: CORES.endereco },
+  { valor: 'endereco.excluir', rotulo: 'Excluiu endereço', icone: MdLocationOff, cor: CORES.erro },
+  { valor: 'telefone.criar', rotulo: 'Adicionou telefone', icone: MdPhone, cor: CORES.cliente },
+  { valor: 'telefone.editar', rotulo: 'Editou telefone', icone: MdPhone, cor: CORES.cliente },
+  { valor: 'os.cancelar', rotulo: 'Cancelou OS', icone: MdCancel, cor: CORES.erro },
+  { valor: 'os.reabrir', rotulo: 'Reabriu OS', icone: MdReplay, cor: CORES.suporte },
 ]
 const POR_ACAO = Object.fromEntries(ACOES.map((a) => [a.valor, a]))
+// Ações que apagam algo: borda vermelha no cartão.
+const GRAVES = new Set(['onu.remover', 'endereco.excluir', 'os.cancelar'])
+
+// Chips do topo. O backend filtra pelo começo do nome da ação, então
+// "endereco." pega criar, editar e excluir de uma vez.
+const FILTROS: { valor: string; rotulo: string }[] = [
+  { valor: '', rotulo: 'Todas' },
+  { valor: 'onu.remover', rotulo: 'Remoções' },
+  { valor: 'onu.reiniciar', rotulo: 'Reinícios' },
+  { valor: 'onu.renomear', rotulo: 'Renomeações' },
+  { valor: 'onu.associar_cliente', rotulo: 'Associações' },
+  { valor: 'cpe.editar_wifi', rotulo: 'Wi-Fi' },
+  { valor: 'cpe.editar_acesso_roteador', rotulo: 'Acesso ao roteador' },
+  { valor: 'endereco.', rotulo: 'Endereços' },
+  { valor: 'cpe.localizacao', rotulo: 'Localização' },
+  { valor: 'telefone.', rotulo: 'Telefones' },
+  { valor: 'os.', rotulo: 'OS' },
+]
 
 const PASSO = 100
 
@@ -93,7 +129,7 @@ export default function Auditoria() {
       />
 
       <div className="auditoria-chips" role="group" aria-label="Tipo de ação">
-        {[{ valor: '', filtro: 'Todas' }, ...ACOES].map((a) => (
+        {FILTROS.map((a) => (
           <button
             key={a.valor}
             type="button"
@@ -101,7 +137,7 @@ export default function Auditoria() {
             aria-pressed={filtro.acao === a.valor}
             onClick={() => escolherAcao(a.valor)}
           >
-            {a.filtro}
+            {a.rotulo}
           </button>
         ))}
       </div>
@@ -154,7 +190,7 @@ export default function Auditoria() {
                 return (
                   <li
                     key={`${ev.quando}-${i}`}
-                    className={`auditoria-item${ev.acao === 'onu.remover' ? ' auditoria-item-grave' : ''}`}
+                    className={`auditoria-item${GRAVES.has(ev.acao) ? ' auditoria-item-grave' : ''}`}
                     style={{ '--acao-cor': acao?.cor ?? CORES.ferramentas } as CSSProperties}
                   >
                     <div className="auditoria-topo">
