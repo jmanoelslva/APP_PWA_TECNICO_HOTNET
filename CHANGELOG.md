@@ -7,6 +7,27 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.12.0] - 2026-10-05
+
+### Adicionado
+
+- **Avisos de OS nova no celular** (notificação, mesmo com o app fechado).
+  O servidor procura OS nova a cada minuto (`AVISOS_INTERVALO_SEGUNDOS`)
+  com um usuário de consulta do Controllr e avisa o técnico responsável:
+  tipo, bairro e horário, sem o nome do cliente; tocar abre a OS. Liga e
+  desliga no menu do avatar (**Avisos de OS**). Várias OS novas de uma vez
+  viram um aviso só. O **Sair** desliga os avisos daquele celular. No
+  iPhone, só com o app instalado na tela inicial. O `install.sh` gera as
+  chaves e pergunta o usuário de consulta (ver `deploy/DEPLOY.md`, seção 6).
+
+### Corrigido
+
+- **Minhas OS de hoje** mostrava as OS que a pessoa **abriu** (`user_*` da
+  OS), não as que ela **executa**. Agora usa o técnico responsável
+  (`staff_username`), comparado com o login do app. O bloco também aparece
+  sempre na tela inicial, sem depender de o login achar o número do técnico
+  no Controllr.
+
 ## [1.11.0] - 2026-10-05
 
 ### Adicionado
@@ -365,6 +386,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.12.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.1...v1.10.0
 [1.9.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.0...v1.9.1

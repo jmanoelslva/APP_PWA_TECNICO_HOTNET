@@ -2,9 +2,10 @@
 Ordem de Serviço (OS) — recurso próprio no Controllr, diferente de
 Ticket/Suporte Técnico (ver suporte.py; tag "Ordem de Serviço" na doc
 oficial, apidoc.brbyte.com). Uma OS pertence a um ticket (ticket_pk), tem
-data agendada (op_date_sched) e técnico responsável (user_pk). É a OS —
-não o ticket em si — que representa o trabalho de campo atribuído ao
-técnico.
+data agendada (op_date_sched) e técnico responsável (staff_pk/
+staff_username — "user_pk"/"user_username" é quem abriu/agendou a OS, não
+quem executa). É a OS — não o ticket em si — que representa o trabalho de
+campo atribuído ao técnico.
 
 Ciclo de vida de uma OS:
 1. Agendamento — feito pelo escritório, já vem pronto.
@@ -39,7 +40,7 @@ from pydantic import BaseModel
 from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_IN, corpo, where_and, where_in
+from ..where import OPER_EQ, corpo, where_and, where_in
 
 router = APIRouter(prefix="/os", tags=["ordem-servico"])
 
@@ -75,12 +76,6 @@ async def listar_ordens_servico(
     elif abertas:
         condicoes.extend(_condicoes_abertas())
 
-    if minhas and ctx.session.user_pk is not None:
-        # "support_op.user_pk" (com prefixo da tabela real, "support_op")
-        # — "user_pk" sem prefixo é ambíguo em /support_ctl/os/list
-        # (Postgres retorna 42702 "ambiguous_column"). oper 21 = IN.
-        condicoes.append({"field": "support_op.user_pk", "oper": OPER_IN, "value": [ctx.session.user_pk]})
-
     where = where_and(*condicoes) if condicoes else None
     resposta = await ctx.controllr.call_api_post(
         "/support_ctl/os/list",
@@ -90,10 +85,20 @@ async def listar_ordens_servico(
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível listar as ordens de serviço.", resposta))
 
     resultados = resposta.results
+    total = resposta.total
+    if minhas:
+        # O técnico que executa é o staff (staff_username = login dele no
+        # app). O user_pk da OS é quem a abriu — filtrar por ele mostrava as
+        # OS que a pessoa CRIOU. A ACL do Controllr já só devolve ao técnico
+        # as OS dele; este filtro vale para contas que veem todas
+        # (escritório/supervisor), para "minhas" continuar sendo as dela.
+        login = ctx.session.username.strip().lower()
+        resultados = [o for o in resultados if str(o.get("staff_username") or "").strip().lower() == login]
+        total = len(resultados)
     if ticket_pk is None and abertas:
         resultados = await _sem_finalizadas(ctx, resultados)
 
-    return {"success": True, "results": resultados, "total": resposta.total}
+    return {"success": True, "results": resultados, "total": total}
 
 
 async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> list[dict[str, Any]]:

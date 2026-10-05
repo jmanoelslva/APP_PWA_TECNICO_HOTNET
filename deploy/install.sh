@@ -318,6 +318,42 @@ if ! grep -q "^AUDITORIA_USUARIOS=" "$ENV_FILE"; then
   [[ "$AUDITORIA_USUARIOS" =~ ^[A-Za-z0-9._@,*-]*$ ]] || err "Usuários inválidos: '$AUDITORIA_USUARIOS'."
   echo "AUDITORIA_USUARIOS=$AUDITORIA_USUARIOS" >> "$ENV_FILE"
 fi
+# Avisos de OS nova no celular (backend/app/vigia_os.py). Chaves do Web Push:
+# geradas uma vez só — trocar depois desliga os avisos de todos os celulares.
+if ! grep -q "^VAPID_PRIVATE_KEY=" "$ENV_FILE"; then
+  info "Gerando as chaves dos avisos de OS (Web Push)..."
+  "$INSTALL_DIR/backend/.venv/bin/python" - >> "$ENV_FILE" <<'PYCHAVES'
+import base64
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+b64 = lambda x: base64.urlsafe_b64encode(x).rstrip(b"=").decode()
+chave = ec.generate_private_key(ec.SECP256R1())
+publica = chave.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+print(f"VAPID_PUBLIC_KEY={b64(publica)}")
+print(f"VAPID_PRIVATE_KEY={b64(chave.private_numbers().private_value.to_bytes(32, 'big'))}")
+PYCHAVES
+fi
+# Usuário de consulta do Controllr: precisa ver as OS de todos os técnicos.
+# Enter = sem avisos (dá para preencher depois no $ENV_FILE).
+if ! grep -q "^CONTROLLR_CONSULTA_USUARIO=" "$ENV_FILE"; then
+  echo "Avisos de OS nova no celular: usuário do Controllr só para consulta, que veja as OS de todos."
+  read -rp "Usuário de consulta (Enter = sem avisos): " CONSULTA_USUARIO
+  CONSULTA_USUARIO="$(echo "$CONSULTA_USUARIO" | tr -d ' ')"
+  [[ "$CONSULTA_USUARIO" =~ ^[A-Za-z0-9._@-]*$ ]] || err "Usuário inválido: '$CONSULTA_USUARIO'."
+  CONSULTA_SENHA=""
+  if [ -n "$CONSULTA_USUARIO" ]; then
+    read -rsp "Senha do usuário de consulta: " CONSULTA_SENHA
+    echo
+  fi
+  # Entre aspas para o systemd (EnvironmentFile): só \ e " precisam de escape.
+  CONSULTA_SENHA="$(printf '%s' "$CONSULTA_SENHA" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+  {
+    echo "CONTROLLR_CONSULTA_USUARIO=$CONSULTA_USUARIO"
+    echo "CONTROLLR_CONSULTA_SENHA=\"$CONSULTA_SENHA\""
+    echo "AVISOS_INTERVALO_SEGUNDOS=60"
+  } >> "$ENV_FILE"
+  unset CONSULTA_SENHA
+fi
 chmod 600 "$ENV_FILE"
 chown "$SERVICE_USER:$SERVICE_USER" "$ENV_FILE"
 

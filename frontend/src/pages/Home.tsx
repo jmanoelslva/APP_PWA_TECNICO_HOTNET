@@ -8,6 +8,8 @@ import {
   MdGetApp,
   MdLightMode,
   MdLogout,
+  MdNotificationsActive,
+  MdNotificationsOff,
   MdRouter,
   MdWifi,
   MdWifiOff,
@@ -17,6 +19,7 @@ import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
 import { useTema } from '../hooks/useTema'
 import { useColetorOlt } from '../hooks/useColetorOlt'
+import { desligarAvisosDesteCelular, useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
 import MinhasOsHoje from '../components/MinhasOsHoje'
@@ -50,6 +53,17 @@ export default function Home() {
   const [menuAvatarAberto, setMenuAvatarAberto] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
   const coletorOlt = useColetorOlt()
+  const avisos = useAvisos()
+  const avisosLigados = avisos.estado === 'ligado'
+  // Por que o interruptor está travado, quando está.
+  const dicaAvisos =
+    avisos.estado === 'instalar'
+      ? 'Instale o app na tela inicial para receber'
+      : avisos.estado === 'sem-suporte'
+        ? 'Este navegador não recebe avisos'
+        : avisos.estado === 'bloqueado'
+          ? 'Notificações bloqueadas nas configurações do celular'
+          : null
 
   // Mesmo combobox de busca ao vivo já usado em Conexão (usuário PPPoE) e
   // ONU/CTO: digita um pedaço do nome/contrato/documento e a lista vai
@@ -144,6 +158,25 @@ export default function Home() {
                       <MdGetApp size={18} /> Instalar app
                     </button>
                   )}
+                  {avisos.estado !== 'indisponivel' && avisos.estado !== 'carregando' && (
+                    <button
+                      role="switch"
+                      aria-checked={avisosLigados}
+                      className="home-avatar-menu-avisos"
+                      disabled={avisos.ocupado || avisos.estado === 'instalar' || avisos.estado === 'sem-suporte'}
+                      onClick={() => {
+                        if (avisos.estado === 'bloqueado') return
+                        void (avisosLigados ? avisos.desligar() : avisos.ligar())
+                      }}
+                    >
+                      {avisosLigados ? <MdNotificationsActive size={18} /> : <MdNotificationsOff size={18} />}
+                      <span className="home-avatar-menu-avisos-texto">
+                        Avisos de OS
+                        {dicaAvisos && <small>{dicaAvisos}</small>}
+                      </span>
+                      <span className="home-interruptor" data-ligado={avisosLigados} aria-hidden="true" />
+                    </button>
+                  )}
                   <button onClick={alternarTema}>
                     {tema === 'dark' ? <MdLightMode size={18} /> : <MdDarkMode size={18} />}
                     {tema === 'dark' ? 'Tema claro' : 'Tema escuro'}
@@ -201,9 +234,7 @@ export default function Home() {
           )}
         </form>
 
-        {/* Só com o técnico identificado no Controllr (user_pk): sem ele o
-            filtro "minhas" do backend não se aplica e viriam OS de todos. */}
-        {tecnico?.userPk != null && <MinhasOsHoje />}
+        <MinhasOsHoje />
 
         <div className="home-menu">
           {ITENS_MENU.map((item) => (
@@ -252,8 +283,10 @@ export default function Home() {
           // RotaProtegida já redireciona pro /login sozinho assim que
           // "logado" vira false (ver RotaProtegida.tsx) — navegar aqui
           // manualmente, sem esperar sair() terminar, desmontaria a tela
-          // antes do POST /auth/logout ser disparado.
-          sair()
+          // antes do POST /auth/logout ser disparado. Os avisos de OS deste
+          // celular desligam só aqui, no "Sair" do técnico — não quando a
+          // sessão expira sozinha (aí os avisos têm que continuar chegando).
+          void desligarAvisosDesteCelular().finally(() => sair())
         }}
       />
     </div>

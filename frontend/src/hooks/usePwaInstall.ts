@@ -6,12 +6,12 @@ interface EventoInstalarPwa extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-function ehIos(): boolean {
+export function ehIos(): boolean {
   if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return true
   return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
 }
 
-function jaInstalado(): boolean {
+export function jaInstalado(): boolean {
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true

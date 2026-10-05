@@ -184,3 +184,29 @@ não seriam nem enviados pelo navegador.
 - [ ] Confirmar que o site do app **cliente** (`cliente.hotnet.net.br`,
       se estiver no mesmo servidor) continua funcionando normalmente —
       prova de que a instalação deste app não interferiu em nada.
+- [ ] Avisos de OS: `journalctl -u hotnet-tecnico-api | grep -i vigia`
+      deve mostrar "Vigia de OS ligado" (ou "Avisos de OS desligados" se
+      não houver usuário de consulta). No celular, menu do avatar →
+      **Avisos de OS** → permitir; chega na hora o aviso "Avisos de OS
+      ativados".
+
+## 6. Avisos de OS nova no celular
+
+O Controllr não avisa quando chega OS nova (sem webhook), então o backend
+(`app/vigia_os.py`) pergunta de tempos em tempos quais OS estão em aberto
+e manda um aviso (Web Push) ao técnico responsável (`staff_username`) de
+cada OS nova. Precisa, no `/etc/hotnet-tecnico/backend.env`:
+
+- `CONTROLLR_CONSULTA_USUARIO` / `CONTROLLR_CONSULTA_SENHA` — usuário do
+  Controllr que **veja as OS de todos os técnicos**. O `install.sh`
+  pergunta uma vez (a senha não aparece ao digitar).
+- `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` — geradas pelo `install.sh` uma
+  vez só. Trocar desliga os avisos em todos os celulares (cada técnico
+  liga de novo).
+- `AVISOS_INTERVALO_SEGUNDOS` — de quanto em quanto tempo procurar OS nova
+  (padrão 60, mínimo 30). Mudou? `systemctl restart hotnet-tecnico-api`.
+
+Celulares inscritos e OS já vistas ficam em `backend/dados/` (fora do git).
+Só o **Sair** tocado pelo técnico desliga os avisos daquele celular; a
+sessão expirar sozinha não. No iPhone, só com o app instalado na tela
+inicial (iOS 16.4 ou mais novo).

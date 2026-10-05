@@ -8,6 +8,8 @@ backend/.env
 backend/.cache/
 # Log de auditoria local (app/audit.py) — dado real de produção, não vai pro repo.
 backend/logs/
+# Celulares inscritos nos avisos e OS já vistas (app/avisos.py) — dado de produção.
+backend/dados/
 
 # Frontend (Node/Vite)
 frontend/node_modules/

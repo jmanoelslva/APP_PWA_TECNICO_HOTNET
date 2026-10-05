@@ -993,3 +993,22 @@ export function listarAuditoria(filtro: {
 }): Promise<{ eventos: EventoAuditoria[]; mais: boolean }> {
   return get<{ eventos: EventoAuditoria[]; mais: boolean }>('auditoria', filtro)
 }
+
+// ---------------------------------------------------------------------
+// Avisos de OS nova no celular (Web Push) — ver hooks/useAvisos.ts e
+// backend/app/routers/avisos.py
+// ---------------------------------------------------------------------
+
+export function configAvisos(): Promise<{ disponivel: boolean; chave: string }> {
+  return get<{ disponivel: boolean; chave: string }>('avisos/config')
+}
+
+// confirmar: manda na hora um aviso "Avisos de OS ativados" para este
+// celular (só quando o técnico liga; não ao reassociar ao abrir o app).
+export function inscreverAvisos(inscricao: PushSubscriptionJSON, confirmar = false): Promise<{ success: boolean }> {
+  return post<{ success: boolean }>('avisos/inscricao', { endpoint: inscricao.endpoint, keys: inscricao.keys, confirmar })
+}
+
+export function removerAvisos(endpoint: string): Promise<{ success: boolean }> {
+  return post<{ success: boolean }>('avisos/remover', { endpoint })
+}

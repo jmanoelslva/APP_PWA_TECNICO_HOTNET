@@ -35,6 +35,9 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/olt(\/|$)/],
         skipWaiting: true,
         clientsClaim: true,
+        // Avisos de OS nova (Web Push): o "push" e o toque no aviso ficam em
+        // public/push-sw.js, carregado dentro do service worker gerado.
+        importScripts: ['push-sw.js'],
       },
       manifest: {
         name: 'HOTNET',

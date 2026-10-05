@@ -15,9 +15,9 @@ function tituloOs(os: OrdemServicoDto): string {
 
 /**
  * "Minhas OS de hoje" na tela inicial: a próxima OS em destaque (rota,
- * ligar, abrir) e as demais do dia em linhas curtas. Só deve ser montado
- * quando o login identificou o técnico no Controllr (user_pk) — sem isso
- * o filtro "minhas" do backend não se aplica e viriam OS de todos.
+ * ligar, abrir) e as demais do dia em linhas curtas. "Minhas" = OS em que
+ * o técnico logado é o responsável (staff_username), ver
+ * backend/app/routers/ordens_servico.py.
  */
 export default function MinhasOsHoje() {
   const navigate = useNavigate()
