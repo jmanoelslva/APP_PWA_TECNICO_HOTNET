@@ -7,7 +7,7 @@ técnico neste app — quem se fecha é a OS (support_ctl/os/close).
 """
 
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import aiohttp
 from aiohttp import FormData
@@ -102,18 +102,38 @@ async def enviar_anexo_ticket(
     return {"success": True, "results": resposta.results}
 
 
+# Anexo é arquivo enviado por qualquer um (técnico, escritório, cliente) e é
+# servido no MESMO domínio do app: um .html ou .svg aberto aqui rodaria
+# script com a sessão de quem clicou. Só abre na tela o que não executa nada
+# (imagem que não seja SVG, vídeo, áudio, PDF); o resto vai como download.
+def _abre_na_tela(tipo: str) -> bool:
+    if tipo.startswith("image/"):
+        return not tipo.startswith("image/svg")
+    return tipo.startswith(("video/", "audio/")) or tipo == "application/pdf"
+
+
 @router.get("/tickets/{ticket_pk}/anexos/{arquivo}")
 async def visualizar_anexo_ticket(
     ticket_pk: int, arquivo: str, ctx: AuthContext = Depends(get_auth_context)
 ) -> FastAPIResponse:
+    if arquivo in (".", "..") or "\\" in arquivo:
+        raise HTTPException(status_code=400, detail="Nome de anexo inválido.")
     # support_ctl/annex/view não tem wrapper no brbyteapi — proxy simples
     # com o cookie de sessão do técnico, o mesmo usado em toda chamada
     # deste backend ao Controllr (ver deps.py::get_auth_context).
-    url = f"{CONTROLLR_URL}/support_ctl/annex/view/{ticket_pk}/{arquivo}"
+    url = f"{CONTROLLR_URL}/support_ctl/annex/view/{ticket_pk}/{quote(arquivo, safe='')}"
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers={"Cookie": ctx.session.controllr_cookie}) as resposta:
             conteudo = await resposta.read()
             if resposta.status >= 400:
                 raise HTTPException(status_code=resposta.status, detail="Não foi possível carregar o anexo.")
             tipo = resposta.headers.get("Content-Type", "application/octet-stream")
-            return FastAPIResponse(content=conteudo, media_type=tipo)
+
+    base = tipo.split(";")[0].strip().lower()
+    cabecalhos = {"X-Content-Type-Options": "nosniff"}
+    if _abre_na_tela(base):
+        return FastAPIResponse(content=conteudo, media_type=tipo, headers=cabecalhos)
+    cabecalhos["Content-Disposition"] = f"attachment; filename*=UTF-8''{quote(arquivo, safe='')}"
+    # Se mesmo assim o navegador abrir, a página fica isolada e sem script.
+    cabecalhos["Content-Security-Policy"] = "sandbox; default-src 'none'"
+    return FastAPIResponse(content=conteudo, media_type="application/octet-stream", headers=cabecalhos)

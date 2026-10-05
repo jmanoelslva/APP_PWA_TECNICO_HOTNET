@@ -6,7 +6,10 @@
 
 .auditoria-filtros {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    'de tecnico'
+    'ate botao';
   gap: 10px;
   align-items: end;
   background: var(--cor-superficie);
@@ -34,6 +37,22 @@
   color: var(--cor-texto);
   font-size: 14px;
   min-width: 0;
+}
+
+.auditoria-filtro-de {
+  grid-area: de;
+}
+
+.auditoria-filtro-ate {
+  grid-area: ate;
+}
+
+.auditoria-filtro-tecnico {
+  grid-area: tecnico;
+}
+
+.auditoria-filtro-botao {
+  grid-area: botao;
 }
 
 .auditoria-filtros .botao {

@@ -106,19 +106,23 @@ export default function Auditoria() {
       </div>
 
       <form className="auditoria-filtros" onSubmit={buscar}>
-        <label>
-          Técnico
-          <input value={tecnico} onChange={(e) => setTecnico(e.target.value)} placeholder="Usuário" />
-        </label>
-        <label>
+        {/* Duas colunas: datas (De em cima de Até) e técnico em cima do Filtrar. */}
+        <label className="auditoria-filtro-de">
           De
           <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
         </label>
-        <label>
+        <label className="auditoria-filtro-ate">
           Até
           <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
         </label>
-        <button className="botao botao-secundario" style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}>
+        <label className="auditoria-filtro-tecnico">
+          Técnico
+          <input value={tecnico} onChange={(e) => setTecnico(e.target.value)} placeholder="Usuário" />
+        </label>
+        <button
+          className="botao botao-secundario auditoria-filtro-botao"
+          style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}
+        >
           Filtrar
         </button>
       </form>

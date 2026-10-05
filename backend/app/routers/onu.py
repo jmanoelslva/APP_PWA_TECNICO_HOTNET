@@ -205,6 +205,13 @@ async def renomear_onu(
     return {"success": True, "results": resposta.results}
 
 
+def _mesmo_pk(valor: Any, esperado: int) -> bool:
+    try:
+        return int(valor) == esperado
+    except (TypeError, ValueError):
+        return False
+
+
 class AssociarClientePayload(BaseModel):
     client_pk: int
     # O cliente pode ter mais de uma conexão (CPE) cadastrada — o técnico
@@ -245,11 +252,14 @@ async def associar_cliente_onu(
     # oficial): busca as CPEs do cliente via /aaa_ctl/cpe/list_combo e usa
     # usuário/senha PPPoE da CPE escolhida — não existe cadastro de PPPoE
     # "solto", é sempre o acesso que já existe no cadastro do cliente.
-    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.cpe_pk", payload.cpe_pk), limit=1))
+    # Confere a linha devolvida: o Controllr ignora filtro que não entende e
+    # devolve qualquer CPE — pegar a primeira às cegas gravaria na ONU o
+    # usuário/senha PPPoE de outra conexão, até de outro cliente.
+    cpes_resp = await ctx.controllr.cpe_list_combo(corpo(where_eq("aaa_cpe.cpe_pk", payload.cpe_pk), limit=20))
     cpes = cpes_resp.results if cpes_resp.success else []
-    if not cpes:
+    cpe = next((c for c in cpes if _mesmo_pk(c.get("cpe_pk"), payload.cpe_pk)), None)
+    if cpe is None or not _mesmo_pk(cpe.get("client_pk"), payload.client_pk):
         raise HTTPException(status_code=404, detail="Conexão (CPE) não encontrada para este cliente.")
-    cpe = cpes[0]
 
     campos = {
         "olt_pk": payload.olt_pk,

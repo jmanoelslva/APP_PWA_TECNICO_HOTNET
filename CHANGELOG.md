@@ -7,6 +7,26 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.9.1] - 2026-10-05
+
+### Segurança
+
+- Anexo de chamado: só imagem (exceto SVG), vídeo, áudio e PDF abrem na
+  tela; qualquer outro tipo (HTML, SVG, texto...) é baixado como arquivo,
+  isolado e sem script. Antes, um anexo HTML aberto no app podia rodar
+  código com a sessão de quem clicou.
+
+### Corrigido
+
+- Associar ONU a um cliente confere se a conexão devolvida pelo Controllr é
+  mesmo a escolhida e pertence ao cliente; senão recusa, em vez de gravar na
+  ONU o usuário e a senha PPPoE de outra conexão.
+
+### Alterado
+
+- Filtros da Auditoria em duas colunas: **De** acima de **Até**, e
+  **Técnico** acima do botão **Filtrar**.
+
 ## [1.9.0] - 2026-10-05
 
 ### Adicionado
@@ -314,6 +334,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.9.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...v1.8.0
