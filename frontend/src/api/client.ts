@@ -772,6 +772,8 @@ export interface OrdemServicoDto {
   address_pk?: number
   user_pk?: number
   staff_pk?: number
+  // Login do técnico que executa a OS ("Minhas OS" compara com o login no app).
+  staff_username?: string
   task_pk?: number
   // Nome da tarefa (ex: "Instalação a Cabo", "Desinstalação Equipamento",
   // "Viabilidade"), retornado por /support_ctl/os/list mas não

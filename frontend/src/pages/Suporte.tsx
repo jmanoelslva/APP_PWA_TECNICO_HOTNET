@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MdBuild } from 'react-icons/md'
+import { MdBuild, MdClose, MdSearch } from 'react-icons/md'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
@@ -8,18 +8,34 @@ import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
 import PullToRefresh from '../components/PullToRefresh'
 import { osAtrasada, quandoOs } from '../utils/minhasOs'
+import { FILTRO_VAZIO, filtrarOs, filtroAtivo, tarefasDaLista, type FiltroOs, type FiltroQuando } from '../utils/filtroOs'
 import { CORES } from '../utils/cores'
 import './Suporte.css'
 
 // Sem "carregar mais" de propósito — a lista já só mostra OS em aberto
-// (o backend tira as finalizadas, ver ordens_servico.py::
-// _sem_finalizadas), então o volume normal cabe numa página só.
+// (o backend tira as finalizadas, ver ordens_servico.py::_sem_finalizadas),
+// então o volume normal cabe numa página só. Os filtros trabalham nessa lista.
 const TAMANHO_PAGINA = 100
 
-// Uma tela só, sem aba "Minhas OS"/"Todas" — o backend já tira da lista
-// qualquer OS que o técnico já finalizou, então não sobra motivo para
-// separar "minhas" do resto: o que aparece aqui é sempre trabalho em
-// aberto para qualquer técnico ver e pegar.
+// Filtro escolhido vale enquanto o app estiver aberto (volta da OS e continua).
+const CHAVE_FILTRO = 'webnet-tecnico-filtro-os'
+
+function lerFiltro(): FiltroOs {
+  try {
+    const salvo = sessionStorage.getItem(CHAVE_FILTRO)
+    return salvo ? { ...FILTRO_VAZIO, ...(JSON.parse(salvo) as Partial<FiltroOs>) } : FILTRO_VAZIO
+  } catch {
+    return FILTRO_VAZIO
+  }
+}
+
+const OPCOES_QUANDO: { valor: FiltroQuando; rotulo: string }[] = [
+  { valor: 'todas', rotulo: 'Todas' },
+  { valor: 'hoje', rotulo: 'Hoje' },
+  { valor: 'atrasadas', rotulo: 'Atrasadas' },
+  { valor: 'proximas', rotulo: 'Próximas' },
+]
+
 function osFechada(os: OrdemServicoDto): boolean {
   return !!os.op_date_close || !!os.op_date_cancel
 }
@@ -37,6 +53,7 @@ export default function Suporte() {
   const navigate = useNavigate()
 
   const [ordens, setOrdens] = useState<OrdemServicoDto[]>([])
+  const [filtro, setFiltro] = useState<FiltroOs>(lerFiltro)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -44,6 +61,22 @@ export default function Suporte() {
     carregar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(CHAVE_FILTRO, JSON.stringify(filtro))
+    } catch {
+      // sem armazenamento: o filtro vale só nesta tela
+    }
+  }, [filtro])
+
+  const tarefas = useMemo(() => tarefasDaLista(ordens), [ordens])
+  const filtradas = useMemo(() => filtrarOs(ordens, filtro), [ordens, filtro])
+  const comFiltro = filtroAtivo(filtro)
+
+  function mudar(parcial: Partial<FiltroOs>) {
+    setFiltro((atual) => ({ ...atual, ...parcial }))
+  }
 
   async function carregar() {
     setCarregando(true)
@@ -82,8 +115,75 @@ export default function Suporte() {
         {!carregando && !erro && ordens.length === 0 && <EstadoVazio icone={MdBuild} titulo="Nenhuma OS aberta" />}
 
         {!carregando && !erro && ordens.length > 0 && (
+          <div className="suporte-filtros">
+            <div className="suporte-busca">
+              <MdSearch size={20} className="suporte-busca-icone" aria-hidden="true" />
+              <input
+                type="search"
+                value={filtro.busca}
+                onChange={(e) => mudar({ busca: e.target.value })}
+                placeholder="Cliente, rua, bairro, serviço ou protocolo"
+                aria-label="Buscar OS"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+            </div>
+
+            <div className="suporte-chips" role="group" aria-label="Quando">
+              {OPCOES_QUANDO.map((opcao) => (
+                <button
+                  key={opcao.valor}
+                  type="button"
+                  className={`suporte-chip suporte-chip-${opcao.valor}${filtro.quando === opcao.valor ? ' ativo' : ''}`}
+                  aria-pressed={filtro.quando === opcao.valor}
+                  onClick={() => mudar({ quando: opcao.valor })}
+                >
+                  {opcao.rotulo}
+                </button>
+              ))}
+            </div>
+
+            <div className="suporte-selects">
+              <select
+                value={filtro.etapa}
+                onChange={(e) => mudar({ etapa: e.target.value as FiltroOs['etapa'] })}
+                aria-label="Etapa"
+              >
+                <option value="todas">Todas as etapas</option>
+                <option value="agendada">Agendada</option>
+                <option value="respondida">Respondida</option>
+                <option value="iniciada">Em andamento</option>
+              </select>
+              <select value={filtro.tarefa} onChange={(e) => mudar({ tarefa: e.target.value })} aria-label="Tipo de serviço">
+                <option value="">Todos os serviços</option>
+                {/* Mantém a escolha mesmo se o serviço sumiu da lista ao atualizar. */}
+                {[...new Set([...tarefas, ...(filtro.tarefa ? [filtro.tarefa] : [])])].map((tarefa) => (
+                  <option key={tarefa} value={tarefa}>
+                    {tarefa}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="suporte-resumo">
+              <span>{comFiltro ? `${filtradas.length} de ${ordens.length} OS` : `${ordens.length} OS`}</span>
+              {comFiltro && (
+                <button type="button" className="suporte-limpar" onClick={() => setFiltro(FILTRO_VAZIO)}>
+                  <MdClose size={16} /> Limpar filtros
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!carregando && !erro && ordens.length > 0 && filtradas.length === 0 && (
+          <EstadoVazio icone={MdSearch} titulo="Nenhuma OS com esses filtros" subtitulo="Mude ou limpe os filtros acima." />
+        )}
+
+        {!carregando && !erro && filtradas.length > 0 && (
           <ul className="suporte-lista">
-            {ordens.map((os) => {
+            {filtradas.map((os) => {
               const status = selo(os)
               const quando = quandoOs(os.op_date_sched)
               const atrasada = osAtrasada(os)

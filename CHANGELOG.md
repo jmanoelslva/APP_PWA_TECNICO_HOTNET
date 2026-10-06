@@ -450,7 +450,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.0...HEAD
+[1.14.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.1...v1.14.0
 [1.13.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.0...v1.13.1
 [1.13.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.2...v1.13.0
 [1.12.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.1...v1.12.2

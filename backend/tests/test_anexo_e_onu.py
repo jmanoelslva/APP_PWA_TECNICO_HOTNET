@@ -26,11 +26,11 @@ def cliente():
 
 
 class _RespostaFalsa:
-    def __init__(self, tipo, status=200):
-        self.status, self.headers = status, {"Content-Type": tipo}
+    def __init__(self, tipo, status=200, conteudo=b"<script>alert(1)</script>"):
+        self.status, self.headers, self.conteudo = status, {"Content-Type": tipo}, conteudo
 
     async def read(self):
-        return b"<script>alert(1)</script>"
+        return self.conteudo
 
     async def __aenter__(self):
         return self
@@ -39,7 +39,7 @@ class _RespostaFalsa:
         return False
 
 
-def _controllr_devolve(monkeypatch, tipo, urls=None):
+def _controllr_devolve(monkeypatch, tipo, urls=None, conteudo=b"<script>alert(1)</script>"):
     from app.routers import suporte
 
     class _Sessao:
@@ -52,7 +52,7 @@ def _controllr_devolve(monkeypatch, tipo, urls=None):
         def get(self, url, headers=None):
             if urls is not None:
                 urls.append(url)
-            return _RespostaFalsa(tipo)
+            return _RespostaFalsa(tipo, conteudo=conteudo)
 
     monkeypatch.setattr(suporte.aiohttp, "ClientSession", _Sessao)
 
@@ -75,6 +75,30 @@ def test_anexo_de_midia_abre_na_tela(cliente, monkeypatch, tipo):
     assert r.headers["content-type"].startswith(tipo)
     assert "content-disposition" not in r.headers
     assert r.headers["x-content-type-options"] == "nosniff"
+
+
+@pytest.mark.parametrize(
+    ("conteudo", "esperado"),
+    [
+        (b"\xff\xd8\xff\xe0foto", "image/jpeg"),
+        (b"\x89PNG\x0d\x0a\x1a\x0a", "image/png"),
+        (b"%PDF-1.7", "application/pdf"),
+        (b"\x00\x00\x00\x18ftypmp42", "video/mp4"),
+    ],
+)
+def test_midia_sem_tipo_certo_abre_pela_assinatura(cliente, monkeypatch, conteudo, esperado):
+    _controllr_devolve(monkeypatch, "application/octet-stream", conteudo=conteudo)
+    r = cliente.get("/suporte/tickets/5/anexos/foto.jpg")
+    assert r.headers["content-type"].startswith(esperado)
+    assert "content-disposition" not in r.headers
+
+
+@pytest.mark.parametrize("conteudo", [b"<html><script>", b"<svg xmlns=", b"\x00\x00\x00\x18ftypheic"])
+def test_sem_tipo_e_sem_assinatura_de_midia_vira_download(cliente, monkeypatch, conteudo):
+    _controllr_devolve(monkeypatch, "application/octet-stream", conteudo=conteudo)
+    r = cliente.get("/suporte/tickets/5/anexos/foto.jpg")
+    assert r.headers["content-type"] == "application/octet-stream"
+    assert r.headers["content-disposition"].startswith("attachment;")
 
 
 def test_nome_do_anexo_vai_codificado(cliente, monkeypatch):

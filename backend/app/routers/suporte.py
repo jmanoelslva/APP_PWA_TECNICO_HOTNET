@@ -112,6 +112,31 @@ def _abre_na_tela(tipo: str) -> bool:
     return tipo.startswith(("video/", "audio/")) or tipo == "application/pdf"
 
 
+def _tipo_pela_assinatura(inicio: bytes) -> str | None:
+    """
+    O Controllr às vezes manda a foto sem o tipo certo (octet-stream): confere
+    pelos primeiros bytes se é mesmo imagem/vídeo/PDF. HTML, SVG e HEIC não.
+    """
+    if inicio.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if inicio.startswith(b"\x89PNG"):
+        return "image/png"
+    if inicio.startswith(b"GIF8"):
+        return "image/gif"
+    if inicio[:4] == b"RIFF" and inicio[8:12] == b"WEBP":
+        return "image/webp"
+    if inicio.startswith(b"BM"):
+        return "image/bmp"
+    if inicio.startswith(b"%PDF"):
+        return "application/pdf"
+    # MP4/MOV/3GP: "ftyp" na posição 4 (HEIC também usa ftyp, mas não é vídeo).
+    if inicio[4:8] == b"ftyp" and inicio[8:12] not in (b"heic", b"heix", b"mif1", b"msf1"):
+        return "video/quicktime" if inicio[8:12] == b"qt  " else "video/mp4"
+    if inicio.startswith(b"\x1aE\xdf\xa3"):
+        return "video/webm"
+    return None
+
+
 @router.get("/tickets/{ticket_pk}/anexos/{arquivo}")
 async def visualizar_anexo_ticket(
     ticket_pk: int, arquivo: str, ctx: AuthContext = Depends(get_auth_context)
@@ -133,6 +158,9 @@ async def visualizar_anexo_ticket(
     cabecalhos = {"X-Content-Type-Options": "nosniff"}
     if _abre_na_tela(base):
         return FastAPIResponse(content=conteudo, media_type=tipo, headers=cabecalhos)
+    tipo_real = _tipo_pela_assinatura(conteudo[:16])
+    if tipo_real:
+        return FastAPIResponse(content=conteudo, media_type=tipo_real, headers=cabecalhos)
     cabecalhos["Content-Disposition"] = f"attachment; filename*=UTF-8''{quote(arquivo, safe='')}"
     # Se mesmo assim o navegador abrir, a página fica isolada e sem script.
     cabecalhos["Content-Security-Policy"] = "sandbox; default-src 'none'"

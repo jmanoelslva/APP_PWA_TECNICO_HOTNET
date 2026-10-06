@@ -163,10 +163,28 @@ export function linkLigar(numero: string | null | undefined): string | null {
   return d ? `tel:${d}` : null
 }
 
-/** Link do WhatsApp (wa.me) — só para celular (DDD + 9 dígitos começando em 9). */
+/**
+ * Link do WhatsApp (wa.me) — só para celular: DDD + 9 dígitos começando em 9,
+ * ou o formato antigo, DDD + 8 dígitos começando em 6 a 9 (celular cadastrado
+ * antes do nono dígito: ganha o 9 na frente). Fixo (começa em 2 a 5) não tem.
+ */
 export function linkWhatsapp(numero: string | null | undefined): string | null {
   const d = telefoneNacional(numero)
-  return d && d.length === 11 && d[2] === '9' ? `https://wa.me/55${d}` : null
+  if (d && d.length === 11 && d[2] === '9') return `https://wa.me/55${d}`
+  if (d && d.length === 10 && '6789'.includes(d[2])) return `https://wa.me/55${d.slice(0, 2)}9${d.slice(2)}`
+  return null
+}
+
+/**
+ * Separa um texto com mais de um número ("79999887766 / 7932221100",
+ * "Celular#-#7999...,Fixo#-#7932...", "... ou ...") em números soltos.
+ */
+export function separarTelefones(texto: string | null | undefined): string[] {
+  if (!texto) return []
+  return texto
+    .split(/[,;/|\n]|\s+(?:e|ou)\s+/i)
+    .map((parte) => (parte.split('#-#').pop() ?? parte).trim())
+    .filter((parte) => soDigitos(parte).length >= 8)
 }
 
 /** "64000-000" a partir de 8 dígitos; outro formato volta como veio. */

@@ -1,5 +1,5 @@
 import type { EnderecoDto, OrdemServicoDto, TelefoneDto } from '../api/client'
-import { dataParaFormatoServidor, extrairTelefones } from './formatacao'
+import { dataParaFormatoServidor, extrairTelefones, separarTelefones } from './formatacao'
 
 export interface OsDoDia {
   os: OrdemServicoDto
@@ -70,15 +70,19 @@ export function linkRota(endereco: EnderecoDto | null, os: OrdemServicoDto): str
  * do cliente (mesmo formato que extrairTelefones já trata).
  */
 export function primeiroTelefone(telefones: TelefoneDto[], clientPhones?: string | null): string | null {
-  const candidatos = [
-    ...telefones.map((t) => t.phone_number ?? ''),
-    ...(extrairTelefones(clientPhones)?.split(',') ?? []),
-  ]
-  for (const candidato of candidatos) {
-    const numero = candidato.replace(/[^\d+]/g, '')
-    if (numero.replace(/\D/g, '').length >= 8) return numero
-  }
-  return null
+  return telefonesDoCliente(telefones, clientPhones)[0] ?? null
+}
+
+/**
+ * Todos os números do cliente, na ordem (cadastrados primeiro), separando
+ * campos com mais de um número — o botão de WhatsApp usa o primeiro celular.
+ */
+export function telefonesDoCliente(telefones: TelefoneDto[], clientPhones?: string | null): string[] {
+  const numeros = [
+    ...telefones.flatMap((t) => separarTelefones(t.phone_number)),
+    ...separarTelefones(extrairTelefones(clientPhones)),
+  ].map((n) => n.replace(/[^\d+]/g, ''))
+  return [...new Set(numeros)]
 }
 
 /** Rua, número e bairro numa linha (mesmo resumo da tela da OS). */

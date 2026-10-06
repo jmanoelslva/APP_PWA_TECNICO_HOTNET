@@ -65,6 +65,13 @@ export default function DetalheChamado() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [imagemAberta, setImagemAberta] = useState<string | null>(null)
+  // Anexos que o navegador não conseguiu mostrar (ex.: foto HEIC do iPhone no
+  // Android, ou o servidor mandou como download): viram link para baixar.
+  const [semVisualizacao, setSemVisualizacao] = useState<Set<string>>(() => new Set())
+
+  function marcarSemVisualizacao(arquivo: string) {
+    setSemVisualizacao((atual) => new Set(atual).add(arquivo))
+  }
 
   const fimDaListaRef = useRef<HTMLDivElement>(null)
   const qtdMensagensRef = useRef(0)
@@ -177,23 +184,34 @@ export default function DetalheChamado() {
               <div className="balao balao-equipe">
                 {op.texto && <p className="balao-texto">{op.texto}</p>}
 
-                {op.arquivo && ehImagem(op.arquivo) && (
+                {op.arquivo && ehImagem(op.arquivo) && !semVisualizacao.has(op.arquivo) && (
                   <button
                     type="button"
                     className="balao-anexo-imagem-botao"
                     onClick={() => setImagemAberta(op.arquivo)}
                   >
-                    <img src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} alt="Anexo" className="balao-anexo-imagem" />
+                    <img
+                      src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`}
+                      alt="Anexo"
+                      className="balao-anexo-imagem"
+                      onError={() => op.arquivo && marcarSemVisualizacao(op.arquivo)}
+                    />
                   </button>
                 )}
-                {op.arquivo && ehVideo(op.arquivo) && (
-                  <video src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`} controls className="balao-anexo-imagem" />
+                {op.arquivo && ehVideo(op.arquivo) && !semVisualizacao.has(op.arquivo) && (
+                  <video
+                    src={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`}
+                    controls
+                    className="balao-anexo-imagem"
+                    onError={() => op.arquivo && marcarSemVisualizacao(op.arquivo)}
+                  />
                 )}
-                {op.arquivo && !ehImagem(op.arquivo) && !ehVideo(op.arquivo) && (
+                {op.arquivo && ((!ehImagem(op.arquivo) && !ehVideo(op.arquivo)) || semVisualizacao.has(op.arquivo)) && (
                   <a
                     href={`/api/suporte/tickets/${pk}/anexos/${op.arquivo}`}
                     target="_blank"
                     rel="noreferrer"
+                    download={semVisualizacao.has(op.arquivo) ? op.arquivo : undefined}
                     className={`balao-anexo-documento ${ehPdf(op.arquivo) ? 'balao-anexo-pdf' : ''}`}
                   >
                     <span className="balao-anexo-documento-icone">

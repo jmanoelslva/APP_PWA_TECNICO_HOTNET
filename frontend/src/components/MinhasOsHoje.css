@@ -91,6 +91,7 @@
 
 .minhas-os-acoes {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
 }
@@ -114,6 +115,20 @@
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+}
+
+.minhas-os-acao-whatsapp {
+  /* Só o ícone: com os outros três botões, o texto não cabe numa linha. */
+  --cor-whatsapp: #1fa855;
+  flex: 0 0 auto;
+  width: 42px;
+  padding: 0;
+  border-color: color-mix(in srgb, var(--cor-whatsapp) 45%, transparent);
+  color: var(--cor-whatsapp);
+}
+
+:root[data-theme='dark'] .minhas-os-acao-whatsapp {
+  --cor-whatsapp: #3fd27a;
 }
 
 .minhas-os-acao-principal {

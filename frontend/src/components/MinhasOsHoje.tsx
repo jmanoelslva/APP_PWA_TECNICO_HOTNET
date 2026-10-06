@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FaWhatsapp } from 'react-icons/fa'
 import { MdBuild, MdDirections, MdOpenInNew, MdPhone } from 'react-icons/md'
 import { buscarDetalheCliente, listarOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
-import { enderecoCurto, horarioOs, linkRota, osDoDia, primeiroTelefone, type OsDoDia } from '../utils/minhasOs'
-import { linkLigar } from '../utils/formatacao'
+import { enderecoCurto, horarioOs, linkRota, osDoDia, telefonesDoCliente, type OsDoDia } from '../utils/minhasOs'
+import { linkLigar, linkWhatsapp } from '../utils/formatacao'
 import Skeleton from './Skeleton'
 import './MinhasOsHoje.css'
 
@@ -16,8 +17,8 @@ function tituloOs(os: OrdemServicoDto): string {
 
 /**
  * "Minhas OS de hoje" na tela inicial: a próxima OS em destaque (rota,
- * ligar, abrir) e as demais do dia em linhas curtas. "Minhas" = OS em que
- * o técnico logado é o responsável (staff_username), ver
+ * ligar, WhatsApp, abrir) e as demais do dia em linhas curtas. "Minhas" = OS
+ * em que o técnico logado é o responsável (staff_username), ver
  * backend/app/routers/ordens_servico.py.
  */
 export interface ResumoDoDia {
@@ -32,7 +33,7 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
   // Endereço completo (coordenadas) e telefone só da próxima OS — uma
   // chamada a mais ao Controllr, não uma por OS.
   const [endereco, setEndereco] = useState<EnderecoDto | null>(null)
-  const [telefone, setTelefone] = useState<string | null>(null)
+  const [telefones, setTelefones] = useState<string[]>([])
 
   useEffect(() => {
     let cancelado = false
@@ -48,7 +49,7 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
           .then((detalhe) => {
             if (cancelado) return
             setEndereco(detalhe.enderecos.find((e) => e.address_pk === proxima.address_pk) ?? detalhe.enderecos[0] ?? null)
-            setTelefone(primeiroTelefone(detalhe.telefones ?? [], detalhe.cliente.client_phones))
+            setTelefones(telefonesDoCliente(detalhe.telefones ?? [], detalhe.cliente.client_phones))
           })
           .catch(() => {})
       })
@@ -87,6 +88,9 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
 
   const [proxima, ...demais] = itens
   const rota = proxima ? linkRota(endereco, proxima.os) : null
+  // Ligar: o primeiro número; WhatsApp: o primeiro que for celular.
+  const telefone = telefones[0] ?? null
+  const whatsapp = telefones.map(linkWhatsapp).find(Boolean) ?? null
 
   return (
     <section className="minhas-os">
@@ -122,6 +126,18 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
             {telefone && (
               <a href={linkLigar(telefone) ?? `tel:${telefone}`} className="minhas-os-acao">
                 <MdPhone size={18} /> Ligar
+              </a>
+            )}
+            {whatsapp && (
+              <a
+                href={whatsapp}
+                target="_blank"
+                rel="noreferrer"
+                className="minhas-os-acao minhas-os-acao-whatsapp"
+                aria-label="WhatsApp"
+                title="WhatsApp"
+              >
+                <FaWhatsapp size={18} />
               </a>
             )}
             <button type="button" className="minhas-os-acao minhas-os-acao-principal" onClick={() => abrir(proxima.os)}>

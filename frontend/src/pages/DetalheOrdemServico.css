@@ -292,3 +292,62 @@
 .detalhe-ordem-modal-acoes .botao {
   flex: 1;
 }
+
+/* Anexos enviados nesta tela, com a prévia da imagem. */
+.detalhe-ordem-anexos {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.detalhe-ordem-anexo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.detalhe-ordem-anexo-previa,
+.detalhe-ordem-anexo-icone {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1px solid var(--cor-borda);
+  object-fit: cover;
+  background: var(--cor-fundo);
+}
+
+.detalhe-ordem-anexo-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cor-texto-secundario);
+}
+
+.detalhe-ordem-anexo-enviando .detalhe-ordem-anexo-previa {
+  opacity: 0.6;
+}
+
+.detalhe-ordem-anexo-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--cor-texto-secundario);
+}
+
+.detalhe-ordem-anexo-situacao {
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+}
+
+.detalhe-ordem-anexo-enviado .detalhe-ordem-anexo-situacao {
+  color: var(--cor-sucesso-vivo);
+}
+
+.detalhe-ordem-anexo-erro .detalhe-ordem-anexo-situacao {
+  color: var(--cor-erro);
+}

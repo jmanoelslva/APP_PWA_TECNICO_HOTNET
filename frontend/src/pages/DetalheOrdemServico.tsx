@@ -41,8 +41,23 @@ import {
   type OrdemServicoDto,
   type TicketDto,
 } from '../api/client'
-import { extrairTelefones, formatarCep, formatarDataHora, formatarStatusContrato, formatarTelefone } from '../utils/formatacao'
+import {
+  extrairTelefones,
+  formatarCep,
+  formatarDataHora,
+  formatarStatusContrato,
+  formatarTelefone,
+  separarTelefones,
+} from '../utils/formatacao'
 import './DetalheOrdemServico.css'
+
+interface AnexoEnviado {
+  id: number
+  nome: string
+  /** URL local da imagem escolhida (null quando não é imagem). */
+  previa: string | null
+  situacao: 'enviando' | 'enviado' | 'erro'
+}
 
 // Os 4 estágios de uma OS (não documentado oficialmente): Agendada
 // (feita pelo escritório, já vem pronta) -> Respondida -> Iniciada ->
@@ -187,8 +202,14 @@ export default function DetalheOrdemServico() {
   const [observacaoEtapa, setObservacaoEtapa] = useState('')
   const [executandoEtapa, setExecutandoEtapa] = useState(false)
   const [enviandoAnexo, setEnviandoAnexo] = useState(false)
+  // Anexos enviados nesta tela, com a prévia da imagem já na hora (do próprio
+  // arquivo escolhido, sem esperar o Controllr).
+  const [anexosEnviados, setAnexosEnviados] = useState<AnexoEnviado[]>([])
+  const urlsPreviaRef = useRef<string[]>([])
 
   const inputArquivoRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => () => urlsPreviaRef.current.forEach((url) => URL.revokeObjectURL(url)), [])
 
   useEffect(() => {
     if (!Number.isFinite(pk)) return
@@ -323,14 +344,22 @@ export default function DetalheOrdemServico() {
     const arquivo = evento.target.files?.[0]
     evento.target.value = ''
     if (!arquivo) return
+    const id = Date.now()
+    const previa = arquivo.type.startsWith('image/') && !arquivo.type.startsWith('image/svg') ? URL.createObjectURL(arquivo) : null
+    if (previa) urlsPreviaRef.current.push(previa)
+    const situacao = (nova: AnexoEnviado['situacao']) =>
+      setAnexosEnviados((atuais) => atuais.map((a) => (a.id === id ? { ...a, situacao: nova } : a)))
+    setAnexosEnviados((atuais) => [{ id, nome: arquivo.name, previa, situacao: 'enviando' }, ...atuais])
     setEnviandoAnexo(true)
     try {
       // O anexo vai para o chamado (ticket) — é o mesmo endpoint/local onde
       // ele aparece na tela de chat do Suporte, mesmo sendo anexado aqui
       // na tela da OS.
       await enviarAnexoTicket(pk, arquivo)
+      situacao('enviado')
       toast('Anexo enviado.', 'sucesso')
     } catch (excecao) {
+      situacao('erro')
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível enviar o anexo.')
     } finally {
       setEnviandoAnexo(false)
@@ -416,10 +445,10 @@ export default function DetalheOrdemServico() {
               <>
                 <div className="detalhe-ordem-linha-campo">
                   <span>Contato</span>
-                  <strong>{telefone.split(', ').map(formatarTelefone).join(', ')}</strong>
+                  <strong>{separarTelefones(telefone).map(formatarTelefone).join(', ') || telefone}</strong>
                 </div>
-                {/* Ligar/WhatsApp para o primeiro número. */}
-                <AcoesContato numero={telefone.split(', ')[0]} />
+                {/* Ligar/WhatsApp para cada número do cliente. */}
+                <AcoesContato numero={telefone} />
               </>
             )}
           </div>
@@ -534,6 +563,25 @@ export default function DetalheOrdemServico() {
             >
               <MdAttachFile size={16} /> {enviandoAnexo ? 'Enviando…' : 'Anexar arquivo ao chamado'}
             </button>
+            {anexosEnviados.length > 0 && (
+              <ul className="detalhe-ordem-anexos">
+                {anexosEnviados.map((anexo) => (
+                  <li key={anexo.id} className={`detalhe-ordem-anexo detalhe-ordem-anexo-${anexo.situacao}`}>
+                    {anexo.previa ? (
+                      <img src={anexo.previa} alt={anexo.nome} className="detalhe-ordem-anexo-previa" />
+                    ) : (
+                      <span className="detalhe-ordem-anexo-icone">
+                        <MdAttachFile size={22} />
+                      </span>
+                    )}
+                    <span className="detalhe-ordem-anexo-nome">{anexo.nome}</span>
+                    <span className="detalhe-ordem-anexo-situacao">
+                      {anexo.situacao === 'enviando' ? 'Enviando…' : anexo.situacao === 'enviado' ? 'Enviado' : 'Falhou'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="detalhe-ordem-card">

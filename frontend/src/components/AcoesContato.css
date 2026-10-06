@@ -1,8 +1,14 @@
 .acoes-contato {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
   margin-top: 8px;
+}
+
+.acoes-contato-numero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .acoes-contato-botao {

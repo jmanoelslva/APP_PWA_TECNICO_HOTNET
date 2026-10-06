@@ -175,3 +175,133 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* Filtros da lista de OS (busca, quando, minhas, etapa e serviço). */
+.suporte-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.suporte-busca {
+  position: relative;
+}
+
+.suporte-busca-icone {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cor-texto-terciario);
+  pointer-events: none;
+}
+
+.suporte-busca input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px 0 42px;
+  border-radius: 14px;
+  border: 1.5px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-size: 14px;
+}
+
+.suporte-busca input:focus,
+.suporte-selects select:focus {
+  outline: none;
+  border-color: var(--cor-suporte);
+}
+
+.suporte-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suporte-chip {
+  /* Cor de cada botão (--cor-chip): a mesma ideia dos selos da lista —
+     atrasada em vermelho, hoje em azul. Tons escuros o bastante para o
+     texto branco do botão escolhido ficar legível. */
+  --cor-chip: var(--cor-suporte);
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1.5px solid color-mix(in srgb, var(--cor-chip) 50%, transparent);
+  background: color-mix(in srgb, var(--cor-chip) 8%, var(--cor-superficie));
+  color: var(--cor-chip);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.suporte-chip.ativo {
+  background: var(--cor-chip);
+  border-color: var(--cor-chip);
+  color: var(--cor-branco-fixo);
+}
+
+/* Fixo (não a --cor-suporte, que fica verde-claro no tema escuro). */
+.suporte-chip-todas {
+  --cor-chip: #0f8a45;
+}
+
+.suporte-chip-hoje {
+  --cor-chip: var(--cor-primaria);
+}
+
+.suporte-chip-atrasadas {
+  --cor-chip: #d32f2f;
+}
+
+.suporte-chip-proximas {
+  --cor-chip: #5e35b1;
+}
+
+/* No tema escuro o texto do botão não escolhido precisa de tom mais claro. */
+:root[data-theme='dark'] .suporte-chip:not(.ativo) {
+  color: color-mix(in srgb, var(--cor-chip) 60%, white);
+}
+
+.suporte-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.suporte-selects select {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1.5px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-size: 13px;
+}
+
+.suporte-resumo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.suporte-limpar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--cor-suporte);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
