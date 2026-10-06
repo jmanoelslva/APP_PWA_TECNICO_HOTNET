@@ -18,7 +18,7 @@ import './Suporte.css'
 const TAMANHO_PAGINA = 100
 
 // Filtro escolhido vale enquanto o app estiver aberto (volta da OS e continua).
-const CHAVE_FILTRO = 'webnet-tecnico-filtro-os'
+const CHAVE_FILTRO = 'hotnet-tecnico-filtro-os'
 
 function lerFiltro(): FiltroOs {
   try {
