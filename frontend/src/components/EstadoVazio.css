@@ -31,3 +31,14 @@
   font-size: 12px;
   color: var(--cor-texto-terciario);
 }
+
+/* Erro ao carregar (EstadoErro.tsx): ícone em vermelho suave e o botão de
+   tentar de novo logo abaixo da mensagem. */
+.estado-erro .estado-vazio-icone {
+  background: color-mix(in srgb, var(--cor-erro) 12%, transparent);
+  color: var(--cor-erro);
+}
+
+.estado-erro .botao {
+  margin-top: 12px;
+}

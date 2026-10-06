@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { MdAttachFile, MdBuild, MdChatBubbleOutline, MdClose, MdDownload, MdPictureAsPdf } from 'react-icons/md'
 import VoltarInicio from '../components/VoltarInicio'
 import EstadoVazio from '../components/EstadoVazio'
+import EstadoErro from '../components/EstadoErro'
 import Skeleton from '../components/Skeleton'
 import { detalheTicket, listarMensagensTicket, listarOrdensServico, type OperacaoDto, type TicketDto } from '../api/client'
 import { formatarDataHora } from '../utils/formatacao'
@@ -162,12 +163,7 @@ export default function DetalheChamado() {
           ))}
 
         {!carregando && erro && (
-          <div className="detalhe-chamado-status">
-            <p>{erro}</p>
-            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={() => carregar(true)}>
-              Tentar novamente
-            </button>
-          </div>
+          <EstadoErro mensagem={erro} cor={CORES.suporte} onTentarDeNovo={() => carregar(true)} />
         )}
 
         {!carregando && !erro && mensagens.length === 0 && (

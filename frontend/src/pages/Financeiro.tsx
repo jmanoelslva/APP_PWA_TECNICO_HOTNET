@@ -4,6 +4,7 @@ import { MdAttachMoney, MdNoteAdd, MdReceipt } from 'react-icons/md'
 import { ApiError, criarObservacaoFatura, listarFaturas, type FaturaDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
+import EstadoErro from '../components/EstadoErro'
 import PullToRefresh from '../components/PullToRefresh'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
@@ -97,12 +98,7 @@ export default function Financeiro() {
         )}
 
         {!carregando && !naoPermitido && erro && (
-          <div className="financeiro-status">
-            <p>{erro}</p>
-            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.financeiro } as CSSProperties} onClick={carregar}>
-              Tentar novamente
-            </button>
-          </div>
+          <EstadoErro mensagem={erro} cor={CORES.financeiro} onTentarDeNovo={carregar} />
         )}
 
         {!carregando && !naoPermitido && !erro && faturas.length === 0 && (

@@ -6,7 +6,7 @@ import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { CORES } from '../utils/cores'
-import { detectarTipoBusca } from '../utils/formatacao'
+import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import './BuscaCliente.css'
 
 export default function BuscaCliente() {
@@ -96,7 +96,7 @@ export default function BuscaCliente() {
             <li key={resultado.client_pk} className="ticket-card">
               <Link to={`/clientes/${resultado.client_pk}`} className="busca-cliente-link" viewTransition>
                 <strong>{resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}</strong>
-                {resultado.cliente.client_doc1 && <p>Documento: {resultado.cliente.client_doc1}</p>}
+                {resultado.cliente.client_doc1 && <p>Documento: {formatarDocumento(resultado.cliente.client_doc1)}</p>}
                 {resultado.cpes.length > 0 && (
                   <p>
                     {resultado.cpes.length} conexão(ões) — contrato(s):{' '}

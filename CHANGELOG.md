@@ -7,6 +7,31 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.13.0] - 2026-10-05
+
+### Alterado
+
+- **Visual mais limpo e fácil de ler em campo:**
+  - a fonte do app vale também em campos, listas e menus (antes alguns
+    caíam em Arial/Roboto);
+  - cinzas de apoio mais escuros, legíveis sob sol (contraste mínimo AA);
+  - cabeçalho das telas mais baixo, sobrando mais espaço para o conteúdo;
+  - tela inicial: resumo do dia na saudação ("3 OS para hoje · 1
+    atrasada"), avatar com as iniciais do técnico, lupa na busca e atalhos
+    em 3 colunas; "Abrir OS" não quebra mais em duas linhas;
+  - lista de **OS / Suporte**: etapa de cada OS (Agendada, Respondida, Em
+    andamento) em vez de "Aberta" para todas, "Hoje 09:00" em vez da data
+    completa, bairro junto do cliente e OS atrasada destacada em vermelho;
+  - erro ao carregar uma tela com o mesmo visual em todo o app (ícone,
+    mensagem e "Tentar novamente").
+- Aviso de OS nova mostra o **endereço** (rua e número) em vez do bairro:
+  "Instalação — Rua B, 12 · hoje 14:00". Sem rua cadastrada, o bairro.
+
+### Adicionado
+
+- CPF/CNPJ, telefone e CEP com máscara, e botões **Ligar** e **WhatsApp**
+  (WhatsApp só para celular) nos telefones do cliente e no contato da OS.
+
 ## [1.12.2] - 2026-10-05
 
 ### Corrigido
@@ -403,6 +428,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.13.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.2...v1.13.0
 [1.12.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.1...v1.12.2
 [1.12.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.0...v1.12.1
 [1.12.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.11.0...v1.12.0

@@ -127,3 +127,50 @@ export const TEXTO_SINAL_ONU: Record<NivelSinal, string> = {
   critica: 'Sinal crítico',
   desconhecida: 'Sinal não informado',
 }
+
+function soDigitos(valor: string | null | undefined): string {
+  return (valor ?? '').replace(/\D/g, '')
+}
+
+/** CPF (11 dígitos) ou CNPJ (14) com máscara; outro formato volta como veio. */
+export function formatarDocumento(doc: string | null | undefined): string {
+  const d = soDigitos(doc)
+  if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
+  if (d.length === 14) return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+  return doc ?? ''
+}
+
+/** Número nacional (DDD + número), sem o 55 do país, ou null se não parecer telefone do Brasil. */
+function telefoneNacional(numero: string | null | undefined): string | null {
+  let d = soDigitos(numero)
+  if ((d.length === 12 || d.length === 13) && d.startsWith('55')) d = d.slice(2)
+  if (d.length === 11 && d.startsWith('0')) d = d.slice(1) // "0 + DDD + fixo"
+  return d.length === 10 || d.length === 11 ? d : null
+}
+
+/** "(86) 99999-0000" / "(86) 3222-0000"; outro formato volta como veio. */
+export function formatarTelefone(numero: string | null | undefined): string {
+  const d = telefoneNacional(numero)
+  if (!d) return numero ?? ''
+  return d.length === 11
+    ? d.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3')
+    : d.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3')
+}
+
+/** Link para ligar (tel:) ou null sem número. */
+export function linkLigar(numero: string | null | undefined): string | null {
+  const d = telefoneNacional(numero) ?? soDigitos(numero)
+  return d ? `tel:${d}` : null
+}
+
+/** Link do WhatsApp (wa.me) — só para celular (DDD + 9 dígitos começando em 9). */
+export function linkWhatsapp(numero: string | null | undefined): string | null {
+  const d = telefoneNacional(numero)
+  return d && d.length === 11 && d[2] === '9' ? `https://wa.me/55${d}` : null
+}
+
+/** "64000-000" a partir de 8 dígitos; outro formato volta como veio. */
+export function formatarCep(cep: string | null | undefined): string {
+  const d = soDigitos(cep)
+  return d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : cep ?? ''
+}

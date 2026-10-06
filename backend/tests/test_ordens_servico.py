@@ -48,3 +48,31 @@ def test_minhas_sao_as_que_o_tecnico_executa(monkeypatch):
 def test_sem_minhas_mostra_o_que_a_acl_devolver(monkeypatch):
     r, _ = listar(monkeypatch, "anderson", minhas="false")
     assert [o["op_pk"] for o in r["results"]] == [1, 2, 3]
+
+
+def test_lista_aberta_marca_a_etapa_e_tira_finalizadas(monkeypatch):
+    from app.deps import get_current_session
+    from app.main import app
+
+    ordens = [{"op_pk": pk, "ticket_pk": pk * 10, "staff_username": "anderson"} for pk in (1, 2, 3, 4)]
+    eventos = [
+        {"op_pk": 11, "op_os_pk": 2, "op_type": 3, "op_date_answer": "2026-10-05 08:00:00"},
+        {"op_pk": 12, "op_os_pk": 3, "op_type": 3, "op_date_answer": "2026-10-05 08:00:00"},
+        {"op_pk": 13, "op_os_pk": 3, "op_type": 4, "op_date_start": "2026-10-05 08:10:00"},
+        {"op_pk": 14, "op_os_pk": 4, "op_type": 5, "op_date_finish": "2026-10-05 09:00:00"},
+        # Respondida e depois desfeita: volta a "agendada".
+        {"op_pk": 15, "op_os_pk": 1, "op_type": 3, "op_date_answer": "2026-10-05 07:00:00"},
+        {"op_pk": 16, "op_os_pk": 1, "op_type": 3, "op_date_answer": None},
+    ]
+
+    async def post(self, caminho, body=None):
+        dados = [dict(o) for o in ordens] if caminho == "/support_ctl/os/list" else eventos
+        return SimpleNamespace(success=True, results=dados, total=len(dados), errors=None)
+
+    monkeypatch.setattr(AsyncControllr, "call_api_post", post)
+    app.dependency_overrides[get_current_session] = lambda: TechnicianSession("s", "anderson", "c", 1, 0)
+    try:
+        r = TestClient(app).get("/os", params={"minhas": "false"}).json()
+    finally:
+        app.dependency_overrides.clear()
+    assert [(o["op_pk"], o["etapa"]) for o in r["results"]] == [(1, "agendada"), (2, "respondida"), (3, "iniciada")]

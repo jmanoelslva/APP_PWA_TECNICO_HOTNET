@@ -6,8 +6,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 18px 20px;
-  margin-bottom: 20px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
   border-radius: 20px;
   border: 1px solid transparent;
 }
@@ -24,6 +24,18 @@
   color: var(--cor-texto);
 }
 
+.home-resumo {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.home-resumo::first-letter {
+  text-transform: uppercase;
+}
+
 .home-avatar-wrapper {
   position: relative;
   flex-shrink: 0;
@@ -35,19 +47,17 @@
   border-radius: 50%;
   border: none;
   overflow: hidden;
-  background: var(--cor-superficie);
+  background: var(--cor-primaria);
+  color: var(--cor-branco-fixo);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
   box-shadow: var(--sombra-card);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
-}
-
-.home-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .home-avatar-menu-fundo {
@@ -158,10 +168,23 @@
   position: relative;
 }
 
+.home-busca-campo {
+  position: relative;
+}
+
+.home-busca-icone {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cor-texto-terciario);
+  pointer-events: none;
+}
+
 .home-busca-campo input {
   width: 100%;
   height: 48px;
-  padding: 0 16px;
+  padding: 0 16px 0 42px;
   border-radius: 14px;
   border: 1.5px solid var(--cor-borda);
   background: var(--cor-superficie);
@@ -215,16 +238,17 @@
   color: var(--cor-texto-terciario);
 }
 
+/* 3 colunas: os atalhos cabem sem rolar a tela. */
 .home-menu {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
 .home-menu-item {
   background: var(--cor-superficie);
   border-radius: 16px;
-  padding: 24px 8px;
+  padding: 14px 6px;
   box-shadow: var(--sombra-card);
   display: flex;
   flex-direction: column;
@@ -235,16 +259,17 @@
 }
 
 .home-menu-icone {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .home-menu-label {
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.25;
   font-weight: 700;
   color: var(--cor-texto);
   text-align: center;

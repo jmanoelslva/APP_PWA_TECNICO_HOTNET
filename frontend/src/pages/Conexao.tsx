@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MdWifi } from 'react-icons/md'
 import {
@@ -15,6 +15,7 @@ import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
+import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import BuscaUsuarioPppoe from './conexao/BuscaUsuarioPppoe'
@@ -180,12 +181,7 @@ export default function Conexao() {
         )}
 
         {!carregando && erro && (
-          <div className="conexao-status">
-            <p>{erro}</p>
-            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.conexao } as CSSProperties} onClick={carregar}>
-              Tentar novamente
-            </button>
-          </div>
+          <EstadoErro mensagem={erro} cor={CORES.conexao} onTentarDeNovo={carregar} />
         )}
 
         {temParametroInicial && !carregando && !erro && !cpe && (

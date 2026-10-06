@@ -749,6 +749,9 @@ export async function enviarAnexoTicket(ticketPk: number, arquivo: File): Promis
 
 export interface OrdemServicoDto {
   op_pk?: number
+  // Só na lista de OS em aberto: etapa calculada pelo backend a partir dos
+  // eventos da OS (ver ordens_servico.py::_sem_finalizadas).
+  etapa?: 'agendada' | 'respondida' | 'iniciada'
   op_os_pk?: number
   // Número legível da OS (ex: "20260528000013") — diferente de op_pk (id
   // interno) e de ticket_protocol (número do chamado, outra coisa).

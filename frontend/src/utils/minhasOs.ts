@@ -73,3 +73,19 @@ export function primeiroTelefone(telefones: TelefoneDto[], clientPhones?: string
 export function enderecoCurto(base: { address?: string; address_number?: string; address_neighborhood?: string }): string {
   return [base.address, base.address_number, base.address_neighborhood].filter(Boolean).join(', ')
 }
+
+/**
+ * Quando é a OS, curto: "Hoje 09:00", "Amanhã 08:30", "Ontem 14:00" ou
+ * "03/10 10:00"; atrasada = agendada para antes de hoje e ainda em aberto.
+ */
+export function quandoOs(sched: string | null | undefined, agora: Date = new Date()): { texto: string; atrasada: boolean } | null {
+  if (!sched) return null
+  const dia = sched.slice(0, 10)
+  const hora = sched.slice(11, 16)
+  const hoje = dataParaFormatoServidor(agora).slice(0, 10)
+  const amanha = dataParaFormatoServidor(new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1)).slice(0, 10)
+  const ontem = dataParaFormatoServidor(new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - 1)).slice(0, 10)
+  const [, mes, d] = dia.split('-')
+  const quando = dia === hoje ? 'Hoje' : dia === amanha ? 'Amanhã' : dia === ontem ? 'Ontem' : `${d}/${mes}`
+  return { texto: hora ? `${quando} ${hora}` : quando, atrasada: dia < hoje }
+}

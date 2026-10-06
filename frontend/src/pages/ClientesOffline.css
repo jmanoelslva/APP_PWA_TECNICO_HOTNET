@@ -4,17 +4,6 @@
   padding: 24px 20px 48px;
 }
 
-.clientes-offline-status {
-  color: var(--cor-texto-secundario);
-  font-size: 14px;
-  text-align: center;
-  padding: 32px 0;
-}
-
-.clientes-offline-status .botao {
-  margin-top: 12px;
-}
-
 .clientes-offline-busca {
   display: flex;
   align-items: center;

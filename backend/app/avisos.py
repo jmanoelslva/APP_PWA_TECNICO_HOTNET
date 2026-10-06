@@ -130,9 +130,13 @@ def _quando(op_date_sched: str | None, agora: datetime) -> str | None:
 def texto_os(os_: dict[str, Any], agora: datetime | None = None) -> dict[str, str]:
     """Título e corpo do aviso. Sem nome do cliente: aparece na tela bloqueada."""
     tipo = (os_.get("task_name") or os_.get("op_desc") or "OS").strip()
-    partes = [p for p in ((os_.get("address_neighborhood") or "").strip(),
-                          _quando(os_.get("op_date_sched"), agora or datetime.now())) if p]
-    corpo = f"{tipo} — {', '.join(partes)}" if partes else tipo
+    # Endereço (rua e número); sem rua cadastrada, pelo menos o bairro.
+    rua = (os_.get("address") or "").strip()
+    numero = str(os_.get("address_number") or "").strip()
+    endereco = f"{rua}, {numero}" if rua and numero else rua or (os_.get("address_neighborhood") or "").strip()
+    quando = _quando(os_.get("op_date_sched"), agora or datetime.now())
+    partes = [p for p in (endereco, quando) if p]
+    corpo = f"{tipo} — {' · '.join(partes)}" if partes else tipo
     ticket = os_.get("ticket_pk")
     return {
         "titulo": "Nova OS",

@@ -15,7 +15,9 @@ import {
 } from 'react-icons/md'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import VoltarInicio from '../components/VoltarInicio'
+import AcoesContato from '../components/AcoesContato'
 import Skeleton from '../components/Skeleton'
+import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import {
@@ -39,7 +41,7 @@ import {
   type OrdemServicoDto,
   type TicketDto,
 } from '../api/client'
-import { extrairTelefones, formatarDataHora, formatarStatusContrato } from '../utils/formatacao'
+import { extrairTelefones, formatarCep, formatarDataHora, formatarStatusContrato, formatarTelefone } from '../utils/formatacao'
 import './DetalheOrdemServico.css'
 
 // Os 4 estágios de uma OS (não documentado oficialmente): Agendada
@@ -351,12 +353,7 @@ export default function DetalheOrdemServico() {
       )}
 
       {!carregando && erro && (
-        <div className="detalhe-ordem-status">
-          <p>{erro}</p>
-          <button className="botao botao-secundario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={carregar}>
-            Tentar novamente
-          </button>
-        </div>
+        <EstadoErro mensagem={erro} cor={CORES.suporte} onTentarDeNovo={carregar} />
       )}
 
       {!carregando && !erro && !osAtual && (
@@ -416,10 +413,14 @@ export default function DetalheOrdemServico() {
               )}
             </div>
             {telefone && (
-              <div className="detalhe-ordem-linha-campo">
-                <span>Contato</span>
-                <strong>{telefone}</strong>
-              </div>
+              <>
+                <div className="detalhe-ordem-linha-campo">
+                  <span>Contato</span>
+                  <strong>{telefone.split(', ').map(formatarTelefone).join(', ')}</strong>
+                </div>
+                {/* Ligar/WhatsApp para o primeiro número. */}
+                <AcoesContato numero={telefone.split(', ')[0]} />
+              </>
             )}
           </div>
 
@@ -446,7 +447,7 @@ export default function DetalheOrdemServico() {
               </p>
             ) : null}
             {(endereco?.address_zipcode ?? osAtual.address_zipcode) && (
-              <p className="detalhe-ordem-linha">CEP: {endereco?.address_zipcode ?? osAtual.address_zipcode}</p>
+              <p className="detalhe-ordem-linha">CEP: {formatarCep(endereco?.address_zipcode ?? osAtual.address_zipcode)}</p>
             )}
             {endereco?.address_latitude && endereco?.address_longitude && (
               <a

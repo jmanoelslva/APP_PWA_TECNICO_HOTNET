@@ -96,7 +96,10 @@
 }
 
 .minhas-os-acao {
-  flex: 1;
+  /* Largura pelo texto (sem quebrar "Abrir OS" em duas linhas) e o espaço
+     que sobra dividido igual entre os botões. */
+  flex: 1 1 auto;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;

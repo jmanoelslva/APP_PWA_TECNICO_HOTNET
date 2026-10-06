@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { OrdemServicoDto } from '../api/client'
-import { horarioOs, linkRota, osDoDia, primeiroTelefone } from './minhasOs'
+import { horarioOs, linkRota, osDoDia, primeiroTelefone, quandoOs } from './minhasOs'
 
 const AGORA = new Date(2026, 9, 5, 9, 30) // 05/10/2026 09:30, hora local
 
@@ -74,5 +74,15 @@ describe('primeiroTelefone', () => {
 
   it('sem telefone, null', () => {
     expect(primeiroTelefone([], null)).toBeNull()
+  })
+})
+
+describe('quandoOs', () => {
+  it('hoje, amanhã, ontem e outros dias; atrasada só antes de hoje', () => {
+    expect(quandoOs('2026-10-05 14:00:00', AGORA)).toEqual({ texto: 'Hoje 14:00', atrasada: false })
+    expect(quandoOs('2026-10-06 08:30:00', AGORA)).toEqual({ texto: 'Amanhã 08:30', atrasada: false })
+    expect(quandoOs('2026-10-04 10:00:00', AGORA)).toEqual({ texto: 'Ontem 10:00', atrasada: true })
+    expect(quandoOs('2026-10-01 10:00:00', AGORA)).toEqual({ texto: '01/10 10:00', atrasada: true })
+    expect(quandoOs(undefined, AGORA)).toBeNull()
   })
 })

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { MdBuild, MdDirections, MdOpenInNew, MdPhone } from 'react-icons/md'
 import { buscarDetalheCliente, listarOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
 import { enderecoCurto, horarioOs, linkRota, osDoDia, primeiroTelefone, type OsDoDia } from '../utils/minhasOs'
+import { linkLigar } from '../utils/formatacao'
 import Skeleton from './Skeleton'
 import './MinhasOsHoje.css'
 
@@ -19,7 +20,12 @@ function tituloOs(os: OrdemServicoDto): string {
  * o técnico logado é o responsável (staff_username), ver
  * backend/app/routers/ordens_servico.py.
  */
-export default function MinhasOsHoje() {
+export interface ResumoDoDia {
+  total: number
+  atrasadas: number
+}
+
+export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoDoDia | null) => void }) {
   const navigate = useNavigate()
   const [itens, setItens] = useState<OsDoDia[] | null>(null)
   const [erro, setErro] = useState(false)
@@ -35,6 +41,7 @@ export default function MinhasOsHoje() {
         if (cancelado) return
         const lista = osDoDia(resposta.results)
         setItens(lista)
+        onResumo?.({ total: lista.length, atrasadas: lista.filter((item) => item.atrasada).length })
         const proxima = lista[0]?.os
         if (!proxima?.client_pk) return
         buscarDetalheCliente(proxima.client_pk)
@@ -46,11 +53,15 @@ export default function MinhasOsHoje() {
           .catch(() => {})
       })
       .catch(() => {
-        if (!cancelado) setErro(true)
+        if (cancelado) return
+        setErro(true)
+        onResumo?.(null)
       })
     return () => {
       cancelado = true
     }
+    // Carrega uma vez ao abrir a tela inicial; onResumo só repassa o resultado.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function abrir(os: OrdemServicoDto) {
@@ -109,7 +120,7 @@ export default function MinhasOsHoje() {
               </a>
             )}
             {telefone && (
-              <a href={`tel:${telefone}`} className="minhas-os-acao">
+              <a href={linkLigar(telefone) ?? `tel:${telefone}`} className="minhas-os-acao">
                 <MdPhone size={18} /> Ligar
               </a>
             )}

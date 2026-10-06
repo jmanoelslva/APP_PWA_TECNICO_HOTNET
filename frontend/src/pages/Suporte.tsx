@@ -1,12 +1,13 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MdBuild } from 'react-icons/md'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
+import EstadoErro from '../components/EstadoErro'
 import PullToRefresh from '../components/PullToRefresh'
-import { formatarDataHora } from '../utils/formatacao'
+import { quandoOs } from '../utils/minhasOs'
 import { CORES } from '../utils/cores'
 import './Suporte.css'
 
@@ -21,6 +22,15 @@ const TAMANHO_PAGINA = 100
 // aberto para qualquer técnico ver e pegar.
 function osFechada(os: OrdemServicoDto): boolean {
   return !!os.op_date_close || !!os.op_date_cancel
+}
+
+const ROTULO_ETAPA = { agendada: 'Agendada', respondida: 'Respondida', iniciada: 'Em andamento' } as const
+
+function selo(os: OrdemServicoDto): { texto: string; classe: string } {
+  if (os.op_date_cancel) return { texto: 'Cancelada', classe: 'badge-cancelada' }
+  if (osFechada(os)) return { texto: 'Fechada', classe: 'badge-fechado' }
+  const etapa = os.etapa ?? 'agendada'
+  return { texto: ROTULO_ETAPA[etapa], classe: `badge-${etapa}` }
 }
 
 export default function Suporte() {
@@ -66,12 +76,7 @@ export default function Suporte() {
         )}
 
         {!carregando && erro && (
-          <div className="suporte-status">
-            <p>{erro}</p>
-            <button className="botao botao-secundario" style={{ '--botao-cor': CORES.suporte } as CSSProperties} onClick={carregar}>
-              Tentar novamente
-            </button>
-          </div>
+          <EstadoErro mensagem={erro} cor={CORES.suporte} onTentarDeNovo={carregar} />
         )}
 
         {!carregando && !erro && ordens.length === 0 && <EstadoVazio icone={MdBuild} titulo="Nenhuma OS aberta" />}
@@ -79,27 +84,30 @@ export default function Suporte() {
         {!carregando && !erro && ordens.length > 0 && (
           <ul className="suporte-lista">
             {ordens.map((os) => {
-              const fechada = osFechada(os)
+              const status = selo(os)
+              const quando = quandoOs(os.op_date_sched)
+              const atrasada = !!quando?.atrasada && !osFechada(os)
+              const local = [os.client_complete_name, os.address_neighborhood?.trim()].filter(Boolean).join(' · ')
               return (
                 <li
                   key={os.op_pk ?? os.op_os_pk}
-                  className="ticket-card"
+                  className={`ticket-card${atrasada ? ' ticket-card-atrasada' : ''}`}
                   onClick={() => os.ticket_pk && navigate(`/os/${os.ticket_pk}`, { state: { os }, viewTransition: true })}
                 >
                   <div className="ticket-topo">
                     <span className="ticket-assunto">
                       {os.task_name ?? (os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`)}
                     </span>
-                    <span className={`ticket-status-badge ${fechada ? 'badge-fechado' : 'badge-aberto'}`}>
-                      {os.op_date_cancel ? 'Cancelada' : fechada ? 'Fechada' : 'Aberta'}
-                    </span>
+                    <span className={`ticket-status-badge ${status.classe}`}>{status.texto}</span>
                   </div>
-                  {os.client_complete_name && <p className="ticket-protocolo">{os.client_complete_name}</p>}
-                  <p className="ticket-protocolo">Chamado #{os.ticket_protocol ?? os.ticket_pk ?? '—'}</p>
-                  {os.op_priority != null && <p className="ticket-protocolo">Prioridade: {os.op_priority}</p>}
-                  <p className="ticket-data">
-                    {os.op_date_sched ? `Agendada para ${formatarDataHora(os.op_date_sched)}` : 'Sem data agendada'}
-                  </p>
+                  {local && <p className="ticket-cliente">{local}</p>}
+                  <div className="ticket-rodape">
+                    <span className={`ticket-quando${atrasada ? ' ticket-quando-atrasada' : ''}`}>
+                      {quando ? quando.texto : 'Sem data agendada'}
+                      {atrasada && <span className="ticket-atrasada">Atrasada</span>}
+                    </span>
+                    <span className="ticket-protocolo">#{os.ticket_protocol ?? os.ticket_pk ?? '—'}</span>
+                  </div>
                 </li>
               )
             })}

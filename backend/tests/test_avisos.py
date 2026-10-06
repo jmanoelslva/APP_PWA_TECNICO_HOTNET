@@ -35,11 +35,14 @@ def os_(pk, tecnico, **extra):
             "address_neighborhood": "Centro ", "op_date_sched": "2026-10-05 14:00:00", **extra}
 
 
-def test_texto_sem_nome_do_cliente():
+def test_texto_com_endereco_sem_nome_do_cliente():
     agora = datetime(2026, 10, 5, 9, 0)
-    aviso = avisos.texto_os(os_(7, "anderson", client_complete_name="Maria"), agora)
-    assert aviso == {"titulo": "Nova OS", "corpo": "Instalação — Centro, hoje 14:00", "url": "/os/70", "tag": "os-7"}
+    aviso = avisos.texto_os(os_(7, "anderson", address="Rua B ", address_number=12, client_complete_name="Maria"), agora)
+    assert aviso == {"titulo": "Nova OS", "corpo": "Instalação — Rua B, 12 · hoje 14:00", "url": "/os/70", "tag": "os-7"}
     assert "Maria" not in str(aviso)
+    # Sem número: só a rua. Sem rua: cai para o bairro.
+    assert avisos.texto_os(os_(7, "a", address="Rua B"), agora)["corpo"] == "Instalação — Rua B · hoje 14:00"
+    assert avisos.texto_os(os_(7, "a"), agora)["corpo"] == "Instalação — Centro · hoje 14:00"
     assert avisos.texto_os(os_(7, "a", op_date_sched="2026-10-06 08:30:00"), agora)["corpo"].endswith("amanhã 08:30")
     assert avisos.texto_os(os_(7, "a", op_date_sched="2026-10-09 08:30:00"), agora)["corpo"].endswith("09/10 08:30")
     assert avisos.texto_os({"op_pk": 1, "op_desc": "Visita"}, agora)["corpo"] == "Visita"

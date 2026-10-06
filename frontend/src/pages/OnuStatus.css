@@ -4,17 +4,6 @@
   padding: 24px 20px 48px;
 }
 
-.onu-status-erro {
-  color: var(--cor-texto-secundario);
-  font-size: 14px;
-  text-align: center;
-  padding: 32px 0;
-}
-
-.onu-status-erro .botao {
-  margin-top: 12px;
-}
-
 .onu-card {
   background: var(--cor-superficie);
   border-radius: 16px;

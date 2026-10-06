@@ -11,6 +11,7 @@ import {
   MdNotificationsActive,
   MdNotificationsOff,
   MdRouter,
+  MdSearch,
   MdWifi,
   MdWifiOff,
 } from 'react-icons/md'
@@ -22,9 +23,9 @@ import { useColetorOlt } from '../hooks/useColetorOlt'
 import { useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
-import MinhasOsHoje from '../components/MinhasOsHoje'
+import MinhasOsHoje, { type ResumoDoDia } from '../components/MinhasOsHoje'
 import { buscarClientes, type BuscaClienteResultado } from '../api/client'
-import { detectarTipoBusca } from '../utils/formatacao'
+import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import { buscarIpsPublicos } from '../utils/ipPublico'
 import './Home.css'
 
@@ -45,6 +46,21 @@ const ITENS_MENU = [
   { to: '/ferramentas', Icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
 
+/** "JM" de "jmanoelslva"; "MS" de "maria.silva" (partes separadas por . _ - ou espaço). */
+function iniciais(usuario: string | undefined): string {
+  const partes = (usuario ?? '').split(/[.\s_-]+/).filter(Boolean)
+  if (partes.length >= 2) return (partes[0][0] + partes[1][0]).toUpperCase()
+  return (partes[0] ?? '?').slice(0, 2).toUpperCase()
+}
+
+function textoResumo(resumo: ResumoDoDia | null): string {
+  const hoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })
+  if (!resumo) return hoje
+  if (resumo.total === 0) return `${hoje} · nenhuma OS para hoje`
+  const os = resumo.total === 1 ? '1 OS para hoje' : `${resumo.total} OS para hoje`
+  return resumo.atrasadas ? `${os} · ${resumo.atrasadas} atrasada${resumo.atrasadas > 1 ? 's' : ''}` : os
+}
+
 export default function Home() {
   const { tecnico, sair } = useSessao()
   const navigate = useNavigate()
@@ -53,6 +69,8 @@ export default function Home() {
   const [menuAvatarAberto, setMenuAvatarAberto] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
   const coletorOlt = useColetorOlt()
+  // Resumo do dia embaixo da saudação (vem de "Minhas OS de hoje").
+  const [resumoDia, setResumoDia] = useState<ResumoDoDia | null>(null)
   const avisos = useAvisos()
   const avisosLigados = avisos.estado === 'ligado'
   // Por que o interruptor está travado, quando está.
@@ -143,11 +161,12 @@ export default function Home() {
         >
           <div className="home-header-saudacao">
             <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
+            <span className="home-resumo">{textoResumo(resumoDia)}</span>
           </div>
 
           <div className="home-avatar-wrapper">
             <button className="home-avatar" onClick={() => setMenuAvatarAberto((v) => !v)} aria-label="Menu do usuário">
-              <img src="/icons/icon-192.png" alt="Menu" />
+              {iniciais(tecnico?.username)}
             </button>
             {menuAvatarAberto && (
               <>
@@ -198,12 +217,13 @@ export default function Home() {
 
         <form className="home-busca home-combobox" onSubmit={aoBuscar}>
           <div className="home-busca-campo">
+            <MdSearch size={20} className="home-busca-icone" aria-hidden="true" />
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               onFocus={() => setListaAberta(true)}
               onBlur={() => setTimeout(() => setListaAberta(false), 150)}
-              placeholder="Buscar cliente por nome, contrato ou CPF/CNPJ"
+              placeholder="Cliente: nome, contrato ou CPF/CNPJ"
             />
           </div>
           {listaAberta && busca.trim().length >= 2 && (
@@ -226,7 +246,7 @@ export default function Home() {
                       <strong>
                         {resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}
                       </strong>
-                      {resultado.cliente.client_doc1 && ` — ${resultado.cliente.client_doc1}`}
+                      {resultado.cliente.client_doc1 && ` — ${formatarDocumento(resultado.cliente.client_doc1)}`}
                     </button>
                   </li>
                 ))}
@@ -234,13 +254,13 @@ export default function Home() {
           )}
         </form>
 
-        <MinhasOsHoje />
+        <MinhasOsHoje onResumo={setResumoDia} />
 
         <div className="home-menu">
           {ITENS_MENU.map((item) => (
             <Link key={item.to} to={item.to} className="home-menu-item" viewTransition>
               <span className="home-menu-icone" style={{ background: item.cor }}>
-                <item.Icone size={26} color={CORES.branco} />
+                <item.Icone size={22} color={CORES.branco} />
               </span>
               <span className="home-menu-label">{item.label}</span>
             </Link>
@@ -251,7 +271,7 @@ export default function Home() {
           {coletorOlt && (
             <a href="/olt/" className="home-menu-item">
               <span className="home-menu-icone" style={{ background: CORES.olts }}>
-                <MdRouter size={26} color={CORES.branco} />
+                <MdRouter size={22} color={CORES.branco} />
               </span>
               <span className="home-menu-label">OLTs</span>
             </a>

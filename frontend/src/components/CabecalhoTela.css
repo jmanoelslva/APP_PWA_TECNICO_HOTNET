@@ -1,31 +1,40 @@
+/* Faixa compacta: ícone + título + subtítulo numa linha baixa, para sobrar
+   mais tela para o conteúdo (antes era um cartão alto de 80px+). */
 .cabecalho-tela {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 16px;
-  border-radius: 18px;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
   border: 1px solid transparent;
 }
 
 .cabecalho-tela-icone {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  border-radius: 14px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.cabecalho-tela-icone svg {
+  width: 20px;
+  height: 20px;
+}
+
 .cabecalho-tela h1 {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
 .cabecalho-tela p {
-  margin: 2px 0 0;
+  margin: 1px 0 0;
   color: var(--cor-texto-terciario);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.3;
 }

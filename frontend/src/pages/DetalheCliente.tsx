@@ -26,11 +26,21 @@ import {
   type OnuDto,
   type TelefoneDto,
 } from '../api/client'
+import AcoesContato from '../components/AcoesContato'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
+import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarData, formatarStatusContrato, nivelSinalOnu, TEXTO_SINAL_ONU } from '../utils/formatacao'
+import {
+  formatarCep,
+  formatarData,
+  formatarDocumento,
+  formatarStatusContrato,
+  formatarTelefone,
+  nivelSinalOnu,
+  TEXTO_SINAL_ONU,
+} from '../utils/formatacao'
 import './DetalheCliente.css'
 
 // Resumo de conexão + ONU de um CPE, carregado à parte (endpoints
@@ -162,12 +172,7 @@ export default function DetalheCliente() {
       )}
 
       {!carregando && erro && (
-        <div className="detalhe-cliente-status">
-          <p>{erro}</p>
-          <button className="botao botao-secundario" style={{ '--botao-cor': CORES.cliente } as CSSProperties} onClick={carregar}>
-            Tentar novamente
-          </button>
-        </div>
+        <EstadoErro mensagem={erro} cor={CORES.cliente} onTentarDeNovo={carregar} />
       )}
 
       {!carregando && !erro && (
@@ -178,7 +183,7 @@ export default function DetalheCliente() {
             </span>
             <div>
               <strong>{nome ?? `Cliente #${pk}`}</strong>
-              {doc && <p>Documento: {doc}</p>}
+              {doc && <p>Documento: {formatarDocumento(doc)}</p>}
             </div>
           </div>
 
@@ -207,7 +212,8 @@ export default function DetalheCliente() {
                     <MdEdit size={18} />
                   </button>
                 </div>
-                <p>{tel.phone_number || 'Número não informado'}</p>
+                <p>{tel.phone_number ? formatarTelefone(tel.phone_number) : 'Número não informado'}</p>
+                <AcoesContato numero={tel.phone_number} />
               </div>
             ))}
             <button
@@ -239,7 +245,7 @@ export default function DetalheCliente() {
                 {(endereco.address_province || endereco.address_state) && (
                   <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
                 )}
-                {endereco.address_zipcode && <p>CEP: {endereco.address_zipcode}</p>}
+                {endereco.address_zipcode && <p>CEP: {formatarCep(endereco.address_zipcode)}</p>}
                 {endereco.address_latitude && endereco.address_longitude && (
                   <div className="detalhe-cliente-item-acoes">
                     <a

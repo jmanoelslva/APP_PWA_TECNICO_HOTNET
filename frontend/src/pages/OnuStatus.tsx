@@ -5,6 +5,7 @@ import { ApiError, atualizarInfoOnu, buscarOnu, reiniciarOnu, removerOnu, renome
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
+import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import BuscaOnu from './onu/BuscaOnu'
@@ -235,12 +236,7 @@ export default function OnuStatus() {
       )}
 
       {!carregando && erro && (
-        <div className="onu-status-erro">
-          <p>{erro}</p>
-          <button className="botao botao-secundario" style={{ '--botao-cor': CORES.onu } as CSSProperties} onClick={() => carregar(buscarInicial)}>
-            Tentar novamente
-          </button>
-        </div>
+        <EstadoErro mensagem={erro} cor={CORES.onu} onTentarDeNovo={() => carregar(buscarInicial)} />
       )}
 
       {temParametroInicial && !carregando && !erro && !onu && (

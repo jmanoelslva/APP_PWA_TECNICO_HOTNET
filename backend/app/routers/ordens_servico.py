@@ -103,9 +103,11 @@ async def listar_ordens_servico(
 
 async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
-    Remove da lista as OS já finalizadas pelo técnico. op_date_finish do
-    registro raiz (em "ordens") fica sempre nulo (ver módulo acima) — o
-    estágio real vem do evento op_type=5 mais recente de cada OS em
+    Remove da lista as OS já finalizadas pelo técnico e marca a etapa de
+    cada uma ("etapa": agendada, respondida ou iniciada) para a lista
+    mostrar. op_date_answer/start/finish do registro raiz (em "ordens") ficam
+    sempre nulos (ver módulo acima) — o estágio real vem do evento mais
+    recente de cada tipo (3 respondida, 4 iniciada, 5 finalizada) em
     /support_ctl/op/list (mesmo endpoint do chat), buscado para todos os
     tickets de uma vez em vez de uma chamada por OS.
     """
@@ -120,17 +122,28 @@ async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> li
     if not resposta.success:
         return ordens  # falha aqui não deve esconder OS: melhor mostrar demais do que a menos
 
-    # Ordenado por op_pk ASC — o último write para cada op_os_pk vence.
-    ultimo_finish_por_os: dict[int, dict[str, Any]] = {}
+    # Ordenado por op_pk ASC — o último write para cada (OS, tipo) vence.
+    ultimo: dict[tuple[int, int], dict[str, Any]] = {}
     for evento in resposta.results:
-        if evento.get("op_type") == 5 and evento.get("op_os_pk") is not None:
-            ultimo_finish_por_os[evento["op_os_pk"]] = evento
+        if evento.get("op_type") in (3, 4, 5) and evento.get("op_os_pk") is not None:
+            ultimo[(evento["op_os_pk"], evento["op_type"])] = evento
 
-    def finalizada(ordem: dict[str, Any]) -> bool:
-        evento = ultimo_finish_por_os.get(ordem.get("op_pk"))
-        return bool(evento and evento.get("op_date_finish"))
+    def marcada(ordem: dict[str, Any], op_type: int, campo: str) -> bool:
+        evento = ultimo.get((ordem.get("op_pk"), op_type))
+        return bool((evento and evento.get(campo)) or ordem.get(campo))
 
-    return [o for o in ordens if not finalizada(o)]
+    abertas = []
+    for ordem in ordens:
+        if marcada(ordem, 5, "op_date_finish"):
+            continue
+        if marcada(ordem, 4, "op_date_start"):
+            ordem["etapa"] = "iniciada"
+        elif marcada(ordem, 3, "op_date_answer"):
+            ordem["etapa"] = "respondida"
+        else:
+            ordem["etapa"] = "agendada"
+        abertas.append(ordem)
+    return abertas
 
 
 class AcaoOSPayload(BaseModel):

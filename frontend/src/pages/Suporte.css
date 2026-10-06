@@ -27,17 +27,6 @@
   color: var(--cor-branco-fixo);
 }
 
-.suporte-status {
-  color: var(--cor-texto-secundario);
-  font-size: 14px;
-  text-align: center;
-  padding: 32px 0;
-}
-
-.suporte-status .botao {
-  margin-top: 12px;
-}
-
 .suporte-lista {
   list-style: none;
   margin: 0;
@@ -83,24 +72,87 @@
   white-space: nowrap;
 }
 
-.badge-aberto {
-  background: var(--cor-primaria);
+/* Etapa da OS em aberto: tons claros com texto da mesma cor, para o
+   vermelho de "Atrasada" continuar sendo o que chama atenção. */
+.badge-agendada,
+.badge-respondida,
+.badge-iniciada {
+  color: var(--cor-selo);
+  background: color-mix(in srgb, var(--cor-selo) 14%, transparent);
+}
+
+.badge-agendada {
+  --cor-selo: var(--cor-primaria-clara);
+}
+
+.badge-respondida {
+  --cor-selo: var(--cor-alerta);
+}
+
+.badge-iniciada {
+  --cor-selo: var(--cor-suporte);
+}
+
+:root[data-theme='light'] .badge-agendada {
+  --cor-selo: var(--cor-primaria);
+}
+
+:root[data-theme='light'] .badge-respondida {
+  --cor-selo: #b26a00;
 }
 
 .badge-fechado {
   background: var(--cor-sucesso);
 }
 
-.ticket-cliente {
-  margin: 6px 0 0;
+.badge-cancelada {
+  background: var(--cor-texto-desabilitado);
+}
+
+.suporte-lista .ticket-card-atrasada {
+  border-left-color: var(--cor-erro);
+}
+
+.ticket-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ticket-quando {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   font-weight: 700;
   color: var(--cor-texto);
 }
 
+.ticket-quando-atrasada {
+  color: var(--cor-erro);
+}
+
+.ticket-atrasada {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cor-erro) 14%, transparent);
+}
+
+.ticket-cliente {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
 .ticket-protocolo,
 .ticket-data {
   margin: 6px 0 0;
+  white-space: nowrap;
   font-size: 12px;
   color: var(--cor-texto-terciario);
 }
