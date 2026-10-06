@@ -7,6 +7,35 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.14.0] - 2026-10-06
+
+### Adicionado
+
+- **Filtros na tela de OS:** busca por cliente, rua, bairro, serviço,
+  protocolo ou técnico (sem acento, várias palavras); botões coloridos
+  **Todas** (verde), **Hoje** (azul), **Atrasadas** (vermelho) e **Próximas**
+  (roxo); seletores de **etapa** e de **tipo de serviço**. Mostra "N de M
+  OS" e "Limpar filtros"; a escolha fica guardada enquanto o app estiver
+  aberto. Tudo na lista já carregada.
+- **Prévia do anexo na tela da OS:** a foto escolhida aparece na hora,
+  embaixo do botão "Anexar", com "Enviando…" e depois "Enviado" (ou
+  "Falhou").
+
+### Corrigido
+
+- **Botão de WhatsApp faltando:**
+  - na próxima OS do dia (tela inicial), ao lado do "Ligar", usando o
+    primeiro celular do cliente mesmo que o primeiro número seja fixo;
+  - na tela da OS, cada número do cliente tem os seus botões (antes só o
+    primeiro);
+  - celular no formato antigo (DDD + 8 dígitos começando em 6 a 9) passa a
+    ter WhatsApp, com o 9 na frente;
+  - campo com mais de um número ("... / ...", "... ou ...") é separado.
+- **Foto no histórico do chamado:** quando o Controllr manda a imagem sem o
+  tipo certo, o servidor confere pelos primeiros bytes e mostra a foto
+  (antes virava download). Imagem que o aparelho não consegue mostrar (ex.:
+  HEIC do iPhone no Android) vira link para baixar, em vez de quebrada.
+
 ## [1.13.1] - 2026-10-05
 
 ### Alterado
