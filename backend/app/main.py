@@ -26,6 +26,17 @@ from .routers import (
 
 logger = logging.getLogger(__name__)
 
+# O uvicorn só configura os próprios logs: sem isto, as mensagens INFO deste
+# app (ex.: "Vigia de OS ligado", "N aviso(s) enviado(s)") não chegavam ao
+# journal — só alertas e erros. Mesmo formato do uvicorn ("INFO:     ...").
+_log_app = logging.getLogger("app")
+if not _log_app.handlers:
+    _saida = logging.StreamHandler()
+    _saida.setFormatter(logging.Formatter("%(levelname)s:     %(name)s - %(message)s"))
+    _log_app.addHandler(_saida)
+    _log_app.setLevel(logging.INFO)
+    _log_app.propagate = False
+
 
 @contextlib.asynccontextmanager
 async def ciclo_de_vida(_app: FastAPI) -> AsyncIterator[None]:

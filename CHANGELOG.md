@@ -7,6 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.12.2] - 2026-10-05
+
+### Corrigido
+
+- Mensagens informativas do backend não apareciam no `journalctl` (o
+  uvicorn só mostra as próprias): agora aparecem, por exemplo "Vigia de OS
+  ligado" ao iniciar e "N aviso(s) enviado(s)" quando sai aviso de OS nova.
+
 ## [1.12.1] - 2026-10-05
 
 ### Alterado
@@ -395,6 +403,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.12.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.1...v1.12.2
 [1.12.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.0...v1.12.1
 [1.12.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.10.0...v1.11.0
