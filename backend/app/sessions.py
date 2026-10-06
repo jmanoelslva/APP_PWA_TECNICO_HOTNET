@@ -1,8 +1,8 @@
 """
 Store de sessão do técnico, em memória (processo único).
 
-Guarda o cookie de sessão do POST /login do Controllr (BRBOSCookie) e o
-user_pk do ACL, associados a um session_id opaco que vira o valor do
+Guarda o cookie de sessão do POST /login do Controllr (BRBOSCookie),
+associado a um session_id opaco que vira o valor do
 cookie TECSESSION no navegador. Esse cookie é usado em toda chamada de
 API deste backend (ver deps.py::get_auth_context) — Basic Auth por
 requisição abria uma segunda sessão "implícita" no Controllr, sem token
@@ -24,7 +24,6 @@ class TechnicianSession:
     session_id: str
     username: str
     controllr_cookie: str
-    user_pk: int | None
     created_at: float
     # Última vez que confirmamos com o Controllr que controllr_cookie ainda
     # é uma sessão válida lá (ver deps.py::get_current_session) — 0.0 força
@@ -35,13 +34,12 @@ class TechnicianSession:
 _sessions: dict[str, TechnicianSession] = {}
 
 
-def create_session(username: str, controllr_cookie: str, user_pk: int | None) -> TechnicianSession:
+def create_session(username: str, controllr_cookie: str) -> TechnicianSession:
     session_id = secrets.token_urlsafe(32)
     session = TechnicianSession(
         session_id=session_id,
         username=username,
         controllr_cookie=controllr_cookie,
-        user_pk=user_pk,
         created_at=time.time(),
     )
     _sessions[session_id] = session

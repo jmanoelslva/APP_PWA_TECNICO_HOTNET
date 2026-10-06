@@ -118,7 +118,6 @@ async function postForm<T>(path: string, form: FormData): Promise<T> {
 
 export interface TecnicoDto {
   username: string
-  user_pk: number | null
 }
 
 export interface LoginResponse {

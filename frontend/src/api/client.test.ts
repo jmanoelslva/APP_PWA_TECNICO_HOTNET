@@ -43,9 +43,9 @@ describe('get/post — tratamento de 401', () => {
   })
 
   it('resposta de sucesso normal é devolvida sem lançar nada', async () => {
-    mockFetchUmaVez({ status: 200, ok: true, json: { username: 'tecnico1', user_pk: 9 } })
+    mockFetchUmaVez({ status: 200, ok: true, json: { username: 'tecnico1' } })
     const resultado = await buscarTecnicoAtual()
-    expect(resultado).toEqual({ username: 'tecnico1', user_pk: 9 })
+    expect(resultado).toEqual({ username: 'tecnico1' })
   })
 })
 

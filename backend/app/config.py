@@ -3,7 +3,7 @@ import os
 # Versão do projeto (Versionamento Semântico, https://semver.org/lang/pt-BR/)
 # — mantida em sincronia com "version" em frontend/package.json, que é o
 # valor exibido na tela de login. Ver CHANGELOG.md para o histórico.
-APP_VERSION = "1.14.1"
+APP_VERSION = "1.14.2"
 
 # Acesso de staff/técnico (ACL) ao Controllr acontece pelo painel
 # administrativo, numa porta própria (8443) — diferente do endpoint
@@ -24,6 +24,14 @@ SESSION_COOKIE_MAX_AGE_SECONDS = int(os.environ.get("SESSION_COOKIE_MAX_AGE_SECO
 CONTROLLR_LIVENESS_CHECK_SECONDS = int(os.environ.get("CONTROLLR_LIVENESS_CHECK_SECONDS", "60"))
 
 SESSION_COOKIE_NAME = "TECSESSION"
+
+# Tamanho máximo de um anexo enviado pelo app (foto/vídeo da OS ou do
+# chamado). O arquivo passa inteiro pela memória antes de ir ao Controllr.
+ANEXO_MAX_MB = int(os.environ.get("ANEXO_MAX_MB", "30"))
+
+# Cookie de sessão só trafega em HTTPS. Desligar (0) apenas para testar
+# por http num endereço que não seja localhost.
+COOKIE_SEGURO = os.environ.get("SESSION_COOKIE_SECURE", "1") != "0"
 
 # Log de auditoria próprio (ver app/audit.py) — caminho do arquivo JSON
 # Lines onde cada ação sensível é gravada (técnico, IP real, ação, alvo).

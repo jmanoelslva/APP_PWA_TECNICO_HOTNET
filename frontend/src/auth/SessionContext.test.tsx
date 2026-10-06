@@ -9,7 +9,7 @@ const removerAvisos = vi.fn()
 
 vi.mock('../components/Toast/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }))
 vi.mock('../api/client', () => ({
-  buscarTecnicoAtual: vi.fn(async () => ({ username: 'anderson', user_pk: 1 })),
+  buscarTecnicoAtual: vi.fn(async () => ({ username: 'anderson' })),
   login: vi.fn(),
   logout: () => logout(),
   removerAvisos: (...args: unknown[]) => removerAvisos(...args),

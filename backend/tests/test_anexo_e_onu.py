@@ -9,7 +9,7 @@ from app.sessions import TechnicianSession
 
 
 def sessao():
-    return TechnicianSession(session_id="s", username="joao", controllr_cookie="c", user_pk=7, created_at=0)
+    return TechnicianSession(session_id="s", username="joao", controllr_cookie="c", created_at=0)
 
 
 @pytest.fixture
@@ -181,3 +181,39 @@ def test_associacao_recusada_nao_grava_auditoria(cliente, monkeypatch, tmp_path)
     _cpes(monkeypatch, [{"cpe_pk": 20, "client_pk": 55}])
     assert cliente.post("/onu/77/associar-cliente", json=PAYLOAD).status_code == 404
     assert audit.consultar() == ([], False)
+
+
+def test_erro_do_controllr_no_anexo_nao_vira_401(cliente, monkeypatch):
+    # Um 401 repassado faria o app achar que a sessão do técnico caiu.
+    from app.routers import suporte
+
+    class _Sessao:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        def get(self, url, headers=None):
+            return _RespostaFalsa("text/html", status=401)
+
+    monkeypatch.setattr(suporte.aiohttp, "ClientSession", _Sessao)
+    assert cliente.get("/suporte/tickets/1/anexos/foto.jpg").status_code == 502
+
+
+def test_anexo_grande_demais_e_recusado(cliente, monkeypatch):
+    from app.deps import AuthContext, get_auth_context
+    from app.main import app
+    from app.routers import suporte
+
+    enviados = []
+
+    class _Controllr:
+        async def support_annex_upload(self, form):
+            enviados.append(form)
+
+    app.dependency_overrides[get_auth_context] = lambda: AuthContext(session=sessao(), controllr=_Controllr())
+    monkeypatch.setattr(suporte, "ANEXO_MAX_MB", 1)
+    r = cliente.post("/suporte/tickets/1/anexos", files={"file": ("video.mp4", b"0" * (1024 * 1024 + 1), "video/mp4")})
+    assert r.status_code == 413
+    assert enviados == []

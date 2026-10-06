@@ -6,6 +6,7 @@ ordens_servico.py): um ticket pode ter uma ou mais OS vinculadas
 técnico neste app — quem se fecha é a OS (support_ctl/os/close).
 """
 
+import logging
 from typing import Any
 from urllib.parse import quote, urlencode
 
@@ -15,13 +16,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from fastapi.responses import Response as FastAPIResponse
 from pydantic import BaseModel
 
-from ..config import CONTROLLR_URL
+from ..config import ANEXO_MAX_MB, CONTROLLR_URL
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 from ..where import corpo as montar_corpo
 from ..where import where_eq, where_in
 
 router = APIRouter(prefix="/suporte", tags=["suporte"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("/tickets")
@@ -87,11 +89,24 @@ async def criar_mensagem_ticket(
     return {"success": True, "results": resposta.results}
 
 
+async def _ler_anexo(file: UploadFile) -> bytes:
+    """Lê o anexo em pedaços e recusa (413) o que passar de ANEXO_MAX_MB."""
+    limite = ANEXO_MAX_MB * 1024 * 1024
+    partes: list[bytes] = []
+    total = 0
+    while pedaco := await file.read(1024 * 1024):
+        total += len(pedaco)
+        if total > limite:
+            raise HTTPException(status_code=413, detail=f"Anexo maior que {ANEXO_MAX_MB} MB.")
+        partes.append(pedaco)
+    return b"".join(partes)
+
+
 @router.post("/tickets/{ticket_pk}/anexos")
 async def enviar_anexo_ticket(
     ticket_pk: int, file: UploadFile, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
-    conteudo = await file.read()
+    conteudo = await _ler_anexo(file)
     form = FormData()
     form.add_field("file", conteudo, filename=file.filename, content_type=file.content_type)
     form.add_field("ticket_pk", str(ticket_pk))
@@ -151,7 +166,13 @@ async def visualizar_anexo_ticket(
         async with session.get(url, headers={"Cookie": ctx.session.controllr_cookie}) as resposta:
             conteudo = await resposta.read()
             if resposta.status >= 400:
-                raise HTTPException(status_code=resposta.status, detail="Não foi possível carregar o anexo.")
+                # Não repassa o código do Controllr: um 401 dele aqui faria o
+                # app achar que a sessão do técnico caiu e mandar para o login.
+                logger.warning("Anexo %s/%s: Controllr respondeu HTTP %s", ticket_pk, arquivo, resposta.status)
+                raise HTTPException(
+                    status_code=404 if resposta.status == 404 else 502,
+                    detail="Não foi possível carregar o anexo.",
+                )
             tipo = resposta.headers.get("Content-Type", "application/octet-stream")
 
     base = tipo.split(";")[0].strip().lower()

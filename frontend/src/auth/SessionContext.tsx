@@ -28,7 +28,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     buscarTecnicoAtual()
       .then((dado) => {
-        setTecnico({ username: dado.username, userPk: dado.user_pk })
+        setTecnico({ username: dado.username })
         setLogado(true)
       })
       .catch(() => {
@@ -44,7 +44,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       const resposta = await apiLogin(usuario.trim(), senha)
       if (resposta.success && resposta.tecnico) {
         setLogado(true)
-        setTecnico({ username: resposta.tecnico.username, userPk: resposta.tecnico.user_pk })
+        setTecnico({ username: resposta.tecnico.username })
         return true
       }
       setErro(resposta.message ?? 'Usuário ou senha incorretos.')

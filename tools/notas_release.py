@@ -29,6 +29,14 @@ TITULOS = {
     "1.0.0": "Primeira versão estável",
     "1.4.0": "Sessão do Controllr pelo cookie do login e detecção de sessão encerrada",
     "1.5.0": "Motivo e data/hora da última queda da ONU",
+    # Versões que juntaram outras menores (1.6.0, 1.7.0–1.7.1, 1.8.0–1.9.1,
+    # 1.12.0–1.12.1, 1.13.0 e 1.14.0 deixaram de ter release própria).
+    "1.6.1": "Integração com o Coletor de OLTs",
+    "1.7.2": "Consulta da auditoria, limite de login e IP real",
+    "1.10.0": "Minhas OS de hoje, auditoria com antes e depois e anexo seguro",
+    "1.12.2": "Avisos de OS nova no celular e Minhas OS pelo técnico responsável",
+    "1.13.1": "Visual mais limpo, etapa nas OS e tela de login revisada",
+    "1.14.1": "Filtros na OS, WhatsApp em todos os números e certificado",
 }
 
 SECOES = {

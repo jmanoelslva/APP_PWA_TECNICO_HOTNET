@@ -36,7 +36,7 @@ def pasta(tmp_path, monkeypatch):
 
 
 def sessao(nome="joao"):
-    return TechnicianSession(session_id="s", username=nome, controllr_cookie="c", user_pk=7, created_at=0)
+    return TechnicianSession(session_id="s", username=nome, controllr_cookie="c", created_at=0)
 
 
 def test_grava_por_mes_e_consulta(pasta, monkeypatch):
@@ -214,3 +214,19 @@ def test_wifi_e_acesso_gravam_antes_e_depois_sem_senha(pasta, monkeypatch):
     assert acesso["alvo"] == {"cpe_pk": 9, **contexto, "login_anterior": "admin", "porta_anterior": 80,
                               "senha_acesso_alterada": False, "cpe_access_login": "admin2", "cpe_access_port": 8080}
     assert "segredo" not in json.dumps([wifi, acesso])
+
+
+def test_login_cookie_seguro_e_sem_lista_de_usuarios(monkeypatch):
+    from app.main import app
+    from app.routers import auth
+
+    monkeypatch.setattr(limite_login, "_falhas", {})
+
+    async def falso_login(url, usuario, senha):
+        return SimpleNamespace(success=True, cookie_header="BRBOSCookie=x")
+
+    monkeypatch.setattr(auth.ControllrLogin, "login", falso_login)
+    r = TestClient(app).post("/auth/login", json={"username": "joao", "password": "x"})
+    assert r.json() == {"success": True, "message": None, "tecnico": {"username": "joao"}}
+    cookie = r.headers["set-cookie"].lower()
+    assert "secure" in cookie and "httponly" in cookie

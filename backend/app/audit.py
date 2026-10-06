@@ -104,7 +104,6 @@ def registrar_auditoria(
     evento = {
         "quando": time.strftime("%Y-%m-%d %H:%M:%S"),
         "tecnico": session.username,
-        "user_pk": session.user_pk,
         "ip": obter_ip_origem(request),
         "acao": acao,
         "alvo": alvo or {},

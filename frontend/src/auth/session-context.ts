@@ -2,7 +2,6 @@ import { createContext } from 'react'
 
 export interface TecnicoLogado {
   username: string
-  userPk: number | null
 }
 
 export interface SessionState {

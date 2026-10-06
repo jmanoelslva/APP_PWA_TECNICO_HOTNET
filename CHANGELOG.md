@@ -7,19 +7,30 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
-## [1.14.1] - 2026-10-06
+## [1.14.2] - 2026-10-06
+
+### Alterado
+
+- **Login mais rápido:** o app não busca mais a lista de usuários do
+  Controllr ao entrar. Ela só servia para achar o `user_pk`, que não é mais
+  usado ("Minhas OS" vai pelo técnico responsável da OS desde a 1.12.2); o
+  campo também sai dos novos registros da auditoria.
 
 ### Corrigido
 
-- **Site fora do ar depois de instalar com certificado já existente:** o
-  instalador gravava a configuração do site no Nginx/Apache mas só a ativava
-  no passo de emitir o certificado; quando o certificado já existia, a porta
-  443 ficava sem o app. Agora o site é ativado sempre.
-- **Renovação do certificado:** a porta 80 mandava tudo para HTTPS, inclusive
-  a verificação do Let's Encrypt, e a renovação automática ia falhar. Agora o
-  caminho `/.well-known/acme-challenge/` é atendido em HTTP.
+- **Anexo grande demais:** foto ou vídeo acima de 30 MB é recusado com
+  aviso, em vez de ocupar a memória do servidor (ajustável com
+  `ANEXO_MAX_MB` no `backend.env`).
+- **Falha ao abrir anexo derrubava a sessão:** quando o Controllr recusava
+  o arquivo, o app podia entender como sessão expirada e voltar para o
+  login. Agora só mostra que não conseguiu carregar.
 
-## [1.14.0] - 2026-10-06
+### Segurança
+
+- Cookie de sessão marcado como `Secure`: só trafega em HTTPS
+  (`SESSION_COOKIE_SECURE=0` desliga, apenas para testes por http).
+
+## [1.14.1] - 2026-10-06
 
 ### Adicionado
 
@@ -47,11 +58,38 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   tipo certo, o servidor confere pelos primeiros bytes e mostra a foto
   (antes virava download). Imagem que o aparelho não consegue mostrar (ex.:
   HEIC do iPhone no Android) vira link para baixar, em vez de quebrada.
+- **Site fora do ar depois de instalar com certificado já existente:** o
+  instalador gravava a configuração do site no Nginx/Apache mas só a ativava
+  no passo de emitir o certificado; quando o certificado já existia, a porta
+  443 ficava sem o app. Agora o site é ativado sempre.
+- **Renovação do certificado:** a porta 80 mandava tudo para HTTPS, inclusive
+  a verificação do Let's Encrypt, e a renovação automática ia falhar. Agora o
+  caminho `/.well-known/acme-challenge/` é atendido em HTTP.
 
 ## [1.13.1] - 2026-10-05
 
+### Adicionado
+
+- CPF/CNPJ, telefone e CEP com máscara, e botões **Ligar** e **WhatsApp**
+  (WhatsApp só para celular) nos telefones do cliente e no contato da OS.
+
 ### Alterado
 
+- **Visual mais limpo e fácil de ler em campo:**
+  - a fonte do app vale também em campos, listas e menus (antes alguns
+    caíam em Arial/Roboto);
+  - cinzas de apoio mais escuros, legíveis sob sol (contraste mínimo AA);
+  - cabeçalho das telas mais baixo, sobrando mais espaço para o conteúdo;
+  - tela inicial: resumo do dia na saudação ("3 OS para hoje · 1
+    atrasada"), avatar com as iniciais do técnico, lupa na busca e atalhos
+    em 3 colunas; "Abrir OS" não quebra mais em duas linhas;
+  - lista de **OS / Suporte**: etapa de cada OS (Agendada, Respondida, Em
+    andamento) em vez de "Aberta" para todas, "Hoje 09:00" em vez da data
+    completa, bairro junto do cliente e OS atrasada destacada em vermelho;
+  - erro ao carregar uma tela com o mesmo visual em todo o app (ícone,
+    mensagem e "Tentar novamente").
+- Aviso de OS nova mostra o **endereço** (rua e número) em vez do bairro:
+  "Instalação — Rua B, 12 · hoje 14:00". Sem rua cadastrada, o bairro.
 - **Tela de login:**
   - o teclado do celular não põe mais maiúscula nem "corrige" o usuário
     (evitava login recusado por "Anderson" em vez de "anderson");
@@ -71,49 +109,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   passou do dia e hora agendados e ainda não foi iniciada (OS em andamento
   não conta), na tela inicial, no resumo do dia e na lista de OS.
 
-## [1.13.0] - 2026-10-05
-
-### Alterado
-
-- **Visual mais limpo e fácil de ler em campo:**
-  - a fonte do app vale também em campos, listas e menus (antes alguns
-    caíam em Arial/Roboto);
-  - cinzas de apoio mais escuros, legíveis sob sol (contraste mínimo AA);
-  - cabeçalho das telas mais baixo, sobrando mais espaço para o conteúdo;
-  - tela inicial: resumo do dia na saudação ("3 OS para hoje · 1
-    atrasada"), avatar com as iniciais do técnico, lupa na busca e atalhos
-    em 3 colunas; "Abrir OS" não quebra mais em duas linhas;
-  - lista de **OS / Suporte**: etapa de cada OS (Agendada, Respondida, Em
-    andamento) em vez de "Aberta" para todas, "Hoje 09:00" em vez da data
-    completa, bairro junto do cliente e OS atrasada destacada em vermelho;
-  - erro ao carregar uma tela com o mesmo visual em todo o app (ícone,
-    mensagem e "Tentar novamente").
-- Aviso de OS nova mostra o **endereço** (rua e número) em vez do bairro:
-  "Instalação — Rua B, 12 · hoje 14:00". Sem rua cadastrada, o bairro.
-
-### Adicionado
-
-- CPF/CNPJ, telefone e CEP com máscara, e botões **Ligar** e **WhatsApp**
-  (WhatsApp só para celular) nos telefones do cliente e no contato da OS.
-
 ## [1.12.2] - 2026-10-05
-
-### Corrigido
-
-- Mensagens informativas do backend não apareciam no `journalctl` (o
-  uvicorn só mostra as próprias): agora aparecem, por exemplo "Vigia de OS
-  ligado" ao iniciar e "N aviso(s) enviado(s)" quando sai aviso de OS nova.
-
-## [1.12.1] - 2026-10-05
-
-### Alterado
-
-- Avisos de OS continuam chegando depois do **Sair** (antes o Sair do menu
-  do avatar desligava, e o da barra de baixo não — ficou igual nos dois).
-  Para parar, o interruptor **Avisos de OS** no avatar. Se outro técnico
-  entrar no mesmo celular, os avisos passam a ser dele.
-
-## [1.12.0] - 2026-10-05
 
 ### Adicionado
 
@@ -122,9 +118,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   com um usuário de consulta do Controllr e avisa o técnico responsável:
   tipo, bairro e horário, sem o nome do cliente; tocar abre a OS. Liga e
   desliga no menu do avatar (**Avisos de OS**). Várias OS novas de uma vez
-  viram um aviso só. O **Sair** desliga os avisos daquele celular. No
-  iPhone, só com o app instalado na tela inicial. O `install.sh` gera as
-  chaves e pergunta o usuário de consulta (ver `deploy/DEPLOY.md`, seção 6).
+  viram um aviso só. Continuam chegando depois do **Sair**; para parar, o
+  interruptor. Se outro técnico entrar no mesmo celular, os avisos passam a
+  ser dele. No iPhone, só com o app instalado na tela inicial. O
+  `install.sh` gera as chaves e pergunta o usuário de consulta (ver
+  `deploy/DEPLOY.md`, seção 6).
 
 ### Corrigido
 
@@ -133,6 +131,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   (`staff_username`), comparado com o login do app. O bloco também aparece
   sempre na tela inicial, sem depender de o login achar o número do técnico
   no Controllr.
+- Mensagens informativas do backend não apareciam no `journalctl` (o
+  uvicorn só mostra as próprias): agora aparecem, por exemplo "Vigia de OS
+  ligado" ao iniciar e "N aviso(s) enviado(s)" quando sai aviso de OS nova.
 
 ## [1.11.0] - 2026-10-05
 
@@ -161,38 +162,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
-- Auditoria registra a **associação de ONU a cliente**: OLT, PON e número
-  da ONU, serial, e cliente e usuário PPPoE em antes → depois (o novo vem
-  da conexão conferida no Controllr). Novo filtro **Associações** na tela.
-
-## [1.9.1] - 2026-10-05
-
-### Segurança
-
-- Anexo de chamado: só imagem (exceto SVG), vídeo, áudio e PDF abrem na
-  tela; qualquer outro tipo (HTML, SVG, texto...) é baixado como arquivo,
-  isolado e sem script. Antes, um anexo HTML aberto no app podia rodar
-  código com a sessão de quem clicou.
-
-### Corrigido
-
-- Associar ONU a um cliente confere se a conexão devolvida pelo Controllr é
-  mesmo a escolhida e pertence ao cliente; senão recusa, em vez de gravar na
-  ONU o usuário e a senha PPPoE de outra conexão.
-
-### Alterado
-
-- Filtros da Auditoria em duas colunas: **De** acima de **Até**, e
-  **Técnico** acima do botão **Filtrar**.
-
-## [1.9.0] - 2026-10-05
-
-### Adicionado
-
+- **Minhas OS de hoje** na tela inicial: a próxima OS do técnico em destaque
+  (horário, tipo de serviço, cliente e endereço) com os botões **Rota**
+  (Google Maps já em modo navegação até o endereço), **Ligar** (primeiro
+  telefone do cliente) e **Abrir OS**; abaixo, as demais OS do dia. OS de
+  dias anteriores ainda em aberto aparecem no topo como **Atrasada**. Só
+  aparece quando o login identificou o técnico no Controllr.
+- Auditoria: `AUDITORIA_USUARIOS=*` (ou `todos`) libera a consulta para
+  qualquer técnico logado, sem precisar listar cada usuário.
 - Auditoria grava, nas alterações de Wi-Fi e de acesso ao roteador, o
   cliente e o usuário PPPoE, o tipo de criptografia antes e depois, o login
   e a porta anteriores e se a senha foi trocada (a senha em si nunca é
   gravada).
+- Auditoria registra a **associação de ONU a cliente**: OLT, PON e número
+  da ONU, serial, e cliente e usuário PPPoE em antes → depois (o novo vem
+  da conexão conferida no Controllr). Novo filtro **Associações** na tela.
 
 ### Alterado
 
@@ -202,45 +186,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   (IPv4 ou IPv6) numa linha própria abaixo do técnico, detalhes
   (OLT, ONU, serial, cliente, PPPoE) em grade, e filtro por tipo de ação em
   botões no topo, no lugar da lista suspensa.
+- Filtros da Auditoria em duas colunas: **De** acima de **Até**, e
+  **Técnico** acima do botão **Filtrar**.
 
-## [1.8.1] - 2026-10-05
+### Corrigido
 
-### Adicionado
+- Associar ONU a um cliente confere se a conexão devolvida pelo Controllr é
+  mesmo a escolhida e pertence ao cliente; senão recusa, em vez de gravar na
+  ONU o usuário e a senha PPPoE de outra conexão.
 
-- Auditoria: `AUDITORIA_USUARIOS=*` (ou `todos`) libera a consulta para
-  qualquer técnico logado, sem precisar listar cada usuário.
+### Segurança
 
-## [1.8.0] - 2026-10-05
-
-### Adicionado
-
-- **Minhas OS de hoje** na tela inicial: a próxima OS do técnico em destaque
-  (horário, tipo de serviço, cliente e endereço) com os botões **Rota**
-  (Google Maps já em modo navegação até o endereço), **Ligar** (primeiro
-  telefone do cliente) e **Abrir OS**; abaixo, as demais OS do dia. OS de
-  dias anteriores ainda em aberto aparecem no topo como **Atrasada**. Só
-  aparece quando o login identificou o técnico no Controllr.
+- Anexo de chamado: só imagem (exceto SVG), vídeo, áudio e PDF abrem na
+  tela; qualquer outro tipo (HTML, SVG, texto...) é baixado como arquivo,
+  isolado e sem script. Antes, um anexo HTML aberto no app podia rodar
+  código com a sessão de quem clicou.
 
 ## [1.7.2] - 2026-10-05
-
-### Alterado
-
-- Auditoria: a ONU aparece só com o número (sem "nº") e a **OLT aparece
-  sempre**. Nos registros antigos, OLT pelo nome, PON, número e serial vêm da
-  mesma busca de ONU que a tela usa no Controllr (antes era a lista de OLTs);
-  só vale o resultado cujo número confere. Buscas em paralelo, poucas de cada
-  vez, e guardadas por 10 minutos.
-
-## [1.7.1] - 2026-10-05
-
-### Alterado
-
-- Auditoria mostra a ONU como ela aparece na tela: **OLT pelo nome**, PON e
-  número da ONU, serial e, ao renomear, o nome anterior → novo. Reiniciar,
-  remover e renomear passam a gravar esses dados; nos registros antigos o
-  nome da OLT é buscado no Controllr pelo número (se não der, aparece "nº").
-
-## [1.7.0] - 2026-10-05
 
 ### Adicionado
 
@@ -253,15 +215,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   protege as senhas dos técnicos e evita bloqueio da conta lá.
 - Primeiros testes do backend (`backend/tests`, `requirements-dev.txt`).
 
-### Corrigido
-
-- **IP da auditoria podia ser falsificado**: o app confiava primeiro em
-  `CF-Connecting-IP` e no primeiro IP do `X-Forwarded-For`, que o navegador
-  pode mandar com qualquer valor. Agora usa o `X-Real-IP` do proxy ou o
-  último IP do `X-Forwarded-For` (o que o proxy acrescenta). No Apache, o
-  `X-Real-IP` chegava como "(null)": o vhost passa a usar
-  `expr=%{REMOTE_ADDR}`.
-
 ### Alterado
 
 - Log de auditoria dividido por mês (`logs/auditoria-AAAA-MM.jsonl`), com os
@@ -271,16 +224,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   deste CHANGELOG: título "v1.6.1 · assunto", seções com ícones, cada item numa
   linha só, comando de atualização copiável e link para comparar com a versão
   anterior. Aplicado a todas as releases.
-
-## [1.6.1] - 2026-10-02
+- Auditoria mostra a ONU como ela aparece na tela: **OLT pelo nome**
+  (sempre), PON e número da ONU, serial e, ao renomear, o nome anterior →
+  novo. Reiniciar, remover e renomear passam a gravar esses dados; nos
+  registros antigos eles vêm da mesma busca de ONU que a tela usa no
+  Controllr (só vale o resultado cujo número confere), em paralelo, poucas
+  de cada vez, e guardados por 10 minutos.
 
 ### Corrigido
 
-- `deploy/install.sh` atualiza o próprio arquivo com `git pull` durante a
-  execução; como o bash lê o script aos poucos, a versão nova podia ser
-  executada pela metade. Agora o script inteiro é lido antes de começar.
+- **IP da auditoria podia ser falsificado**: o app confiava primeiro em
+  `CF-Connecting-IP` e no primeiro IP do `X-Forwarded-For`, que o navegador
+  pode mandar com qualquer valor. Agora usa o `X-Real-IP` do proxy ou o
+  último IP do `X-Forwarded-For` (o que o proxy acrescenta). No Apache, o
+  `X-Real-IP` chegava como "(null)": o vhost passa a usar
+  `expr=%{REMOTE_ADDR}`.
 
-## [1.6.0] - 2026-10-02
+## [1.6.1] - 2026-10-02
 
 ### Adicionado
 
@@ -298,6 +258,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Alterado
 
 - Service worker não responde navegações de `/olt/` com o app do técnico.
+
+### Corrigido
+
+- `deploy/install.sh` atualiza o próprio arquivo com `git pull` durante a
+  execução; como o bash lê o script aos poucos, a versão nova podia ser
+  executada pela metade. Agora o script inteiro é lido antes de começar.
 
 ## [1.5.0] - 2026-09-15
 
@@ -491,25 +457,15 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.1...HEAD
-[1.14.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.0...v1.14.1
-[1.14.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.1...v1.14.0
-[1.13.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.0...v1.13.1
-[1.13.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.2...v1.13.0
-[1.12.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.1...v1.12.2
-[1.12.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.0...v1.12.1
-[1.12.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.11.0...v1.12.0
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.2...HEAD
+[1.14.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.1...v1.14.2
+[1.14.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.1...v1.14.1
+[1.13.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.2...v1.13.1
+[1.12.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.11.0...v1.12.2
 [1.11.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.10.0...v1.11.0
-[1.10.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.1...v1.10.0
-[1.9.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.9.0...v1.9.1
-[1.9.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.1...v1.9.0
-[1.8.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.8.0...v1.8.1
-[1.8.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...v1.8.0
-[1.7.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.1...v1.7.2
-[1.7.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.0...v1.7.1
-[1.7.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.0
-[1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.0...v1.6.1
-[1.6.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.0
+[1.10.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...v1.10.0
+[1.7.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.6.1...v1.7.2
+[1.6.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.5.0...v1.6.1
 [1.5.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.2.0...v1.3.0
