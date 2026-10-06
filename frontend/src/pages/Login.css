@@ -31,16 +31,50 @@
 }
 
 .login-marca-logo {
-  width: 88px;
-  height: 88px;
+  width: 104px;
+  height: 104px;
   object-fit: contain;
 }
 
 .login-marca strong {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.02em;
   color: var(--cor-texto);
+  line-height: 1.1;
+}
+
+.login-marca-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+/* Tema claro/escuro já na tela de login, no canto. */
+.login-tema {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-texto-secundario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.login-campos {
+  display: flex;
+  flex-direction: column;
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
 }
 
 .login-card form {
@@ -67,8 +101,8 @@
   margin-top: 6px;
   height: 48px;
   width: 100%;
-  border: 1px solid var(--cor-borda);
-  border-radius: 8px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 12px;
   padding: 0 16px;
   font-size: 15px;
   color: var(--cor-texto);
@@ -78,6 +112,31 @@
 .login-card input:focus {
   outline: none;
   border-color: var(--cor-primaria);
+}
+
+.login-card input[aria-invalid='true'] {
+  border-color: var(--cor-erro);
+}
+
+.login-campos:disabled input {
+  opacity: 0.6;
+}
+
+.login-campo-aviso {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-erro);
+}
+
+.login-capslock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cor-alerta);
 }
 
 .login-campo-senha {
@@ -103,15 +162,42 @@
   justify-content: center;
 }
 
-.login-erro {
-  margin-top: 12px;
+/* Erro do login (caixa com ícone); bloqueio por tentativas em tom de espera. */
+.login-mensagem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--cor-erro) 40%, transparent);
+  background: color-mix(in srgb, var(--cor-erro) 8%, var(--cor-superficie));
   color: var(--cor-erro);
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.4;
+}
+
+.login-mensagem svg {
+  flex: none;
+}
+
+.login-mensagem-espera {
+  border-color: color-mix(in srgb, var(--cor-alerta) 45%, transparent);
+  background: color-mix(in srgb, var(--cor-alerta) 10%, var(--cor-superficie));
+  color: var(--cor-texto);
+}
+
+.login-mensagem-espera svg {
+  color: var(--cor-alerta);
 }
 
 .login-btn-entrar {
   margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   height: 52px;
   border: none;
   border-radius: 12px;
@@ -123,8 +209,23 @@
 }
 
 .login-btn-entrar:disabled {
-  opacity: 0.7;
+  opacity: 0.85;
   cursor: default;
+}
+
+.login-girando {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid color-mix(in srgb, var(--cor-branco-fixo) 35%, transparent);
+  border-top-color: var(--cor-branco-fixo);
+  border-radius: 50%;
+  animation: spinner-girar 0.7s linear infinite;
+}
+
+@keyframes spinner-girar {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .login-versao {

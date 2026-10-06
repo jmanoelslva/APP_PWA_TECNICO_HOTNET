@@ -3,8 +3,20 @@ import { dataParaFormatoServidor, extrairTelefones } from './formatacao'
 
 export interface OsDoDia {
   os: OrdemServicoDto
-  // Agendada para um dia anterior a hoje e ainda em aberto.
+  // Ver osAtrasada.
   atrasada: boolean
+  // Agendada para um dia anterior a hoje (mostra a data, não só a hora).
+  diaAnterior: boolean
+}
+
+/**
+ * Atrasada: já passou do dia E hora agendados e o técnico ainda não iniciou
+ * (OS em andamento não é atraso — ele já está nela). Fechada/cancelada não.
+ */
+export function osAtrasada(os: OrdemServicoDto, agora: Date = new Date()): boolean {
+  if (!os.op_date_sched || os.op_date_close || os.op_date_cancel || os.etapa === 'iniciada') return false
+  // Mesmo formato "AAAA-MM-DD HH:mm" dos dois lados: comparar como texto.
+  return os.op_date_sched.slice(0, 16) < dataParaFormatoServidor(agora).slice(0, 16)
 }
 
 /**
@@ -22,14 +34,14 @@ export function osDoDia(ordens: OrdemServicoDto[], agora: Date = new Date()): Os
     .filter((os) => !!os.op_date_sched && !os.op_date_close && !os.op_date_cancel)
     .filter((os) => os.op_date_sched!.slice(0, 10) <= hoje)
     .sort((a, b) => a.op_date_sched!.localeCompare(b.op_date_sched!))
-    .map((os) => ({ os, atrasada: os.op_date_sched!.slice(0, 10) < hoje }))
+    .map((os) => ({ os, atrasada: osAtrasada(os, agora), diaAnterior: os.op_date_sched!.slice(0, 10) < hoje }))
 }
 
-/** "HH:mm" da data agendada; para OS atrasada, "DD/MM HH:mm". */
+/** "HH:mm" da data agendada; para OS de dia anterior, "DD/MM HH:mm". */
 export function horarioOs(item: OsDoDia): string {
   const sched = item.os.op_date_sched ?? ''
   const hora = sched.slice(11, 16)
-  if (!item.atrasada) return hora
+  if (!item.diaAnterior) return hora
   const [, mes, dia] = sched.slice(0, 10).split('-')
   return `${dia}/${mes}${hora ? ` ${hora}` : ''}`
 }
@@ -76,9 +88,9 @@ export function enderecoCurto(base: { address?: string; address_number?: string;
 
 /**
  * Quando é a OS, curto: "Hoje 09:00", "Amanhã 08:30", "Ontem 14:00" ou
- * "03/10 10:00"; atrasada = agendada para antes de hoje e ainda em aberto.
+ * "03/10 10:00". Atraso é com osAtrasada.
  */
-export function quandoOs(sched: string | null | undefined, agora: Date = new Date()): { texto: string; atrasada: boolean } | null {
+export function quandoOs(sched: string | null | undefined, agora: Date = new Date()): string | null {
   if (!sched) return null
   const dia = sched.slice(0, 10)
   const hora = sched.slice(11, 16)
@@ -87,5 +99,5 @@ export function quandoOs(sched: string | null | undefined, agora: Date = new Dat
   const ontem = dataParaFormatoServidor(new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - 1)).slice(0, 10)
   const [, mes, d] = dia.split('-')
   const quando = dia === hoje ? 'Hoje' : dia === amanha ? 'Amanhã' : dia === ontem ? 'Ontem' : `${d}/${mes}`
-  return { texto: hora ? `${quando} ${hora}` : quando, atrasada: dia < hoje }
+  return hora ? `${quando} ${hora}` : quando
 }

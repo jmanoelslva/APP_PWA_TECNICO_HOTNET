@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { OrdemServicoDto } from '../api/client'
-import { horarioOs, linkRota, osDoDia, primeiroTelefone, quandoOs } from './minhasOs'
+import { horarioOs, linkRota, osAtrasada, osDoDia, primeiroTelefone, quandoOs } from './minhasOs'
 
 const AGORA = new Date(2026, 9, 5, 9, 30) // 05/10/2026 09:30, hora local
 
@@ -21,7 +21,9 @@ describe('osDoDia', () => {
       AGORA,
     )
     expect(lista.map((i) => i.os.op_pk)).toEqual([3, 4, 1])
-    expect(lista.map((i) => i.atrasada)).toEqual([true, false, false])
+    // 09:30 agora: a de ontem e a de hoje 08:00 já passaram; a das 14:00 ainda não.
+    expect(lista.map((i) => i.atrasada)).toEqual([true, true, false])
+    expect(lista.map((i) => i.diaAnterior)).toEqual([true, false, false])
   })
 
   it('descarta OS fechada ou cancelada', () => {
@@ -38,9 +40,9 @@ describe('osDoDia', () => {
 })
 
 describe('horarioOs', () => {
-  it('hoje mostra só a hora; atrasada mostra dia e hora', () => {
-    expect(horarioOs({ os: os(1, '2026-10-05 14:00:00'), atrasada: false })).toBe('14:00')
-    expect(horarioOs({ os: os(1, '2026-10-03 10:30:00'), atrasada: true })).toBe('03/10 10:30')
+  it('hoje mostra só a hora; dia anterior mostra dia e hora', () => {
+    expect(horarioOs({ os: os(1, '2026-10-05 08:00:00'), atrasada: true, diaAnterior: false })).toBe('08:00')
+    expect(horarioOs({ os: os(1, '2026-10-03 10:30:00'), atrasada: true, diaAnterior: true })).toBe('03/10 10:30')
   })
 })
 
@@ -78,11 +80,29 @@ describe('primeiroTelefone', () => {
 })
 
 describe('quandoOs', () => {
-  it('hoje, amanhã, ontem e outros dias; atrasada só antes de hoje', () => {
-    expect(quandoOs('2026-10-05 14:00:00', AGORA)).toEqual({ texto: 'Hoje 14:00', atrasada: false })
-    expect(quandoOs('2026-10-06 08:30:00', AGORA)).toEqual({ texto: 'Amanhã 08:30', atrasada: false })
-    expect(quandoOs('2026-10-04 10:00:00', AGORA)).toEqual({ texto: 'Ontem 10:00', atrasada: true })
-    expect(quandoOs('2026-10-01 10:00:00', AGORA)).toEqual({ texto: '01/10 10:00', atrasada: true })
+  it('hoje, amanhã, ontem e outros dias', () => {
+    expect(quandoOs('2026-10-05 14:00:00', AGORA)).toBe('Hoje 14:00')
+    expect(quandoOs('2026-10-06 08:30:00', AGORA)).toBe('Amanhã 08:30')
+    expect(quandoOs('2026-10-04 10:00:00', AGORA)).toBe('Ontem 10:00')
+    expect(quandoOs('2026-10-01 10:00:00', AGORA)).toBe('01/10 10:00')
     expect(quandoOs(undefined, AGORA)).toBeNull()
+  })
+})
+
+describe('osAtrasada', () => {
+  const noite = new Date(2026, 9, 5, 21, 34) // o caso relatado: hoje 08:00, visto às 21:34
+
+  it('passou do horário de hoje e não foi iniciada', () => {
+    expect(osAtrasada(os(1, '2026-10-05 08:00:00'), noite)).toBe(true)
+    expect(osAtrasada(os(1, '2026-10-05 08:00:00', { etapa: 'respondida' }), noite)).toBe(true)
+    expect(osAtrasada(os(1, '2026-10-05 21:34:00'), noite)).toBe(false) // é agora: ainda não
+    expect(osAtrasada(os(1, '2026-10-05 22:00:00'), noite)).toBe(false)
+  })
+
+  it('em andamento, fechada, cancelada ou sem data não é atraso', () => {
+    expect(osAtrasada(os(1, '2026-10-05 08:00:00', { etapa: 'iniciada' }), noite)).toBe(false)
+    expect(osAtrasada(os(1, '2026-10-05 08:00:00', { op_date_close: '2026-10-05 09:00:00' }), noite)).toBe(false)
+    expect(osAtrasada(os(1, '2026-10-05 08:00:00', { op_date_cancel: '2026-10-05 09:00:00' }), noite)).toBe(false)
+    expect(osAtrasada(os(1, undefined), noite)).toBe(false)
   })
 })

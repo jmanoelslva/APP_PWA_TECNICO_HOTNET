@@ -7,7 +7,7 @@ import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
 import PullToRefresh from '../components/PullToRefresh'
-import { quandoOs } from '../utils/minhasOs'
+import { osAtrasada, quandoOs } from '../utils/minhasOs'
 import { CORES } from '../utils/cores'
 import './Suporte.css'
 
@@ -86,7 +86,7 @@ export default function Suporte() {
             {ordens.map((os) => {
               const status = selo(os)
               const quando = quandoOs(os.op_date_sched)
-              const atrasada = !!quando?.atrasada && !osFechada(os)
+              const atrasada = osAtrasada(os)
               const local = [os.client_complete_name, os.address_neighborhood?.trim()].filter(Boolean).join(' · ')
               return (
                 <li
@@ -103,7 +103,7 @@ export default function Suporte() {
                   {local && <p className="ticket-cliente">{local}</p>}
                   <div className="ticket-rodape">
                     <span className={`ticket-quando${atrasada ? ' ticket-quando-atrasada' : ''}`}>
-                      {quando ? quando.texto : 'Sem data agendada'}
+                      {quando ?? 'Sem data agendada'}
                       {atrasada && <span className="ticket-atrasada">Atrasada</span>}
                     </span>
                     <span className="ticket-protocolo">#{os.ticket_protocol ?? os.ticket_pk ?? '—'}</span>

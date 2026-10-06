@@ -7,6 +7,29 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.13.1] - 2026-10-05
+
+### Alterado
+
+- **Tela de login:**
+  - o teclado do celular não põe mais maiúscula nem "corrige" o usuário
+    (evitava login recusado por "Anderson" em vez de "anderson");
+  - Enter no usuário vai para a senha; na senha, entra;
+  - aviso de Caps Lock ligado (teclado físico);
+  - "Entrando…" com indicador girando e campos travados enquanto espera;
+  - erro em caixa com ícone, que some ao corrigir; o bloqueio por muitas
+    tentativas aparece como aviso de espera;
+  - campo vazio avisado no próprio campo, no lugar do balão do navegador;
+  - "Acesso do técnico" abaixo da marca, logo maior, campos no mesmo
+    arredondado do resto do app e botão de tema claro/escuro no canto.
+
+### Corrigido
+
+- **Atrasada** só aparecia em OS de dias anteriores: uma OS de hoje às 08:00
+  ainda em aberto à noite ficava sem a marca. Agora é atrasada a OS que já
+  passou do dia e hora agendados e ainda não foi iniciada (OS em andamento
+  não conta), na tela inicial, no resumo do dia e na lista de OS.
+
 ## [1.13.0] - 2026-10-05
 
 ### Alterado
@@ -428,6 +451,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.7.2...HEAD
+[1.13.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.0...v1.13.1
 [1.13.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.2...v1.13.0
 [1.12.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.1...v1.12.2
 [1.12.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.0...v1.12.1
