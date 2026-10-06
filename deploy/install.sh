@@ -521,6 +521,9 @@ publicar_final_nginx() {
     -e "s#/var/www/hotnet-tecnico/dist#$PUBLISH_DIR#g" \
     -e "s/127\.0\.0\.1:8000/127.0.0.1:$BACKEND_PORT/g" \
     "$TEMPLATE_DIR/nginx.conf.example" > "/etc/nginx/sites-available/$DOMINIO.conf"
+  # Ativa o site também aqui: com certificado já existente o vhost
+  # provisório (que fazia isso) é pulado, e o site ficava sem a porta 443.
+  ln -sf "/etc/nginx/sites-available/$DOMINIO.conf" "/etc/nginx/sites-enabled/$DOMINIO.conf"
   nginx -t
   systemctl reload nginx
 }
@@ -531,6 +534,9 @@ publicar_final_apache() {
     -e "s#/var/www/hotnet-tecnico/dist#$PUBLISH_DIR#g" \
     -e "s/127\.0\.0\.1:8000/127.0.0.1:$BACKEND_PORT/g" \
     "$TEMPLATE_DIR/apache-vhost.conf.example" > "/etc/apache2/sites-available/$DOMINIO.conf"
+  # Ativa o site também aqui: com certificado já existente o vhost
+  # provisório (que fazia isso) é pulado, e o site ficava sem a porta 443.
+  a2ensite "$DOMINIO" >/dev/null
   apache2ctl configtest
   systemctl reload apache2
 }

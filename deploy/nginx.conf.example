@@ -22,8 +22,17 @@ server {
     listen [::]:80;
     server_name tecnico.hotnet.net.br;
 
-    # Redireciona tudo para HTTPS.
-    return 301 https://$host$request_uri;
+    # Renovação do certificado (certbot --webroot): o desafio do Let's
+    # Encrypt fica em HTTP. Sem isto ele seria redirecionado para o HTTPS,
+    # cairia no index.html do app e a renovação falharia.
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot-acme;
+    }
+
+    # Todo o resto vai para HTTPS.
+    location / {
+        return 301 https://$host$request_uri;
+    }
 }
 
 server {

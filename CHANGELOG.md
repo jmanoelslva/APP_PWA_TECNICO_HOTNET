@@ -7,6 +7,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.14.1] - 2026-10-06
+
+### Corrigido
+
+- **Site fora do ar depois de instalar com certificado já existente:** o
+  instalador gravava a configuração do site no Nginx/Apache mas só a ativava
+  no passo de emitir o certificado; quando o certificado já existia, a porta
+  443 ficava sem o app. Agora o site é ativado sempre.
+- **Renovação do certificado:** a porta 80 mandava tudo para HTTPS, inclusive
+  a verificação do Let's Encrypt, e a renovação automática ia falhar. Agora o
+  caminho `/.well-known/acme-challenge/` é atendido em HTTP.
+
 ## [1.14.0] - 2026-10-06
 
 ### Adicionado
@@ -479,7 +491,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.1...HEAD
+[1.14.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.0...v1.14.1
 [1.14.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.1...v1.14.0
 [1.13.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.0...v1.13.1
 [1.13.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.2...v1.13.0
