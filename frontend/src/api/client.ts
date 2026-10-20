@@ -498,10 +498,33 @@ export interface DpDto {
   name: string
   lat: number | null
   lng: number | null
+  // Mesmos dados do "Mapa - Informações" do painel (Distribuição: Sim).
+  cor: string | null
+  limite: number | null
+  ativos: number | null
+  setor: string | null
 }
 
 export function listarDps(): Promise<{ success: boolean; results: DpDto[] }> {
   return get<{ success: boolean; results: DpDto[] }>('dp/lista')
+}
+
+// Projeto da rede (KMZ do servidor, backend/app/routers/mapa.py) — só o
+// entorno do ponto pedido. coords em [lat, lng].
+export interface ItemProjetoDto {
+  tipo: 'ponto' | 'linha' | 'poligono'
+  nome: string
+  pasta: string
+  cor: string | null
+  coords: [number, number][]
+}
+
+export function buscarProjetoRede(
+  lat: number,
+  lng: number,
+  raio = 1500,
+): Promise<{ success: boolean; results: ItemProjetoDto[] }> {
+  return get<{ success: boolean; results: ItemProjetoDto[] }>('mapa/projeto', { lat, lng, raio })
 }
 
 // ---------------------------------------------------------------------

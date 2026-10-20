@@ -3,7 +3,7 @@ import os
 # Versão do projeto (Versionamento Semântico, https://semver.org/lang/pt-BR/)
 # — mantida em sincronia com "version" em frontend/package.json, que é o
 # valor exibido na tela de login. Ver CHANGELOG.md para o histórico.
-APP_VERSION = "1.14.2"
+APP_VERSION = "1.15.0"
 
 # Acesso de staff/técnico (ACL) ao Controllr acontece pelo painel
 # administrativo, numa porta própria (8443) — diferente do endpoint
@@ -64,6 +64,12 @@ CORS_ALLOW_ORIGINS = [
 # ferramenta "Meu IP" (backend/app/routers/ferramentas.py). Vazia por
 # padrão: a rota responde 503 até a chave ser configurada no servidor.
 IPIFY_API_KEY = os.environ.get("IPIFY_API_KEY", "")
+
+# Projeto da rede (KMZ ou KML exportado do Google Earth) desenhado por cima
+# do mapa do bloco CTO (ver app/routers/mapa.py). Fica fora do diretório de
+# deploy para um "git pull" não apagar. Sem o arquivo, o mapa aparece só com
+# as CTOs do Controllr.
+MAPA_PROJETO_PATH = os.environ.get("MAPA_PROJETO_PATH", "/etc/hotnet-tecnico/projeto.kmz")
 
 # ------------------------------------------------------------------ avisos de OS nova
 # Ver app/vigia_os.py. Sem usuário de consulta ou sem chaves VAPID, os avisos

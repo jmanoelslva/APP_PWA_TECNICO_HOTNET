@@ -627,6 +627,25 @@ próxima está pelo menos 20 m mais longe que ela (sem ambiguidade); fora
 isso, a lista é só reordenada por distância e o técnico confirma
 manualmente qual é a caixa certa.
 
+### 10.1. Mapa do painel ("ISP → Mapa", camada Distribuição) — capturado ao vivo em 2026-10-20
+
+- O "Mapa - Informações" do painel (`assets/js/app/app_map_view.js`) é
+  **Leaflet** (`common/assets/vendor/leaflet/`), não a API JavaScript do
+  Google Maps. As imagens vêm direto de
+  `https://mt{0-3}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}` (satélite com
+  ruas), **sem chave**. O mapa do bloco CTO do app usa as mesmas imagens.
+- A camada "Distribuição: Sim" chama o mesmo `/controllrctl/dp/list`, com
+  `limit=2000`. Campos extras de cada CTO que o painel usa: `dp_color`
+  (hex, cor do marcador), `dp_limit` (portas), `total_cpe_active`,
+  `total_cpe_referenced`, `total_cpe_session`, `ds_name`/`ds_color`
+  (setor de distribuição), `dp_type` (enum `DPType`).
+- Busca por proximidade: parâmetros `search_lat`/`search_lng` no corpo e
+  `where=[{"field":"distance","oper":1,"value":<metros>}]` — `oper` **1 =
+  OPER_LESS_THAN** (`b.enums.filter.codes`). O resultado ganha o campo
+  `distance` (metros, string) e vem ordenado por ele.
+- O painel ignora CTO com `dp_lat`/`dp_lng` vazio ou `"0"`; o backend
+  (`_coordenada()`) faz o mesmo.
+
 ---
 
 ## 11. Financeiro — faturas (`/invoice_ctl/invoice/list`) e pagamentos em observação (`/invoice_ctl/observation/*`)

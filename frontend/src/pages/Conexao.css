@@ -245,6 +245,75 @@
   color: var(--cor-texto-terciario);
 }
 
+.mapa-cto {
+  margin-top: 10px;
+}
+
+.mapa-cto-mapa {
+  height: 200px;
+  border-radius: 10px;
+  border: 1.5px solid var(--cor-borda);
+  overflow: hidden;
+  background: var(--cor-fundo);
+  /* Abaixo da lista do combobox de CTO (z-index 5). */
+  position: relative;
+  z-index: 0;
+}
+
+.mapa-cto-mapa-ampliado {
+  height: 60vh;
+}
+
+.mapa-cto-carregando {
+  margin-top: 10px;
+}
+
+.mapa-cto-rodape {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.mapa-cto-rodape button,
+.mapa-cto-rodape a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--cor-conexao);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mapa-cto-legenda {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: auto;
+  color: var(--cor-texto-terciario);
+}
+
+.mapa-cto-legenda i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-left: 4px;
+}
+
+.mapa-cto-aviso {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--cor-texto-terciario);
+}
+
 .conexao-sessao-vazio {
   margin: 8px 0 0;
   font-size: 12px;

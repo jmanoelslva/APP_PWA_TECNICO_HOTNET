@@ -7,6 +7,26 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.15.0] - 2026-10-20
+
+### Adicionado
+
+- **Mapa no bloco CTO:** miniatura com as mesmas imagens de satélite do
+  mapa do Controllr. Mostra as CTOs com a cor do cadastro, a CTO escolhida
+  em destaque, a sua localização e o endereço do cliente. Tocar numa CTO
+  do mapa a escolhe no campo (gravar continua no **Salvar CTO**). Botões
+  **Ampliar** e **Google Maps**.
+- **Ocupação da CTO:** portas ocupadas/total ao lado do nome, na lista e
+  no mapa (ex.: `3/16`).
+- **Projeto da rede (KMZ):** com o arquivo no servidor
+  (`/etc/hotnet-tecnico/projeto.kmz` ou `MAPA_PROJETO_PATH`), cabos e
+  caixas do projeto aparecem no mapa em volta da CTO. Ver
+  `deploy/DEPLOY.md`, seção 7.
+
+### Alterado
+
+- CSP dos vhosts de exemplo libera as imagens do mapa (`mt0`–`mt3.google.com`).
+
 ## [1.14.2] - 2026-10-06
 
 ### Alterado
@@ -458,6 +478,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.2...HEAD
+[1.15.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.2...v1.15.0
 [1.14.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.1...v1.14.2
 [1.14.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.1...v1.14.1
 [1.13.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.12.2...v1.13.1

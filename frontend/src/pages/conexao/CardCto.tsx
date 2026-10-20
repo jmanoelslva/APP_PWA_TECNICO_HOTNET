@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useState, type CSSProperties } from 'react'
 import { MdMyLocation, MdSave } from 'react-icons/md'
 import { ApiError, atualizarDetalhesCpe, type CpeDto, type DpDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
@@ -10,6 +10,15 @@ import {
   obterMelhorLocalizacao,
   PRECISAO_MAXIMA_ACEITAVEL_M,
 } from './localizacao'
+
+// Leaflet só é baixado quando o bloco CTO aparece.
+const MapaCto = lazy(() => import('./MapaCto'))
+
+function coordenadaTexto(lat?: string, lng?: string): { lat: number; lng: number } | null {
+  const la = Number(lat)
+  const ln = Number(lng)
+  return lat && lng && Number.isFinite(la) && Number.isFinite(ln) && (la || ln) ? { lat: la, lng: ln } : null
+}
 
 /**
  * dp_pk e cpe_dp_port (CTO/porta da CTO), doc oficial de /aaa_ctl/cpe/update.
@@ -42,6 +51,15 @@ export default function CardCto({
   const [minhaLocalizacao, setMinhaLocalizacao] = useState<{ lat: number; lng: number } | null>(null)
   const [precisaoLocalizacaoM, setPrecisaoLocalizacaoM] = useState<number | null>(null)
   const [localizando, setLocalizando] = useState(false)
+
+  // Centro do mapa: a CTO escolhida; sem coordenada nela, o técnico; senão,
+  // o endereço do cliente.
+  const dpSelecionada = dps.find((dp) => String(dp.pk) === dpPk) ?? null
+  const cliente = coordenadaTexto(cpe.address_latitude, cpe.address_longitude)
+  const centroMapa =
+    dpSelecionada?.lat != null && dpSelecionada.lng != null
+      ? { lat: dpSelecionada.lat, lng: dpSelecionada.lng }
+      : (minhaLocalizacao ?? cliente)
 
   const dpsFiltradas = (
     dpBusca.trim() ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase())) : dps
@@ -196,6 +214,12 @@ export default function CardCto({
                   }}
                 >
                   {dp.name}
+                  {dp.ativos != null && dp.limite != null && (
+                    <span className="conexao-combobox-distancia">
+                      {' '}
+                      ({dp.ativos}/{dp.limite})
+                    </span>
+                  )}
                   {dp.distanciaM != null && (
                     <span className="conexao-combobox-distancia"> — {formatarDistancia(dp.distanciaM)}</span>
                   )}
@@ -215,6 +239,26 @@ export default function CardCto({
           placeholder="Não informado"
         />
       </div>
+      {centroMapa ? (
+        <Suspense fallback={<div className="mapa-cto-mapa mapa-cto-carregando" />}>
+          <MapaCto
+            centro={centroMapa}
+            dps={dps}
+            selecionadaPk={dpSelecionada?.pk ?? null}
+            minhaLocalizacao={minhaLocalizacao}
+            cliente={cliente}
+            onSelecionar={(dp) => {
+              setDpPk(String(dp.pk))
+              setDpBusca(dp.name)
+              setDpListaAberta(false)
+            }}
+          />
+        </Suspense>
+      ) : (
+        <p className="conexao-sessao-vazio">
+          Sem mapa: a CTO não tem coordenada. Toque em <MdMyLocation size={12} /> para usar sua localização.
+        </p>
+      )}
       <button
         className="botao botao-secundario botao-pequeno"
         style={{ '--botao-cor': CORES.conexao } as CSSProperties}

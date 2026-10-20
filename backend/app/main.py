@@ -18,6 +18,7 @@ from .routers import (
     enderecos,
     ferramentas,
     financeiro,
+    mapa,
     onu,
     ordens_servico,
     suporte,
@@ -73,6 +74,7 @@ app.include_router(financeiro.router)
 app.include_router(ferramentas.router)
 app.include_router(conexao.router)
 app.include_router(dp.router)
+app.include_router(mapa.router)
 app.include_router(onu.router)
 app.include_router(ordens_servico.router)
 app.include_router(suporte.router)

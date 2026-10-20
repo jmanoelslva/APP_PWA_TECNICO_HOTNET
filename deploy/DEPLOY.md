@@ -211,3 +211,24 @@ Os avisos continuam chegando mesmo depois do **Sair** e com o app fechado;
 só o interruptor **Avisos de OS** (menu do avatar) desliga. Se outro
 técnico entrar no mesmo celular, os avisos passam a ser dele. No iPhone, só com o app instalado na tela
 inicial (iOS 16.4 ou mais novo).
+
+## 7. Projeto da rede (KMZ) no mapa do bloco CTO
+
+O bloco CTO (tela Conexão) mostra um mapa com as CTOs do Controllr, a CTO
+escolhida, o técnico e o endereço do cliente. Para desenhar também os
+cabos e caixas do projeto, coloque o KMZ (ou KML) exportado do Google
+Earth no servidor:
+
+```bash
+sudo cp projeto.kmz /etc/hotnet-tecnico/projeto.kmz
+sudo chown hotnet-tecnico:hotnet-tecnico /etc/hotnet-tecnico/projeto.kmz
+```
+
+Outro caminho? `MAPA_PROJETO_PATH=/caminho/projeto.kmz` no `backend.env` e
+`systemctl restart hotnet-tecnico-api`. Para atualizar o projeto, basta
+sobrescrever o arquivo: o backend relê sozinho quando a data muda. Sem o
+arquivo, o mapa aparece só com as CTOs.
+
+O mapa usa as mesmas imagens de satélite do mapa do Controllr
+(`mt0`–`mt3.google.com`), liberadas no `img-src` do CSP dos vhosts de
+exemplo — rode o `install.sh` de novo para o vhost pegar essa mudança.
