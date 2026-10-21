@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MdOpenInFull, MdCloseFullscreen, MdOpenInNew } from 'react-icons/md'
+import { MdOpenInFull, MdCloseFullscreen, MdOpenInNew, MdMyLocation } from 'react-icons/md'
 import { ApiError, buscarProjetoRede, type DpDto, type ItemProjetoDto } from '../../api/client'
 import { distanciaMetros } from './localizacao'
 
@@ -46,15 +46,20 @@ export default function MapaCto({
   dps,
   selecionadaPk,
   minhaLocalizacao,
+  precisaoM,
   cliente,
   onSelecionar,
+  onSemLocalizacao,
 }: {
   centro: Ponto
   dps: DpDto[]
   selecionadaPk: number | null
   minhaLocalizacao: Ponto | null
+  precisaoM: number | null
   cliente: Ponto | null
   onSelecionar: (dp: DpDto) => void
+  // Botão "minha localização" tocado antes de o GPS responder.
+  onSemLocalizacao: () => void
 }) {
   const divRef = useRef<HTMLDivElement>(null)
   const mapaRef = useRef<L.Map | null>(null)
@@ -150,6 +155,17 @@ export default function MapaCto({
         .addTo(camadas.posicoes)
     }
     if (minhaLocalizacao) {
+      // Círculo de incerteza do GPS, como no Google Maps.
+      if (precisaoM != null) {
+        L.circle([minhaLocalizacao.lat, minhaLocalizacao.lng], {
+          radius: precisaoM,
+          color: '#1a73e8',
+          weight: 1,
+          fillColor: '#1a73e8',
+          fillOpacity: 0.12,
+          interactive: false,
+        }).addTo(camadas.posicoes)
+      }
       L.circleMarker([minhaLocalizacao.lat, minhaLocalizacao.lng], {
         radius: 7,
         color: '#ffffff',
@@ -160,7 +176,15 @@ export default function MapaCto({
         .bindTooltip('Você', { direction: 'top', offset: [0, -8] })
         .addTo(camadas.posicoes)
     }
-  }, [cliente, minhaLocalizacao])
+  }, [cliente, minhaLocalizacao, precisaoM])
+
+  function irParaMinhaLocalizacao() {
+    if (!minhaLocalizacao) {
+      onSemLocalizacao()
+      return
+    }
+    mapaRef.current?.setView([minhaLocalizacao.lat, minhaLocalizacao.lng], 19)
+  }
 
   // Projeto da rede (KMZ no servidor). Só a busca mais recente desenha —
   // não cancela no cleanup, senão um centro que andou pouco (e por isso
@@ -189,7 +213,18 @@ export default function MapaCto({
 
   return (
     <div className="mapa-cto">
-      <div ref={divRef} className={`mapa-cto-mapa${ampliado ? ' mapa-cto-mapa-ampliado' : ''}`} />
+      <div className="mapa-cto-moldura">
+        <div ref={divRef} className={`mapa-cto-mapa${ampliado ? ' mapa-cto-mapa-ampliado' : ''}`} />
+        <button
+          type="button"
+          className="mapa-cto-localizar"
+          onClick={irParaMinhaLocalizacao}
+          aria-label="Centralizar o mapa na minha localização"
+          title="Minha localização"
+        >
+          <MdMyLocation size={18} />
+        </button>
+      </div>
       <div className="mapa-cto-rodape">
         <span className="mapa-cto-legenda">
           <i style={{ background: '#1a73e8' }} /> Você <i style={{ background: '#2e9e44' }} /> Cliente

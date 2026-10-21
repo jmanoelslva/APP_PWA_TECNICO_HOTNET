@@ -9,6 +9,7 @@ import {
   MARGEM_COORDENADA_CTO_M,
   obterMelhorLocalizacao,
   PRECISAO_MAXIMA_ACEITAVEL_M,
+  useLocalizacaoAoVivo,
 } from './localizacao'
 
 // Leaflet só é baixado quando o bloco CTO aparece.
@@ -51,6 +52,16 @@ export default function CardCto({
   const [minhaLocalizacao, setMinhaLocalizacao] = useState<{ lat: number; lng: number } | null>(null)
   const [precisaoLocalizacaoM, setPrecisaoLocalizacaoM] = useState<number | null>(null)
   const [localizando, setLocalizando] = useState(false)
+  // GPS acompanhando o técnico desde que o bloco aparece: o "Você" do mapa
+  // e as distâncias da lista se atualizam sozinhos. A sugestão automática
+  // de CTO continua só no botão (leitura mais precisa, com confirmação).
+  const aoVivo = useLocalizacaoAoVivo()
+  const posicaoTecnico = aoVivo ?? minhaLocalizacao
+  const precisaoTecnicoM = aoVivo?.precisaoM ?? precisaoLocalizacaoM
+  // Primeira leitura ao vivo, fixa: centraliza o mapa uma vez só, em vez de
+  // puxar a tela de volta a cada atualização do GPS.
+  const [primeiraPosicao, setPrimeiraPosicao] = useState<{ lat: number; lng: number } | null>(null)
+  if (aoVivo && !primeiraPosicao) setPrimeiraPosicao({ lat: aoVivo.lat, lng: aoVivo.lng })
 
   // Centro do mapa: a CTO escolhida; sem coordenada nela, o técnico; senão,
   // o endereço do cliente.
@@ -59,7 +70,7 @@ export default function CardCto({
   const centroMapa =
     dpSelecionada?.lat != null && dpSelecionada.lng != null
       ? { lat: dpSelecionada.lat, lng: dpSelecionada.lng }
-      : (minhaLocalizacao ?? cliente)
+      : (minhaLocalizacao ?? cliente ?? primeiraPosicao)
 
   const dpsFiltradas = (
     dpBusca.trim() ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase())) : dps
@@ -67,8 +78,8 @@ export default function CardCto({
     .map((dp) => ({
       ...dp,
       distanciaM:
-        minhaLocalizacao && dp.lat != null && dp.lng != null
-          ? distanciaMetros(minhaLocalizacao.lat, minhaLocalizacao.lng, dp.lat, dp.lng)
+        posicaoTecnico && dp.lat != null && dp.lng != null
+          ? distanciaMetros(posicaoTecnico.lat, posicaoTecnico.lng, dp.lat, dp.lng)
           : null,
     }))
     .sort((a, b) => {
@@ -194,9 +205,9 @@ export default function CardCto({
             <MdMyLocation size={16} />
           </button>
         </div>
-        {minhaLocalizacao && precisaoLocalizacaoM != null && (
+        {posicaoTecnico && precisaoTecnicoM != null && (
           <span className="conexao-combobox-precisao">
-            Sua localização: precisão de ±{Math.round(precisaoLocalizacaoM)} m
+            Sua localização: precisão de ±{Math.round(precisaoTecnicoM)} m
           </span>
         )}
         {dpListaAberta && (
@@ -245,18 +256,21 @@ export default function CardCto({
             centro={centroMapa}
             dps={dps}
             selecionadaPk={dpSelecionada?.pk ?? null}
-            minhaLocalizacao={minhaLocalizacao}
+            minhaLocalizacao={posicaoTecnico}
+            precisaoM={precisaoTecnicoM}
             cliente={cliente}
             onSelecionar={(dp) => {
               setDpPk(String(dp.pk))
               setDpBusca(dp.name)
               setDpListaAberta(false)
             }}
+            onSemLocalizacao={usarLocalizacaoAtual}
           />
         </Suspense>
       ) : (
         <p className="conexao-sessao-vazio">
-          Sem mapa: a CTO não tem coordenada. Toque em <MdMyLocation size={12} /> para usar sua localização.
+          Sem mapa: a CTO não tem coordenada e sua localização ainda não chegou. Toque em{' '}
+          <MdMyLocation size={12} /> para usar sua localização.
         </p>
       )}
       <button

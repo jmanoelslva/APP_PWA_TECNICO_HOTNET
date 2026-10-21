@@ -1,5 +1,38 @@
 // Localização do técnico para sugerir a CTO mais próxima (CardCto.tsx).
 
+import { useEffect, useState } from 'react'
+
+export interface PosicaoAoVivo {
+  lat: number
+  lng: number
+  precisaoM: number
+}
+
+/**
+ * Posição do técnico em tempo real enquanto o componente está na tela —
+ * o "Você" do mapa anda junto com ele, sem precisar tocar no botão de
+ * localizar. Permissão negada ou GPS indisponível: fica null, em silêncio
+ * (o botão de localizar continua mostrando o motivo).
+ */
+export function useLocalizacaoAoVivo(): PosicaoAoVivo | null {
+  const [posicao, setPosicao] = useState<PosicaoAoVivo | null>(null)
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    const watchId = navigator.geolocation.watchPosition(
+      (leitura) =>
+        setPosicao({
+          lat: leitura.coords.latitude,
+          lng: leitura.coords.longitude,
+          precisaoM: leitura.coords.accuracy,
+        }),
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 5000 },
+    )
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [])
+  return posicao
+}
+
 // Fórmula de Haversine — distância em linha reta (metros) entre a
 // localização do técnico e a coordenada cadastrada da CTO. Suficiente
 // para sugerir/ordenar por proximidade; não precisa de rota real.

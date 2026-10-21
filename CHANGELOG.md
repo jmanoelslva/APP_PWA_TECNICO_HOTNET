@@ -7,6 +7,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.16.0] - 2026-10-21
+
+### Adicionado
+
+- **Localização em tempo real no mapa da CTO:** o GPS acompanha o técnico
+  assim que o bloco CTO aparece — o ponto **Você** (com o círculo de
+  precisão) já surge no mapa e anda junto, sem tocar no botão de
+  localizar. As distâncias da lista de CTOs também se atualizam sozinhas.
+- **Botão "Minha localização" no mapa:** centraliza o mapa no técnico.
+
+### Alterado
+
+- Sem coordenada na CTO nem no endereço do cliente, o mapa abre na
+  localização do técnico assim que o GPS responde.
+- A sugestão automática da CTO mais próxima continua só no botão de
+  localizar do campo, com a leitura mais precisa e a confirmação.
+
 ## [1.15.0] - 2026-10-20
 
 ### Adicionado
@@ -477,7 +494,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.2...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.2...v1.15.0
 [1.14.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.1...v1.14.2
 [1.14.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.13.1...v1.14.1

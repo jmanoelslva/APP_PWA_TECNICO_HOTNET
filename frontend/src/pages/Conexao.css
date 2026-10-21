@@ -260,6 +260,30 @@
   z-index: 0;
 }
 
+.mapa-cto-moldura {
+  position: relative;
+}
+
+/* Fora do mapa (z-index 0 isola os controles do Leaflet), então z-index 1
+   já fica por cima. */
+.mapa-cto-localizar {
+  position: absolute;
+  right: 10px;
+  bottom: 22px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1a73e8;
+  cursor: pointer;
+}
+
 .mapa-cto-mapa-ampliado {
   height: 60vh;
 }
