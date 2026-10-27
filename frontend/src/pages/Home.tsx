@@ -24,8 +24,8 @@ import { useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
 import MinhasOsHoje, { type ResumoDoDia } from '../components/MinhasOsHoje'
-import { buscarClientes, type BuscaClienteResultado } from '../api/client'
-import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
+import { buscarClientes, resumoDoDia, type BuscaClienteResultado } from '../api/client'
+import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import { buscarIpsPublicos } from '../utils/ipPublico'
 import './Home.css'
 
@@ -71,6 +71,9 @@ export default function Home() {
   const coletorOlt = useColetorOlt()
   // Resumo do dia embaixo da saudação (vem de "Minhas OS de hoje").
   const [resumoDia, setResumoDia] = useState<ResumoDoDia | null>(null)
+  // Barra "X de Y OS concluídas": vem de rota própria porque a lista de OS
+  // tira as finalizadas/fechadas (ver backend ordens_servico.py::resumo_do_dia).
+  const [progresso, setProgresso] = useState<{ total: number; concluidas: number } | null>(null)
   const avisos = useAvisos()
   const avisosLigados = avisos.estado === 'ligado'
   // Por que o interruptor está travado, quando está.
@@ -100,6 +103,18 @@ export default function Home() {
   // com localização/provedor sob demanda).
   const [ipv4, setIpv4] = useState<string | null>(null)
   const [ipv6, setIpv6] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelado = false
+    resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
+      .then((resposta) => {
+        if (!cancelado) setProgresso({ total: resposta.total, concluidas: resposta.concluidas })
+      })
+      .catch(() => {})
+    return () => {
+      cancelado = true
+    }
+  }, [])
 
   useEffect(() => {
     let cancelado = false
@@ -162,6 +177,23 @@ export default function Home() {
           <div className="home-header-saudacao">
             <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
             <span className="home-resumo">{textoResumo(resumoDia)}</span>
+            {progresso && progresso.total > 0 && (
+              <div className="home-progresso">
+                <div
+                  className="home-progresso-trilho"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={progresso.total}
+                  aria-valuenow={progresso.concluidas}
+                  aria-label="OS concluídas hoje"
+                >
+                  <span style={{ width: `${(progresso.concluidas / progresso.total) * 100}%` }} />
+                </div>
+                <span className="home-progresso-texto">
+                  {progresso.concluidas} de {progresso.total} OS concluída{progresso.total > 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="home-avatar-wrapper">

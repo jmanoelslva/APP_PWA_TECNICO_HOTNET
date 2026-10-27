@@ -460,7 +460,7 @@
   --cor-suporte: var(--cor-primaria);
 }
 
-/* Próxima etapa fixa no rodapé, logo acima da barra de navegação (64px). */
+/* Próxima etapa fixa no rodapé, logo acima da barra de navegação. */
 .detalhe-ordem-tela:has(.detalhe-ordem-barra-acao) {
   padding-bottom: 104px;
 }
@@ -469,7 +469,7 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 64px;
+  bottom: var(--altura-nav);
   z-index: 40;
   max-width: var(--largura-conteudo);
   margin: 0 auto;

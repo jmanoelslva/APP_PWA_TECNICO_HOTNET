@@ -60,6 +60,11 @@
      "max-width" repetido em cada página (ver HOTNET_WEB_APP/README para
      o histórico do porquê 100%, sem teto fixo). */
   --largura-conteudo: 100%;
+
+  /* Altura da barra de navegação do rodapé somada à área da linha de
+     gestos do iPhone (viewport-fit=cover no index.html) — usada por tudo
+     que gruda no rodapé acima dela (barra fixa da OS). */
+  --altura-nav: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
 /* Tema escuro — dirigido só pelo atributo data-theme no <html>, nunca
@@ -112,16 +117,64 @@ textarea {
   font-family: inherit;
 }
 
+/* 16px é o mínimo para o iPhone não ampliar a tela ao tocar no campo
+   (com 13–15px a tela ficava ampliada depois de digitar). Não usar
+   maximum-scale no viewport: o técnico precisa da pinça para ler MAC/serial. */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* Sensação de app: sem mancha azul ao tocar, sem a página esticar no
+   topo/fim (o "puxar para atualizar" é do próprio app, PullToRefresh). */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
   background: var(--cor-fundo);
   color: var(--cor-texto);
+  /* Texto do app não seleciona ao segurar (como num app nativo); campos
+     e os dados que o técnico copia (classe .copiavel) continuam. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Dados que o técnico copia ou dita (PPPoE, IP, MAC, serial, protocolo,
+   CPF, telefone, endereço, texto do chamado): liberados por tela. */
+input,
+textarea,
+[contenteditable],
+.copiavel,
+.conexao-campo,
+.onu-campo,
+.detalhe-ordem-linha-campo strong,
+.detalhe-ordem-linha,
+.detalhe-ordem-descricao,
+.detalhe-ordem-meta,
+.detalhe-cliente-card,
+.detalhe-cliente-item,
+.detalhe-chamado-chat,
+.detalhe-chamado-resumo,
+.home-rodape-ip-item,
+.ferramentas-ip-resultado {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
 }
 
 /* Reserva espaço para o conteúdo não ficar escondido atrás da barra de
    navegação fixa no rodapé, quando ela está presente na página. */
 body:has(.bottom-nav) {
-  padding-bottom: 64px;
+  padding-bottom: var(--altura-nav);
 }
 
 /* Transição leve de entrada nas telas. */
@@ -258,6 +311,47 @@ a:active,
 
   ::view-transition-new(root) {
     animation: tela-entra 0.22s ease both;
+  }
+}
+
+/* Barra do rodapé e avisos do topo ficam parados durante a troca de tela
+   (antes deslizavam junto com a página). */
+.bottom-nav {
+  view-transition-name: barra-inferior;
+}
+
+.status-banner-offline {
+  view-transition-name: aviso-offline;
+}
+
+::view-transition-group(barra-inferior),
+::view-transition-group(aviso-offline) {
+  animation: none;
+}
+
+/* Voltar (botão do app ou do celular) entra pela esquerda — ver
+   utils/sentidoTransicao.ts, que marca data-sentido no <html>. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-sentido='voltar']::view-transition-old(root) {
+    animation-name: tela-sai-direita;
+  }
+
+  html[data-sentido='voltar']::view-transition-new(root) {
+    animation-name: tela-entra-esquerda;
+  }
+}
+
+@keyframes tela-sai-direita {
+  to {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@keyframes tela-entra-esquerda {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
   }
 }
 

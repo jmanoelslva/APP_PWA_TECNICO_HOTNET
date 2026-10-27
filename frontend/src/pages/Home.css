@@ -300,3 +300,33 @@
 .home-rodape-ip-item strong {
   font-weight: 800;
 }
+
+/* Progresso do dia: OS concluídas (finalizadas ou fechadas) / agendadas. */
+.home-progresso {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.home-progresso-trilho {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--cor-primaria) 15%, transparent);
+  overflow: hidden;
+}
+
+.home-progresso-trilho span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--cor-primaria);
+  transition: width 0.4s ease;
+}
+
+.home-progresso-texto {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}

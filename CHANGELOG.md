@@ -7,6 +7,33 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.18.0] - 2026-10-26
+
+### Adicionado
+
+- **Progresso do dia na tela inicial:** barra "X de Y OS concluídas" no
+  cabeçalho. Conta as OS do técnico agendadas para hoje, inclusive as já
+  fechadas pelo escritório ou com o ticket fechado. Concluída = finalizada
+  ou fechada; cancelada não conta. Nova rota `GET /api/os/resumo-dia`.
+- **Vibração de retorno (Android):** vibração curta quando uma ação dá
+  certo (salvar, copiar, confirmar etapa) e dupla quando dá erro. No
+  iPhone o Safari não tem esse recurso e nada muda.
+- **Ícone do iPhone** (`apple-touch-icon`) na tela inicial.
+
+### Alterado
+
+- **Área segura do iPhone:** a barra de navegação, a barra fixa da OS, o
+  campo de envio do chat e os avisos ficam acima da linha de gestos.
+- **Campos com 16 px:** tocar numa busca não amplia mais a tela no iPhone.
+- **Sensação de app:** sem mancha azul ao tocar, sem a página esticar ao
+  puxar no topo, e o texto do app não é mais selecionado ao segurar. Os
+  dados que o técnico copia (PPPoE, IP, MAC, serial, protocolo, CPF,
+  telefone, endereço, chat) continuam selecionáveis.
+- **Transição de tela:** voltar entra pela esquerda, e a barra de
+  navegação fica parada durante a troca de tela.
+- **Abertura:** no tema escuro, o app abre sem clarão branco, e a barra de
+  status acompanha o tema escolhido.
+
 ## [1.17.0] - 2026-10-26
 
 ### Alterado
@@ -518,7 +545,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...HEAD
+[1.18.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.2...v1.15.0

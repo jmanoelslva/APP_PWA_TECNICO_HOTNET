@@ -4,7 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/icons/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#2a72b8" />
+    <!-- Barra de status: azul no claro, fundo do app no escuro (tema.ts
+         acompanha a escolha manual do técnico). -->
+    <meta name="theme-color" content="#2a72b8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121316" media="(prefers-color-scheme: dark)" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
+    <meta name="apple-mobile-web-app-title" content="HOTNET" />
+    <!-- Fundo e tema certos antes do CSS do app carregar: sem clarão branco
+         ao abrir no tema escuro (arquivo à parte por causa da CSP). -->
+    <script src="/tema-inicial.js"></script>
     <meta name="description" content="Ferramentas de campo para técnicos HOTNET: dados de cliente, endereço, conexão, ONU e OS." />
     <title>HOTNET</title>
   </head>

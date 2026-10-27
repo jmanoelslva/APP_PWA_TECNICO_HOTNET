@@ -840,6 +840,11 @@ export function listarOrdensServico(
   })
 }
 
+/** OS do técnico agendadas para o dia (AAAA-MM-DD) e quantas já foram concluídas (finalizadas ou fechadas). */
+export function resumoDoDia(data: string): Promise<{ success: boolean; total: number; concluidas: number }> {
+  return get('os/resumo-dia', { data })
+}
+
 // Os 4 estágios de uma OS: Agendada (feita pelo escritório) -> Respondida
 // -> Iniciada -> Finalizada, as 3 últimas pelo técnico. Fechar é etapa à
 // parte, só do escritório (ACL do Controllr não libera para o técnico) —

@@ -44,9 +44,13 @@ export default defineConfig({
         short_name: 'HOTNET',
         description: 'Ferramentas de campo para técnicos HOTNET: dados de cliente, endereço, conexão, ONU e OS.',
         lang: 'pt-BR',
+        id: '/',
         start_url: '/',
         display: 'standalone',
-        background_color: '#f5f5f5',
+        // Cor da tela de abertura (só aceita uma): a escura pisca menos que
+        // um clarão para quem usa o tema escuro; o index.html pinta o fundo
+        // do tema certo logo em seguida.
+        background_color: '#121316',
         theme_color: '#2a72b8',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },

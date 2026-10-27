@@ -76,3 +76,41 @@ def test_lista_aberta_marca_a_etapa_e_tira_finalizadas(monkeypatch):
     finally:
         app.dependency_overrides.clear()
     assert [(o["op_pk"], o["etapa"]) for o in r["results"]] == [(1, "agendada"), (2, "respondida"), (3, "iniciada")]
+
+
+def test_resumo_do_dia_conta_finalizadas_e_fechadas_do_tecnico(monkeypatch):
+    from app.deps import get_current_session
+    from app.main import app
+
+    ordens = [
+        {"op_pk": 1, "ticket_pk": 10, "staff_username": "anderson"},  # finalizada (evento)
+        {"op_pk": 2, "ticket_pk": 20, "staff_username": "anderson", "op_date_close": "2026-10-26 18:00:00"},
+        {"op_pk": 3, "ticket_pk": 30, "staff_username": "anderson"},  # em aberto
+        {"op_pk": 4, "ticket_pk": 40, "staff_username": "anderson", "op_date_cancel": "2026-10-26 09:00:00"},
+        {"op_pk": 5, "ticket_pk": 50, "staff_username": "maria", "op_date_close": "2026-10-26 10:00:00"},
+    ]
+    eventos = [
+        {"op_pk": 11, "op_os_pk": 1, "op_type": 5, "op_date_finish": "2026-10-26 11:00:00"},
+        # Finalizada e depois desfeita: não conta.
+        {"op_pk": 12, "op_os_pk": 3, "op_type": 5, "op_date_finish": "2026-10-26 12:00:00"},
+        {"op_pk": 13, "op_os_pk": 3, "op_type": 5, "op_date_finish": None},
+    ]
+    enviados = []
+
+    async def post(self, caminho, body=None):
+        enviados.append((caminho, body))
+        dados = [dict(o) for o in ordens] if caminho == "/support_ctl/os/list" else eventos
+        return SimpleNamespace(success=True, results=dados, total=len(dados), errors=None)
+
+    monkeypatch.setattr(AsyncControllr, "call_api_post", post)
+    app.dependency_overrides[get_current_session] = lambda: TechnicianSession("s", "Anderson", "c", 1, 0)
+    try:
+        cliente = TestClient(app)
+        r = cliente.get("/os/resumo-dia", params={"data": "2026-10-26"}).json()
+        invalida = cliente.get("/os/resumo-dia", params={"data": "26/10/2026"})
+    finally:
+        app.dependency_overrides.clear()
+    assert (r["total"], r["concluidas"]) == (3, 2)
+    where = parse_qs(enviados[0][1])["where"][0]
+    assert "2026-10-26 00:00:00" in where and "op_date_close" not in where
+    assert invalida.status_code == 400

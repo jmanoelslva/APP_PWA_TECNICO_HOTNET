@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, type ReactNode } from 'react'
 import { ToastContext, type TipoToast } from './toast-context'
+import { vibrar } from '../../utils/vibrar'
 import './Toast.css'
 
 interface ItemToast {
@@ -17,6 +18,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const toast = useCallback((mensagem: string, tipo: TipoToast = 'erro') => {
     const id = proximoId.current++
+    // Retorno físico junto do aviso: sucesso (salvou, copiou, confirmou)
+    // vibra curto; erro vibra duplo. "info" não vibra.
+    if (tipo === 'sucesso') vibrar('sucesso')
+    else if (tipo === 'erro') vibrar('erro')
     setItens((atual) => [...atual, { id, mensagem, tipo }])
     setTimeout(() => {
       setItens((atual) => atual.filter((item) => item.id !== id))

@@ -14,6 +14,13 @@ export function temaAtual(): Tema {
 
 function aplicar(tema: Tema): void {
   document.documentElement.setAttribute('data-theme', tema)
+  // Fundo provisório de public/tema-inicial.js: a partir daqui vale o CSS.
+  document.documentElement.style.background = ''
+  // Barra de status do celular acompanha a escolha manual (o index.html
+  // tem uma meta por tema do sistema; aqui as duas passam a seguir o app).
+  document
+    .querySelectorAll('meta[name="theme-color"]')
+    .forEach((meta) => meta.setAttribute('content', tema === 'dark' ? '#121316' : '#2a72b8'))
 }
 
 /** Escolha manual do técnico — fica salva e passa a ignorar o sistema. */

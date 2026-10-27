@@ -17,7 +17,9 @@ Controllr não libera essa permissão para o técnico, por isso não existe
 rota de fechar aqui. Cancelar/reabrir continuam disponíveis.
 
 Estágio atual: os campos op_date_answer/op_date_start/op_date_finish do
-registro raiz da OS (o que list() devolve) ficam sempre nulos. Cada
+registro raiz da OS (o que list() devolve) ficavam nulos (em 2026-10-26
+já vieram preenchidos, iguais aos eventos — os eventos seguem como a
+fonte, valendo para os dois casos). Cada
 clique em responder/iniciar/finalizar/desfazer cria um novo registro de
 evento (visível só em /support_ctl/op/list, o mesmo endpoint do chat do
 chamado — ver suporte.py::listar_mensagens_ticket) vinculado à OS via
@@ -32,6 +34,7 @@ Nome do arquivo evita "os.py" de propósito — colidiria com o módulo
 "os" da biblioteca padrão do Python dentro deste mesmo pacote.
 """
 
+import re
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -40,7 +43,7 @@ from pydantic import BaseModel
 from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, corpo, where_and, where_in
+from ..where import OPER_EQ, OPER_GTE, OPER_LTE, corpo, where_and, where_in
 
 router = APIRouter(prefix="/os", tags=["ordem-servico"])
 
@@ -111,26 +114,12 @@ async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> li
     /support_ctl/op/list (mesmo endpoint do chat), buscado para todos os
     tickets de uma vez em vez de uma chamada por OS.
     """
-    tickets_pks = [o["ticket_pk"] for o in ordens if o.get("ticket_pk") is not None]
-    if not tickets_pks:
-        return ordens
-
-    resposta = await ctx.controllr.call_api_post(
-        "/support_ctl/op/list",
-        corpo(where_in("ticket_pk", tickets_pks), sort="op_pk", dir="ASC"),
-    )
-    if not resposta.success:
+    ultimo = await _ultimos_eventos(ctx, ordens)
+    if ultimo is None:
         return ordens  # falha aqui não deve esconder OS: melhor mostrar demais do que a menos
 
-    # Ordenado por op_pk ASC — o último write para cada (OS, tipo) vence.
-    ultimo: dict[tuple[int, int], dict[str, Any]] = {}
-    for evento in resposta.results:
-        if evento.get("op_type") in (3, 4, 5) and evento.get("op_os_pk") is not None:
-            ultimo[(evento["op_os_pk"], evento["op_type"])] = evento
-
     def marcada(ordem: dict[str, Any], op_type: int, campo: str) -> bool:
-        evento = ultimo.get((ordem.get("op_pk"), op_type))
-        return bool((evento and evento.get(campo)) or ordem.get(campo))
+        return _etapa_marcada(ultimo, ordem, op_type, campo)
 
     abertas = []
     for ordem in ordens:
@@ -144,6 +133,82 @@ async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> li
             ordem["etapa"] = "agendada"
         abertas.append(ordem)
     return abertas
+
+
+async def _ultimos_eventos(
+    ctx: AuthContext, ordens: list[dict[str, Any]]
+) -> dict[tuple[int, int], dict[str, Any]] | None:
+    """
+    Evento mais recente de cada (OS, tipo 3/4/5) dos tickets dessas OS, numa
+    chamada só. {} sem tickets; None se o Controllr falhar.
+    """
+    tickets_pks = [o["ticket_pk"] for o in ordens if o.get("ticket_pk") is not None]
+    if not tickets_pks:
+        return {}
+
+    resposta = await ctx.controllr.call_api_post(
+        "/support_ctl/op/list",
+        corpo(where_in("ticket_pk", tickets_pks), sort="op_pk", dir="ASC"),
+    )
+    if not resposta.success:
+        return None
+
+    # Ordenado por op_pk ASC — o último write para cada (OS, tipo) vence.
+    ultimo: dict[tuple[int, int], dict[str, Any]] = {}
+    for evento in resposta.results:
+        if evento.get("op_type") in (3, 4, 5) and evento.get("op_os_pk") is not None:
+            ultimo[(evento["op_os_pk"], evento["op_type"])] = evento
+    return ultimo
+
+
+def _etapa_marcada(
+    ultimo: dict[tuple[int, int], dict[str, Any]], ordem: dict[str, Any], op_type: int, campo: str
+) -> bool:
+    evento = ultimo.get((ordem.get("op_pk"), op_type))
+    return bool((evento and evento.get(campo)) or ordem.get(campo))
+
+
+_DATA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+@router.get("/resumo-dia")
+async def resumo_do_dia(
+    data: str = Query(description="Dia no formato AAAA-MM-DD (data do celular do técnico)"),
+    ctx: AuthContext = Depends(get_auth_context),
+) -> dict[str, Any]:
+    """
+    Quantas OS do técnico logado estão agendadas para o dia e quantas já
+    foram concluídas — para a barra de progresso da tela inicial. Diferente
+    da lista (GET /os), não tira as fechadas: OS fechada pelo escritório
+    (ou com o ticket fechado) continua vindo pelo filtro de data
+    (conferido no Controllr em 2026-10-26). Concluída = finalizada pelo
+    técnico ou fechada; cancelada não conta.
+    """
+    if not _DATA.match(data):
+        raise HTTPException(status_code=400, detail="Data inválida (use AAAA-MM-DD).")
+    faixa = [
+        {"field": "op_date_sched", "oper": OPER_GTE, "value": f"{data} 00:00:00"},
+        {"field": "AND"},
+        {"field": "op_date_sched", "oper": OPER_LTE, "value": f"{data} 23:59:59"},
+    ]
+    where = where_and(faixa, {"field": "op_deleted", "oper": _OPER_IGUAL_OU_NULO, "value": False})
+    resposta = await ctx.controllr.call_api_post(
+        "/support_ctl/os/list", corpo(where, start=0, limit=200, sort="op_date_sched", dir="ASC")
+    )
+    if not resposta.success:
+        raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível carregar o resumo do dia.", resposta))
+
+    login = ctx.session.username.strip().lower()
+    ordens = [
+        o
+        for o in resposta.results
+        if str(o.get("staff_username") or "").strip().lower() == login and not o.get("op_date_cancel")
+    ]
+    ultimo = await _ultimos_eventos(ctx, ordens) or {}
+    concluidas = sum(
+        1 for o in ordens if o.get("op_date_close") or _etapa_marcada(ultimo, o, 5, "op_date_finish")
+    )
+    return {"success": True, "total": len(ordens), "concluidas": concluidas}
 
 
 class AcaoOSPayload(BaseModel):
