@@ -31,17 +31,20 @@
   --cor-texto-desabilitado: #757575;
 
   /* Status/feedback */
-  --cor-sucesso: #4caf50;
+  /* Sucesso/erro/conexão/ONU escurecidos no claro para passar no contraste
+     (texto branco sobre selo: 4.5:1; ícone branco sobre fundo: 3:1) — sob
+     sol, os tons antigos sumiam. No escuro ficam os tons claros (abaixo). */
+  --cor-sucesso: #2e7d32;
   --cor-sucesso-vivo: #20b957;
   --cor-alerta: #ff9800;
   --cor-atencao: #ffc107;
-  --cor-erro: #f44336;
+  --cor-erro: #c62828;
 
   /* Acentos por área do app do técnico */
   --cor-suporte: #0f8a45;
   --cor-cliente: #7a4bc4;
-  --cor-conexao: #18afc0;
-  --cor-onu: #d9822b;
+  --cor-conexao: #0e7f8c;
+  --cor-onu: #a85a17;
   --cor-endereco: #4a5c7a;
   --cor-ferramentas: #5c6bc0;
   --cor-financeiro: #b8860b;
@@ -80,6 +83,9 @@
   --cor-texto-desabilitado: #6f6f75;
 
   --sombra-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+
+  --cor-sucesso: #4caf50;
+  --cor-erro: #f44336;
 
   /* Acentos clareados só onde o tom original ficaria escuro demais como
      TEXTO sobre um fundo já escuro (mesmo critério do app cliente). */
@@ -191,7 +197,7 @@ a:active,
 }
 
 .botao-pequeno {
-  height: 36px;
+  height: 44px;
   padding: 0 14px;
   font-size: 12px;
 }

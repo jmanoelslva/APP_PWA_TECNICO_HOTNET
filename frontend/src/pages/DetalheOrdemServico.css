@@ -54,8 +54,13 @@
   background: transparent;
   color: var(--cor-texto-terciario);
   cursor: pointer;
-  padding: 4px;
+  /* 44px de área de toque sem crescer o visual (margem negativa). */
+  width: 44px;
+  height: 44px;
+  margin: -12px -12px -12px 0;
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
@@ -107,13 +112,12 @@
   color: var(--cor-sucesso);
 }
 
-.detalhe-ordem-etapa-btn-marcar,
 .detalhe-ordem-etapa-btn-desfazer {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 32px;
+  height: 44px;
   padding: 0 12px;
   border-radius: 16px;
   border: 1.5px solid var(--cor-sucesso);
@@ -130,7 +134,6 @@
   color: var(--cor-erro);
 }
 
-.detalhe-ordem-etapa-btn-marcar:disabled,
 .detalhe-ordem-etapa-btn-desfazer:disabled {
   opacity: 0.4;
   cursor: default;
@@ -204,8 +207,8 @@
   background: var(--cor-fundo);
   color: var(--cor-texto-secundario);
   border-radius: 8px;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,7 +230,8 @@
   align-items: center;
   gap: 6px;
   margin-top: 10px;
-  padding: 6px 12px;
+  min-height: 44px;
+  padding: 0 14px;
   border-radius: 14px;
   border: 1px solid var(--cor-suporte);
   color: var(--cor-suporte);
@@ -350,4 +354,132 @@
 
 .detalhe-ordem-anexo-erro .detalhe-ordem-anexo-situacao {
   color: var(--cor-erro);
+}
+
+/* Cabeçalho da OS: título, cliente, chips (quando/atraso/tarefa/números),
+   linha de etapas e contato — tudo o que o técnico precisa sem rolar. */
+.detalhe-ordem-cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detalhe-ordem-cabecalho .detalhe-ordem-chip {
+  align-self: flex-start;
+  margin-top: 0;
+}
+
+.detalhe-ordem-topo .detalhe-ordem-titulo {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.detalhe-ordem-subtitulo {
+  margin-top: -6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.detalhe-ordem-metas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.detalhe-ordem-meta {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--cor-fundo);
+  color: var(--cor-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+.detalhe-ordem-meta-atraso {
+  background: color-mix(in srgb, var(--cor-erro) 14%, transparent);
+  color: var(--cor-erro);
+}
+
+/* Linha de etapas: Agendada → Respondida → Iniciada → Finalizada. */
+.detalhe-ordem-passos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.detalhe-ordem-passos li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cor-texto-terciario);
+}
+
+.detalhe-ordem-passos li::before {
+  content: '';
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cor-borda);
+}
+
+.detalhe-ordem-passos .detalhe-ordem-passo-feito {
+  color: var(--cor-suporte);
+}
+
+.detalhe-ordem-passos .detalhe-ordem-passo-feito::before {
+  background: var(--cor-suporte);
+}
+
+.detalhe-ordem-passos .detalhe-ordem-passo-atual {
+  color: var(--cor-texto);
+}
+
+.detalhe-ordem-passos .detalhe-ordem-passo-atual::before {
+  background: repeating-linear-gradient(90deg, var(--cor-suporte) 0 6px, transparent 6px 9px);
+}
+
+.detalhe-ordem-contato {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.detalhe-ordem-contato .acoes-contato {
+  margin-top: 0;
+}
+
+.detalhe-ordem-rota {
+  --cor-suporte: var(--cor-primaria);
+}
+
+/* Próxima etapa fixa no rodapé, logo acima da barra de navegação (64px). */
+.detalhe-ordem-tela:has(.detalhe-ordem-barra-acao) {
+  padding-bottom: 104px;
+}
+
+.detalhe-ordem-barra-acao {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 64px;
+  z-index: 40;
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding: 10px 16px;
+  background: var(--cor-superficie);
+  border-top: 1px solid var(--cor-borda-suave);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.detalhe-ordem-barra-botao {
+  height: 52px;
+  font-size: 15px;
 }

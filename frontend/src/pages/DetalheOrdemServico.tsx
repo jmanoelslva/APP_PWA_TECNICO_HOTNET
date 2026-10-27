@@ -5,6 +5,7 @@ import {
   MdCheckCircle,
   MdChatBubbleOutline,
   MdContentCopy,
+  MdDirections,
   MdEdit,
   MdLocationOn,
   MdPeopleAlt,
@@ -49,6 +50,7 @@ import {
   formatarTelefone,
   separarTelefones,
 } from '../utils/formatacao'
+import { linkRota, osAtrasada, quandoOs } from '../utils/minhasOs'
 import './DetalheOrdemServico.css'
 
 interface AnexoEnviado {
@@ -370,6 +372,19 @@ export default function DetalheOrdemServico() {
     return <p className="detalhe-ordem-status">OS não encontrada.</p>
   }
 
+  // Próxima etapa pendente (a única que pode ser confirmada agora): vira o
+  // botão fixo no rodapé, no alcance do polegar, em vez de ficar no último
+  // card da tela. OS fechada/cancelada não tem próxima etapa.
+  const concluidas = osAtual?.op_pk ? ETAPAS.map((e) => etapaConcluida(eventos, osAtual.op_pk!, e)) : []
+  const encerrada = !!(osAtual?.op_date_close || osAtual?.op_date_cancel)
+  const proximaEtapa =
+    osAtual?.op_pk && !encerrada ? ETAPAS.find((_, indice) => situacaoEtapa(concluidas, indice) === 'confirmar') : undefined
+  // osAtrasada olha a etapa calculada na lista; aqui confere também os
+  // eventos já carregados (acabou de iniciar nesta tela = não atrasa mais).
+  const atrasada = !!osAtual && osAtrasada(osAtual) && !concluidas[1]
+  const rota = osAtual ? linkRota(endereco, osAtual) : null
+  const protocolo = ticket?.ticket_protocol ?? osAtual?.ticket_protocol
+
   return (
     <div className="detalhe-ordem-tela tela-entrada">
       <VoltarInicio to="/suporte" label="OS" />
@@ -396,17 +411,54 @@ export default function DetalheOrdemServico() {
 
       {!carregando && !erro && osAtual && (
         <>
-          <div className="detalhe-ordem-card">
+          <div className="detalhe-ordem-card detalhe-ordem-cabecalho">
             <div className="detalhe-ordem-topo">
-              <strong>{ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_pk ?? pk}`}</strong>
+              <strong className="detalhe-ordem-titulo">
+                {ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_pk ?? pk}`}
+              </strong>
               <span className="detalhe-ordem-etapa-badge">{estagioResumo(eventos, osAtual)}</span>
             </div>
-            {osAtual.task_name && <p className="detalhe-ordem-linha">Tarefa: {osAtual.task_name}</p>}
-            {(ticket?.ticket_protocol ?? osAtual.ticket_protocol) && (
-              <p className="detalhe-ordem-linha">Chamado: {ticket?.ticket_protocol ?? osAtual.ticket_protocol}</p>
+            {osAtual.client_complete_name && <span className="detalhe-ordem-subtitulo">{osAtual.client_complete_name}</span>}
+            <div className="detalhe-ordem-metas">
+              {osAtual.op_date_sched && (
+                <span className="detalhe-ordem-meta" title={`Agendada para ${formatarDataHora(osAtual.op_date_sched)}`}>
+                  {quandoOs(osAtual.op_date_sched)}
+                </span>
+              )}
+              {atrasada && <span className="detalhe-ordem-meta detalhe-ordem-meta-atraso">Atrasada</span>}
+              {osAtual.task_name && <span className="detalhe-ordem-meta">{osAtual.task_name}</span>}
+              {osAtual.op_number && <span className="detalhe-ordem-meta">OS {osAtual.op_number}</span>}
+              {protocolo && <span className="detalhe-ordem-meta">Chamado {protocolo}</span>}
+            </div>
+            {osAtual.op_pk && !encerrada && (
+              <ol className="detalhe-ordem-passos" aria-label="Etapas da OS">
+                <li className="detalhe-ordem-passo-feito">Agendada</li>
+                {ETAPAS.map((etapa, indice) => (
+                  <li
+                    key={etapa.chave}
+                    className={
+                      concluidas[indice]
+                        ? 'detalhe-ordem-passo-feito'
+                        : proximaEtapa?.chave === etapa.chave
+                          ? 'detalhe-ordem-passo-atual'
+                          : undefined
+                    }
+                  >
+                    {etapa.rotulo}
+                  </li>
+                ))}
+              </ol>
             )}
-            {osAtual.op_number && <p className="detalhe-ordem-linha">OS: {osAtual.op_number}</p>}
-            {osAtual.op_date_sched && <p className="detalhe-ordem-linha">Agendada para {formatarDataHora(osAtual.op_date_sched)}</p>}
+            {(rota || telefone) && (
+              <div className="detalhe-ordem-contato">
+                {rota && (
+                  <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
+                    <MdDirections size={16} /> Rota
+                  </a>
+                )}
+                <AcoesContato numero={telefone} />
+              </div>
+            )}
             <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
               <MdChatBubbleOutline size={14} /> Ver chamado
             </Link>
@@ -447,8 +499,7 @@ export default function DetalheOrdemServico() {
                   <span>Contato</span>
                   <strong>{separarTelefones(telefone).map(formatarTelefone).join(', ') || telefone}</strong>
                 </div>
-                {/* Ligar/WhatsApp para cada número do cliente. */}
-                <AcoesContato numero={telefone} />
+                {/* Ligar/WhatsApp de cada número ficam no cabeçalho da OS. */}
               </>
             )}
           </div>
@@ -585,7 +636,7 @@ export default function DetalheOrdemServico() {
           </div>
 
           <div className="detalhe-ordem-card">
-            <h2>Etapas da OS</h2>
+            <h2>Histórico das etapas</h2>
             <div className="detalhe-ordem-etapa-item">
               <div className="detalhe-ordem-etapa-item-texto">
                 <strong>Agendamento</strong>
@@ -596,7 +647,6 @@ export default function DetalheOrdemServico() {
             {(() => {
               if (!osAtual.op_pk) return null
               const osRaizPk = osAtual.op_pk
-              const concluidas = ETAPAS.map((e) => etapaConcluida(eventos, osRaizPk, e))
               return ETAPAS.map((etapa, indice) => {
                 const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
                 const concluida = concluidas[indice]
@@ -620,19 +670,34 @@ export default function DetalheOrdemServico() {
                       <strong>{etapa.rotulo}</strong>
                       <span>{subtitulo}</span>
                     </div>
-                    <button
-                      type="button"
-                      className={concluida ? 'detalhe-ordem-etapa-btn-desfazer' : 'detalhe-ordem-etapa-btn-marcar'}
-                      disabled={situacao === 'bloqueada'}
-                      onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: concluida })}
-                    >
-                      <etapa.Icone size={14} /> {concluida ? 'Desfazer' : 'Confirmar'}
-                    </button>
+                    {/* Confirmar fica na barra fixa do rodapé; aqui só desfazer. */}
+                    {concluida && (
+                      <button
+                        type="button"
+                        className="detalhe-ordem-etapa-btn-desfazer"
+                        disabled={situacao === 'bloqueada'}
+                        onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: true })}
+                      >
+                        <etapa.Icone size={14} /> Desfazer
+                      </button>
+                    )}
                   </div>
                 )
               })
             })()}
           </div>
+          {proximaEtapa && (
+            <div className="detalhe-ordem-barra-acao">
+              <button
+                type="button"
+                className="botao botao-primario botao-bloco detalhe-ordem-barra-botao"
+                style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                onClick={() => setAcaoConfirmando({ etapa: proximaEtapa.chave, desfazer: false })}
+              >
+                <proximaEtapa.Icone size={20} /> {proximaEtapa.rotuloMarcar}
+              </button>
+            </div>
+          )}
         </>
       )}
 

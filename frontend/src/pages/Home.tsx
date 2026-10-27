@@ -259,8 +259,11 @@ export default function Home() {
         <div className="home-menu">
           {ITENS_MENU.map((item) => (
             <Link key={item.to} to={item.to} className="home-menu-item" viewTransition>
-              <span className="home-menu-icone" style={{ background: item.cor }}>
-                <item.Icone size={22} color={CORES.branco} />
+              {/* Fundo em tom claro da cor da área e ícone na cor cheia: a
+                  grade fica mais calma que 6 blocos sólidos e o ícone passa
+                  no contraste nos dois temas. */}
+              <span className="home-menu-icone" style={{ background: comAlpha(item.cor, 14), color: item.cor }}>
+                <item.Icone size={24} />
               </span>
               <span className="home-menu-label">{item.label}</span>
             </Link>
@@ -270,8 +273,8 @@ export default function Home() {
               sai do PWA do técnico e abre o coletor, que usa a mesma sessão. */}
           {coletorOlt && (
             <a href="/olt/" className="home-menu-item">
-              <span className="home-menu-icone" style={{ background: CORES.olts }}>
-                <MdRouter size={22} color={CORES.branco} />
+              <span className="home-menu-icone" style={{ background: comAlpha(CORES.olts, 14), color: CORES.olts }}>
+                <MdRouter size={24} />
               </span>
               <span className="home-menu-label">OLTs</span>
             </a>

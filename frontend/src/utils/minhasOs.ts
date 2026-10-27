@@ -105,3 +105,28 @@ export function quandoOs(sched: string | null | undefined, agora: Date = new Dat
   const quando = dia === hoje ? 'Hoje' : dia === amanha ? 'Amanhã' : dia === ontem ? 'Ontem' : `${d}/${mes}`
   return hora ? `${quando} ${hora}` : quando
 }
+
+export interface GrupoOs {
+  rotulo: string
+  ordens: OrdemServicoDto[]
+}
+
+/**
+ * OS agrupadas por dia agendado ("Ontem", "Hoje", "Amanhã", "03/10"), da
+ * mais antiga para a mais nova; as sem data agendada vão num grupo no fim.
+ */
+export function agruparPorDia(ordens: OrdemServicoDto[], agora: Date = new Date()): GrupoOs[] {
+  const ordenadas = [...ordens].sort((a, b) => {
+    if (!a.op_date_sched) return b.op_date_sched ? 1 : 0
+    if (!b.op_date_sched) return -1
+    return a.op_date_sched.localeCompare(b.op_date_sched)
+  })
+  const grupos: GrupoOs[] = []
+  for (const os of ordenadas) {
+    const rotulo = os.op_date_sched ? (quandoOs(os.op_date_sched.slice(0, 10), agora) ?? '') : 'Sem data agendada'
+    const ultimo = grupos[grupos.length - 1]
+    if (ultimo?.rotulo === rotulo) ultimo.ordens.push(os)
+    else grupos.push({ rotulo, ordens: [os] })
+  }
+  return grupos
+}

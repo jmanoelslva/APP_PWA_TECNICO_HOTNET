@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { OrdemServicoDto } from '../api/client'
-import { horarioOs, linkRota, osAtrasada, osDoDia, primeiroTelefone, quandoOs } from './minhasOs'
+import { agruparPorDia, horarioOs, linkRota, osAtrasada, osDoDia, primeiroTelefone, quandoOs } from './minhasOs'
 
 const AGORA = new Date(2026, 9, 5, 9, 30) // 05/10/2026 09:30, hora local
 
@@ -104,5 +104,21 @@ describe('osAtrasada', () => {
     expect(osAtrasada(os(1, '2026-10-05 08:00:00', { op_date_close: '2026-10-05 09:00:00' }), noite)).toBe(false)
     expect(osAtrasada(os(1, '2026-10-05 08:00:00', { op_date_cancel: '2026-10-05 09:00:00' }), noite)).toBe(false)
     expect(osAtrasada(os(1, undefined), noite)).toBe(false)
+  })
+})
+
+describe('agruparPorDia', () => {
+  it('agrupa por dia, do mais antigo ao mais novo, sem data no fim', () => {
+    const grupos = agruparPorDia(
+      [
+        { op_pk: 1, op_date_sched: '2026-10-05 15:00:00' },
+        { op_pk: 2 },
+        { op_pk: 3, op_date_sched: '2026-10-04 09:00:00' },
+        { op_pk: 4, op_date_sched: '2026-10-05 08:00:00' },
+      ] as OrdemServicoDto[],
+      AGORA,
+    )
+    expect(grupos.map((g) => g.rotulo)).toEqual(['Ontem', 'Hoje', 'Sem data agendada'])
+    expect(grupos[1].ordens.map((o) => o.op_pk)).toEqual([4, 1])
   })
 })

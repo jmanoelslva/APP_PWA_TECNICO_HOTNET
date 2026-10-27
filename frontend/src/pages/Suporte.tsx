@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MdBuild, MdClose, MdSearch } from 'react-icons/md'
+import { MdBuild, MdClose, MdDirections, MdSearch } from 'react-icons/md'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
 import PullToRefresh from '../components/PullToRefresh'
-import { osAtrasada, quandoOs } from '../utils/minhasOs'
+import { agruparPorDia, linkRota, osAtrasada } from '../utils/minhasOs'
 import { FILTRO_VAZIO, filtrarOs, filtroAtivo, tarefasDaLista, type FiltroOs, type FiltroQuando } from '../utils/filtroOs'
 import { CORES } from '../utils/cores'
 import './Suporte.css'
@@ -72,6 +72,7 @@ export default function Suporte() {
 
   const tarefas = useMemo(() => tarefasDaLista(ordens), [ordens])
   const filtradas = useMemo(() => filtrarOs(ordens, filtro), [ordens, filtro])
+  const grupos = useMemo(() => agruparPorDia(filtradas), [filtradas])
   const comFiltro = filtroAtivo(filtro)
 
   function mudar(parcial: Partial<FiltroOs>) {
@@ -181,38 +182,54 @@ export default function Suporte() {
           <EstadoVazio icone={MdSearch} titulo="Nenhuma OS com esses filtros" subtitulo="Mude ou limpe os filtros acima." />
         )}
 
-        {!carregando && !erro && filtradas.length > 0 && (
-          <ul className="suporte-lista">
-            {filtradas.map((os) => {
-              const status = selo(os)
-              const quando = quandoOs(os.op_date_sched)
-              const atrasada = osAtrasada(os)
-              const local = [os.client_complete_name, os.address_neighborhood?.trim()].filter(Boolean).join(' · ')
-              return (
-                <li
-                  key={os.op_pk ?? os.op_os_pk}
-                  className={`ticket-card${atrasada ? ' ticket-card-atrasada' : ''}`}
-                  onClick={() => os.ticket_pk && navigate(`/os/${os.ticket_pk}`, { state: { os }, viewTransition: true })}
-                >
-                  <div className="ticket-topo">
-                    <span className="ticket-assunto">
-                      {os.task_name ?? (os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`)}
-                    </span>
-                    <span className={`ticket-status-badge ${status.classe}`}>{status.texto}</span>
-                  </div>
-                  {local && <p className="ticket-cliente">{local}</p>}
-                  <div className="ticket-rodape">
-                    <span className={`ticket-quando${atrasada ? ' ticket-quando-atrasada' : ''}`}>
-                      {quando ?? 'Sem data agendada'}
-                      {atrasada && <span className="ticket-atrasada">Atrasada</span>}
-                    </span>
-                    <span className="ticket-protocolo">#{os.ticket_protocol ?? os.ticket_pk ?? '—'}</span>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        )}
+        {!carregando &&
+          !erro &&
+          grupos.map((grupo) => (
+            <section key={grupo.rotulo} className="suporte-grupo">
+              <h2 className="suporte-grupo-titulo">{grupo.rotulo}</h2>
+              <ul className="suporte-lista suporte-lista-os">
+                {grupo.ordens.map((os) => {
+                  const status = selo(os)
+                  const hora = os.op_date_sched?.slice(11, 16)
+                  const atrasada = osAtrasada(os)
+                  const local = [os.client_complete_name, os.address_neighborhood?.trim()].filter(Boolean).join(' · ')
+                  const rota = linkRota(null, os)
+                  return (
+                    <li
+                      key={os.op_pk ?? os.op_os_pk}
+                      className={`ticket-card os-linha${atrasada ? ' ticket-card-atrasada' : ''}`}
+                      onClick={() => os.ticket_pk && navigate(`/os/${os.ticket_pk}`, { state: { os }, viewTransition: true })}
+                    >
+                      {/* Hora numa coluna fixa: é o que o técnico procura primeiro. */}
+                      <span className="os-linha-hora">
+                        {hora || '—'}
+                        {atrasada && <small>Atrasada</small>}
+                      </span>
+                      <span className="os-linha-meio">
+                        <span className="ticket-assunto">
+                          {os.task_name ?? (os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`)}
+                        </span>
+                        {local && <span className="ticket-cliente">{local}</span>}
+                        <span className={`ticket-status-badge ${status.classe}`}>{status.texto}</span>
+                      </span>
+                      {rota && (
+                        <a
+                          href={rota}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="os-linha-rota"
+                          aria-label="Rota até o cliente"
+                          onClick={(evento) => evento.stopPropagation()}
+                        >
+                          <MdDirections size={22} />
+                        </a>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ))}
       </div>
     </PullToRefresh>
   )

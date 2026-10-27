@@ -7,6 +7,30 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.17.0] - 2026-10-26
+
+### Alterado
+
+- **Detalhe da OS:** a próxima etapa (Marcar como respondida, Iniciar ou
+  Finalizar atendimento) fica num botão fixo no rodapé, sem rolar a tela.
+  O topo mostra o título, o cliente, etiquetas de data, atraso, tarefa, OS
+  e chamado, a linha de etapas (Agendada → Respondida → Iniciada →
+  Finalizada) e os botões **Rota**, **Ligar** e **WhatsApp**. O card
+  passou a se chamar **Histórico das etapas** e mostra só os horários e o
+  **Desfazer**.
+- **Lista de OS:** agrupada por dia (Ontem, Hoje, Amanhã, data, sem data),
+  da mais antiga para a mais nova. A hora fica numa coluna à esquerda, que
+  fica vermelha quando a OS está atrasada, e cada linha tem a rota a um
+  toque. Cabem mais OS por tela. O protocolo saiu da linha, mas continua
+  na busca.
+- **Tela inicial:** os ícones dos atalhos usam um fundo claro na cor da
+  área, no lugar dos blocos sólidos.
+- **Legibilidade sob sol:** no tema claro, as cores de sucesso, erro,
+  Conexão e ONU ficaram mais escuras e passam no contraste mínimo (o selo
+  "Fechada" tinha 2,8:1).
+- **Áreas de toque:** Ligar/WhatsApp, Desfazer, chips, botões pequenos e
+  botões de copiar ficaram com 40 a 44 px.
+
 ## [1.16.0] - 2026-10-21
 
 ### Adicionado
@@ -494,7 +518,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.16.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...HEAD
+[1.17.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.2...v1.15.0
 [1.14.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.14.1...v1.14.2
