@@ -16,6 +16,7 @@ import {
 } from 'react-icons/md'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import VoltarInicio from '../components/VoltarInicio'
+import PullToRefresh from '../components/PullToRefresh'
 import AcoesContato from '../components/AcoesContato'
 import Skeleton from '../components/Skeleton'
 import EstadoErro from '../components/EstadoErro'
@@ -386,383 +387,385 @@ export default function DetalheOrdemServico() {
   const protocolo = ticket?.ticket_protocol ?? osAtual?.ticket_protocol
 
   return (
-    <div className="detalhe-ordem-tela tela-entrada">
-      <VoltarInicio to="/suporte" label="OS" />
+    <PullToRefresh aoAtualizar={carregar}>
+      <div className="detalhe-ordem-tela tela-entrada">
+        <VoltarInicio to="/suporte" label="OS" />
 
-      {carregando && (
-        <div className="detalhe-ordem-card">
-          <Skeleton width="60%" height={16} />
-          <Skeleton width="40%" height={13} />
-        </div>
-      )}
+        {carregando && (
+          <div className="detalhe-ordem-card">
+            <Skeleton width="60%" height={16} />
+            <Skeleton width="40%" height={13} />
+          </div>
+        )}
 
-      {!carregando && erro && (
-        <EstadoErro mensagem={erro} cor={CORES.suporte} onTentarDeNovo={carregar} />
-      )}
+        {!carregando && erro && (
+          <EstadoErro mensagem={erro} cor={CORES.suporte} onTentarDeNovo={carregar} />
+        )}
 
-      {!carregando && !erro && !osAtual && (
-        <div className="detalhe-ordem-card">
-          <p className="detalhe-ordem-vazio">Nenhuma OS encontrada para este chamado.</p>
-          <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
-            <MdChatBubbleOutline size={14} /> Ver chamado
-          </Link>
-        </div>
-      )}
-
-      {!carregando && !erro && osAtual && (
-        <>
-          <div className="detalhe-ordem-card detalhe-ordem-cabecalho">
-            <div className="detalhe-ordem-topo">
-              <strong className="detalhe-ordem-titulo">
-                {ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_pk ?? pk}`}
-              </strong>
-              <span className="detalhe-ordem-etapa-badge">{estagioResumo(eventos, osAtual)}</span>
-            </div>
-            {osAtual.client_complete_name && <span className="detalhe-ordem-subtitulo">{osAtual.client_complete_name}</span>}
-            <div className="detalhe-ordem-metas">
-              {osAtual.op_date_sched && (
-                <span className="detalhe-ordem-meta" title={`Agendada para ${formatarDataHora(osAtual.op_date_sched)}`}>
-                  {quandoOs(osAtual.op_date_sched)}
-                </span>
-              )}
-              {atrasada && <span className="detalhe-ordem-meta detalhe-ordem-meta-atraso">Atrasada</span>}
-              {osAtual.task_name && <span className="detalhe-ordem-meta">{osAtual.task_name}</span>}
-              {osAtual.op_number && <span className="detalhe-ordem-meta">OS {osAtual.op_number}</span>}
-              {protocolo && <span className="detalhe-ordem-meta">Chamado {protocolo}</span>}
-            </div>
-            {osAtual.op_pk && !encerrada && (
-              <ol className="detalhe-ordem-passos" aria-label="Etapas da OS">
-                <li className="detalhe-ordem-passo-feito">Agendada</li>
-                {ETAPAS.map((etapa, indice) => (
-                  <li
-                    key={etapa.chave}
-                    className={
-                      concluidas[indice]
-                        ? 'detalhe-ordem-passo-feito'
-                        : proximaEtapa?.chave === etapa.chave
-                          ? 'detalhe-ordem-passo-atual'
-                          : undefined
-                    }
-                  >
-                    {etapa.rotulo}
-                  </li>
-                ))}
-              </ol>
-            )}
-            {(rota || telefone) && (
-              <div className="detalhe-ordem-contato">
-                {rota && (
-                  <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
-                    <MdDirections size={16} /> Rota
-                  </a>
-                )}
-                <AcoesContato numero={telefone} />
-              </div>
-            )}
+        {!carregando && !erro && !osAtual && (
+          <div className="detalhe-ordem-card">
+            <p className="detalhe-ordem-vazio">Nenhuma OS encontrada para este chamado.</p>
             <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
               <MdChatBubbleOutline size={14} /> Ver chamado
             </Link>
           </div>
+        )}
 
-          {(ticket?.ticket_desc || osAtual.op_obs) && (
-            <div className="detalhe-ordem-card">
-              {ticket?.ticket_desc && (
-                <>
-                  <h2>Descrição do problema</h2>
-                  <p className="detalhe-ordem-descricao">{ticket.ticket_desc}</p>
-                </>
+        {!carregando && !erro && osAtual && (
+          <>
+            <div className="detalhe-ordem-card detalhe-ordem-cabecalho">
+              <div className="detalhe-ordem-topo">
+                <strong className="detalhe-ordem-titulo">
+                  {ticket?.ticket_title ?? osAtual.op_desc ?? `OS #${osAtual.op_pk ?? pk}`}
+                </strong>
+                <span className="detalhe-ordem-etapa-badge">{estagioResumo(eventos, osAtual)}</span>
+              </div>
+              {osAtual.client_complete_name && <span className="detalhe-ordem-subtitulo">{osAtual.client_complete_name}</span>}
+              <div className="detalhe-ordem-metas">
+                {osAtual.op_date_sched && (
+                  <span className="detalhe-ordem-meta" title={`Agendada para ${formatarDataHora(osAtual.op_date_sched)}`}>
+                    {quandoOs(osAtual.op_date_sched)}
+                  </span>
+                )}
+                {atrasada && <span className="detalhe-ordem-meta detalhe-ordem-meta-atraso">Atrasada</span>}
+                {osAtual.task_name && <span className="detalhe-ordem-meta">{osAtual.task_name}</span>}
+                {osAtual.op_number && <span className="detalhe-ordem-meta">OS {osAtual.op_number}</span>}
+                {protocolo && <span className="detalhe-ordem-meta">Chamado {protocolo}</span>}
+              </div>
+              {osAtual.op_pk && !encerrada && (
+                <ol className="detalhe-ordem-passos" aria-label="Etapas da OS">
+                  <li className="detalhe-ordem-passo-feito">Agendada</li>
+                  {ETAPAS.map((etapa, indice) => (
+                    <li
+                      key={etapa.chave}
+                      className={
+                        concluidas[indice]
+                          ? 'detalhe-ordem-passo-feito'
+                          : proximaEtapa?.chave === etapa.chave
+                            ? 'detalhe-ordem-passo-atual'
+                            : undefined
+                      }
+                    >
+                      {etapa.rotulo}
+                    </li>
+                  ))}
+                </ol>
               )}
-              {osAtual.op_obs && (
-                <>
-                  <h2>Observação</h2>
-                  <p className="detalhe-ordem-descricao">{osAtual.op_obs}</p>
-                </>
-              )}
-            </div>
-          )}
-
-          <div className="detalhe-ordem-card">
-            <h2>Cliente</h2>
-            <div className="detalhe-ordem-linha-campo">
-              <span>Nome</span>
-              {osAtual.client_pk ? (
-                <Link to={`/clientes/${osAtual.client_pk}`} className="detalhe-ordem-link" viewTransition>
-                  <MdPeopleAlt size={14} /> {osAtual.client_complete_name ?? '—'}
-                </Link>
-              ) : (
-                <strong>{osAtual.client_complete_name ?? '—'}</strong>
-              )}
-            </div>
-            {telefone && (
-              <>
-                <div className="detalhe-ordem-linha-campo">
-                  <span>Contato</span>
-                  <strong>{separarTelefones(telefone).map(formatarTelefone).join(', ') || telefone}</strong>
+              {(rota || telefone) && (
+                <div className="detalhe-ordem-contato">
+                  {rota && (
+                    <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
+                      <MdDirections size={16} /> Rota
+                    </a>
+                  )}
+                  <AcoesContato numero={telefone} />
                 </div>
-                {/* Ligar/WhatsApp de cada número ficam no cabeçalho da OS. */}
-              </>
-            )}
-          </div>
+              )}
+              <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
+                <MdChatBubbleOutline size={14} /> Ver chamado
+              </Link>
+            </div>
 
-          <div className="detalhe-ordem-card">
-            <div className="detalhe-ordem-topo">
-              <h2>Endereço</h2>
-              {endereco?.address_pk && (
+            {(ticket?.ticket_desc || osAtual.op_obs) && (
+              <div className="detalhe-ordem-card">
+                {ticket?.ticket_desc && (
+                  <>
+                    <h2>Descrição do problema</h2>
+                    <p className="detalhe-ordem-descricao">{ticket.ticket_desc}</p>
+                  </>
+                )}
+                {osAtual.op_obs && (
+                  <>
+                    <h2>Observação</h2>
+                    <p className="detalhe-ordem-descricao">{osAtual.op_obs}</p>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="detalhe-ordem-card">
+              <h2>Cliente</h2>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Nome</span>
+                {osAtual.client_pk ? (
+                  <Link to={`/clientes/${osAtual.client_pk}`} className="detalhe-ordem-link" viewTransition>
+                    <MdPeopleAlt size={14} /> {osAtual.client_complete_name ?? '—'}
+                  </Link>
+                ) : (
+                  <strong>{osAtual.client_complete_name ?? '—'}</strong>
+                )}
+              </div>
+              {telefone && (
+                <>
+                  <div className="detalhe-ordem-linha-campo">
+                    <span>Contato</span>
+                    <strong>{separarTelefones(telefone).map(formatarTelefone).join(', ') || telefone}</strong>
+                  </div>
+                  {/* Ligar/WhatsApp de cada número ficam no cabeçalho da OS. */}
+                </>
+              )}
+            </div>
+
+            <div className="detalhe-ordem-card">
+              <div className="detalhe-ordem-topo">
+                <h2>Endereço</h2>
+                {endereco?.address_pk && (
+                  <button
+                    type="button"
+                    className="detalhe-ordem-btn-icone"
+                    onClick={() => setEnderecoEditando(endereco)}
+                    aria-label="Editar endereço"
+                  >
+                    <MdEdit size={16} />
+                  </button>
+                )}
+              </div>
+              <p className="detalhe-ordem-linha">{enderecoResumo(endereco ?? osAtual)}</p>
+              {(endereco?.address_province ?? osAtual.address_province) || (endereco?.address_state ?? osAtual.address_state) ? (
+                <p className="detalhe-ordem-linha">
+                  {[endereco?.address_province ?? osAtual.address_province, endereco?.address_state ?? osAtual.address_state]
+                    .filter(Boolean)
+                    .join(' - ')}
+                </p>
+              ) : null}
+              {(endereco?.address_zipcode ?? osAtual.address_zipcode) && (
+                <p className="detalhe-ordem-linha">CEP: {formatarCep(endereco?.address_zipcode ?? osAtual.address_zipcode)}</p>
+              )}
+              {endereco?.address_latitude && endereco?.address_longitude && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="detalhe-ordem-chip"
+                >
+                  <MdLocationOn size={14} /> Ver no Google Maps
+                </a>
+              )}
+            </div>
+
+            <div className="detalhe-ordem-card">
+              <h2>Contrato</h2>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Número</span>
+                <strong>{contrato?.contract_number ?? osAtual.contract_number ?? '—'}</strong>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Vencimento</span>
+                <strong>{contrato?.contract_pay_day ? `Dia ${contrato.contract_pay_day}` : '—'}</strong>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Status</span>
+                <strong>{contrato?.contract_status != null ? formatarStatusContrato(contrato.contract_status) : '—'}</strong>
+              </div>
+            </div>
+
+            <div className="detalhe-ordem-card">
+              <h2>Conexão</h2>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Usuário</span>
+                <div className="detalhe-ordem-campo-valor">
+                  <strong>{cpe?.username ?? '—'}</strong>
+                  <button onClick={() => copiar(cpe?.username, 'Usuário')} aria-label="Copiar usuário">
+                    <MdContentCopy size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Senha</span>
+                <div className="detalhe-ordem-campo-valor">
+                  <strong>{mostrarSenha ? cpe?.password ?? '—' : '••••••••'}</strong>
+                  <button onClick={() => setMostrarSenha((v) => !v)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
+                    {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                  </button>
+                  <button onClick={() => copiar(cpe?.password, 'Senha')} aria-label="Copiar senha">
+                    <MdContentCopy size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>IP</span>
+                <strong>{cpe?.v4_ip ?? cpe?.v4_ip_last ?? '—'}</strong>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>MAC</span>
+                <strong>{cpe?.mac ?? cpe?.mac_last ?? '—'}</strong>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>CTO</span>
+                <strong>{cpe?.dp_name ?? '—'}</strong>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Porta da CTO</span>
+                <strong>{cpe?.dp_port ?? '—'}</strong>
+              </div>
+              {cpe?.pk && (
+                <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip" viewTransition>
+                  <MdWifi size={14} /> Ver conexão completa
+                </Link>
+              )}
+            </div>
+
+            <div className="detalhe-ordem-card">
+              <h2>Anexo</h2>
+              <input ref={inputArquivoRef} type="file" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
+              <button
+                className="botao botao-secundario botao-bloco"
+                style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                disabled={enviandoAnexo}
+                onClick={() => inputArquivoRef.current?.click()}
+              >
+                <MdAttachFile size={16} /> {enviandoAnexo ? 'Enviando…' : 'Anexar arquivo ao chamado'}
+              </button>
+              {anexosEnviados.length > 0 && (
+                <ul className="detalhe-ordem-anexos">
+                  {anexosEnviados.map((anexo) => (
+                    <li key={anexo.id} className={`detalhe-ordem-anexo detalhe-ordem-anexo-${anexo.situacao}`}>
+                      {anexo.previa ? (
+                        <img src={anexo.previa} alt={anexo.nome} className="detalhe-ordem-anexo-previa" />
+                      ) : (
+                        <span className="detalhe-ordem-anexo-icone">
+                          <MdAttachFile size={22} />
+                        </span>
+                      )}
+                      <span className="detalhe-ordem-anexo-nome">{anexo.nome}</span>
+                      <span className="detalhe-ordem-anexo-situacao">
+                        {anexo.situacao === 'enviando' ? 'Enviando…' : anexo.situacao === 'enviado' ? 'Enviado' : 'Falhou'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="detalhe-ordem-card">
+              <h2>Histórico das etapas</h2>
+              <div className="detalhe-ordem-etapa-item">
+                <div className="detalhe-ordem-etapa-item-texto">
+                  <strong>Agendamento</strong>
+                  <span>{osAtual.op_date_sched ? formatarDataHora(osAtual.op_date_sched) : 'Feito pelo escritório'}</span>
+                </div>
+                <span className="detalhe-ordem-etapa-feito">Pronto</span>
+              </div>
+              {(() => {
+                if (!osAtual.op_pk) return null
+                const osRaizPk = osAtual.op_pk
+                return ETAPAS.map((etapa, indice) => {
+                  const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
+                  const concluida = concluidas[indice]
+                  const situacao = situacaoEtapa(concluidas, indice)
+                  // Texto explica por que o botão está bloqueado, em vez de
+                  // só desabilitar sem dizer nada: a sequência é obrigatória
+                  // nos dois sentidos (marcar em ordem, desfazer em ordem
+                  // reversa).
+                  let subtitulo: string
+                  if (concluida && evento) {
+                    subtitulo = formatarDataHora(evento[etapa.campoData])
+                    if (situacao === 'bloqueada') subtitulo += ` · desfaça "${ETAPAS[indice + 1]?.rotulo}" antes`
+                  } else if (situacao === 'bloqueada') {
+                    subtitulo = `Aguardando "${ETAPAS[indice - 1]?.rotulo}"`
+                  } else {
+                    subtitulo = 'Ainda não'
+                  }
+                  return (
+                    <div key={etapa.chave} className="detalhe-ordem-etapa-item">
+                      <div className="detalhe-ordem-etapa-item-texto">
+                        <strong>{etapa.rotulo}</strong>
+                        <span>{subtitulo}</span>
+                      </div>
+                      {/* Confirmar fica na barra fixa do rodapé; aqui só desfazer. */}
+                      {concluida && (
+                        <button
+                          type="button"
+                          className="detalhe-ordem-etapa-btn-desfazer"
+                          disabled={situacao === 'bloqueada'}
+                          onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: true })}
+                        >
+                          <etapa.Icone size={14} /> Desfazer
+                        </button>
+                      )}
+                    </div>
+                  )
+                })
+              })()}
+            </div>
+            {proximaEtapa && (
+              <div className="detalhe-ordem-barra-acao">
                 <button
                   type="button"
-                  className="detalhe-ordem-btn-icone"
-                  onClick={() => setEnderecoEditando(endereco)}
-                  aria-label="Editar endereço"
+                  className="botao botao-primario botao-bloco detalhe-ordem-barra-botao"
+                  style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                  onClick={() => setAcaoConfirmando({ etapa: proximaEtapa.chave, desfazer: false })}
                 >
-                  <MdEdit size={16} />
+                  <proximaEtapa.Icone size={20} /> {proximaEtapa.rotuloMarcar}
                 </button>
-              )}
-            </div>
-            <p className="detalhe-ordem-linha">{enderecoResumo(endereco ?? osAtual)}</p>
-            {(endereco?.address_province ?? osAtual.address_province) || (endereco?.address_state ?? osAtual.address_state) ? (
-              <p className="detalhe-ordem-linha">
-                {[endereco?.address_province ?? osAtual.address_province, endereco?.address_state ?? osAtual.address_state]
-                  .filter(Boolean)
-                  .join(' - ')}
+              </div>
+            )}
+          </>
+        )}
+
+        {acaoConfirmando && (
+          <div
+            className="detalhe-ordem-modal-fundo"
+            onClick={() => {
+              setAcaoConfirmando(null)
+              setObservacaoEtapa('')
+            }}
+          >
+            <div className="detalhe-ordem-modal" onClick={(evento) => evento.stopPropagation()}>
+              <h2>
+                {(() => {
+                  const etapa = ETAPAS.find((e) => e.chave === acaoConfirmando.etapa)
+                  if (!etapa) return ''
+                  return acaoConfirmando.desfazer ? `${etapa.rotuloDesfazer}?` : `${etapa.rotuloMarcar}?`
+                })()}
+              </h2>
+              <p className="detalhe-ordem-modal-texto">
+                {acaoConfirmando.etapa === 'finalizar' && !acaoConfirmando.desfazer
+                  ? 'Descreva o que foi feito — obrigatório para finalizar.'
+                  : 'Descreva o que foi feito, se quiser (opcional).'}
               </p>
-            ) : null}
-            {(endereco?.address_zipcode ?? osAtual.address_zipcode) && (
-              <p className="detalhe-ordem-linha">CEP: {formatarCep(endereco?.address_zipcode ?? osAtual.address_zipcode)}</p>
-            )}
-            {endereco?.address_latitude && endereco?.address_longitude && (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
-                target="_blank"
-                rel="noreferrer"
-                className="detalhe-ordem-chip"
-              >
-                <MdLocationOn size={14} /> Ver no Google Maps
-              </a>
-            )}
-          </div>
-
-          <div className="detalhe-ordem-card">
-            <h2>Contrato</h2>
-            <div className="detalhe-ordem-linha-campo">
-              <span>Número</span>
-              <strong>{contrato?.contract_number ?? osAtual.contract_number ?? '—'}</strong>
-            </div>
-            <div className="detalhe-ordem-linha-campo">
-              <span>Vencimento</span>
-              <strong>{contrato?.contract_pay_day ? `Dia ${contrato.contract_pay_day}` : '—'}</strong>
-            </div>
-            <div className="detalhe-ordem-linha-campo">
-              <span>Status</span>
-              <strong>{contrato?.contract_status != null ? formatarStatusContrato(contrato.contract_status) : '—'}</strong>
-            </div>
-          </div>
-
-          <div className="detalhe-ordem-card">
-            <h2>Conexão</h2>
-            <div className="detalhe-ordem-linha-campo">
-              <span>Usuário</span>
-              <div className="detalhe-ordem-campo-valor">
-                <strong>{cpe?.username ?? '—'}</strong>
-                <button onClick={() => copiar(cpe?.username, 'Usuário')} aria-label="Copiar usuário">
-                  <MdContentCopy size={16} />
+              <textarea
+                value={observacaoEtapa}
+                onChange={(e) => setObservacaoEtapa(e.target.value)}
+                placeholder="Ex: Trocado cabo de rede, sinal normalizado."
+                rows={3}
+              />
+              <div className="detalhe-ordem-modal-acoes">
+                <button
+                  className="botao botao-secundario"
+                  onClick={() => {
+                    setAcaoConfirmando(null)
+                    setObservacaoEtapa('')
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="botao botao-primario"
+                  style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                  disabled={executandoEtapa}
+                  onClick={confirmarEtapa}
+                >
+                  {executandoEtapa ? 'Salvando…' : 'Confirmar'}
                 </button>
               </div>
             </div>
-            <div className="detalhe-ordem-linha-campo">
-              <span>Senha</span>
-              <div className="detalhe-ordem-campo-valor">
-                <strong>{mostrarSenha ? cpe?.password ?? '—' : '••••••••'}</strong>
-                <button onClick={() => setMostrarSenha((v) => !v)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
-                  {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
-                </button>
-                <button onClick={() => copiar(cpe?.password, 'Senha')} aria-label="Copiar senha">
-                  <MdContentCopy size={16} />
-                </button>
-              </div>
-            </div>
-            <div className="detalhe-ordem-linha-campo">
-              <span>IP</span>
-              <strong>{cpe?.v4_ip ?? cpe?.v4_ip_last ?? '—'}</strong>
-            </div>
-            <div className="detalhe-ordem-linha-campo">
-              <span>MAC</span>
-              <strong>{cpe?.mac ?? cpe?.mac_last ?? '—'}</strong>
-            </div>
-            <div className="detalhe-ordem-linha-campo">
-              <span>CTO</span>
-              <strong>{cpe?.dp_name ?? '—'}</strong>
-            </div>
-            <div className="detalhe-ordem-linha-campo">
-              <span>Porta da CTO</span>
-              <strong>{cpe?.dp_port ?? '—'}</strong>
-            </div>
-            {cpe?.pk && (
-              <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip" viewTransition>
-                <MdWifi size={14} /> Ver conexão completa
-              </Link>
-            )}
           </div>
+        )}
 
-          <div className="detalhe-ordem-card">
-            <h2>Anexo</h2>
-            <input ref={inputArquivoRef} type="file" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
-            <button
-              className="botao botao-secundario botao-bloco"
-              style={{ '--botao-cor': CORES.suporte } as CSSProperties}
-              disabled={enviandoAnexo}
-              onClick={() => inputArquivoRef.current?.click()}
-            >
-              <MdAttachFile size={16} /> {enviandoAnexo ? 'Enviando…' : 'Anexar arquivo ao chamado'}
-            </button>
-            {anexosEnviados.length > 0 && (
-              <ul className="detalhe-ordem-anexos">
-                {anexosEnviados.map((anexo) => (
-                  <li key={anexo.id} className={`detalhe-ordem-anexo detalhe-ordem-anexo-${anexo.situacao}`}>
-                    {anexo.previa ? (
-                      <img src={anexo.previa} alt={anexo.nome} className="detalhe-ordem-anexo-previa" />
-                    ) : (
-                      <span className="detalhe-ordem-anexo-icone">
-                        <MdAttachFile size={22} />
-                      </span>
-                    )}
-                    <span className="detalhe-ordem-anexo-nome">{anexo.nome}</span>
-                    <span className="detalhe-ordem-anexo-situacao">
-                      {anexo.situacao === 'enviando' ? 'Enviando…' : anexo.situacao === 'enviado' ? 'Enviado' : 'Falhou'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="detalhe-ordem-card">
-            <h2>Histórico das etapas</h2>
-            <div className="detalhe-ordem-etapa-item">
-              <div className="detalhe-ordem-etapa-item-texto">
-                <strong>Agendamento</strong>
-                <span>{osAtual.op_date_sched ? formatarDataHora(osAtual.op_date_sched) : 'Feito pelo escritório'}</span>
-              </div>
-              <span className="detalhe-ordem-etapa-feito">Pronto</span>
-            </div>
-            {(() => {
-              if (!osAtual.op_pk) return null
-              const osRaizPk = osAtual.op_pk
-              return ETAPAS.map((etapa, indice) => {
-                const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
-                const concluida = concluidas[indice]
-                const situacao = situacaoEtapa(concluidas, indice)
-                // Texto explica por que o botão está bloqueado, em vez de
-                // só desabilitar sem dizer nada: a sequência é obrigatória
-                // nos dois sentidos (marcar em ordem, desfazer em ordem
-                // reversa).
-                let subtitulo: string
-                if (concluida && evento) {
-                  subtitulo = formatarDataHora(evento[etapa.campoData])
-                  if (situacao === 'bloqueada') subtitulo += ` · desfaça "${ETAPAS[indice + 1]?.rotulo}" antes`
-                } else if (situacao === 'bloqueada') {
-                  subtitulo = `Aguardando "${ETAPAS[indice - 1]?.rotulo}"`
-                } else {
-                  subtitulo = 'Ainda não'
-                }
-                return (
-                  <div key={etapa.chave} className="detalhe-ordem-etapa-item">
-                    <div className="detalhe-ordem-etapa-item-texto">
-                      <strong>{etapa.rotulo}</strong>
-                      <span>{subtitulo}</span>
-                    </div>
-                    {/* Confirmar fica na barra fixa do rodapé; aqui só desfazer. */}
-                    {concluida && (
-                      <button
-                        type="button"
-                        className="detalhe-ordem-etapa-btn-desfazer"
-                        disabled={situacao === 'bloqueada'}
-                        onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: true })}
-                      >
-                        <etapa.Icone size={14} /> Desfazer
-                      </button>
-                    )}
-                  </div>
-                )
-              })
-            })()}
-          </div>
-          {proximaEtapa && (
-            <div className="detalhe-ordem-barra-acao">
-              <button
-                type="button"
-                className="botao botao-primario botao-bloco detalhe-ordem-barra-botao"
-                style={{ '--botao-cor': CORES.suporte } as CSSProperties}
-                onClick={() => setAcaoConfirmando({ etapa: proximaEtapa.chave, desfazer: false })}
-              >
-                <proximaEtapa.Icone size={20} /> {proximaEtapa.rotuloMarcar}
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {acaoConfirmando && (
-        <div
-          className="detalhe-ordem-modal-fundo"
-          onClick={() => {
-            setAcaoConfirmando(null)
-            setObservacaoEtapa('')
-          }}
-        >
-          <div className="detalhe-ordem-modal" onClick={(evento) => evento.stopPropagation()}>
-            <h2>
-              {(() => {
-                const etapa = ETAPAS.find((e) => e.chave === acaoConfirmando.etapa)
-                if (!etapa) return ''
-                return acaoConfirmando.desfazer ? `${etapa.rotuloDesfazer}?` : `${etapa.rotuloMarcar}?`
-              })()}
-            </h2>
-            <p className="detalhe-ordem-modal-texto">
-              {acaoConfirmando.etapa === 'finalizar' && !acaoConfirmando.desfazer
-                ? 'Descreva o que foi feito — obrigatório para finalizar.'
-                : 'Descreva o que foi feito, se quiser (opcional).'}
-            </p>
-            <textarea
-              value={observacaoEtapa}
-              onChange={(e) => setObservacaoEtapa(e.target.value)}
-              placeholder="Ex: Trocado cabo de rede, sinal normalizado."
-              rows={3}
-            />
-            <div className="detalhe-ordem-modal-acoes">
-              <button
-                className="botao botao-secundario"
-                onClick={() => {
-                  setAcaoConfirmando(null)
-                  setObservacaoEtapa('')
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                className="botao botao-primario"
-                style={{ '--botao-cor': CORES.suporte } as CSSProperties}
-                disabled={executandoEtapa}
-                onClick={confirmarEtapa}
-              >
-                {executandoEtapa ? 'Salvando…' : 'Confirmar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {enderecoEditando && (
-        <ModalEditarEndereco
-          endereco={enderecoEditando}
-          corDestaque={CORES.suporte}
-          onFechar={() => setEnderecoEditando(null)}
-          onSalvo={(atualizado) => {
-            setEndereco(atualizado)
-            setEnderecoEditando(null)
-            toast('Endereço atualizado com sucesso.', 'sucesso')
-          }}
-        />
-      )}
-    </div>
+        {enderecoEditando && (
+          <ModalEditarEndereco
+            endereco={enderecoEditando}
+            corDestaque={CORES.suporte}
+            onFechar={() => setEnderecoEditando(null)}
+            onSalvo={(atualizado) => {
+              setEndereco(atualizado)
+              setEnderecoEditando(null)
+              toast('Endereço atualizado com sucesso.', 'sucesso')
+            }}
+          />
+        )}
+      </div>
+    </PullToRefresh>
   )
 }

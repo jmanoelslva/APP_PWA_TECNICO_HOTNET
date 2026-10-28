@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { MdCable, MdDeleteForever, MdPowerSettingsNew, MdRefresh } from 'react-icons/md'
 import { ApiError, atualizarInfoOnu, buscarOnu, reiniciarOnu, removerOnu, renomearOnu, type OnuDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
+import PullToRefresh from '../components/PullToRefresh'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
@@ -214,109 +215,117 @@ export default function OnuStatus() {
   const semSelecao = !temParametroInicial && !onu && !carregando
   const tempoDesdeColeta = onu ? formatarTempoDesdeColeta(onu.info_timer) : null
 
+  // Puxar para atualizar relê a mesma ONU, sem a reconexão demorada da OLT
+  // que o "Atualizar agora" faz.
+  async function recarregar() {
+    if (temParametroInicial) await carregar(buscarInicial)
+  }
+
   return (
-    <div className="onu-tela tela-entrada">
-      <CabecalhoTela icone={MdCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
+    <PullToRefresh aoAtualizar={recarregar}>
+      <div className="onu-tela tela-entrada">
+        <CabecalhoTela icone={MdCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
 
-      <BuscaOnu onEscolher={(parametros) => setParams(parametros)} />
+        <BuscaOnu onEscolher={(parametros) => setParams(parametros)} />
 
-      {semSelecao && !erro && (
-        <EstadoVazio
-          icone={MdCable}
-          titulo="Busque pelo serial da ONU ou pelo usuário PPPoE"
-          subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
-        />
-      )}
-
-      {carregando && (
-        <div className="onu-card">
-          <Skeleton width="50%" height={16} />
-          <Skeleton width="70%" height={13} />
-        </div>
-      )}
-
-      {!carregando && erro && (
-        <EstadoErro mensagem={erro} cor={CORES.onu} onTentarDeNovo={() => carregar(buscarInicial)} />
-      )}
-
-      {temParametroInicial && !carregando && !erro && !onu && (
-        <EstadoVazio icone={MdCable} titulo="Nenhuma ONU encontrada para esta conexão." />
-      )}
-
-      {!carregando && !erro && onu && (
-        <>
-          <CardsSinal onu={onu} />
-          <CardsCredenciais onu={onu} />
-          <CardDetalhesOnu
-            onu={onu}
-            ocupado={atualizandoAntesDaAcao}
-            onRegistrarCliente={() => abrirDepoisDeReler(() => setRegistrandoCliente(true))}
-            onRenomear={() => abrirDepoisDeReler((atualizada) => setRenomeando(atualizada.name ?? ''))}
+        {semSelecao && !erro && (
+          <EstadoVazio
+            icone={MdCable}
+            titulo="Busque pelo serial da ONU ou pelo usuário PPPoE"
+            subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
           />
+        )}
 
-          {!atualizando && tempoDesdeColeta && <p className="onu-ultima-coleta">Dados coletados {tempoDesdeColeta}</p>}
-          <button
-            className="botao botao-secundario botao-bloco"
-            // Verde (sucesso) — diferencia do leitor de QR e do "Reiniciar"
-            // logo abaixo, que usam CORES.onu (ver onu-acoes-onu).
-            style={{ '--botao-cor': CORES.sucesso } as CSSProperties}
-            onClick={atualizarAgora}
-            disabled={atualizando}
-          >
-            <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
-          </button>
-
-          <div className="onu-acoes-onu">
-            <button
-              type="button"
-              className="botao botao-secundario"
-              style={{ '--botao-cor': CORES.onu } as CSSProperties}
-              onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('reiniciar'))}
-              disabled={executandoAcao || atualizandoAntesDaAcao}
-            >
-              <MdPowerSettingsNew size={16} /> Reiniciar ONU
-            </button>
-            <button
-              type="button"
-              className="botao botao-perigo"
-              onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('remover'))}
-              disabled={executandoAcao || atualizandoAntesDaAcao}
-            >
-              <MdDeleteForever size={16} /> Remover ONU
-            </button>
+        {carregando && (
+          <div className="onu-card">
+            <Skeleton width="50%" height={16} />
+            <Skeleton width="70%" height={13} />
           </div>
-        </>
-      )}
+        )}
 
-      {confirmandoAcao && (
-        <ModalConfirmarAcao
-          acao={confirmandoAcao}
-          executando={executandoAcao}
-          onConfirmar={executarAcao}
-          onCancelar={() => setConfirmandoAcao(null)}
-        />
-      )}
+        {!carregando && erro && (
+          <EstadoErro mensagem={erro} cor={CORES.onu} onTentarDeNovo={() => carregar(buscarInicial)} />
+        )}
 
-      {renomeando !== null && (
-        <ModalRenomear
-          nomeAtual={renomeando}
-          salvando={salvandoNome}
-          onSalvar={confirmarRenomear}
-          onCancelar={() => setRenomeando(null)}
-        />
-      )}
+        {temParametroInicial && !carregando && !erro && !onu && (
+          <EstadoVazio icone={MdCable} titulo="Nenhuma ONU encontrada para esta conexão." />
+        )}
 
-      {registrandoCliente && onu && (
-        <ModalRegistrarCliente
-          onu={onu}
-          onFechar={() => setRegistrandoCliente(false)}
-          onAssociado={(clientPk, clientNome) => {
-            setRegistrandoCliente(false)
-            setOnu((atual) => (atual ? { ...atual, client_pk: clientPk, client_name: clientNome } : atual))
-            toast('ONU associada ao cliente com sucesso.', 'sucesso')
-          }}
-        />
-      )}
-    </div>
+        {!carregando && !erro && onu && (
+          <>
+            <CardsSinal onu={onu} />
+            <CardsCredenciais onu={onu} />
+            <CardDetalhesOnu
+              onu={onu}
+              ocupado={atualizandoAntesDaAcao}
+              onRegistrarCliente={() => abrirDepoisDeReler(() => setRegistrandoCliente(true))}
+              onRenomear={() => abrirDepoisDeReler((atualizada) => setRenomeando(atualizada.name ?? ''))}
+            />
+
+            {!atualizando && tempoDesdeColeta && <p className="onu-ultima-coleta">Dados coletados {tempoDesdeColeta}</p>}
+            <button
+              className="botao botao-secundario botao-bloco"
+              // Verde (sucesso) — diferencia do leitor de QR e do "Reiniciar"
+              // logo abaixo, que usam CORES.onu (ver onu-acoes-onu).
+              style={{ '--botao-cor': CORES.sucesso } as CSSProperties}
+              onClick={atualizarAgora}
+              disabled={atualizando}
+            >
+              <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
+            </button>
+
+            <div className="onu-acoes-onu">
+              <button
+                type="button"
+                className="botao botao-secundario"
+                style={{ '--botao-cor': CORES.onu } as CSSProperties}
+                onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('reiniciar'))}
+                disabled={executandoAcao || atualizandoAntesDaAcao}
+              >
+                <MdPowerSettingsNew size={16} /> Reiniciar ONU
+              </button>
+              <button
+                type="button"
+                className="botao botao-perigo"
+                onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('remover'))}
+                disabled={executandoAcao || atualizandoAntesDaAcao}
+              >
+                <MdDeleteForever size={16} /> Remover ONU
+              </button>
+            </div>
+          </>
+        )}
+
+        {confirmandoAcao && (
+          <ModalConfirmarAcao
+            acao={confirmandoAcao}
+            executando={executandoAcao}
+            onConfirmar={executarAcao}
+            onCancelar={() => setConfirmandoAcao(null)}
+          />
+        )}
+
+        {renomeando !== null && (
+          <ModalRenomear
+            nomeAtual={renomeando}
+            salvando={salvandoNome}
+            onSalvar={confirmarRenomear}
+            onCancelar={() => setRenomeando(null)}
+          />
+        )}
+
+        {registrandoCliente && onu && (
+          <ModalRegistrarCliente
+            onu={onu}
+            onFechar={() => setRegistrandoCliente(false)}
+            onAssociado={(clientPk, clientNome) => {
+              setRegistrandoCliente(false)
+              setOnu((atual) => (atual ? { ...atual, client_pk: clientPk, client_name: clientNome } : atual))
+              toast('ONU associada ao cliente com sucesso.', 'sucesso')
+            }}
+          />
+        )}
+      </div>
+    </PullToRefresh>
   )
 }

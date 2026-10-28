@@ -29,6 +29,7 @@ import {
 import AcoesContato from '../components/AcoesContato'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
+import PullToRefresh from '../components/PullToRefresh'
 import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
@@ -163,307 +164,309 @@ export default function DetalheCliente() {
   }
 
   return (
-    <div className="detalhe-cliente-tela tela-entrada">
-      {carregando && (
-        <div className="detalhe-cliente-card">
-          <Skeleton width="50%" height={18} />
-          <Skeleton width="30%" height={13} />
-        </div>
-      )}
-
-      {!carregando && erro && (
-        <EstadoErro mensagem={erro} cor={CORES.cliente} onTentarDeNovo={carregar} />
-      )}
-
-      {!carregando && !erro && (
-        <>
+    <PullToRefresh aoAtualizar={carregar}>
+      <div className="detalhe-cliente-tela tela-entrada">
+        {carregando && (
           <div className="detalhe-cliente-card">
-            <span className="detalhe-cliente-icone" style={{ background: CORES.cliente }}>
-              <MdPeopleAlt size={22} color={CORES.branco} />
-            </span>
-            <div>
-              <strong>{nome ?? `Cliente #${pk}`}</strong>
-              {doc && <p>Documento: {formatarDocumento(doc)}</p>}
-            </div>
+            <Skeleton width="50%" height={18} />
+            <Skeleton width="30%" height={13} />
           </div>
+        )}
 
-          <section className="detalhe-cliente-secao">
-            <h2>Financeiro</h2>
-            <div className="detalhe-cliente-item-acoes">
-              <Link
-                to={`/financeiro?client_pk=${pk}`}
-                className="botao botao-secundario botao-pequeno"
-                style={{ '--botao-cor': CORES.financeiro } as CSSProperties}
-                viewTransition
-              >
-                <MdReceipt size={14} /> Cobranças
-              </Link>
+        {!carregando && erro && (
+          <EstadoErro mensagem={erro} cor={CORES.cliente} onTentarDeNovo={carregar} />
+        )}
+
+        {!carregando && !erro && (
+          <>
+            <div className="detalhe-cliente-card">
+              <span className="detalhe-cliente-icone" style={{ background: CORES.cliente }}>
+                <MdPeopleAlt size={22} color={CORES.branco} />
+              </span>
+              <div>
+                <strong>{nome ?? `Cliente #${pk}`}</strong>
+                {doc && <p>Documento: {formatarDocumento(doc)}</p>}
+              </div>
             </div>
-          </section>
 
-          <section className="detalhe-cliente-secao">
-            <h2>Telefones</h2>
-            {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
-            {telefones.map((tel) => (
-              <div key={tel.phone_pk} className="detalhe-cliente-item">
-                <div className="detalhe-cliente-item-topo">
-                  <strong>{tel.phone_identification ?? 'Telefone'}</strong>
-                  <button className="detalhe-cliente-btn-icone" onClick={() => setTelefoneEditando(tel)} aria-label="Editar telefone">
-                    <MdEdit size={18} />
-                  </button>
-                </div>
-                <p>{tel.phone_number ? formatarTelefone(tel.phone_number) : 'Número não informado'}</p>
-                <AcoesContato numero={tel.phone_number} />
+            <section className="detalhe-cliente-secao">
+              <h2>Financeiro</h2>
+              <div className="detalhe-cliente-item-acoes">
+                <Link
+                  to={`/financeiro?client_pk=${pk}`}
+                  className="botao botao-secundario botao-pequeno"
+                  style={{ '--botao-cor': CORES.financeiro } as CSSProperties}
+                  viewTransition
+                >
+                  <MdReceipt size={14} /> Cobranças
+                </Link>
               </div>
-            ))}
-            <button
-              type="button"
-              className="botao botao-secundario botao-pequeno"
-              style={{ '--botao-cor': CORES.cliente } as CSSProperties}
-              onClick={() => setAdicionandoTelefone(true)}
-            >
-              <MdAdd size={14} /> Adicionar telefone
-            </button>
-          </section>
+            </section>
 
-          <section className="detalhe-cliente-secao">
-            <h2>Endereços</h2>
-            {enderecos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum endereço cadastrado.</p>}
-            {enderecos.map((endereco) => (
-              <div key={endereco.address_pk} className="detalhe-cliente-item">
-                <div className="detalhe-cliente-item-topo">
-                  <strong>{endereco.address_identification ?? 'Endereço'}</strong>
-                  <button className="detalhe-cliente-btn-icone" onClick={() => setEnderecoEditando(endereco)} aria-label="Editar endereço">
-                    <MdEdit size={18} />
-                  </button>
-                </div>
-                <p>
-                  {[endereco.address, endereco.address_number, endereco.address_neighborhood]
-                    .filter(Boolean)
-                    .join(', ') || 'Endereço não informado'}
-                </p>
-                {(endereco.address_province || endereco.address_state) && (
-                  <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
-                )}
-                {endereco.address_zipcode && <p>CEP: {formatarCep(endereco.address_zipcode)}</p>}
-                {endereco.address_latitude && endereco.address_longitude && (
-                  <div className="detalhe-cliente-item-acoes">
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="botao botao-secundario botao-pequeno"
-                      style={{ '--botao-cor': CORES.endereco } as CSSProperties}
-                    >
-                      <MdLocationOn size={14} /> Ver no Google Maps
-                    </a>
+            <section className="detalhe-cliente-secao">
+              <h2>Telefones</h2>
+              {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
+              {telefones.map((tel) => (
+                <div key={tel.phone_pk} className="detalhe-cliente-item">
+                  <div className="detalhe-cliente-item-topo">
+                    <strong>{tel.phone_identification ?? 'Telefone'}</strong>
+                    <button className="detalhe-cliente-btn-icone" onClick={() => setTelefoneEditando(tel)} aria-label="Editar telefone">
+                      <MdEdit size={18} />
+                    </button>
                   </div>
-                )}
-              </div>
-            ))}
-          </section>
+                  <p>{tel.phone_number ? formatarTelefone(tel.phone_number) : 'Número não informado'}</p>
+                  <AcoesContato numero={tel.phone_number} />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="botao botao-secundario botao-pequeno"
+                style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+                onClick={() => setAdicionandoTelefone(true)}
+              >
+                <MdAdd size={14} /> Adicionar telefone
+              </button>
+            </section>
 
-          <section className="detalhe-cliente-secao">
-            <h2>Conexões (CPE)</h2>
-            {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
-            {cpes.map((cpe) => {
-              const resumo = cpe.cpe_pk != null ? resumosConexao[cpe.cpe_pk] : undefined
-              const sinal = nivelSinalOnu(resumo?.onu?.omddm_rx_power)
-              return (
-                <div key={cpe.cpe_pk} className="detalhe-cliente-item">
-                  <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
-                  {(cpe.contract_number ?? cpe.contract_pk) != null && <p>Contrato: {cpe.contract_number ?? cpe.contract_pk}</p>}
-
-                  {resumo?.carregando && <p className="detalhe-cliente-resumo-carregando">Consultando conexão e ONU…</p>}
-
-                  {resumo && !resumo.carregando && (resumo.cpe || resumo.onu) && (
-                    <div className="detalhe-cliente-resumo-grid">
-                      {resumo.cpe?.plan_name && (
-                        <div>
-                          <span>Plano</span>
-                          <strong>{resumo.cpe.plan_name}</strong>
-                        </div>
-                      )}
-                      {(resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last) && (
-                        <div>
-                          <span>IP</span>
-                          <strong>{resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last}</strong>
-                        </div>
-                      )}
-                      {resumo.onu && (
-                        <div>
-                          <span>Sinal ONU</span>
-                          <span className={`detalhe-cliente-sinal-badge ${sinal}`}>
-                            {resumo.onu.omddm_rx_power != null ? `${resumo.onu.omddm_rx_power} dBm` : TEXTO_SINAL_ONU[sinal]}
-                          </span>
-                        </div>
-                      )}
-                      {resumo.onu?.distance != null && (
-                        <div>
-                          <span>Distância</span>
-                          <strong>{resumo.onu.distance} km</strong>
-                        </div>
-                      )}
-                      {resumo.onu?.state && (
-                        <div>
-                          <span>Estado ONU</span>
-                          <strong>{resumo.onu.state}</strong>
-                        </div>
-                      )}
+            <section className="detalhe-cliente-secao">
+              <h2>Endereços</h2>
+              {enderecos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum endereço cadastrado.</p>}
+              {enderecos.map((endereco) => (
+                <div key={endereco.address_pk} className="detalhe-cliente-item">
+                  <div className="detalhe-cliente-item-topo">
+                    <strong>{endereco.address_identification ?? 'Endereço'}</strong>
+                    <button className="detalhe-cliente-btn-icone" onClick={() => setEnderecoEditando(endereco)} aria-label="Editar endereço">
+                      <MdEdit size={18} />
+                    </button>
+                  </div>
+                  <p>
+                    {[endereco.address, endereco.address_number, endereco.address_neighborhood]
+                      .filter(Boolean)
+                      .join(', ') || 'Endereço não informado'}
+                  </p>
+                  {(endereco.address_province || endereco.address_state) && (
+                    <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
+                  )}
+                  {endereco.address_zipcode && <p>CEP: {formatarCep(endereco.address_zipcode)}</p>}
+                  {endereco.address_latitude && endereco.address_longitude && (
+                    <div className="detalhe-cliente-item-acoes">
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="botao botao-secundario botao-pequeno"
+                        style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                      >
+                        <MdLocationOn size={14} /> Ver no Google Maps
+                      </a>
                     </div>
                   )}
-
-                  <div className="detalhe-cliente-item-acoes">
-                    <Link
-                      to={`/conexao?cpe_pk=${cpe.cpe_pk}`}
-                      className="botao botao-secundario botao-pequeno"
-                      style={{ '--botao-cor': CORES.conexao } as CSSProperties}
-                      viewTransition
-                    >
-                      <MdWifi size={14} /> Conexão
-                    </Link>
-                    <Link
-                      to={
-                        cpe.cpe_username
-                          ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
-                          : `/onu?cpe_pk=${cpe.cpe_pk}`
-                      }
-                      className="botao botao-secundario botao-pequeno"
-                      style={{ '--botao-cor': CORES.onu } as CSSProperties}
-                      viewTransition
-                    >
-                      <MdCable size={14} /> ONU
-                    </Link>
-                  </div>
                 </div>
-              )
-            })}
-          </section>
+              ))}
+            </section>
 
-          <section className="detalhe-cliente-secao">
-            <h2>Contratos</h2>
-            {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
-            {contratos.map((contrato, indice) => {
-              const chave = contrato.contract_pk ?? indice
-              const expandido = contratosExpandidos.has(chave)
-              return (
-                <div key={chave} className="detalhe-cliente-item">
-                  <button
-                    type="button"
-                    className="detalhe-cliente-item-topo detalhe-cliente-contrato-toggle"
-                    onClick={() => alternarContrato(chave)}
-                    aria-expanded={expandido}
-                  >
-                    <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
-                    {expandido ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
-                  </button>
-                  {expandido && (
-                    <>
-                      {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
-                      {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
-                      {/* contract_sign_date vazio/null = ainda não assinado
-                          (apidoc.brbyte.com/#post-/controllrctl/contract/list)
-                          — é o indicador de status da assinatura, não um
-                          campo à parte. */}
-                      <p>Assinatura: {contrato.contract_sign_date ? `Assinado em ${formatarData(contrato.contract_sign_date)}` : 'Não assinado'}</p>
-                      {camposAssinaturaExtra(contrato).map(([rotulo, valor]) => (
-                        <p key={rotulo} className="detalhe-cliente-campo-extra">
-                          {rotulo}: {valor}
-                        </p>
-                      ))}
-                      {contrato.itens && contrato.itens.length > 0 && (
-                        <div className="detalhe-cliente-itens">
-                          <span className="detalhe-cliente-itens-titulo">Itens do contrato</span>
-                          {contrato.itens.map((item, indiceItem) => (
-                            <div key={item.item_pk ?? indiceItem} className="detalhe-cliente-itens-linha">
-                              <span>{item.item_name ?? item.plan_name ?? 'Item'}</span>
-                              {item.item_amount && <strong>R$ {item.item_amount}</strong>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {/* Contrato ainda não assinado: destaca a assinatura como
-                          ação principal — é o que o técnico faz na visita,
-                          entregando o aparelho para o cliente assinar ali mesmo
-                          nesse link. Já assinado, "Ver contrato" some para um
-                          chip discreto (só consulta). */}
-                      {!contrato.contract_sign_date && contrato.contract_sign_doc_link && (
-                        <a
-                          href={contrato.contract_sign_doc_link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="detalhe-cliente-btn-assinar"
-                        >
-                          <MdDescription size={18} /> Assinar contrato agora
-                        </a>
-                      )}
-                      {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
-                        <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível para este contrato.</p>
-                      )}
-                      {contrato.contract_sign_date && contrato.contract_sign_doc_link && (
-                        <div className="detalhe-cliente-item-acoes">
+            <section className="detalhe-cliente-secao">
+              <h2>Conexões (CPE)</h2>
+              {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
+              {cpes.map((cpe) => {
+                const resumo = cpe.cpe_pk != null ? resumosConexao[cpe.cpe_pk] : undefined
+                const sinal = nivelSinalOnu(resumo?.onu?.omddm_rx_power)
+                return (
+                  <div key={cpe.cpe_pk} className="detalhe-cliente-item">
+                    <strong>{cpe.cpe_username ?? `CPE #${cpe.cpe_pk}`}</strong>
+                    {(cpe.contract_number ?? cpe.contract_pk) != null && <p>Contrato: {cpe.contract_number ?? cpe.contract_pk}</p>}
+
+                    {resumo?.carregando && <p className="detalhe-cliente-resumo-carregando">Consultando conexão e ONU…</p>}
+
+                    {resumo && !resumo.carregando && (resumo.cpe || resumo.onu) && (
+                      <div className="detalhe-cliente-resumo-grid">
+                        {resumo.cpe?.plan_name && (
+                          <div>
+                            <span>Plano</span>
+                            <strong>{resumo.cpe.plan_name}</strong>
+                          </div>
+                        )}
+                        {(resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last) && (
+                          <div>
+                            <span>IP</span>
+                            <strong>{resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last}</strong>
+                          </div>
+                        )}
+                        {resumo.onu && (
+                          <div>
+                            <span>Sinal ONU</span>
+                            <span className={`detalhe-cliente-sinal-badge ${sinal}`}>
+                              {resumo.onu.omddm_rx_power != null ? `${resumo.onu.omddm_rx_power} dBm` : TEXTO_SINAL_ONU[sinal]}
+                            </span>
+                          </div>
+                        )}
+                        {resumo.onu?.distance != null && (
+                          <div>
+                            <span>Distância</span>
+                            <strong>{resumo.onu.distance} km</strong>
+                          </div>
+                        )}
+                        {resumo.onu?.state && (
+                          <div>
+                            <span>Estado ONU</span>
+                            <strong>{resumo.onu.state}</strong>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="detalhe-cliente-item-acoes">
+                      <Link
+                        to={`/conexao?cpe_pk=${cpe.cpe_pk}`}
+                        className="botao botao-secundario botao-pequeno"
+                        style={{ '--botao-cor': CORES.conexao } as CSSProperties}
+                        viewTransition
+                      >
+                        <MdWifi size={14} /> Conexão
+                      </Link>
+                      <Link
+                        to={
+                          cpe.cpe_username
+                            ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
+                            : `/onu?cpe_pk=${cpe.cpe_pk}`
+                        }
+                        className="botao botao-secundario botao-pequeno"
+                        style={{ '--botao-cor': CORES.onu } as CSSProperties}
+                        viewTransition
+                      >
+                        <MdCable size={14} /> ONU
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+            </section>
+
+            <section className="detalhe-cliente-secao">
+              <h2>Contratos</h2>
+              {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
+              {contratos.map((contrato, indice) => {
+                const chave = contrato.contract_pk ?? indice
+                const expandido = contratosExpandidos.has(chave)
+                return (
+                  <div key={chave} className="detalhe-cliente-item">
+                    <button
+                      type="button"
+                      className="detalhe-cliente-item-topo detalhe-cliente-contrato-toggle"
+                      onClick={() => alternarContrato(chave)}
+                      aria-expanded={expandido}
+                    >
+                      <strong>Contrato {contrato.contract_number ?? contrato.contract_pk}</strong>
+                      {expandido ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
+                    </button>
+                    {expandido && (
+                      <>
+                        {contrato.contract_status != null && <p>Status: {formatarStatusContrato(contrato.contract_status)}</p>}
+                        {contrato.contract_date_activation && <p>Ativado em {contrato.contract_date_activation}</p>}
+                        {/* contract_sign_date vazio/null = ainda não assinado
+                            (apidoc.brbyte.com/#post-/controllrctl/contract/list)
+                            — é o indicador de status da assinatura, não um
+                            campo à parte. */}
+                        <p>Assinatura: {contrato.contract_sign_date ? `Assinado em ${formatarData(contrato.contract_sign_date)}` : 'Não assinado'}</p>
+                        {camposAssinaturaExtra(contrato).map(([rotulo, valor]) => (
+                          <p key={rotulo} className="detalhe-cliente-campo-extra">
+                            {rotulo}: {valor}
+                          </p>
+                        ))}
+                        {contrato.itens && contrato.itens.length > 0 && (
+                          <div className="detalhe-cliente-itens">
+                            <span className="detalhe-cliente-itens-titulo">Itens do contrato</span>
+                            {contrato.itens.map((item, indiceItem) => (
+                              <div key={item.item_pk ?? indiceItem} className="detalhe-cliente-itens-linha">
+                                <span>{item.item_name ?? item.plan_name ?? 'Item'}</span>
+                                {item.item_amount && <strong>R$ {item.item_amount}</strong>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* Contrato ainda não assinado: destaca a assinatura como
+                            ação principal — é o que o técnico faz na visita,
+                            entregando o aparelho para o cliente assinar ali mesmo
+                            nesse link. Já assinado, "Ver contrato" some para um
+                            chip discreto (só consulta). */}
+                        {!contrato.contract_sign_date && contrato.contract_sign_doc_link && (
                           <a
                             href={contrato.contract_sign_doc_link}
                             target="_blank"
                             rel="noreferrer"
-                            className="botao botao-secundario botao-pequeno"
-                            style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+                            className="detalhe-cliente-btn-assinar"
                           >
-                            <MdDescription size={14} /> Ver contrato assinado
+                            <MdDescription size={18} /> Assinar contrato agora
                           </a>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )
-            })}
-          </section>
-        </>
-      )}
+                        )}
+                        {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
+                          <p className="detalhe-cliente-campo-extra">Link de assinatura ainda não disponível para este contrato.</p>
+                        )}
+                        {contrato.contract_sign_date && contrato.contract_sign_doc_link && (
+                          <div className="detalhe-cliente-item-acoes">
+                            <a
+                              href={contrato.contract_sign_doc_link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="botao botao-secundario botao-pequeno"
+                              style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+                            >
+                              <MdDescription size={14} /> Ver contrato assinado
+                            </a>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+            </section>
+          </>
+        )}
 
-      {enderecoEditando && (
-        <ModalEditarEndereco
-          endereco={enderecoEditando}
-          corDestaque={CORES.cliente}
-          onFechar={() => setEnderecoEditando(null)}
-          onSalvo={(atualizado) => {
-            setEnderecos((atual) => atual.map((e) => (e.address_pk === atualizado.address_pk ? atualizado : e)))
-            setEnderecoEditando(null)
-            toast('Endereço atualizado com sucesso.', 'sucesso')
-          }}
-        />
-      )}
+        {enderecoEditando && (
+          <ModalEditarEndereco
+            endereco={enderecoEditando}
+            corDestaque={CORES.cliente}
+            onFechar={() => setEnderecoEditando(null)}
+            onSalvo={(atualizado) => {
+              setEnderecos((atual) => atual.map((e) => (e.address_pk === atualizado.address_pk ? atualizado : e)))
+              setEnderecoEditando(null)
+              toast('Endereço atualizado com sucesso.', 'sucesso')
+            }}
+          />
+        )}
 
-      {telefoneEditando && (
-        <ModalEditarTelefone
-          telefone={telefoneEditando}
-          onFechar={() => setTelefoneEditando(null)}
-          onSalvo={(atualizado) => {
-            setTelefones((atual) => atual.map((t) => (t.phone_pk === atualizado.phone_pk ? atualizado : t)))
-            setTelefoneEditando(null)
-            toast('Telefone atualizado com sucesso.', 'sucesso')
-          }}
-        />
-      )}
+        {telefoneEditando && (
+          <ModalEditarTelefone
+            telefone={telefoneEditando}
+            onFechar={() => setTelefoneEditando(null)}
+            onSalvo={(atualizado) => {
+              setTelefones((atual) => atual.map((t) => (t.phone_pk === atualizado.phone_pk ? atualizado : t)))
+              setTelefoneEditando(null)
+              toast('Telefone atualizado com sucesso.', 'sucesso')
+            }}
+          />
+        )}
 
-      {adicionandoTelefone && (
-        <ModalAdicionarTelefone
-          clientPk={pk}
-          onFechar={() => setAdicionandoTelefone(false)}
-          onSalvo={() => {
-            setAdicionandoTelefone(false)
-            toast('Telefone adicionado com sucesso.', 'sucesso')
-            // Recarrega em vez de montar o registro na mão — o phone_pk
-            // de verdade só vem do Controllr, e é mais simples pegar a
-            // lista atualizada inteira do que tentar adivinhar/extrair
-            // isso da resposta crua do /telefones (results não tem tipo
-            // garantido, ver criarTelefone em api/client.ts).
-            carregar()
-          }}
-        />
-      )}
-    </div>
+        {adicionandoTelefone && (
+          <ModalAdicionarTelefone
+            clientPk={pk}
+            onFechar={() => setAdicionandoTelefone(false)}
+            onSalvo={() => {
+              setAdicionandoTelefone(false)
+              toast('Telefone adicionado com sucesso.', 'sucesso')
+              // Recarrega em vez de montar o registro na mão — o phone_pk
+              // de verdade só vem do Controllr, e é mais simples pegar a
+              // lista atualizada inteira do que tentar adivinhar/extrair
+              // isso da resposta crua do /telefones (results não tem tipo
+              // garantido, ver criarTelefone em api/client.ts).
+              carregar()
+            }}
+          />
+        )}
+      </div>
+    </PullToRefresh>
   )
 }
 

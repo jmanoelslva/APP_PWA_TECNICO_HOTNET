@@ -19,6 +19,7 @@ import {
 } from 'react-icons/md'
 import { ApiError, listarAuditoria } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
+import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import Skeleton from '../components/Skeleton'
 import { agruparPorDia, detalhes, hora, mudancas, type DiaAuditoria } from '../utils/auditoria'
@@ -83,6 +84,7 @@ export default function Auditoria() {
   const [mais, setMais] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [carregando, setCarregando] = useState(true)
+  const [recarga, setRecarga] = useState(0)
 
   useEffect(() => {
     let cancelado = false
@@ -105,7 +107,7 @@ export default function Auditoria() {
     return () => {
       cancelado = true
     }
-  }, [filtro, limite])
+  }, [filtro, limite, recarga])
 
   function buscar(e: FormEvent) {
     e.preventDefault()
@@ -120,137 +122,139 @@ export default function Auditoria() {
   }
 
   return (
-    <div className="auditoria-tela tela-entrada">
-      <CabecalhoTela
-        icone={MdManageSearch}
-        cor={CORES.ferramentas}
-        titulo="Auditoria"
-        subtitulo="Quem mexeu no equipamento do cliente, quando e de qual IP."
-      />
+    <PullToRefresh aoAtualizar={async () => setRecarga((atual) => atual + 1)}>
+      <div className="auditoria-tela tela-entrada">
+        <CabecalhoTela
+          icone={MdManageSearch}
+          cor={CORES.ferramentas}
+          titulo="Auditoria"
+          subtitulo="Quem mexeu no equipamento do cliente, quando e de qual IP."
+        />
 
-      <div className="auditoria-chips" role="group" aria-label="Tipo de ação">
-        {FILTROS.map((a) => (
-          <button
-            key={a.valor}
-            type="button"
-            className="auditoria-chip"
-            aria-pressed={filtro.acao === a.valor}
-            onClick={() => escolherAcao(a.valor)}
-          >
-            {a.rotulo}
-          </button>
-        ))}
-      </div>
-
-      <form className="auditoria-filtros" onSubmit={buscar}>
-        {/* Duas colunas: datas (De em cima de Até) e técnico em cima do Filtrar. */}
-        <label className="auditoria-filtro-de">
-          De
-          <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
-        </label>
-        <label className="auditoria-filtro-ate">
-          Até
-          <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
-        </label>
-        <label className="auditoria-filtro-tecnico">
-          Técnico
-          <input value={tecnico} onChange={(e) => setTecnico(e.target.value)} placeholder="Usuário" />
-        </label>
-        <button
-          className="botao botao-secundario auditoria-filtro-botao"
-          style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}
-        >
-          Filtrar
-        </button>
-      </form>
-
-      {erro && <p className="auditoria-erro">{erro}</p>}
-      {!erro && carregando && !dias && (
-        <div className="auditoria-item">
-          <Skeleton width="60%" height={14} />
-          <Skeleton width="40%" height={12} />
+        <div className="auditoria-chips" role="group" aria-label="Tipo de ação">
+          {FILTROS.map((a) => (
+            <button
+              key={a.valor}
+              type="button"
+              className="auditoria-chip"
+              aria-pressed={filtro.acao === a.valor}
+              onClick={() => escolherAcao(a.valor)}
+            >
+              {a.rotulo}
+            </button>
+          ))}
         </div>
-      )}
-      {!erro && dias?.length === 0 && <EstadoVazio icone={MdManageSearch} titulo="Nenhuma ação encontrada." />}
 
-      {!erro &&
-        dias?.map((grupo) => (
-          <section key={grupo.dia} className="auditoria-dia">
-            <h2 className="auditoria-dia-titulo">
-              <span>{grupo.titulo}</span>
-              <span>{plural(grupo.eventos.length)}</span>
-            </h2>
-            <ul className="auditoria-lista">
-              {grupo.eventos.map((ev, i) => {
-                const acao = POR_ACAO[ev.acao]
-                const Icone = acao?.icone ?? MdManageSearch
-                const alvo = ev.alvo ?? {}
-                const listaMudancas = mudancas(alvo, ev.acao)
-                const listaDetalhes = detalhes(alvo, ev.acao)
-                return (
-                  <li
-                    key={`${ev.quando}-${i}`}
-                    className={`auditoria-item${GRAVES.has(ev.acao) ? ' auditoria-item-grave' : ''}`}
-                    style={{ '--acao-cor': acao?.cor ?? CORES.ferramentas } as CSSProperties}
-                  >
-                    <div className="auditoria-topo">
-                      <span className="auditoria-icone" aria-hidden="true">
-                        <Icone size={18} />
-                      </span>
-                      <div className="auditoria-titulo">
-                        <strong>{acao?.rotulo ?? ev.acao}</strong>
-                        <span>
-                          {ev.tecnico} · {hora(ev.quando)}
+        <form className="auditoria-filtros" onSubmit={buscar}>
+          {/* Duas colunas: datas (De em cima de Até) e técnico em cima do Filtrar. */}
+          <label className="auditoria-filtro-de">
+            De
+            <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
+          </label>
+          <label className="auditoria-filtro-ate">
+            Até
+            <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
+          </label>
+          <label className="auditoria-filtro-tecnico">
+            Técnico
+            <input value={tecnico} onChange={(e) => setTecnico(e.target.value)} placeholder="Usuário" />
+          </label>
+          <button
+            className="botao botao-secundario auditoria-filtro-botao"
+            style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}
+          >
+            Filtrar
+          </button>
+        </form>
+
+        {erro && <p className="auditoria-erro">{erro}</p>}
+        {!erro && carregando && !dias && (
+          <div className="auditoria-item">
+            <Skeleton width="60%" height={14} />
+            <Skeleton width="40%" height={12} />
+          </div>
+        )}
+        {!erro && dias?.length === 0 && <EstadoVazio icone={MdManageSearch} titulo="Nenhuma ação encontrada." />}
+
+        {!erro &&
+          dias?.map((grupo) => (
+            <section key={grupo.dia} className="auditoria-dia">
+              <h2 className="auditoria-dia-titulo">
+                <span>{grupo.titulo}</span>
+                <span>{plural(grupo.eventos.length)}</span>
+              </h2>
+              <ul className="auditoria-lista">
+                {grupo.eventos.map((ev, i) => {
+                  const acao = POR_ACAO[ev.acao]
+                  const Icone = acao?.icone ?? MdManageSearch
+                  const alvo = ev.alvo ?? {}
+                  const listaMudancas = mudancas(alvo, ev.acao)
+                  const listaDetalhes = detalhes(alvo, ev.acao)
+                  return (
+                    <li
+                      key={`${ev.quando}-${i}`}
+                      className={`auditoria-item${GRAVES.has(ev.acao) ? ' auditoria-item-grave' : ''}`}
+                      style={{ '--acao-cor': acao?.cor ?? CORES.ferramentas } as CSSProperties}
+                    >
+                      <div className="auditoria-topo">
+                        <span className="auditoria-icone" aria-hidden="true">
+                          <Icone size={18} />
                         </span>
-                        <span>IP {ev.ip}</span>
+                        <div className="auditoria-titulo">
+                          <strong>{acao?.rotulo ?? ev.acao}</strong>
+                          <span>
+                            {ev.tecnico} · {hora(ev.quando)}
+                          </span>
+                          <span>IP {ev.ip}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    {listaMudancas.length > 0 && (
-                      <div className="auditoria-mudancas">
-                        {listaMudancas.map((m) => (
-                          <div key={m.rotulo} className="auditoria-mudanca">
-                            <span className="auditoria-rotulo">{m.rotulo}</span>
-                            {m.antes !== undefined && (
-                              <>
-                                <s className="auditoria-antes">{m.antes}</s>
-                                <MdArrowForward size={14} aria-label="para" />
-                              </>
-                            )}
-                            <strong className="auditoria-depois">{m.depois}</strong>
-                            {m.nota && <span className="auditoria-nota">({m.nota})</span>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                      {listaMudancas.length > 0 && (
+                        <div className="auditoria-mudancas">
+                          {listaMudancas.map((m) => (
+                            <div key={m.rotulo} className="auditoria-mudanca">
+                              <span className="auditoria-rotulo">{m.rotulo}</span>
+                              {m.antes !== undefined && (
+                                <>
+                                  <s className="auditoria-antes">{m.antes}</s>
+                                  <MdArrowForward size={14} aria-label="para" />
+                                </>
+                              )}
+                              <strong className="auditoria-depois">{m.depois}</strong>
+                              {m.nota && <span className="auditoria-nota">({m.nota})</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
-                    {listaDetalhes.length > 0 && (
-                      <dl className="auditoria-detalhes">
-                        {listaDetalhes.map((d) => (
-                          <div key={d.rotulo}>
-                            <dt>{d.rotulo}</dt>
-                            <dd>{d.valor}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        ))}
+                      {listaDetalhes.length > 0 && (
+                        <dl className="auditoria-detalhes">
+                          {listaDetalhes.map((d) => (
+                            <div key={d.rotulo}>
+                              <dt>{d.rotulo}</dt>
+                              <dd>{d.valor}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ))}
 
-      {!erro && mais && (
-        <button
-          className="botao botao-secundario botao-bloco"
-          style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}
-          onClick={() => setLimite((l) => l + PASSO)}
-          disabled={carregando}
-        >
-          {carregando ? 'Carregando…' : 'Carregar mais'}
-        </button>
-      )}
-    </div>
+        {!erro && mais && (
+          <button
+            className="botao botao-secundario botao-bloco"
+            style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}
+            onClick={() => setLimite((l) => l + PASSO)}
+            disabled={carregando}
+          >
+            {carregando ? 'Carregando…' : 'Carregar mais'}
+          </button>
+        )}
+      </div>
+    </PullToRefresh>
   )
 }

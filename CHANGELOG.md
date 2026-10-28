@@ -7,6 +7,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.18.1] - 2026-10-28
+
+### Corrigido
+
+- **Puxar para atualizar:** voltou à tela inicial, ao detalhe da OS, ao
+  detalhe do cliente, à tela da ONU e à auditoria. Desde a 1.18.0 a página
+  não estica mais no topo, o que desligou o recurso do navegador nessas
+  telas; agora todas usam o do próprio app.
+- **Prévia do anexo quebrada:** a foto anexada na OS aparecia como imagem
+  quebrada porque o CSP não liberava `blob:` em `img-src`.
+- **Anexo recusado no Nginx:** o vhost Nginx de exemplo não definia
+  `client_max_body_size`, e o padrão de 1 MB recusava (413) fotos e vídeos
+  do celular antes de chegarem ao backend. Agora o limite é 32 MB, acima
+  do `ANEXO_MAX_MB` (30 MB).
+
 ## [1.18.0] - 2026-10-26
 
 ### Adicionado
@@ -545,7 +560,8 @@ aplicativo.
   inferior.
 - Link de Contrato na tela de ONU.
 
-[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...HEAD
+[não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.18.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...v1.18.1
 [1.18.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.15.0...v1.16.0
