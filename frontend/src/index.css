@@ -1,7 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* Inter variável (pesos 100–900), só o subconjunto latino (cobre o
+   português), servida pelo próprio app e pré-cacheada pelo service worker:
+   abre sem esperar o Google Fonts. Licença: assets/fonts/Inter-LICENSE.txt. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./assets/fonts/inter-latin.woff2') format('woff2');
+}
 
 :root {
-  font-family: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Algarismos de largura fixa: datas, IPs e consumo alinham em coluna e
+     não "pulam" quando o valor muda. */
+  font-variant-numeric: tabular-nums;
   color-scheme: light dark;
 
   /* Marca — paleta azul/operacional, para diferenciar visualmente do

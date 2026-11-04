@@ -33,6 +33,8 @@ export default defineConfig({
         // service worker não pode responder essas navegações com o
         // index.html do técnico.
         navigateFallbackDenylist: [/^\/api\//, /^\/olt(\/|$)/],
+        // Padrão (js/css/html) + a fonte Inter local, para abrir já com ela.
+        globPatterns: ['**/*.{js,css,html,woff2}'],
         skipWaiting: true,
         clientsClaim: true,
         // Avisos de OS nova (Web Push): o "push" e o toque no aviso ficam em

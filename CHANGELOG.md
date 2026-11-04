@@ -13,6 +13,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   roteador e observação, já expandidos), CTO (fibra) e Histórico (IP/MAC,
   última autenticação e histórico de conexão, carregado ao abrir a aba,
   sem toque a mais).
+- **Fonte Inter no lugar da Plus Jakarta Sans:** mais legível em tamanhos
+  pequenos e no sol, com algarismos de largura fixa (datas, IPs e consumo
+  alinhados). Servida pelo próprio app (48 KB, subconjunto latino) e
+  pré-cacheada pelo service worker — não depende mais do Google Fonts.
 
 ## [1.20.0] - 2026-11-04
 
