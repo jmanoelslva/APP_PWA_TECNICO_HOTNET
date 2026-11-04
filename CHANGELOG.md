@@ -28,16 +28,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Lembrar meu usuário no login:** só o nome de usuário fica no
   aparelho, nunca a senha; o cursor já abre na senha.
 - **Configurações:** tema Claro, Escuro ou Automático (segue o celular),
-  texto grande para o app inteiro e "Novidades desta versão".
-- **Novidades depois de atualizar:** esta lista aparece uma vez quando o
-  app é atualizado.
+  cada um com seu ícone, e texto grande para o app inteiro.
+- **Abas na OS, na ONU e no cliente**, iguais às da Conexão e lembradas
+  enquanto o app estiver aberto:
+  - OS: Resumo (descrição e endereço), Conexão, Saída (checklist e fotos)
+    e Histórico (cliente, contrato e etapas). Título, etapas, rota e o
+    botão do rodapé ficam sempre à vista.
+  - ONU: Sinal (com "Atualizar agora"), Credenciais e Equipamento
+    (detalhes, reiniciar e remover, longe do toque acidental).
+  - Cliente: Conexões, Contratos e Contato (telefones e endereços).
 
 ### Alterado
 
-- **Identidade visual nova:** faixa azul escura no login e no Início (de
-  borda a borda, com a busca por cima), botões em cor sólida e IBM Plex
-  Mono (servida pelo próprio app) em serial, MAC, PPPoE e senha. O ícone
-  do app continua o mesmo.
+- **Cores da empresa:** mesma paleta do app do cliente — laranja do
+  logotipo nos botões e destaques, grafite nos textos e na faixa escura
+  do login e do Início (de borda a borda, sem cantos, com a busca por
+  cima). Botões em cor sólida e IBM Plex Mono (servida pelo próprio app)
+  em serial, MAC, PPPoE e senha. O ícone do app continua o mesmo.
 - **Telas internas:** cabeçalho sem caixa colorida (ícone num selo e
   título maior), barra de baixo com destaque só atrás do ícone, próxima OS
   em cartão branco com "Abrir OS" em destaque, menu com avatar e sinal da

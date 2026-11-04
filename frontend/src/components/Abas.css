@@ -1,0 +1,43 @@
+/* Abas de tela (Conexão, OS, ONU, Cliente). */
+.abas {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  /* Trilho opaco (fica grudado no topo ao rolar) com a aba ativa em branco. */
+  background: color-mix(in srgb, var(--cor-texto) 8%, var(--cor-fundo));
+  border: 1px solid var(--cor-borda);
+}
+
+.aba {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aba.ativa {
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  box-shadow: 0 0 0 1.5px var(--abas-cor, var(--cor-primaria));
+}
+
+.aba:focus-visible {
+  outline: 3px solid var(--abas-cor, var(--cor-primaria));
+  outline-offset: 1px;
+}

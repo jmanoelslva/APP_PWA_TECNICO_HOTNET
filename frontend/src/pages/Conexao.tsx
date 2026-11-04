@@ -19,6 +19,7 @@ import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import BuscaUsuarioPppoe from './conexao/BuscaUsuarioPppoe'
+import Abas, { lerAbaSalva, useAbaLembrada, type Aba as AbaTela } from '../components/Abas'
 import CardAcessoRoteador from './conexao/CardAcessoRoteador'
 import CardCliente from './conexao/CardCliente'
 import CardCto from './conexao/CardCto'
@@ -45,7 +46,7 @@ type Aba = 'resumo' | 'roteador' | 'cto' | 'historico'
 
 // Wi-Fi e acesso ao roteador tratam do mesmo equipamento: uma aba só.
 // CTO (fibra) e histórico de conexão ficam separados.
-const ABAS: { chave: Aba; rotulo: string }[] = [
+const ABAS: AbaTela<Aba>[] = [
   { chave: 'resumo', rotulo: 'Resumo' },
   { chave: 'roteador', rotulo: 'Roteador' },
   { chave: 'cto', rotulo: 'CTO' },
@@ -63,15 +64,6 @@ const BLOCOS_DA_ABA: Record<Aba, Bloco[]> = {
 // Aba escolhida vale enquanto o app estiver aberto (troca de cliente e
 // continua na mesma parte).
 const CHAVE_ABA = 'hotnet-tecnico-aba-conexao'
-
-function lerAba(): Aba {
-  try {
-    const salva = sessionStorage.getItem(CHAVE_ABA)
-    return ABAS.some((item) => item.chave === salva) ? (salva as Aba) : 'resumo'
-  } catch {
-    return 'resumo'
-  }
-}
 
 export default function Conexao() {
   const [params, setParams] = useSearchParams()
@@ -101,16 +93,13 @@ export default function Conexao() {
   const [dps, setDps] = useState<DpDto[]>([])
   // Quais cartões recolhíveis estão abertos — fica aqui (e não em cada
   // cartão) para continuar aberto depois de recarregar a conexão.
-  const [blocosAbertos, setBlocosAbertos] = useState<Set<Bloco>>(() => new Set(BLOCOS_DA_ABA[lerAba()]))
-  const [aba, setAba] = useState<Aba>(lerAba)
+  const [blocosAbertos, setBlocosAbertos] = useState<Set<Bloco>>(
+    () => new Set(BLOCOS_DA_ABA[lerAbaSalva(CHAVE_ABA, ABAS)]),
+  )
+  const [aba, setAba] = useAbaLembrada(CHAVE_ABA, ABAS)
 
   function escolherAba(nova: Aba) {
     setAba(nova)
-    try {
-      sessionStorage.setItem(CHAVE_ABA, nova)
-    } catch {
-      // sem armazenamento: vale só nesta tela
-    }
     // Com as abas separando cada parte, os blocos da aba já abrem
     // expandidos, sem toque a mais.
     setBlocosAbertos((atual) => new Set([...atual, ...BLOCOS_DA_ABA[nova]]))
@@ -250,20 +239,7 @@ export default function Conexao() {
             />
             {/* Abas: o técnico vai direto ao que precisa em vez de rolar
                 por todos os cards. Cliente (com o selo) fica acima, sempre. */}
-            <div className="conexao-abas" role="tablist" aria-label="Partes da conexão">
-              {ABAS.map((item) => (
-                <button
-                  key={item.chave}
-                  type="button"
-                  role="tab"
-                  aria-selected={aba === item.chave}
-                  className={`conexao-aba${aba === item.chave ? ' ativa' : ''}`}
-                  onClick={() => escolherAba(item.chave)}
-                >
-                  {item.rotulo}
-                </button>
-              ))}
-            </div>
+            <Abas abas={ABAS} ativa={aba} onEscolher={escolherAba} cor={CORES.conexao} rotulo="Partes da conexão" />
 
             {aba === 'resumo' && (
               <>

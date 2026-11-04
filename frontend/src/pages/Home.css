@@ -10,7 +10,7 @@
      para a busca subir por cima da faixa. */
   margin: -24px -20px 0;
   padding: calc(28px + env(safe-area-inset-top, 0px)) 20px 48px;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
   /* Faixa escura da identidade (mesma do login), nos dois temas. */
   background: var(--cor-marca-escura);
   color: var(--cor-branco-fixo);
@@ -42,7 +42,7 @@
   margin-top: 2px;
   font-size: 14px;
   font-weight: 600;
-  color: #b7c8dc;
+  color: #c9d3dc;
 }
 
 :root[data-sol='1'] .home-resumo {
@@ -147,7 +147,7 @@
   border-radius: 14px;
   border: 1px solid var(--cor-borda);
   background: var(--cor-superficie);
-  box-shadow: 0 6px 20px rgba(15, 42, 68, 0.14);
+  box-shadow: 0 6px 20px rgba(36, 54, 66, 0.16);
   color: var(--cor-texto);
   font-size: 16px;
 }

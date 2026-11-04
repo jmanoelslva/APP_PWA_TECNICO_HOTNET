@@ -10,7 +10,6 @@ export default defineConfig({
   // Constantes que o vite.config.ts injeta no build.
   define: {
     __APP_VERSION__: JSON.stringify('0.0.0-teste'),
-    __NOVIDADES__: 'null',
   },
   test: {
     environment: 'jsdom',

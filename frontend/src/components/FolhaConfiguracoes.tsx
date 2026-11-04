@@ -1,9 +1,18 @@
 import type { ReactNode } from 'react'
-import { MdFormatSize, MdGetApp, MdLogout, MdNewReleases, MdNotificationsActive, MdWbSunny } from 'react-icons/md'
+import type { IconType } from 'react-icons'
+import {
+  MdBrightnessAuto,
+  MdDarkMode,
+  MdFormatSize,
+  MdGetApp,
+  MdLightMode,
+  MdLogout,
+  MdNotificationsActive,
+  MdWbSunny,
+} from 'react-icons/md'
 import { useTema } from '../hooks/useTema'
 import type { EscolhaTema } from '../utils/tema'
 import { iniciais } from '../utils/formatacao'
-import { temNovidades } from './ModalNovidades'
 import type { useAvisos } from '../hooks/useAvisos'
 import './FolhaConfiguracoes.css'
 
@@ -41,10 +50,10 @@ function Interruptor({
   )
 }
 
-const OPCOES_TEMA: { valor: EscolhaTema; rotulo: string }[] = [
-  { valor: 'light', rotulo: 'Claro' },
-  { valor: 'dark', rotulo: 'Escuro' },
-  { valor: 'auto', rotulo: 'Automático' },
+const OPCOES_TEMA: { valor: EscolhaTema; rotulo: string; Icone: IconType }[] = [
+  { valor: 'light', rotulo: 'Claro', Icone: MdLightMode },
+  { valor: 'dark', rotulo: 'Escuro', Icone: MdDarkMode },
+  { valor: 'auto', rotulo: 'Automático', Icone: MdBrightnessAuto },
 ]
 
 /**
@@ -59,7 +68,6 @@ export default function FolhaConfiguracoes({
   dicaAvisos,
   podeInstalar,
   onInstalar,
-  onNovidades,
   onSair,
   onFechar,
 }: {
@@ -69,7 +77,6 @@ export default function FolhaConfiguracoes({
   dicaAvisos: string | null
   podeInstalar: boolean
   onInstalar: () => void
-  onNovidades: () => void
   onSair: () => void
   onFechar: () => void
 }) {
@@ -109,6 +116,7 @@ export default function FolhaConfiguracoes({
               className="folha-config-segmento"
               onClick={() => escolherTema(opcao.valor)}
             >
+              <opcao.Icone size={20} aria-hidden="true" />
               {opcao.rotulo}
             </button>
           ))}
@@ -149,24 +157,14 @@ export default function FolhaConfiguracoes({
           </>
         )}
 
-        {(podeInstalar || temNovidades()) && (
+        {podeInstalar && (
           <div className="folha-config-grupo folha-config-acoes">
-            {podeInstalar && (
-              <button type="button" className="folha-config-linha" onClick={onInstalar}>
-                <span className="folha-config-icone">
-                  <MdGetApp size={20} />
-                </span>
-                <span className="folha-config-texto">Instalar app na tela inicial</span>
-              </button>
-            )}
-            {temNovidades() && (
-              <button type="button" className="folha-config-linha" onClick={onNovidades}>
-                <span className="folha-config-icone">
-                  <MdNewReleases size={20} />
-                </span>
-                <span className="folha-config-texto">Novidades desta versão</span>
-              </button>
-            )}
+            <button type="button" className="folha-config-linha" onClick={onInstalar}>
+              <span className="folha-config-icone">
+                <MdGetApp size={20} />
+              </span>
+              <span className="folha-config-texto">Instalar app na tela inicial</span>
+            </button>
           </div>
         )}
 

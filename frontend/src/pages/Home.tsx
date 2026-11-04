@@ -15,7 +15,6 @@ import { useColetorOlt } from '../hooks/useColetorOlt'
 import { useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
-import ModalNovidades from '../components/ModalNovidades'
 import LeitorCodigoBarras from '../components/LeitorCodigoBarras'
 import FolhaConfiguracoes from '../components/FolhaConfiguracoes'
 import MinhasOsHoje, { type ResumoDoDia } from '../components/MinhasOsHoje'
@@ -30,7 +29,6 @@ import {
   type OnuDto,
 } from '../api/client'
 import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento, iniciais } from '../utils/formatacao'
-import { assinaturaNovidades, deveMostrarNovidades, marcarNovidadesVistas } from '../utils/novidades'
 import './Home.css'
 
 function saudacaoPorHorario(nome: string): string {
@@ -63,10 +61,6 @@ export default function Home() {
   const { podeInstalar, aoClicarInstalar, modalIosAberto, fecharModalIos } = usePwaInstall()
   const [configuracoesAberta, setConfiguracoesAberta] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
-  // Novidades: abre sozinho uma vez depois de uma atualização.
-  const [novidadesAbertas, setNovidadesAbertas] = useState(
-    () => !!__NOVIDADES__ && deveMostrarNovidades(assinaturaNovidades(__NOVIDADES__.texto)),
-  )
   const coletorOlt = useColetorOlt()
   // Resumo do dia embaixo da saudação (vem de "Minhas OS de hoje").
   const [resumoDia, setResumoDia] = useState<ResumoDoDia | null>(null)
@@ -150,11 +144,6 @@ export default function Home() {
       clearTimeout(temporizador)
     }
   }, [busca])
-
-  function fecharNovidades() {
-    setNovidadesAbertas(false)
-    if (__NOVIDADES__) marcarNovidadesVistas(assinaturaNovidades(__NOVIDADES__.texto))
-  }
 
   async function atualizarTela() {
     setRecarga((atual) => atual + 1)
@@ -341,7 +330,6 @@ export default function Home() {
             onFechar={() => setLendoCodigo(false)}
           />
         )}
-        <ModalNovidades aberto={novidadesAbertas} onFechar={fecharNovidades} />
         <ModalInstalarIos aberto={modalIosAberto} onFechar={fecharModalIos} />
         <FolhaConfiguracoes
           aberto={configuracoesAberta}
@@ -350,10 +338,6 @@ export default function Home() {
           dicaAvisos={dicaAvisos}
           podeInstalar={podeInstalar}
           onInstalar={aoClicarInstalarMenu}
-          onNovidades={() => {
-            setConfiguracoesAberta(false)
-            setNovidadesAbertas(true)
-          }}
           onSair={() => {
             setConfiguracoesAberta(false)
             setConfirmarSairAberto(true)

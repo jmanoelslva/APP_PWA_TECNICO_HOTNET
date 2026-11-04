@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MdCable, MdDeleteForever, MdPowerSettingsNew, MdRefresh } from 'react-icons/md'
 import { ApiError, atualizarInfoOnu, buscarOnu, reiniciarOnu, removerOnu, renomearOnu, type OnuDto } from '../api/client'
+import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
 import PullToRefresh from '../components/PullToRefresh'
 import Skeleton from '../components/Skeleton'
@@ -17,6 +18,16 @@ import { formatarTempoDesdeColeta } from './onu/formato'
 import { ModalConfirmarAcao, ModalRenomear } from './onu/ModaisAcaoOnu'
 import ModalRegistrarCliente from './onu/ModalRegistrarCliente'
 import './OnuStatus.css'
+
+type AbaOnu = 'sinal' | 'credenciais' | 'equipamento'
+
+// Reiniciar/remover ficam na aba Equipamento, longe do toque acidental de
+// quem só veio olhar o sinal.
+const ABAS: Aba<AbaOnu>[] = [
+  { chave: 'sinal', rotulo: 'Sinal' },
+  { chave: 'credenciais', rotulo: 'Credenciais' },
+  { chave: 'equipamento', rotulo: 'Equipamento' },
+]
 
 /**
  * Sinal óptico e status da ONU, e as ações nela (atualizar, reiniciar,
@@ -34,6 +45,7 @@ export default function OnuStatus() {
   // cliente. Prioriza username quando os dois vierem informados.
   const temParametroInicial = !!usernameParam || !!serialParam || !!cpePkParam
   const { toast } = useToast()
+  const [aba, setAba] = useAbaLembrada('hotnet-tecnico-aba-onu', ABAS)
 
   function buscarInicial() {
     if (usernameParam) return buscarOnu({ username: usernameParam })
@@ -253,46 +265,58 @@ export default function OnuStatus() {
 
         {!carregando && !erro && onu && (
           <>
-            <CardsSinal onu={onu} />
-            <CardsCredenciais onu={onu} />
-            <CardDetalhesOnu
-              onu={onu}
-              ocupado={atualizandoAntesDaAcao}
-              onRegistrarCliente={() => abrirDepoisDeReler(() => setRegistrandoCliente(true))}
-              onRenomear={() => abrirDepoisDeReler((atualizada) => setRenomeando(atualizada.name ?? ''))}
-            />
+            <Abas abas={ABAS} ativa={aba} onEscolher={setAba} cor={CORES.onu} rotulo="Partes da ONU" />
 
-            {!atualizando && tempoDesdeColeta && <p className="onu-ultima-coleta">Dados coletados {tempoDesdeColeta}</p>}
-            <button
-              className="botao botao-secundario botao-bloco"
-              // Verde (sucesso) — diferencia do leitor de QR e do "Reiniciar"
-              // logo abaixo, que usam CORES.onu (ver onu-acoes-onu).
-              style={{ '--botao-cor': CORES.sucesso } as CSSProperties}
-              onClick={atualizarAgora}
-              disabled={atualizando}
-            >
-              <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
-            </button>
+            {aba === 'sinal' && (
+              <>
+                <CardsSinal onu={onu} />
+                {!atualizando && tempoDesdeColeta && <p className="onu-ultima-coleta">Dados coletados {tempoDesdeColeta}</p>}
+                <button
+                  className="botao botao-secundario botao-bloco"
+                  // Verde (sucesso) — diferencia do leitor de QR e do "Reiniciar"
+                  // da aba Equipamento, que usam CORES.onu (ver onu-acoes-onu).
+                  style={{ '--botao-cor': CORES.sucesso } as CSSProperties}
+                  onClick={atualizarAgora}
+                  disabled={atualizando}
+                >
+                  <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} />{' '}
+                  {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
+                </button>
+              </>
+            )}
 
-            <div className="onu-acoes-onu">
-              <button
-                type="button"
-                className="botao botao-secundario"
-                style={{ '--botao-cor': CORES.onu } as CSSProperties}
-                onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('reiniciar'))}
-                disabled={executandoAcao || atualizandoAntesDaAcao}
-              >
-                <MdPowerSettingsNew size={16} /> Reiniciar ONU
-              </button>
-              <button
-                type="button"
-                className="botao botao-perigo"
-                onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('remover'))}
-                disabled={executandoAcao || atualizandoAntesDaAcao}
-              >
-                <MdDeleteForever size={16} /> Remover ONU
-              </button>
-            </div>
+            {aba === 'credenciais' && <CardsCredenciais onu={onu} />}
+
+            {aba === 'equipamento' && (
+              <>
+                <CardDetalhesOnu
+                  onu={onu}
+                  ocupado={atualizandoAntesDaAcao}
+                  onRegistrarCliente={() => abrirDepoisDeReler(() => setRegistrandoCliente(true))}
+                  onRenomear={() => abrirDepoisDeReler((atualizada) => setRenomeando(atualizada.name ?? ''))}
+                />
+
+                <div className="onu-acoes-onu">
+                  <button
+                    type="button"
+                    className="botao botao-secundario"
+                    style={{ '--botao-cor': CORES.onu } as CSSProperties}
+                    onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('reiniciar'))}
+                    disabled={executandoAcao || atualizandoAntesDaAcao}
+                  >
+                    <MdPowerSettingsNew size={16} /> Reiniciar ONU
+                  </button>
+                  <button
+                    type="button"
+                    className="botao botao-perigo"
+                    onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('remover'))}
+                    disabled={executandoAcao || atualizandoAntesDaAcao}
+                  >
+                    <MdDeleteForever size={16} /> Remover ONU
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
 
