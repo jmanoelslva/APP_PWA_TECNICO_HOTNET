@@ -7,6 +7,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- **Busca geral:** a tela abre sem abrir o teclado sozinha; o teclado só
+  aparece ao tocar no campo.
+
 ## [1.19.3] - 2026-11-04
 
 Inclui as versões 1.19.0, 1.19.1 e 1.19.2, que não têm release própria.

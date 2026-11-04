@@ -118,7 +118,6 @@ export default function BuscaCliente() {
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Ex: João Silva, 12345 ou FHTT9A3C"
-          autoFocus={!params.get('busca')}
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
