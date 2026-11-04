@@ -1,16 +1,17 @@
 import { useState, type CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MdBuild, MdCable, MdHome, MdLogout, MdWifi } from 'react-icons/md'
+import { MdBuild, MdCable, MdHome, MdLogout, MdSearch, MdWifi } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import ModalConfirmarLogout from './ModalConfirmarLogout'
 import './BottomNav.css'
 
-// "Clientes" saiu daqui de propósito — a busca combobox da Home já leva
-// direto para tela do cliente, então essa aba virou um caminho redundante
-// (ver Home.tsx).
+// "Buscar" é a busca única (BuscaCliente.tsx): cliente por nome/contrato/
+// CPF e atalho direto para ONU (serial) ou conexão (login PPPoE), de
+// qualquer tela, sem voltar à Home.
 const ITENS = [
   { to: '/', icone: MdHome, cor: CORES.primaria, label: 'Início', fim: true },
+  { to: '/clientes', icone: MdSearch, cor: CORES.cliente, label: 'Buscar' },
   { to: '/suporte', icone: MdBuild, cor: CORES.suporte, label: 'OS' },
   { to: '/conexao', icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
   { to: '/onu', icone: MdCable, cor: CORES.onu, label: 'ONU' },

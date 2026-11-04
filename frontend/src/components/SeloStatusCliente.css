@@ -1,0 +1,26 @@
+.selo-status-cliente {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--selo-cor);
+  background: color-mix(in srgb, var(--selo-cor) 12%, var(--cor-superficie));
+  border: 1px solid color-mix(in srgb, var(--selo-cor) 40%, transparent);
+}
+
+.selo-status-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.selo-online { --selo-cor: var(--cor-sucesso); }
+.selo-offline { --selo-cor: var(--cor-offline); }
+.selo-bloqueado { --selo-cor: var(--cor-erro); }
+.selo-sem-cpe,
+.selo-verificando { --selo-cor: var(--cor-texto-secundario); }

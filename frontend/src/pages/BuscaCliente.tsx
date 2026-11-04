@@ -1,12 +1,13 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MdPeopleAlt, MdSearch } from 'react-icons/md'
+import { MdCable, MdHistory, MdPeopleAlt, MdSearch, MdWifi } from 'react-icons/md'
 import { ApiError, buscarClientes, type BuscaClienteResultado } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { CORES } from '../utils/cores'
 import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
+import { atalhosDaBusca, lerRecentes, limparRecentes, type ClienteRecente } from '../utils/buscaUnica'
 import './BuscaCliente.css'
 
 export default function BuscaCliente() {
@@ -16,6 +17,9 @@ export default function BuscaCliente() {
   const [jaBuscou, setJaBuscou] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
+  const [recentes, setRecentes] = useState<ClienteRecente[]>(lerRecentes)
+  // Serial de ONU / login PPPoE reconhecidos no texto: atalho direto.
+  const atalhos = atalhosDaBusca(busca)
 
   async function buscar(termo: string) {
     setCarregando(true)
@@ -43,7 +47,7 @@ export default function BuscaCliente() {
   function aoBuscar(evento: FormEvent) {
     evento.preventDefault()
     if (!busca.trim()) {
-      setErro('Digite um nome, número de contrato ou CPF/CNPJ.')
+      setErro('Digite um nome, contrato, CPF/CNPJ, serial da ONU ou login PPPoE.')
       return
     }
     setParams({ busca: busca.trim() })
@@ -55,18 +59,41 @@ export default function BuscaCliente() {
       <CabecalhoTela
         icone={MdPeopleAlt}
         cor={CORES.cliente}
-        titulo="Clientes"
-        subtitulo="Busque por nome, contrato ou CPF/CNPJ."
+        titulo="Buscar"
+        subtitulo="Cliente, serial da ONU ou login PPPoE."
       />
 
       <form className="busca-cliente-form" onSubmit={aoBuscar}>
-        <label htmlFor="busca">Nome, contrato ou CPF/CNPJ</label>
+        <label htmlFor="busca">Nome, contrato, CPF/CNPJ, serial ou PPPoE</label>
         <input
           id="busca"
+          type="search"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          placeholder="Ex: João Silva, 12345 ou 12345678900"
+          placeholder="Ex: João Silva, 12345 ou FHTT9A3C21B0"
+          autoFocus={!params.get('busca')}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="search"
         />
+
+        {atalhos.length > 0 && (
+          <div className="busca-cliente-atalhos">
+            {atalhos.map((atalho) => (
+              <Link
+                key={atalho.tipo}
+                to={atalho.rota}
+                className="botao botao-secundario"
+                style={{ '--botao-cor': atalho.tipo === 'onu-serial' ? CORES.onu : CORES.conexao } as CSSProperties}
+                viewTransition
+              >
+                {atalho.tipo === 'onu-serial' ? <MdCable size={18} /> : <MdWifi size={18} />}
+                {atalho.tipo === 'onu-serial' ? `Abrir ONU ${atalho.valor}` : `Abrir conexão ${atalho.valor}`}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {erro && <p className="busca-cliente-erro">{erro}</p>}
 
@@ -86,8 +113,45 @@ export default function BuscaCliente() {
         </ul>
       )}
 
+      {!carregando && !jaBuscou && recentes.length > 0 && (
+        <section className="busca-cliente-recentes">
+          <div className="busca-cliente-recentes-topo">
+            <h2>
+              <MdHistory size={16} /> Abertos por último
+            </h2>
+            <button
+              type="button"
+              className="botao botao-fantasma botao-pequeno"
+              onClick={() => {
+                limparRecentes()
+                setRecentes([])
+              }}
+            >
+              Limpar
+            </button>
+          </div>
+          <ul className="busca-cliente-lista">
+            {recentes.map((cliente) => (
+              <li key={cliente.pk} className="ticket-card">
+                <Link to={`/clientes/${cliente.pk}`} className="busca-cliente-link" viewTransition>
+                  <strong>{cliente.nome}</strong>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {!carregando && jaBuscou && resultados.length === 0 && (
-        <EstadoVazio icone={MdPeopleAlt} titulo="Nenhum cliente encontrado" subtitulo="Confira os dados e tente novamente." />
+        <EstadoVazio
+          icone={MdPeopleAlt}
+          titulo="Nenhum cliente encontrado"
+          subtitulo={
+            atalhos.length > 0
+              ? 'Se for serial da ONU ou login PPPoE, use o atalho acima.'
+              : 'Confira os dados e tente novamente.'
+          }
+        />
       )}
 
       {!carregando && resultados.length > 0 && (

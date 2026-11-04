@@ -1,0 +1,72 @@
+.deslizar {
+  position: relative;
+  height: 56px;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, var(--deslizar-cor) 55%, transparent);
+  background: color-mix(in srgb, var(--deslizar-cor) 8%, var(--cor-superficie));
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.deslizar-preenchimento {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(52px + (100% - 52px) * var(--deslizar-fracao));
+  background: color-mix(in srgb, var(--deslizar-cor) 22%, transparent);
+}
+
+.deslizar-texto {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 52px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--deslizar-cor);
+  opacity: calc(1 - var(--deslizar-fracao));
+}
+
+.deslizar-alca {
+  position: absolute;
+  top: 3px;
+  left: calc(3px + (100% - 56px) * var(--deslizar-fracao));
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: var(--cor-branco-fixo);
+  background: var(--deslizar-cor);
+  cursor: grab;
+  touch-action: none;
+}
+
+.deslizar:not(.deslizar-arrastando) .deslizar-alca,
+.deslizar:not(.deslizar-arrastando) .deslizar-preenchimento {
+  transition: left 0.2s ease, width 0.2s ease;
+}
+
+.deslizar-alca:focus-visible {
+  outline: 3px solid var(--cor-texto);
+  outline-offset: 2px;
+}
+
+.deslizar-desabilitado {
+  opacity: 0.55;
+}
+
+.deslizar-desabilitado .deslizar-alca {
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deslizar .deslizar-alca,
+  .deslizar .deslizar-preenchimento {
+    transition: none;
+  }
+}

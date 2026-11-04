@@ -1,7 +1,8 @@
 import { useState, type CSSProperties } from 'react'
 import { CORES } from '../../utils/cores'
+import DeslizarParaConfirmar from '../../components/DeslizarParaConfirmar'
 
-/** Confirmação em 2 passos de reiniciar/remover — os dois derrubam o cliente na hora. */
+/** Confirmação por deslizar de reiniciar/remover — os dois derrubam o cliente na hora. */
 export function ModalConfirmarAcao({
   acao,
   executando,
@@ -22,17 +23,17 @@ export function ModalConfirmarAcao({
             ? 'O equipamento vai reiniciar agora — o cliente fica sem conexão por alguns instantes.'
             : 'A ONU sai do registro do painel — o cliente fica sem conexão até ela ser cadastrada de novo.'}
         </p>
+        {/* Deslizar em vez de um segundo toque: toque acidental com luva
+            ou no bolso não derruba o cliente. */}
+        <DeslizarParaConfirmar
+          texto={executando ? 'Aguarde…' : acao === 'reiniciar' ? 'Deslize para reiniciar' : 'Deslize para remover'}
+          cor={acao === 'remover' ? CORES.erro : CORES.onu}
+          desabilitado={executando}
+          onConfirmar={onConfirmar}
+        />
         <div className="onu-modal-acoes">
-          <button className="botao botao-secundario" onClick={onCancelar} disabled={executando}>
+          <button className="botao botao-secundario botao-bloco" onClick={onCancelar} disabled={executando}>
             Cancelar
-          </button>
-          <button
-            className="botao botao-primario"
-            style={{ '--botao-cor': acao === 'remover' ? CORES.erro : CORES.onu } as CSSProperties}
-            disabled={executando}
-            onClick={onConfirmar}
-          >
-            {executando ? 'Aguarde…' : acao === 'reiniciar' ? 'Reiniciar' : 'Remover'}
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import { MdBuild, MdDirections, MdOpenInNew, MdPhone } from 'react-icons/md'
 import { buscarDetalheCliente, listarOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
@@ -102,6 +102,9 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
       {!proxima && (
         <div className="minhas-os-vazio">
           <MdBuild size={18} /> Nenhuma OS sua para hoje.
+          <Link to="/suporte" className="minhas-os-vazio-link" viewTransition>
+            Ver todas as OS
+          </Link>
         </div>
       )}
 

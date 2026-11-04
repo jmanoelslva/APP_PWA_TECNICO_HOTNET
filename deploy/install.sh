@@ -39,9 +39,11 @@ set -euo pipefail
 REPO_URL="${REPO_URL:-https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET.git}"
 CONTROLLR_URL="${CONTROLLR_URL:-https://controllr.hotnet.net.br:8443}"
 # Chave da Geolocation API do ipify (geo.ipify.org), usada pela ferramenta
-# "Meu IP" — repositório privado, valor real aqui para instalação nova já
-# sair funcionando sem passo manual.
-IPIFY_API_KEY="${IPIFY_API_KEY:-at_VwPTqxffWj0EdyIx2fB5FgvrDNsLL}"
+# "Meu IP". Repositório público: a chave não fica aqui. Instalação nova:
+# rode com IPIFY_API_KEY=... no ambiente ou preencha depois em $ENV_FILE
+# (sem ela só o "Meu IP" fica indisponível). Servidor já instalado mantém
+# a chave que já está no arquivo de ambiente.
+IPIFY_API_KEY="${IPIFY_API_KEY:-}"
 INSTALL_DIR="/opt/hotnet-tecnico"
 ACME_WEBROOT="/var/www/certbot-acme"
 SERVICE_USER="hotnet-tecnico"

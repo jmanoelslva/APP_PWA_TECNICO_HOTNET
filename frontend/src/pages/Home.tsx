@@ -12,6 +12,7 @@ import {
   MdNotificationsOff,
   MdRouter,
   MdSearch,
+  MdWbSunny,
   MdWifi,
   MdWifiOff,
 } from 'react-icons/md'
@@ -66,7 +67,7 @@ export default function Home() {
   const { tecnico, sair } = useSessao()
   const navigate = useNavigate()
   const { podeInstalar, aoClicarInstalar, modalIosAberto, fecharModalIos } = usePwaInstall()
-  const { tema, alternarTema } = useTema()
+  const { tema, alternarTema, sol, alternarSol } = useTema()
   const [menuAvatarAberto, setMenuAvatarAberto] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
   const coletorOlt = useColetorOlt()
@@ -249,6 +250,15 @@ export default function Home() {
                     <button onClick={alternarTema}>
                       {tema === 'dark' ? <MdLightMode size={18} /> : <MdDarkMode size={18} />}
                       {tema === 'dark' ? 'Tema claro' : 'Tema escuro'}
+                    </button>
+                    {/* Alto contraste para trabalhar no sol — vale por cima do tema. */}
+                    <button role="switch" aria-checked={sol} className="home-avatar-menu-avisos" onClick={alternarSol}>
+                      <MdWbSunny size={18} />
+                      <span className="home-avatar-menu-avisos-texto">
+                        Modo sol
+                        <small>Alto contraste para tela no sol</small>
+                      </span>
+                      <span className="home-interruptor" data-ligado={sol} aria-hidden="true" />
                     </button>
                     <button
                       className="home-avatar-menu-sair"

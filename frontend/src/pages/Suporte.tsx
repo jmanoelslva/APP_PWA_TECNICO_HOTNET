@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { MdBuild, MdClose, MdDirections, MdSearch } from 'react-icons/md'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -53,7 +53,12 @@ export default function Suporte() {
   const navigate = useNavigate()
 
   const [ordens, setOrdens] = useState<OrdemServicoDto[]>([])
-  const [filtro, setFiltro] = useState<FiltroOs>(lerFiltro)
+  const [params] = useSearchParams()
+  // ?busca= vem do atalho "OS" da tela do cliente: já abre filtrado nele.
+  const [filtro, setFiltro] = useState<FiltroOs>(() => {
+    const busca = params.get('busca')?.trim()
+    return busca ? { ...FILTRO_VAZIO, busca } : lerFiltro()
+  })
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -113,7 +118,14 @@ export default function Suporte() {
           <EstadoErro mensagem={erro} cor={CORES.suporte} onTentarDeNovo={carregar} />
         )}
 
-        {!carregando && !erro && ordens.length === 0 && <EstadoVazio icone={MdBuild} titulo="Nenhuma OS aberta" />}
+        {!carregando && !erro && ordens.length === 0 && (
+          <EstadoVazio
+            icone={MdBuild}
+            titulo="Nenhuma OS aberta"
+            subtitulo="Quando uma OS for agendada, ela aparece aqui."
+            acao={{ rotulo: 'Atualizar lista', onClick: carregar }}
+          />
+        )}
 
         {!carregando && !erro && ordens.length > 0 && (
           <div className="suporte-filtros">
@@ -179,7 +191,12 @@ export default function Suporte() {
         )}
 
         {!carregando && !erro && ordens.length > 0 && filtradas.length === 0 && (
-          <EstadoVazio icone={MdSearch} titulo="Nenhuma OS com esses filtros" subtitulo="Mude ou limpe os filtros acima." />
+          <EstadoVazio
+            icone={MdSearch}
+            titulo="Nenhuma OS com esses filtros"
+            subtitulo={filtro.busca ? `Nenhuma OS aberta para "${filtro.busca}".` : 'Mude ou limpe os filtros acima.'}
+            acao={{ rotulo: 'Limpar filtros', onClick: () => setFiltro(FILTRO_VAZIO) }}
+          />
         )}
 
         {!carregando &&

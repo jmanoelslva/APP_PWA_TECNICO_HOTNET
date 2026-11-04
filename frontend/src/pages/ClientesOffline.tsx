@@ -136,7 +136,11 @@ export default function ClientesOffline() {
             </p>
 
             {cpesFiltrados.length === 0 && (
-              <EstadoVazio icone={MdSearch} titulo="Nenhum cliente offline bate com essa busca" />
+              <EstadoVazio
+                icone={MdSearch}
+                titulo="Nenhum cliente offline bate com essa busca"
+                acao={{ rotulo: 'Limpar busca', onClick: () => setBusca('') }}
+              />
             )}
 
             <ul className="clientes-offline-lista">

@@ -274,6 +274,9 @@ export default function OnuStatus() {
               <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} /> {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
             </button>
 
+            {/* Separadas das ações do dia a dia: as duas derrubam o cliente
+                e pedem confirmação por deslizar. */}
+            <h2 className="onu-acoes-risco-titulo">Ações que derrubam o cliente</h2>
             <div className="onu-acoes-onu">
               <button
                 type="button"

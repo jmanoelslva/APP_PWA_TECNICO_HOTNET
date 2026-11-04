@@ -1,11 +1,16 @@
 import { Link } from 'react-router-dom'
 import { MdPeopleAlt } from 'react-icons/md'
 import type { CpeDto } from '../../api/client'
+import SeloStatusCliente from '../../components/SeloStatusCliente'
+import type { StatusCliente } from '../../utils/statusCliente'
 
-/** Cliente, contrato e plano da conexão. */
-export default function CardCliente({ cpe }: { cpe: CpeDto }) {
+/** Cliente, contrato e plano da conexão, com o selo de status no topo. */
+export default function CardCliente({ cpe, status }: { cpe: CpeDto; status: StatusCliente }) {
   return (
     <div className="conexao-card">
+      <div className="conexao-selo-status">
+        <SeloStatusCliente status={status} />
+      </div>
       <div className="conexao-linha">
         <span>Cliente</span>
         {cpe.client_pk ? (

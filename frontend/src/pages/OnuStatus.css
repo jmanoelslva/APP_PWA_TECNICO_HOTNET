@@ -266,10 +266,25 @@
   cursor: pointer;
 }
 
+/* Ações que derrubam o cliente ficam num bloco à parte, com respiro do
+   "Atualizar agora" — não ficam lado a lado com a ação do dia a dia. */
+.onu-acoes-risco-titulo {
+  margin: 28px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cor-texto-secundario);
+}
+
 .onu-acoes-onu {
   display: flex;
   gap: 10px;
   margin-top: 10px;
+}
+
+.onu-modal .deslizar {
+  margin-top: 8px;
 }
 
 .onu-acoes-onu .botao {

@@ -7,6 +7,46 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.19.0] - 2026-11-04
+
+### Adicionado
+
+- **Busca na barra de navegação:** novo item "Buscar", de qualquer tela.
+  O mesmo campo busca cliente por nome, contrato ou CPF/CNPJ e reconhece
+  serial de ONU (abre a ONU) e login PPPoE (abre a conexão). Antes da
+  primeira busca, mostra os clientes abertos por último neste celular.
+- **Selo de status do cliente:** online, offline, bloqueado ou sem
+  conexão, no topo do detalhe do cliente e no card do cliente em Conexão.
+  Bloqueado vem do contrato; online, da sessão de cada conexão.
+- **Atalhos do cliente:** OS, Conexão, ONU e Financeiro fixos no topo do
+  detalhe do cliente. Com mais de uma conexão, Conexão e ONU descem até a
+  lista de conexões. O atalho OS abre a lista já filtrada pelo cliente.
+- **Hora da última leitura:** "Lido há X min" na sessão online (Conexão)
+  e no resumo de cada conexão do cliente, atualizando sozinho.
+- **Modo sol:** interruptor no menu do avatar. Alto contraste para tela
+  no sol: fundo branco, texto preto e mais pesado, bordas visíveis e cores
+  mais escuras. Vale por cima do tema claro ou escuro.
+
+### Alterado
+
+- **Toque de 48 px:** botões do app passam de 44 para 48 px de altura. Os
+  ícones de copiar, revelar, editar e localizar mantêm o desenho, mas a
+  área de toque vai a 48 px.
+- **Reiniciar e remover ONU:** ficam num bloco separado ("Ações que
+  derrubam o cliente") e a confirmação passou a ser por deslizar, em vez
+  de um segundo toque.
+- **Estados vazios com próximo passo:** "Ver todas as OS" quando não há OS
+  hoje, "Atualizar lista" e "Limpar filtros" nas OS, "Limpar busca" nos
+  clientes offline.
+- **Rolagem:** voltar de um detalhe devolve a lista na mesma altura; tela
+  nova abre do topo.
+
+### Segurança
+
+- **Instalador sem chave embutida:** `deploy/install.sh` não traz mais a
+  chave do ipify como valor padrão. Servidor já instalado mantém a chave
+  que está em `/etc/hotnet-tecnico/backend.env`.
+
 ## [1.18.1] - 2026-10-28
 
 ### Corrigido
@@ -561,6 +601,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.19.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.0
 [1.18.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...v1.18.1
 [1.18.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.16.0...v1.17.0

@@ -28,6 +28,7 @@ import CardPppoe from './conexao/CardPppoe'
 import CardRede from './conexao/CardRede'
 import CardSessaoOnline from './conexao/CardSessaoOnline'
 import CardWifi from './conexao/CardWifi'
+import { statusDoCliente } from '../utils/statusCliente'
 import './Conexao.css'
 
 /**
@@ -61,6 +62,8 @@ export default function Conexao() {
   const [cpe, setCpe] = useState<CpeDto | null>(null)
   const [sessao, setSessao] = useState<Record<string, unknown> | null>(null)
   const [carregandoSessao, setCarregandoSessao] = useState(false)
+  // Quando o app leu a sessão (Date.now()) — "Lido há X min" no card.
+  const [sessaoLidaEm, setSessaoLidaEm] = useState<number | null>(null)
   const [onuResumo, setOnuResumo] = useState<OnuDto | null>(null)
   const [carregandoOnuResumo, setCarregandoOnuResumo] = useState(false)
   const [dps, setDps] = useState<DpDto[]>([])
@@ -105,6 +108,7 @@ export default function Conexao() {
     // com o card "Sessão online" já carregado ficava mostrando a sessão
     // ANTIGA. Some agora mesmo antes da nova consulta responder.
     setSessao(null)
+    setSessaoLidaEm(null)
     setOnuResumo(null)
     try {
       const resposta = await buscarInicial()
@@ -133,6 +137,7 @@ export default function Conexao() {
     try {
       const resposta = await buscarSessaoOnlineCpe(cpePk)
       setSessao(resposta.results[0] ?? {})
+      setSessaoLidaEm(Date.now())
     } catch (excecao) {
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível consultar a sessão online.')
     } finally {
@@ -190,7 +195,14 @@ export default function Conexao() {
 
         {!carregando && !erro && cpe && (
           <>
-            <CardCliente cpe={cpe} />
+            <CardCliente
+              cpe={cpe}
+              status={statusDoCliente({
+                contratos: [],
+                // {} = consultou e não há sessão; null = ainda consultando/falhou.
+                sessoes: [sessao == null ? null : Object.keys(sessao).length > 0],
+              })}
+            />
             <CardPppoe cpe={cpe} />
             <CardAcessoRoteador
               cpe={cpe}
@@ -215,6 +227,7 @@ export default function Conexao() {
             <CardSessaoOnline
               sessao={sessao}
               carregando={carregandoSessao}
+              lidaEm={sessaoLidaEm}
               onAtualizar={() => cpe.pk != null && carregarSessaoOnline(cpe.pk)}
             />
             <CardOnuResumo onu={onuResumo} carregando={carregandoOnuResumo} username={cpe.username} />

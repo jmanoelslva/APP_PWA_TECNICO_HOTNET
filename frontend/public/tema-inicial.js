@@ -7,8 +7,10 @@ try {
   if (tema !== 'light' && tema !== 'dark') {
     tema = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
+  var sol = localStorage.getItem('hotnet-tecnico-sol') === '1'
   document.documentElement.setAttribute('data-theme', tema)
-  document.documentElement.style.background = tema === 'dark' ? '#121316' : '#f5f5f5'
+  if (sol) document.documentElement.setAttribute('data-sol', '1')
+  document.documentElement.style.background = sol ? '#ffffff' : tema === 'dark' ? '#121316' : '#f5f5f5'
 } catch (e) {
   // sem armazenamento: o app aplica o tema ao carregar (tema.ts)
 }

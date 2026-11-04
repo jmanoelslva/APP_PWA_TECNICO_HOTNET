@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { MdRefresh } from 'react-icons/md'
 import Skeleton from '../../components/Skeleton'
+import LidoHa from '../../components/LidoHa'
 import { CORES } from '../../utils/cores'
 import { camposSessao } from './sessao'
 
@@ -8,10 +9,12 @@ import { camposSessao } from './sessao'
 export default function CardSessaoOnline({
   sessao,
   carregando,
+  lidaEm,
   onAtualizar,
 }: {
   sessao: Record<string, unknown> | null
   carregando: boolean
+  lidaEm: number | null
   onAtualizar: () => void
 }) {
   const campos = camposSessao(sessao)
@@ -28,6 +31,11 @@ export default function CardSessaoOnline({
           <MdRefresh size={14} /> {carregando ? 'Consultando…' : 'Atualizar'}
         </button>
       </div>
+      {sessao && (
+        <p className="conexao-sessao-lida">
+          <LidoHa momento={lidaEm} />
+        </p>
+      )}
       {carregando && !sessao && <Skeleton width="60%" height={14} />}
       {sessao && campos.length === 0 && <p className="conexao-sessao-vazio">Cliente sem sessão online no momento.</p>}
       {sessao &&

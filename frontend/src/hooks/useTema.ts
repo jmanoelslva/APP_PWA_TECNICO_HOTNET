@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { definirTema, temaAtual, type Tema } from '../utils/tema'
+import { definirSol, definirTema, solLigado, temaAtual, type Tema } from '../utils/tema'
 
 const ouvintesMudanca = new Set<() => void>()
 
@@ -18,13 +18,19 @@ function inscrever(ouvir: () => void): () => void {
 }
 
 /** Tema efetivo atual + alternar — reativo a mudanças feitas por qualquer instância do hook. */
-export function useTema(): { tema: Tema; alternarTema: () => void } {
+export function useTema(): { tema: Tema; alternarTema: () => void; sol: boolean; alternarSol: () => void } {
   const tema = useSyncExternalStore(inscrever, temaAtual)
+  const sol = useSyncExternalStore(inscrever, solLigado)
 
   function alternarTema() {
     definirTema(tema === 'dark' ? 'light' : 'dark')
     notificarMudanca()
   }
 
-  return { tema, alternarTema }
+  function alternarSol() {
+    definirSol(!sol)
+    notificarMudanca()
+  }
+
+  return { tema, alternarTema, sol, alternarSol }
 }

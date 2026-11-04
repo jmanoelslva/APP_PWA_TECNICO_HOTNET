@@ -1,7 +1,8 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MdAdd,
+  MdBuild,
   MdCable,
   MdDescription,
   MdEdit,
@@ -18,6 +19,7 @@ import {
   buscarCpe,
   buscarDetalheCliente,
   buscarOnu,
+  buscarSessaoOnlineCpe,
   criarTelefone,
   type ContratoDto,
   type CpeComboDto,
@@ -27,6 +29,10 @@ import {
   type TelefoneDto,
 } from '../api/client'
 import AcoesContato from '../components/AcoesContato'
+import LidoHa from '../components/LidoHa'
+import SeloStatusCliente from '../components/SeloStatusCliente'
+import { statusDoCliente } from '../utils/statusCliente'
+import { registrarRecente } from '../utils/buscaUnica'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
 import PullToRefresh from '../components/PullToRefresh'
@@ -53,6 +59,10 @@ interface ResumoConexao {
   carregando: boolean
   cpe: CpeDto | null
   onu: OnuDto | null
+  // Sessão RADIUS agora: true/false; null se a consulta falhou.
+  online: boolean | null
+  // Quando o app leu (Date.now()), para o "Lido há X min".
+  lidoEm: number | null
 }
 
 // contract_sign_code/info/draw/ip/hash existem na resposta da API mas
@@ -100,6 +110,7 @@ export default function DetalheCliente() {
   // interessa quando o técnico realmente precisa dela — fica recolhido
   // por padrão para não ocupar a tela à toa, expande sob demanda.
   const [contratosExpandidos, setContratosExpandidos] = useState<Set<number>>(new Set())
+  const secaoConexoesRef = useRef<HTMLElement>(null)
 
   function alternarContrato(chave: number) {
     setContratosExpandidos((atual) => {
@@ -121,7 +132,9 @@ export default function DetalheCliente() {
     setErro(null)
     try {
       const resposta = await buscarDetalheCliente(pk)
-      setNome(resposta.cliente.client_complete_name ?? resposta.cliente.client_name ?? null)
+      const nomeCliente = resposta.cliente.client_complete_name ?? resposta.cliente.client_name ?? null
+      setNome(nomeCliente)
+      registrarRecente({ pk, nome: nomeCliente ?? `Cliente #${pk}` })
       setDoc(resposta.cliente.client_doc1 ?? null)
       setTelefones(resposta.telefones ?? [])
       setContratos(resposta.contratos)
@@ -142,17 +155,24 @@ export default function DetalheCliente() {
     for (const cpe of listaCpes) {
       if (cpe.cpe_pk == null) continue
       const cpePk = cpe.cpe_pk
-      setResumosConexao((atual) => ({ ...atual, [cpePk]: { carregando: true, cpe: null, onu: null } }))
+      setResumosConexao((atual) => ({
+        ...atual,
+        [cpePk]: { carregando: true, cpe: null, onu: null, online: null, lidoEm: null },
+      }))
       Promise.allSettled([
         buscarCpe({ cpe_pk: cpePk }),
         cpe.cpe_username ? buscarOnu({ username: cpe.cpe_username }) : buscarOnu({ cpe_pk: cpePk }),
-      ]).then(([resultadoCpe, resultadoOnu]) => {
+        // Sessão online alimenta o selo de status do topo.
+        buscarSessaoOnlineCpe(cpePk),
+      ]).then(([resultadoCpe, resultadoOnu, resultadoSessao]) => {
         setResumosConexao((atual) => ({
           ...atual,
           [cpePk]: {
             carregando: false,
             cpe: resultadoCpe.status === 'fulfilled' ? (resultadoCpe.value.results[0] ?? null) : null,
             onu: resultadoOnu.status === 'fulfilled' ? (resultadoOnu.value.results[0] ?? null) : null,
+            online: resultadoSessao.status === 'fulfilled' ? resultadoSessao.value.results.length > 0 : null,
+            lidoEm: Date.now(),
           },
         }))
       })
@@ -161,6 +181,21 @@ export default function DetalheCliente() {
 
   if (!Number.isFinite(pk)) {
     return <p className="detalhe-cliente-status">Cliente não encontrado.</p>
+  }
+
+  const cpesComPk = cpes.filter((cpe) => cpe.cpe_pk != null)
+  const status = statusDoCliente({
+    contratos,
+    sessoes: cpesComPk.map((cpe) => {
+      const resumo = resumosConexao[cpe.cpe_pk as number]
+      return resumo && !resumo.carregando ? resumo.online : null
+    }),
+    carregando,
+  })
+  // Um CPE só: atalho vai direto; mais de um: desce até a lista de conexões.
+  const cpeUnico = cpesComPk.length === 1 ? cpesComPk[0] : null
+  function irParaConexoes() {
+    secaoConexoesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -183,11 +218,76 @@ export default function DetalheCliente() {
               <span className="detalhe-cliente-icone" style={{ background: CORES.cliente }}>
                 <MdPeopleAlt size={22} color={CORES.branco} />
               </span>
-              <div>
+              <div className="detalhe-cliente-card-texto">
                 <strong>{nome ?? `Cliente #${pk}`}</strong>
                 {doc && <p>Documento: {formatarDocumento(doc)}</p>}
+                <SeloStatusCliente status={status} />
               </div>
             </div>
+
+            {/* Atalhos do contexto deste cliente — sem voltar à Home. */}
+            <nav className="detalhe-cliente-atalhos" aria-label="Atalhos do cliente">
+              <Link
+                to={`/suporte?busca=${encodeURIComponent(nome ?? '')}`}
+                className="detalhe-cliente-atalho"
+                style={{ '--atalho-cor': CORES.suporte } as CSSProperties}
+                viewTransition
+              >
+                <MdBuild size={22} /> OS
+              </Link>
+              {cpesComPk.length > 0 &&
+                (cpeUnico ? (
+                  <Link
+                    to={`/conexao?cpe_pk=${cpeUnico.cpe_pk}`}
+                    className="detalhe-cliente-atalho"
+                    style={{ '--atalho-cor': CORES.conexao } as CSSProperties}
+                    viewTransition
+                  >
+                    <MdWifi size={22} /> Conexão
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className="detalhe-cliente-atalho"
+                    style={{ '--atalho-cor': CORES.conexao } as CSSProperties}
+                    onClick={irParaConexoes}
+                  >
+                    <MdWifi size={22} /> Conexões
+                  </button>
+                ))}
+              {cpesComPk.length > 0 &&
+                (cpeUnico ? (
+                  <Link
+                    to={
+                      cpeUnico.cpe_username
+                        ? `/onu?username=${encodeURIComponent(cpeUnico.cpe_username)}`
+                        : `/onu?cpe_pk=${cpeUnico.cpe_pk}`
+                    }
+                    className="detalhe-cliente-atalho"
+                    style={{ '--atalho-cor': CORES.onu } as CSSProperties}
+                    viewTransition
+                  >
+                    <MdCable size={22} /> ONU
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className="detalhe-cliente-atalho"
+                    style={{ '--atalho-cor': CORES.onu } as CSSProperties}
+                    onClick={irParaConexoes}
+                  >
+                    <MdCable size={22} /> ONUs
+                  </button>
+                ))}
+              <Link
+                to={`/financeiro?client_pk=${pk}`}
+                className="detalhe-cliente-atalho"
+                style={{ '--atalho-cor': CORES.financeiro } as CSSProperties}
+                viewTransition
+              >
+                <MdReceipt size={22} /> Financeiro
+              </Link>
+            </nav>
 
             <section className="detalhe-cliente-secao">
               <h2>Financeiro</h2>
@@ -265,7 +365,7 @@ export default function DetalheCliente() {
               ))}
             </section>
 
-            <section className="detalhe-cliente-secao">
+            <section className="detalhe-cliente-secao" ref={secaoConexoesRef}>
               <h2>Conexões (CPE)</h2>
               {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
               {cpes.map((cpe) => {
@@ -277,6 +377,14 @@ export default function DetalheCliente() {
                     {(cpe.contract_number ?? cpe.contract_pk) != null && <p>Contrato: {cpe.contract_number ?? cpe.contract_pk}</p>}
 
                     {resumo?.carregando && <p className="detalhe-cliente-resumo-carregando">Consultando conexão e ONU…</p>}
+
+                    {resumo && !resumo.carregando && (
+                      <p className="detalhe-cliente-lido">
+                        {resumo.online === true ? 'Online agora' : resumo.online === false ? 'Sem sessão agora' : 'Sessão não consultada'}
+                        {' · '}
+                        <LidoHa momento={resumo.lidoEm} />
+                      </p>
+                    )}
 
                     {resumo && !resumo.carregando && (resumo.cpe || resumo.onu) && (
                       <div className="detalhe-cliente-resumo-grid">

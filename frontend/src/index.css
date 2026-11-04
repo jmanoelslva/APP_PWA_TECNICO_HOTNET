@@ -104,6 +104,52 @@
   --cor-olts: #a88bd6;
 }
 
+/* Modo sol (alto contraste) — vale por cima do tema claro ou escuro
+   (ver src/utils/tema.ts): fundo branco puro, texto preto, nada de cinza
+   claro sobre branco, bordas visíveis e cores de área escurecidas para
+   continuarem legíveis com o sol batendo na tela. */
+:root[data-sol='1'] {
+  color-scheme: light;
+  --cor-primaria: #1d5487;
+  --cor-primaria-escura: #133c63;
+  --cor-fundo: #ffffff;
+  --cor-superficie: #ffffff;
+  --cor-borda: #6b6b6b;
+  --cor-borda-suave: #8a8a8a;
+  --cor-borda-clara: #9a9a9a;
+
+  --cor-texto: #000000;
+  --cor-texto-secundario: #1f1f1f;
+  --cor-texto-terciario: #2b2b2b;
+  --cor-texto-fraco: #333333;
+  --cor-texto-desabilitado: #4a4a4a;
+
+  --sombra-card: 0 0 0 1.5px #6b6b6b;
+
+  --cor-sucesso: #1b5e20;
+  --cor-erro: #a31515;
+  --cor-suporte: #0a6b35;
+  --cor-cliente: #5a2d9c;
+  --cor-endereco: #33415a;
+  --cor-conexao: #075e68;
+  --cor-onu: #7f420c;
+  --cor-ferramentas: #3a479a;
+  --cor-financeiro: #7a5800;
+  --cor-offline: #a8251c;
+  --cor-olts: #573c85;
+}
+
+:root[data-sol='1'] body {
+  font-weight: 500;
+}
+
+:root[data-sol='1'] strong,
+:root[data-sol='1'] b,
+:root[data-sol='1'] h1,
+:root[data-sol='1'] h2 {
+  font-weight: 800;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -230,7 +276,7 @@ a:active,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 44px;
+  height: 48px;
   padding: 0 20px;
   border-radius: 12px;
   border: 1.5px solid transparent;
@@ -250,7 +296,7 @@ a:active,
 }
 
 .botao-pequeno {
-  height: 44px;
+  height: 48px;
   padding: 0 14px;
   font-size: 12px;
 }
@@ -298,8 +344,39 @@ a:active,
    ao lado de um input flexível. */
 .botao-quadrado {
   flex-shrink: 0;
-  width: 44px;
+  width: 48px;
   padding: 0;
+}
+
+/* Botões de ícone dentro das linhas de dados (copiar, revelar senha,
+   editar, localizar no mapa): o desenho continua pequeno para não inflar
+   a linha, mas a área de toque vai a 48 px — dá para acertar de luva. */
+.conexao-campo-valor button,
+.onu-campo-valor button,
+.conexao-btn-link,
+.onu-btn-link,
+.detalhe-ordem-campo-valor button,
+.detalhe-cliente-btn-icone,
+.mapa-cto-localizar,
+.detalhe-chamado-btn-anexar {
+  position: relative;
+}
+
+.conexao-campo-valor button::after,
+.onu-campo-valor button::after,
+.conexao-btn-link::after,
+.onu-btn-link::after,
+.detalhe-ordem-campo-valor button::after,
+.detalhe-cliente-btn-icone::after,
+.mapa-cto-localizar::after,
+.detalhe-chamado-btn-anexar::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 48px);
+  height: max(100%, 48px);
+  transform: translate(-50%, -50%);
 }
 
 /* Transição entre telas — View Transitions API nativa (ver prop

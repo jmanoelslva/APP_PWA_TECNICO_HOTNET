@@ -1,6 +1,18 @@
 export type Tema = 'light' | 'dark'
 
 const CHAVE_TEMA = 'hotnet-tecnico-tema'
+// Modo sol (alto contraste, ver index.css :root[data-sol]) — independente
+// do tema claro/escuro; ligado, vale por cima dos dois.
+const CHAVE_SOL = 'hotnet-tecnico-sol'
+
+/** Modo sol ligado neste celular. */
+export function solLigado(): boolean {
+  try {
+    return localStorage.getItem(CHAVE_SOL) === '1'
+  } catch {
+    return false
+  }
+}
 
 function temaDoSistema(): Tema {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -18,9 +30,25 @@ function aplicar(tema: Tema): void {
   document.documentElement.style.background = ''
   // Barra de status do celular acompanha a escolha manual (o index.html
   // tem uma meta por tema do sistema; aqui as duas passam a seguir o app).
-  document
-    .querySelectorAll('meta[name="theme-color"]')
-    .forEach((meta) => meta.setAttribute('content', tema === 'dark' ? '#121316' : '#2a72b8'))
+  const sol = solLigado()
+  if (sol) document.documentElement.setAttribute('data-sol', '1')
+  else document.documentElement.removeAttribute('data-sol')
+  const corBarra = sol ? '#1d5487' : tema === 'dark' ? '#121316' : '#2a72b8'
+  document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => meta.setAttribute('content', corBarra))
+}
+
+/** Liga/desliga o modo sol — fica salvo neste celular. */
+export function definirSol(ligado: boolean): void {
+  try {
+    if (ligado) localStorage.setItem(CHAVE_SOL, '1')
+    else localStorage.removeItem(CHAVE_SOL)
+  } catch {
+    // sem armazenamento: vale só até fechar o app
+    if (ligado) document.documentElement.setAttribute('data-sol', '1')
+    else document.documentElement.removeAttribute('data-sol')
+    return
+  }
+  aplicar(temaAtual())
 }
 
 /** Escolha manual do técnico — fica salva e passa a ignorar o sistema. */

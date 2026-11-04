@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import RotaProtegida from './components/RotaProtegida'
 import BottomNav from './components/BottomNav'
 import StatusBanners from './components/StatusBanners'
+import RestaurarRolagem from './components/RestaurarRolagem'
 import Spinner from './components/Spinner'
 import { useSessao } from './auth/useSessao'
 
@@ -36,6 +37,7 @@ function App() {
   return (
     <>
       <StatusBanners />
+      <RestaurarRolagem />
       <Suspense fallback={<Spinner tela />}>
         <Routes>
           <Route path="/login" element={<Login />} />
