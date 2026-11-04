@@ -9,46 +9,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [1.19.3] - 2026-11-04
 
-### Alterado
-
-- **Tela da ONU:** saiu o título "Ações que derrubam o cliente" acima de
-  Reiniciar e Remover. A confirmação por deslizar continua.
-
-## [1.19.2] - 2026-11-04
-
-### Corrigido
-
-- **Busca geral não achava ONU pelo serial:** o atalho só aparecia com o
-  serial completo no formato exato (4 letras + 8 hexadecimais). Agora a
-  busca geral consulta, junto com o cliente, a ONU pelo serial (bastam os
-  primeiros caracteres, como na tela ONU) e a conexão pelo usuário PPPoE,
-  e mostra os resultados em grupos: ONU, Conexão e Clientes.
-
-## [1.19.1] - 2026-11-04
-
-### Corrigido
-
-- **Busca da barra de navegação:** agora busca enquanto se digita, como a
-  busca da tela inicial e as de Conexão e ONU (a partir de 2 letras, sem
-  tocar em Buscar). O botão Buscar saiu.
-- **Financeiro duplicado no cliente:** a seção "Financeiro" com o botão
-  Cobranças saiu do detalhe do cliente; o atalho Financeiro do topo já
-  leva para a mesma tela.
-
-## [1.19.0] - 2026-11-04
+Inclui as versões 1.19.0, 1.19.1 e 1.19.2, que não têm release própria.
 
 ### Adicionado
 
-- **Busca na barra de navegação:** novo item "Buscar", de qualquer tela.
-  O mesmo campo busca cliente por nome, contrato ou CPF/CNPJ e reconhece
-  serial de ONU (abre a ONU) e login PPPoE (abre a conexão). Antes da
-  primeira busca, mostra os clientes abertos por último neste celular.
+- **Busca geral na barra de navegação:** novo item "Buscar", de qualquer
+  tela. Busca enquanto se digita (a partir de 2 letras), como a da tela
+  inicial. Consulta junto o cliente (nome, contrato ou CPF/CNPJ), a ONU
+  pelo serial (bastam os primeiros caracteres) e a conexão pelo usuário
+  PPPoE, e mostra os resultados em grupos. Antes da primeira busca, mostra
+  os clientes abertos por último neste celular.
 - **Selo de status do cliente:** online, offline, bloqueado ou sem
   conexão, no topo do detalhe do cliente e no card do cliente em Conexão.
   Bloqueado vem do contrato; online, da sessão de cada conexão.
 - **Atalhos do cliente:** OS, Conexão, ONU e Financeiro fixos no topo do
-  detalhe do cliente. Com mais de uma conexão, Conexão e ONU descem até a
-  lista de conexões. O atalho OS abre a lista já filtrada pelo cliente.
+  detalhe do cliente (a antiga seção "Financeiro" saiu). Com mais de uma
+  conexão, Conexão e ONU descem até a lista de conexões. O atalho OS abre
+  a lista já filtrada pelo cliente.
 - **Hora da última leitura:** "Lido há X min" na sessão online (Conexão)
   e no resumo de cada conexão do cliente, atualizando sozinho.
 - **Modo sol:** interruptor no menu do avatar. Alto contraste para tela
@@ -60,9 +37,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Toque de 48 px:** botões do app passam de 44 para 48 px de altura. Os
   ícones de copiar, revelar, editar e localizar mantêm o desenho, mas a
   área de toque vai a 48 px.
-- **Reiniciar e remover ONU:** ficam num bloco separado ("Ações que
-  derrubam o cliente") e a confirmação passou a ser por deslizar, em vez
-  de um segundo toque.
+- **Reiniciar e remover ONU:** confirmação por deslizar, em vez de um
+  segundo toque.
 - **Estados vazios com próximo passo:** "Ver todas as OS" quando não há OS
   hoje, "Atualizar lista" e "Limpar filtros" nas OS, "Limpar busca" nos
   clientes offline.
@@ -629,10 +605,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
-[1.19.3]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.2...v1.19.3
-[1.19.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.1...v1.19.2
-[1.19.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.0...v1.19.1
-[1.19.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.0
+[1.19.3]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.3
 [1.18.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...v1.18.1
 [1.18.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.16.0...v1.17.0

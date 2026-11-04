@@ -37,6 +37,8 @@ TITULOS = {
     "1.12.2": "Avisos de OS nova no celular e Minhas OS pelo técnico responsável",
     "1.13.1": "Visual mais limpo, etapa nas OS e tela de login revisada",
     "1.14.1": "Filtros na OS, WhatsApp em todos os números e certificado",
+    # 1.19.0–1.19.2 juntaram na 1.19.3.
+    "1.19.3": "Interface para uso em campo e busca geral",
 }
 
 SECOES = {
