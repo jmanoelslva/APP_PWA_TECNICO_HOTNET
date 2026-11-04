@@ -41,21 +41,23 @@ import './Conexao.css'
 
 type Bloco = 'roteador' | 'obs' | 'wifi'
 
-type Aba = 'resumo' | 'wifi' | 'roteador' | 'rede'
+type Aba = 'resumo' | 'roteador' | 'cto' | 'historico'
 
+// Wi-Fi e acesso ao roteador tratam do mesmo equipamento: uma aba só.
+// CTO (fibra) e histórico de conexão ficam separados.
 const ABAS: { chave: Aba; rotulo: string }[] = [
   { chave: 'resumo', rotulo: 'Resumo' },
-  { chave: 'wifi', rotulo: 'Wi-Fi' },
   { chave: 'roteador', rotulo: 'Roteador' },
-  { chave: 'rede', rotulo: 'Rede' },
+  { chave: 'cto', rotulo: 'CTO' },
+  { chave: 'historico', rotulo: 'Histórico' },
 ]
 
 // Blocos recolhíveis que já abrem expandidos ao entrar na aba.
 const BLOCOS_DA_ABA: Record<Aba, Bloco[]> = {
   resumo: [],
-  wifi: ['wifi'],
-  roteador: ['roteador', 'obs'],
-  rede: [],
+  roteador: ['wifi', 'roteador', 'obs'],
+  cto: [],
+  historico: [],
 }
 
 // Aba escolhida vale enquanto o app estiver aberto (troca de cliente e
@@ -275,16 +277,14 @@ export default function Conexao() {
                 <CardOnuResumo onu={onuResumo} carregando={carregandoOnuResumo} username={cpe.username} />
               </>
             )}
-            {aba === 'wifi' && (
-              <CardWifi
-                cpe={cpe}
-                aberto={blocosAbertos.has('wifi')}
-                onAlternar={() => alternarBloco('wifi')}
-                onAtualizado={atualizarCpe}
-              />
-            )}
             {aba === 'roteador' && (
               <>
+                <CardWifi
+                  cpe={cpe}
+                  aberto={blocosAbertos.has('wifi')}
+                  onAlternar={() => alternarBloco('wifi')}
+                  onAtualizado={atualizarCpe}
+                />
                 <CardAcessoRoteador
                   cpe={cpe}
                   aberto={blocosAbertos.has('roteador')}
@@ -299,12 +299,8 @@ export default function Conexao() {
                 />
               </>
             )}
-            {aba === 'rede' && (
-              <>
-                <CardCto cpe={cpe} dps={dps} onAtualizado={atualizarCpe} />
-                <CardRede cpe={cpe} />
-              </>
-            )}
+            {aba === 'cto' && <CardCto cpe={cpe} dps={dps} onAtualizado={atualizarCpe} />}
+            {aba === 'historico' && <CardRede cpe={cpe} />}
           </>
         )}
       </div>

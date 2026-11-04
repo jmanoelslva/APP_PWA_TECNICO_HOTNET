@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- **Abas da Conexão reorganizadas:** Resumo, Roteador (Wi-Fi, acesso ao
+  roteador e observação, já expandidos), CTO (fibra) e Histórico (IP/MAC,
+  última autenticação e histórico de conexão, carregado ao abrir a aba,
+  sem toque a mais).
+
 ## [1.20.0] - 2026-11-04
 
 ### Alterado

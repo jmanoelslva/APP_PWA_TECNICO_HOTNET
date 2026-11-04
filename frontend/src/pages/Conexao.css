@@ -109,12 +109,10 @@
   margin: 0;
 }
 
-.conexao-historico-toggle {
+.conexao-historico-titulo {
   /* Sem border-top de propósito — a linha "Última autenticação" logo
-     acima já termina com um separador (deixava de ser :last-child na
-     hora que esse botão passou a vir depois dela), então um border-top
-     aqui virava uma segunda linha coladinha na primeira. */
-  margin-top: 4px;
+     acima já termina com um separador. */
+  margin: 12px 0 4px;
   font-size: 13px;
   font-weight: 800;
 }
@@ -407,7 +405,7 @@
   color: var(--cor-texto-secundario);
 }
 
-/* Abas da conexão: Resumo, Wi-Fi, Roteador e Rede. */
+/* Abas da conexão: Resumo, Roteador, CTO e Histórico. */
 .conexao-abas {
   position: sticky;
   top: env(safe-area-inset-top, 0px);
