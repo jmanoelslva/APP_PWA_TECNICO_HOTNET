@@ -201,14 +201,15 @@ function enderecoResumo(endereco: { address?: string; address_number?: string; a
   )
 }
 
-type AbaOs = 'resumo' | 'conexao' | 'saida' | 'historico'
+type AbaOs = 'resumo' | 'conexao' | 'checklist' | 'historico'
 
 // O topo (título, etapas, rota e contato) e o botão do rodapé ficam fora das
-// abas, sempre à vista. "Saída" junta o que se faz ao terminar o atendimento.
+// abas, sempre à vista. "Checklist" junta o que se faz ao terminar o
+// atendimento: checklist de saída e fotos/anexos.
 const ABAS: Aba<AbaOs>[] = [
   { chave: 'resumo', rotulo: 'Resumo' },
   { chave: 'conexao', rotulo: 'Conexão' },
-  { chave: 'saida', rotulo: 'Saída' },
+  { chave: 'checklist', rotulo: 'Checklist' },
   { chave: 'historico', rotulo: 'Histórico' },
 ]
 
@@ -610,20 +611,24 @@ export default function DetalheOrdemServico() {
                   {(endereco?.address_zipcode ?? osAtual.address_zipcode) && (
                     <p className="detalhe-ordem-linha">CEP: {formatarCep(endereco?.address_zipcode ?? osAtual.address_zipcode)}</p>
                   )}
-                  {endereco?.address_latitude && endereco?.address_longitude && (
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="detalhe-ordem-chip"
-                    >
-                      <MdLocationOn size={14} /> Ver no Google Maps
-                    </a>
-                  )}
-                  {rota && (
-                    <a href={rota} target="_blank" rel="noreferrer" className="detalhe-ordem-chip">
-                      <MdDirections size={14} /> Rota até o cliente
-                    </a>
+                  {((endereco?.address_latitude && endereco?.address_longitude) || rota) && (
+                    <div className="detalhe-ordem-links">
+                      {endereco?.address_latitude && endereco?.address_longitude && (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="detalhe-ordem-chip"
+                        >
+                          <MdLocationOn size={14} /> Ver no Google Maps
+                        </a>
+                      )}
+                      {rota && (
+                        <a href={rota} target="_blank" rel="noreferrer" className="detalhe-ordem-chip">
+                          <MdDirections size={14} /> Rota até o cliente
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
               </>
@@ -698,7 +703,7 @@ export default function DetalheOrdemServico() {
               </>
             )}
 
-            {aba === 'saida' && (
+            {aba === 'checklist' && (
               <>
                 {!encerrada && osAtual.op_pk && (
                   <div className="detalhe-ordem-card">

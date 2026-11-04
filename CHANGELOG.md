@@ -31,7 +31,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   cada um com seu ícone, e texto grande para o app inteiro.
 - **Abas na OS, na ONU e no cliente**, iguais às da Conexão e lembradas
   enquanto o app estiver aberto:
-  - OS: Resumo (descrição e endereço), Conexão, Saída (checklist e fotos)
+  - OS: Resumo (descrição e endereço), Conexão, Checklist (checklist de
+    saída e fotos)
     e Histórico (cliente, contrato e etapas). Título, etapas, rota e o
     botão do rodapé ficam sempre à vista.
   - ONU: Sinal (com "Atualizar agora"), Credenciais e Equipamento
