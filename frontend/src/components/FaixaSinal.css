@@ -93,3 +93,28 @@
   color: var(--cor-texto-secundario);
   font-variant-numeric: tabular-nums;
 }
+
+/* Compacta (tela da ONU, ONU e OLT lado a lado). */
+.faixa-sinal-compacta {
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+
+.faixa-sinal-compacta .faixa-sinal-topo {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.faixa-sinal-compacta .faixa-sinal-valor {
+  font-size: 22px;
+}
+
+.faixa-sinal-compacta .faixa-sinal-valor small {
+  font-size: 13px;
+}
+
+.faixa-sinal-compacta .faixa-sinal-selo {
+  margin-left: 0;
+  padding: 3px 9px;
+  font-size: 12px;
+}

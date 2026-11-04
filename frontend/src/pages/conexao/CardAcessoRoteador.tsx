@@ -3,7 +3,7 @@ import { MdSave, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 import { ApiError, atualizarDetalhesCpe, type CpeDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
-import BlocoRecolhivel from './BlocoRecolhivel'
+import CartaoConexao from './CartaoConexao'
 
 /**
  * Credencial diferente do PPPoE — acesso administrativo ao próprio
@@ -12,13 +12,9 @@ import BlocoRecolhivel from './BlocoRecolhivel'
  */
 export default function CardAcessoRoteador({
   cpe,
-  aberto,
-  onAlternar,
   onAtualizado,
 }: {
   cpe: CpeDto
-  aberto: boolean
-  onAlternar: () => void
   onAtualizado: (parcial: Partial<CpeDto>) => void
 }) {
   const { toast } = useToast()
@@ -57,7 +53,7 @@ export default function CardAcessoRoteador({
   }
 
   return (
-    <BlocoRecolhivel titulo="Acesso ao roteador (admin)" aberto={aberto} onAlternar={onAlternar}>
+    <CartaoConexao titulo="Acesso ao roteador (admin)">
       <div className="conexao-campo">
         <span>Usuário</span>
         <input className="conexao-input" value={acessoLogin} onChange={(e) => setAcessoLogin(e.target.value)} placeholder="Não informado" />
@@ -98,6 +94,6 @@ export default function CardAcessoRoteador({
       >
         <MdSave size={14} /> {salvando ? 'Salvando…' : 'Salvar acesso'}
       </button>
-    </BlocoRecolhivel>
+    </CartaoConexao>
   )
 }

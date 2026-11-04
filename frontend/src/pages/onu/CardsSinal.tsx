@@ -1,49 +1,71 @@
 import type { OnuDto } from '../../api/client'
 import FaixaSinal from '../../components/FaixaSinal'
-import { nivelSinalOnu } from '../../utils/formatacao'
+import { nivelSinalOnu, type NivelSinal } from '../../utils/formatacao'
 import { nivelSinalOlt, TEXTO_SINAL } from './formato'
 
-/** Sinal óptico da ONU e, quando informado, o da OLT para esta ONU. */
+/**
+ * Sinal óptico da ONU e, quando informado, o da OLT para esta ONU — num
+ * cartão só, lado a lado (antes eram dois blocos grandes, um embaixo do
+ * outro). O selo (Bom/Limite/Crítico) mostra o nível; os cortes de cada
+ * lado são os de sempre (ONU −24/−22, OLT −27/−25).
+ */
 export default function CardsSinal({ onu }: { onu: OnuDto }) {
-  const statusOnu = nivelSinalOnu(onu.omddm_rx_power)
-  const statusOlt = nivelSinalOlt(onu.olt_omddm_rx_power)
+  const temOlt = onu.olt_omddm_rx_power != null || onu.olt_omddm_tx_power != null
   return (
-    <>
-      <div className={`onu-card onu-sinal onu-sinal-${statusOnu}`}>
-        <span className="onu-sinal-titulo">ONU — {TEXTO_SINAL[statusOnu]}</span>
-        <FaixaSinal rx={onu.omddm_rx_power} nivel={statusOnu} corteCritico={-24} corteBom={-22} />
-        <div className="onu-sinal-grid">
-          {onu.omddm_rx_power == null && (
-            <div>
-              <span>RX</span>
-              <strong>—</strong>
-            </div>
-          )}
-          <div>
-            <span>TX</span>
-            <strong>{onu.omddm_tx_power != null ? `${onu.omddm_tx_power} dBm` : '—'}</strong>
-          </div>
-        </div>
+    <div className="onu-card">
+      <h2>Sinal óptico</h2>
+      <div className={`onu-sinal-colunas${temOlt ? ' duas' : ''}`}>
+        <ColunaSinal
+          titulo="ONU"
+          rx={onu.omddm_rx_power}
+          tx={onu.omddm_tx_power}
+          nivel={nivelSinalOnu(onu.omddm_rx_power)}
+          corteCritico={-24}
+          corteBom={-22}
+        />
+        {temOlt && (
+          <ColunaSinal
+            titulo="OLT"
+            rx={onu.olt_omddm_rx_power}
+            tx={onu.olt_omddm_tx_power}
+            nivel={nivelSinalOlt(onu.olt_omddm_rx_power)}
+            corteCritico={-27}
+            corteBom={-25}
+          />
+        )}
       </div>
+    </div>
+  )
+}
 
-      {(onu.olt_omddm_rx_power != null || onu.olt_omddm_tx_power != null) && (
-        <div className={`onu-card onu-sinal onu-sinal-${statusOlt}`}>
-          <span className="onu-sinal-titulo">OLT — {TEXTO_SINAL[statusOlt]}</span>
-          <FaixaSinal rx={onu.olt_omddm_rx_power} nivel={statusOlt} corteCritico={-27} corteBom={-25} />
-          <div className="onu-sinal-grid">
-            {onu.olt_omddm_rx_power == null && (
-              <div>
-                <span>RX</span>
-                <strong>—</strong>
-              </div>
-            )}
-            <div>
-              <span>TX</span>
-              <strong>{onu.olt_omddm_tx_power != null ? `${onu.olt_omddm_tx_power} dBm` : '—'}</strong>
-            </div>
-          </div>
-        </div>
+function ColunaSinal({
+  titulo,
+  rx,
+  tx,
+  nivel,
+  corteCritico,
+  corteBom,
+}: {
+  titulo: string
+  rx: number | null | undefined
+  tx: number | null | undefined
+  nivel: NivelSinal
+  corteCritico: number
+  corteBom: number
+}) {
+  return (
+    <section className="onu-sinal-coluna">
+      <h3>
+        {titulo} <small>RX</small>
+      </h3>
+      {rx != null ? (
+        <FaixaSinal compacta rx={rx} nivel={nivel} corteCritico={corteCritico} corteBom={corteBom} />
+      ) : (
+        <p className="onu-sinal-sem">{TEXTO_SINAL.desconhecida}</p>
       )}
-    </>
+      <p className="onu-sinal-tx">
+        TX <strong>{tx != null ? `${tx.toLocaleString('pt-BR')} dBm` : '—'}</strong>
+      </p>
+    </section>
   )
 }

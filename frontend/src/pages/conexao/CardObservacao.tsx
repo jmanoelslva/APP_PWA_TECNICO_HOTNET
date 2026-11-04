@@ -3,18 +3,14 @@ import { MdSave } from 'react-icons/md'
 import { ApiError, atualizarDetalhesCpe, type CpeDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
-import BlocoRecolhivel from './BlocoRecolhivel'
+import CartaoConexao from './CartaoConexao'
 
 /** cpe_obs, doc oficial de /aaa_ctl/cpe/update. Salvar próprio, separado da CTO. */
 export default function CardObservacao({
   cpe,
-  aberto,
-  onAlternar,
   onAtualizado,
 }: {
   cpe: CpeDto
-  aberto: boolean
-  onAlternar: () => void
   onAtualizado: (parcial: Partial<CpeDto>) => void
 }) {
   const { toast } = useToast()
@@ -36,7 +32,7 @@ export default function CardObservacao({
   }
 
   return (
-    <BlocoRecolhivel titulo="Observação do CPE" aberto={aberto} onAlternar={onAlternar}>
+    <CartaoConexao titulo="Observação do CPE">
       <div className="conexao-campo">
         <textarea
           className="conexao-input conexao-textarea"
@@ -54,6 +50,6 @@ export default function CardObservacao({
       >
         <MdSave size={14} /> {salvando ? 'Salvando…' : 'Salvar observação'}
       </button>
-    </BlocoRecolhivel>
+    </CartaoConexao>
   )
 }

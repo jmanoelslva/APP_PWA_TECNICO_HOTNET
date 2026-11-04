@@ -61,6 +61,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Telas guardavam dados do item anterior:** ao buscar outro usuário
+  PPPoE dentro da Conexão, Wi-Fi, acesso ao roteador, observação e CTO
+  continuavam com os valores do cliente anterior (e "Salvar" gravaria
+  esses valores no novo). O mesmo valia para anexos, checklist e textos
+  ao trocar de OS, cliente ou chamado sem sair da tela. Agora cada um
+  começa do zero.
+- **Checklist apagado depois de finalizar a OS:** não fica marcado no
+  aparelho nem reaparece se a OS for reaberta.
+- **Nome do cliente repetido:** seção aberta (ex.: Cliente e Contrato na
+  aba Histórico da OS) não repete mais o resumo no título.
 - **Busca da OS ficava com o nome do cliente:** ao abrir as OS pelo
   cadastro do cliente, o filtro passava a ser o lembrado da tela de OS e
   continuava preenchido depois. Agora vale só nessa visita.
@@ -89,6 +99,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   faixa colorida à esquerda (na lista de OS ela fica só na atrasada, em
   vermelho); ícones Lucide também nos cabeçalhos, avisos vazios, atalhos
   do cliente e em "Minhas OS de hoje".
+- **Aba Roteador sem recolher:** Wi-Fi, acesso ao roteador e observação
+  ficam sempre abertos.
+- **Aba Sinal da ONU mais compacta:** ONU e OLT num cartão só, lado a
+  lado, com valor, selo, barra e TX.
 - **Ferramentas:** Meu IP no cartão padrão e as ferramentas numa lista
   única com divisórias, textos maiores.
 - **Cliente:** contratos já abrem expandidos; Conexões, Contratos e

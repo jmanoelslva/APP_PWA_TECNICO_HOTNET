@@ -4,7 +4,7 @@ import { ApiError, atualizarWifiCpe, type CpeDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
 import { OPCOES_CRIPTOGRAFIA_WIFI } from '../../utils/formatacao'
-import BlocoRecolhivel from './BlocoRecolhivel'
+import CartaoConexao from './CartaoConexao'
 
 /**
  * cpe_wifi_encryption_type/password (doc oficial do Controllr; valores:
@@ -14,13 +14,9 @@ import BlocoRecolhivel from './BlocoRecolhivel'
  */
 export default function CardWifi({
   cpe,
-  aberto,
-  onAlternar,
   onAtualizado,
 }: {
   cpe: CpeDto
-  aberto: boolean
-  onAlternar: () => void
   onAtualizado: (parcial: Partial<CpeDto>) => void
 }) {
   const { toast } = useToast()
@@ -61,7 +57,7 @@ export default function CardWifi({
   }
 
   return (
-    <BlocoRecolhivel titulo="Wi-Fi do CPE (criptografia)" aberto={aberto} onAlternar={onAlternar}>
+    <CartaoConexao titulo="Wi-Fi do CPE (criptografia)">
       <div className="conexao-campo">
         <span>Tipo de criptografia</span>
         <select
@@ -107,6 +103,6 @@ export default function CardWifi({
       >
         <MdSave size={14} /> {salvando ? 'Salvando…' : 'Salvar Wi-Fi'}
       </button>
-    </BlocoRecolhivel>
+    </CartaoConexao>
   )
 }

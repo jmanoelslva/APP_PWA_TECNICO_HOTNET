@@ -16,6 +16,12 @@
   flex-shrink: 0;
 }
 
+/* Aberta, o conteúdo já mostra o que o resumo diria (ex.: nome do cliente
+   no título e de novo no campo "Nome"): o resumo só aparece fechada. */
+.secao-recolhivel[open] .secao-recolhivel-resumo {
+  display: none;
+}
+
 .secao-recolhivel-resumo {
   margin-left: auto;
   font-size: 12px;

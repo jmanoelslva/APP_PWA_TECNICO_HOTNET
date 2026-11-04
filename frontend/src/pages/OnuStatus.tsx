@@ -286,7 +286,7 @@ export default function OnuStatus() {
               </>
             )}
 
-            {aba === 'credenciais' && <CardsCredenciais onu={onu} />}
+            {aba === 'credenciais' && <CardsCredenciais key={onu.pk} onu={onu} />}
 
             {aba === 'equipamento' && (
               <>

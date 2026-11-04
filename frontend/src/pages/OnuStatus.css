@@ -184,53 +184,53 @@
   text-decoration: none;
 }
 
-.onu-sinal {
-  border: 1.5px solid transparent;
+.onu-sinal-colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
 }
 
-.onu-sinal-boa {
-  border-color: color-mix(in srgb, var(--cor-sucesso) 40%, transparent);
-  background: color-mix(in srgb, var(--cor-sucesso) 8%, var(--cor-superficie));
+/* ONU e OLT lado a lado, com divisória. */
+.onu-sinal-colunas.duas {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.onu-sinal-alerta {
-  border-color: color-mix(in srgb, var(--cor-atencao) 50%, transparent);
-  background: color-mix(in srgb, var(--cor-atencao) 10%, var(--cor-superficie));
+.onu-sinal-colunas.duas .onu-sinal-coluna + .onu-sinal-coluna {
+  padding-left: 16px;
+  border-left: 1px solid var(--cor-borda-suave);
 }
 
-.onu-sinal-critica {
-  border-color: color-mix(in srgb, var(--cor-erro) 40%, transparent);
-  background: color-mix(in srgb, var(--cor-erro) 8%, var(--cor-superficie));
+.onu-sinal-coluna {
+  min-width: 0;
 }
 
-.onu-sinal-titulo {
-  display: block;
-  font-size: 14px;
+.onu-sinal-coluna h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--cor-texto);
-  margin-bottom: 12px;
 }
 
-.onu-sinal-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.onu-sinal-coluna h3 small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
 }
 
-.onu-sinal-grid > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.onu-sinal-sem {
+  margin: 4px 0 8px;
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
 }
 
-.onu-sinal-grid span {
-  font-size: 11px;
-  color: var(--cor-texto-terciario);
+.onu-sinal-tx {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  font-variant-numeric: tabular-nums;
 }
 
-.onu-sinal-grid strong {
-  font-size: 18px;
-  font-weight: 800;
+.onu-sinal-tx strong {
   color: var(--cor-texto);
 }
 

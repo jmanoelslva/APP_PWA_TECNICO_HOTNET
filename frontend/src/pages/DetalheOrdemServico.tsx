@@ -212,7 +212,7 @@ const ABAS: Aba<AbaOs>[] = [
   { chave: 'historico', rotulo: 'Histórico' },
 ]
 
-export default function DetalheOrdemServico() {
+function DetalheOrdemServicoConteudo() {
   const [aba, setAba] = useAbaLembrada('hotnet-tecnico-aba-os', ABAS)
   const { ticketPk } = useParams<{ ticketPk: string }>()
   const pk = Number(ticketPk)
@@ -402,6 +402,12 @@ export default function DetalheOrdemServico() {
         acaoConfirmando.desfazer ? `Etapa "${etapa.rotulo}" desfeita.` : `Etapa "${etapa.rotulo}" confirmada.`,
         'sucesso',
       )
+      // Finalizada: o checklist já foi para a descrição — não fica marcado
+      // no aparelho (nem reaparece se a OS for reaberta).
+      if (etapa.chave === 'finalizar' && !acaoConfirmando.desfazer) {
+        salvarChecklist(osAtual.op_pk, [])
+        setChecklist([])
+      }
       setAcaoConfirmando(null)
       setObservacaoEtapa('')
       recarregarEventos()
@@ -960,4 +966,14 @@ export default function DetalheOrdemServico() {
       </div>
     </PullToRefresh>
   )
+}
+
+/**
+ * Uma instância por OS: trocar de OS sem sair da tela (aviso de OS,
+ * link, busca) recomeça do zero — sem anexos, checklist, textos ou janelas
+ * da anterior presos na tela.
+ */
+export default function DetalheOrdemServico() {
+  const { ticketPk } = useParams<{ ticketPk: string }>()
+  return <DetalheOrdemServicoConteudo key={ticketPk} />
 }

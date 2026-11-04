@@ -51,7 +51,7 @@ function converterOperacao(dto: OperacaoDto): Mensagem | null {
  * (mensagens do escritório/cliente e os próprios eventos da OS, que
  * usam a mesma tabela e aparecem juntos nesta lista).
  */
-export default function DetalheChamado() {
+function DetalheChamadoConteudo() {
   const { ticketPk } = useParams<{ ticketPk: string }>()
   const pk = Number(ticketPk)
   const location = useLocation()
@@ -258,4 +258,14 @@ export default function DetalheChamado() {
       )}
     </div>
   )
+}
+
+/**
+ * Uma instância por chamado: trocar de chamado sem sair da tela (aviso de OS,
+ * link, busca) recomeça do zero — sem anexos, checklist, textos ou janelas
+ * da anterior presos na tela.
+ */
+export default function DetalheChamado() {
+  const { ticketPk } = useParams<{ ticketPk: string }>()
+  return <DetalheChamadoConteudo key={ticketPk} />
 }

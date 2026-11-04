@@ -28,6 +28,7 @@ export default function FaixaSinal({
   nivel,
   corteCritico,
   corteBom,
+  compacta = false,
 }: {
   rx: number | null | undefined
   nivel: NivelSinal
@@ -35,12 +36,14 @@ export default function FaixaSinal({
   corteCritico: number
   /** A partir disto é bom (ex.: -22 na ONU). */
   corteBom: number
+  /** Versão menor (sem a escala), para caber lado a lado na tela da ONU. */
+  compacta?: boolean
 }) {
   if (rx == null || nivel === 'desconhecida') return null
   const critico = posicaoNaFaixa(corteCritico)
   const bom = posicaoNaFaixa(corteBom)
   return (
-    <div className="faixa-sinal">
+    <div className={`faixa-sinal${compacta ? ' faixa-sinal-compacta' : ''}`}>
       <div className="faixa-sinal-topo">
         <strong className="faixa-sinal-valor">
           {rx.toLocaleString('pt-BR')} <small>dBm</small>
@@ -57,10 +60,12 @@ export default function FaixaSinal({
         <span className="faixa-sinal-trecho faixa-sinal-boa" style={{ width: `${100 - bom}%` }} />
         <span className="faixa-sinal-marcador" style={{ left: `${posicaoNaFaixa(rx)}%` }} />
       </div>
-      <div className="faixa-sinal-escala" aria-hidden="true">
-        <span>{ESCALA_MIN}</span>
-        <span>{ESCALA_MAX}</span>
-      </div>
+      {!compacta && (
+        <div className="faixa-sinal-escala" aria-hidden="true">
+          <span>{ESCALA_MIN}</span>
+          <span>{ESCALA_MAX}</span>
+        </div>
+      )}
     </div>
   )
 }

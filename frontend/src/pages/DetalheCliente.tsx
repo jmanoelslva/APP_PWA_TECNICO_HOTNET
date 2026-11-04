@@ -98,7 +98,7 @@ const ABAS: Aba<AbaCliente>[] = [
   { chave: 'contato', rotulo: 'Contato' },
 ]
 
-export default function DetalheCliente() {
+function DetalheClienteConteudo() {
   const [aba, setAba] = useAbaLembrada('hotnet-tecnico-aba-cliente', ABAS)
   const { clientPk } = useParams<{ clientPk: string }>()
   const pk = Number(clientPk)
@@ -643,4 +643,14 @@ function ModalAdicionarTelefone({
       </div>
     </div>
   )
+}
+
+/**
+ * Uma instância por cliente: trocar de cliente sem sair da tela (aviso de OS,
+ * link, busca) recomeça do zero — sem anexos, checklist, textos ou janelas
+ * da anterior presos na tela.
+ */
+export default function DetalheCliente() {
+  const { clientPk } = useParams<{ clientPk: string }>()
+  return <DetalheClienteConteudo key={clientPk} />
 }
