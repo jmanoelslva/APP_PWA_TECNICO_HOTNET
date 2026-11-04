@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MdAdd,
@@ -111,7 +111,6 @@ export default function DetalheCliente() {
   // interessa quando o técnico realmente precisa dela — fica recolhido
   // por padrão para não ocupar a tela à toa, expande sob demanda.
   const [contratosExpandidos, setContratosExpandidos] = useState<Set<number>>(new Set())
-  const secaoConexoesRef = useRef<HTMLElement>(null)
 
   function alternarContrato(chave: number) {
     setContratosExpandidos((atual) => {
@@ -193,11 +192,6 @@ export default function DetalheCliente() {
     }),
     carregando,
   })
-  // Um CPE só: atalho vai direto; mais de um: desce até a lista de conexões.
-  const cpeUnico = cpesComPk.length === 1 ? cpesComPk[0] : null
-  function irParaConexoes() {
-    secaoConexoesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
 
   return (
     <PullToRefresh aoAtualizar={carregar}>
@@ -226,7 +220,8 @@ export default function DetalheCliente() {
               </div>
             </div>
 
-            {/* Atalhos do contexto deste cliente — sem voltar à Home. */}
+            {/* Atalhos do cliente — Conexão e ONU não entram aqui: cada
+                conexão logo abaixo já tem os seus botões. */}
             <nav className="detalhe-cliente-atalhos" aria-label="Atalhos do cliente">
               <Link
                 to={`/suporte?busca=${encodeURIComponent(nome ?? '')}`}
@@ -236,50 +231,6 @@ export default function DetalheCliente() {
               >
                 <MdBuild size={22} /> OS
               </Link>
-              {cpesComPk.length > 0 &&
-                (cpeUnico ? (
-                  <Link
-                    to={`/conexao?cpe_pk=${cpeUnico.cpe_pk}`}
-                    className="detalhe-cliente-atalho"
-                    style={{ '--atalho-cor': CORES.conexao } as CSSProperties}
-                    viewTransition
-                  >
-                    <MdWifi size={22} /> Conexão
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    className="detalhe-cliente-atalho"
-                    style={{ '--atalho-cor': CORES.conexao } as CSSProperties}
-                    onClick={irParaConexoes}
-                  >
-                    <MdWifi size={22} /> Conexões
-                  </button>
-                ))}
-              {cpesComPk.length > 0 &&
-                (cpeUnico ? (
-                  <Link
-                    to={
-                      cpeUnico.cpe_username
-                        ? `/onu?username=${encodeURIComponent(cpeUnico.cpe_username)}`
-                        : `/onu?cpe_pk=${cpeUnico.cpe_pk}`
-                    }
-                    className="detalhe-cliente-atalho"
-                    style={{ '--atalho-cor': CORES.onu } as CSSProperties}
-                    viewTransition
-                  >
-                    <MdCable size={22} /> ONU
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    className="detalhe-cliente-atalho"
-                    style={{ '--atalho-cor': CORES.onu } as CSSProperties}
-                    onClick={irParaConexoes}
-                  >
-                    <MdCable size={22} /> ONUs
-                  </button>
-                ))}
               <Link
                 to={`/financeiro?client_pk=${pk}`}
                 className="detalhe-cliente-atalho"
@@ -290,7 +241,7 @@ export default function DetalheCliente() {
               </Link>
             </nav>
 
-            <section className="detalhe-cliente-secao" ref={secaoConexoesRef}>
+            <section className="detalhe-cliente-secao">
               <h2>Conexões (CPE)</h2>
               {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
               {cpes.map((cpe) => {

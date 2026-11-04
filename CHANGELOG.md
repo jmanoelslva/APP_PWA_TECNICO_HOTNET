@@ -33,6 +33,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   os blocos expandidos.
 - **Detalhe do cliente:** Conexões vem primeiro e aberta; Telefones,
   Endereços e Contratos começam recolhidos, mostrando a quantidade.
+  Os atalhos do topo ficam só com OS e Financeiro: Conexão e ONU já estão
+  nos botões de cada conexão, logo abaixo.
 - **Detalhe da OS na ordem de campo:** endereço (com Rota) primeiro, depois
   descrição, conexão (agora com o sinal da ONU e "Lido há") e anexo;
   Cliente, Contrato e Histórico das etapas ficam recolhidos no fim.
