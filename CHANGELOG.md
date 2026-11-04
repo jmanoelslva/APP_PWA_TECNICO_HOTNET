@@ -22,8 +22,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Faixa do sinal da ONU:** o RX aparece numa barra vermelha, amarela e
   verde com o selo Bom, Limite ou Crítico (mesmos limites de antes), na
   tela da ONU e no Resumo da Conexão.
-- **Abertos recentemente no Início:** os 3 últimos clientes vistos (a
-  lista completa continua na busca de clientes).
+- **Leitor de código na busca do Início:** o botão no campo lê o código
+  de barras ou QR da etiqueta pela câmera; o valor entra na busca geral
+  (serial de ONU, PPPoE e cliente).
 - **Lembrar meu usuário no login:** só o nome de usuário fica no
   aparelho, nunca a senha; o cursor já abre na senha.
 - **Configurações:** tema Claro, Escuro ou Automático (segue o celular),
@@ -44,8 +45,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Contraste corrigido:** verde de OS, dourado do Financeiro e vermelho
   de Offline escurecidos para passar no mínimo de leitura (4,5:1) sobre o
   branco, assim como o "Enviado" dos anexos.
-- **Login:** formulário como folha clara sobre a faixa da marca, campos e
-  botão maiores.
+- **Login:** formulário como folha clara sobre a faixa da marca, logo e
+  nome centralizados, campos e botão maiores.
 - **Início sem atalhos duplicados:** Conexão e ONU saíram da grade, já que
   estão na barra de baixo.
 - **Abas da Conexão reorganizadas:** Resumo, Roteador (Wi-Fi, acesso ao

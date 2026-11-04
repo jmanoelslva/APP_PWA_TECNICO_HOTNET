@@ -11,22 +11,6 @@
   overflow: hidden;
 }
 
-/* Arcos do sinal (mesmo traço do ícone HN), só decoração. */
-.login-tela::before {
-  content: '';
-  position: absolute;
-  top: -90px;
-  right: -110px;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  border: 3px solid color-mix(in srgb, var(--cor-sinal) 35%, transparent);
-  box-shadow:
-    0 0 0 42px var(--cor-marca-escura),
-    0 0 0 45px color-mix(in srgb, var(--cor-primaria) 45%, transparent);
-  pointer-events: none;
-}
-
 .login-card {
   position: relative;
   z-index: 1;
@@ -58,10 +42,10 @@
   max-width: 480px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
   padding: 56px 28px 32px;
-  text-align: left;
+  text-align: center;
 }
 
 .login-marca-logo {

@@ -1,6 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MdBuild, MdChevronRight, MdConstruction, MdHistory, MdRouter, MdSearch, MdWifiOff } from 'react-icons/md'
+import {
+  MdBuild,
+  MdConstruction,
+  MdQrCodeScanner,
+  MdRouter,
+  MdSearch,
+  MdWifiOff,
+} from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -9,6 +16,7 @@ import { useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
 import ModalNovidades from '../components/ModalNovidades'
+import LeitorCodigoBarras from '../components/LeitorCodigoBarras'
 import FolhaConfiguracoes from '../components/FolhaConfiguracoes'
 import MinhasOsHoje, { type ResumoDoDia } from '../components/MinhasOsHoje'
 import PullToRefresh from '../components/PullToRefresh'
@@ -22,7 +30,6 @@ import {
   type OnuDto,
 } from '../api/client'
 import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento, iniciais } from '../utils/formatacao'
-import { lerRecentes, type ClienteRecente } from '../utils/buscaUnica'
 import { assinaturaNovidades, deveMostrarNovidades, marcarNovidadesVistas } from '../utils/novidades'
 import './Home.css'
 
@@ -42,10 +49,6 @@ const ITENS_MENU = [
   { to: '/ferramentas', Icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
 
-// Clientes abertos por último no Início (a lista completa, com "Limpar",
-// fica na busca de clientes).
-const RECENTES_NO_INICIO = 3
-
 function textoResumo(resumo: ResumoDoDia | null): string {
   const hoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })
   if (!resumo) return hoje
@@ -60,7 +63,6 @@ export default function Home() {
   const { podeInstalar, aoClicarInstalar, modalIosAberto, fecharModalIos } = usePwaInstall()
   const [configuracoesAberta, setConfiguracoesAberta] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
-  const [recentes, setRecentes] = useState<ClienteRecente[]>(() => lerRecentes().slice(0, RECENTES_NO_INICIO))
   // Novidades: abre sozinho uma vez depois de uma atualização.
   const [novidadesAbertas, setNovidadesAbertas] = useState(
     () => !!__NOVIDADES__ && deveMostrarNovidades(assinaturaNovidades(__NOVIDADES__.texto)),
@@ -97,6 +99,8 @@ export default function Home() {
   const [conexoesBusca, setConexoesBusca] = useState<CpeDto[]>([])
   const [buscando, setBuscando] = useState(false)
   const [listaAberta, setListaAberta] = useState(false)
+  // Leitor pela câmera (etiqueta da ONU: código de barras ou QR).
+  const [lendoCodigo, setLendoCodigo] = useState(false)
 
   // Muda a cada "puxar para atualizar" — remonta MinhasOsHoje, que relê a
   // lista sozinha ao montar.
@@ -154,7 +158,6 @@ export default function Home() {
 
   async function atualizarTela() {
     setRecarga((atual) => atual + 1)
-    setRecentes(lerRecentes().slice(0, RECENTES_NO_INICIO))
     await resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
       .then((resposta) => setProgresso({ total: resposta.total, concluidas: resposta.concluidas }))
       .catch(() => {})
@@ -221,6 +224,15 @@ export default function Home() {
                 autoCorrect="off"
                 spellCheck={false}
               />
+              <button
+                type="button"
+                className="home-busca-leitor"
+                onClick={() => setLendoCodigo(true)}
+                aria-label="Ler código de barras ou QR pela câmera"
+                title="Ler código de barras ou QR pela câmera"
+              >
+                <MdQrCodeScanner size={22} />
+              </button>
             </div>
             {listaAberta && busca.trim().length >= 2 && (
               <ul className="home-combobox-lista">
@@ -315,25 +327,20 @@ export default function Home() {
             )}
           </div>
 
-          {recentes.length > 0 && (
-            <section className="home-recentes" aria-labelledby="home-recentes-titulo">
-              <h2 id="home-recentes-titulo" className="home-recentes-titulo">
-                <MdHistory size={18} aria-hidden="true" /> Abertos recentemente
-              </h2>
-              <ul>
-                {recentes.map((cliente) => (
-                  <li key={cliente.pk}>
-                    <Link to={`/clientes/${cliente.pk}`} viewTransition>
-                      <span>{cliente.nome}</span>
-                      <MdChevronRight size={20} aria-hidden="true" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
         </div>
 
+        {/* O código lido entra no campo: a busca geral já procura serial de
+            ONU, PPPoE e cliente ao mesmo tempo. */}
+        {lendoCodigo && (
+          <LeitorCodigoBarras
+            onDetectado={(valor) => {
+              setLendoCodigo(false)
+              setBusca(valor.trim())
+              setListaAberta(true)
+            }}
+            onFechar={() => setLendoCodigo(false)}
+          />
+        )}
         <ModalNovidades aberto={novidadesAbertas} onFechar={fecharNovidades} />
         <ModalInstalarIos aberto={modalIosAberto} onFechar={fecharModalIos} />
         <FolhaConfiguracoes
