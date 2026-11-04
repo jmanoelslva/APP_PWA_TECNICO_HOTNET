@@ -189,20 +189,22 @@ export default function Home() {
             </div>
             {/* Números do dia: o que está aberto, o que atrasou e o que já
                 foi concluído hoje. */}
-            <dl className="home-numeros">
-              <div>
-                <dt>Abertas</dt>
-                <dd>{resumoDia?.total ?? '–'}</dd>
+            {/* Abertas e Atrasadas levam à tela de OS já filtrada; Concluídas
+                não tem lista (a tela de OS só carrega OS em aberto). */}
+            <nav className="home-numeros" aria-label="OS do dia">
+              <Link to="/suporte?quando=hoje" className="home-numero" viewTransition>
+                <strong>{resumoDia?.total ?? '–'}</strong>
+                <span>Abertas</span>
+              </Link>
+              <Link to="/suporte?quando=atrasadas" className="home-numero" viewTransition>
+                <strong>{resumoDia?.atrasadas ?? '–'}</strong>
+                <span>Atrasadas</span>
+              </Link>
+              <div className="home-numero">
+                <strong>{progresso?.concluidas ?? '–'}</strong>
+                <span>Concluídas</span>
               </div>
-              <div>
-                <dt>Atrasadas</dt>
-                <dd>{resumoDia?.atrasadas ?? '–'}</dd>
-              </div>
-              <div>
-                <dt>Concluídas</dt>
-                <dd>{progresso?.concluidas ?? '–'}</dd>
-              </div>
-            </dl>
+            </nav>
             {progresso && progresso.total > 0 && (
               <div className="home-progresso">
                 <div

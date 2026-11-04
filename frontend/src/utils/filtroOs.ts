@@ -65,7 +65,9 @@ export function filtrarOs(ordens: OrdemServicoDto[], filtro: FiltroOs, agora: Da
 
   return ordens.filter((os) => {
     const dia = os.op_date_sched?.slice(0, 10) ?? ''
-    if (filtro.quando === 'hoje' && dia !== hoje) return false
+    // "Hoje" = o trabalho de hoje: as agendadas para hoje e as de dias
+    // anteriores ainda em aberto (mesma conta de "Abertas" no Início).
+    if (filtro.quando === 'hoje' && !(dia !== '' && dia <= hoje)) return false
     if (filtro.quando === 'atrasadas' && !osAtrasada(os, agora)) return false
     if (filtro.quando === 'proximas' && !(dia > hoje)) return false
     if (filtro.etapa !== 'todas' && (os.etapa ?? 'agendada') !== filtro.etapa) return false

@@ -56,13 +56,18 @@ export default function Suporte() {
 
   const [ordens, setOrdens] = useState<OrdemServicoDto[]>([])
   const [params] = useSearchParams()
-  // ?busca= vem do atalho "OS" da tela do cliente: já abre filtrado nele,
-  // mas só nesta visita — não vira o filtro lembrado (antes o nome do
-  // cliente continuava na busca ao voltar para OS pela barra de baixo).
-  const buscaDoCliente = params.get('busca')?.trim() ?? ''
-  const [filtro, setFiltro] = useState<FiltroOs>(() =>
-    buscaDoCliente ? { ...FILTRO_VAZIO, busca: buscaDoCliente } : lerFiltro(),
-  )
+  // Filtro pelo endereço: ?busca= vem do atalho "OS" da tela do cliente e
+  // ?quando= dos números do dia no Início (Abertas → hoje, Atrasadas →
+  // atrasadas). Vale só nesta visita — não vira o filtro lembrado (antes o
+  // nome do cliente continuava na busca ao voltar para OS pela barra).
+  const buscaDoEndereco = params.get('busca')?.trim() ?? ''
+  const quandoDoEndereco = OPCOES_QUANDO.find((o) => o.valor === params.get('quando'))?.valor
+  const filtroDoEndereco: FiltroOs | null =
+    buscaDoEndereco || quandoDoEndereco
+      ? { ...FILTRO_VAZIO, busca: buscaDoEndereco, quando: quandoDoEndereco ?? 'todas' }
+      : null
+  const chaveDoEndereco = `${buscaDoEndereco}|${quandoDoEndereco ?? ''}`
+  const [filtro, setFiltro] = useState<FiltroOs>(() => filtroDoEndereco ?? lerFiltro())
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -73,15 +78,16 @@ export default function Suporte() {
 
   // Mesma tela reaproveitada ao trocar de endereço (ex.: OS do cliente →
   // "OS" na barra de baixo): acompanha o filtro do endereço novo.
-  const buscaAnterior = useRef(buscaDoCliente)
+  const enderecoAnterior = useRef(chaveDoEndereco)
   useEffect(() => {
-    if (buscaAnterior.current === buscaDoCliente) return
-    buscaAnterior.current = buscaDoCliente
-    setFiltro(buscaDoCliente ? { ...FILTRO_VAZIO, busca: buscaDoCliente } : lerFiltro())
-  }, [buscaDoCliente])
+    if (enderecoAnterior.current === chaveDoEndereco) return
+    enderecoAnterior.current = chaveDoEndereco
+    setFiltro(filtroDoEndereco ?? lerFiltro())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaveDoEndereco])
 
   useEffect(() => {
-    if (buscaDoCliente) return
+    if (filtroDoEndereco) return
     try {
       sessionStorage.setItem(CHAVE_FILTRO, JSON.stringify(filtro))
     } catch {

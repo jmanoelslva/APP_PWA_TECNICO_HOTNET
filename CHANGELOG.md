@@ -7,6 +7,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Números do dia clicáveis no Início:** Abertas e Atrasadas abrem a
+  tela de OS já filtrada (Concluídas não tem lista: a tela de OS só traz
+  OS em aberto).
+
+### Alterado
+
+- **Filtro "Hoje" da tela de OS:** passa a mostrar o trabalho de hoje —
+  as agendadas para hoje e as de dias anteriores ainda em aberto —, a
+  mesma conta de "Abertas" no Início.
+
 ## [1.21.0] - 2026-11-04
 
 ### Adicionado

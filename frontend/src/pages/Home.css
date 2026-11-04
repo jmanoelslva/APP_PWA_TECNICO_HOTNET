@@ -274,16 +274,24 @@
   margin: 4px 0 0;
 }
 
-.home-numeros > div {
+.home-numero {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 2px;
   padding: 10px 12px;
   border-radius: 14px;
   background: color-mix(in srgb, var(--cor-branco-fixo) 14%, transparent);
+  color: inherit;
+  text-decoration: none;
 }
 
-.home-numeros dd {
+/* Abertas/Atrasadas são links: seta discreta indica que dá para tocar. */
+a.home-numero span::after {
+  content: ' ›';
+  font-weight: 800;
+}
+
+.home-numero strong {
   margin: 0;
   font-size: 24px;
   font-weight: 800;
@@ -291,13 +299,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-.home-numeros dt {
+.home-numero span {
   font-size: 13px;
   font-weight: 600;
   opacity: 0.92;
 }
 
-:root[data-sol='1'] .home-numeros > div {
+:root[data-sol='1'] .home-numero {
   background: var(--cor-fundo);
   border: 1.5px solid var(--cor-borda);
 }

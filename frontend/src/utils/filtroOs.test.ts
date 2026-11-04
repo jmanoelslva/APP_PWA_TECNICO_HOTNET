@@ -24,7 +24,8 @@ describe('filtro das OS', () => {
   })
 
   it('quando: hoje, atrasadas e próximas', () => {
-    expect(pks(filtrarOs(ORDENS, { ...FILTRO_VAZIO, quando: 'hoje' }, AGORA))).toEqual([1, 2])
+    // "Hoje" inclui a 4 (de ontem, ainda em aberto): o trabalho do dia.
+    expect(pks(filtrarOs(ORDENS, { ...FILTRO_VAZIO, quando: 'hoje' }, AGORA))).toEqual([1, 2, 4])
     // A 4 é de ontem mas já está em andamento: não conta como atrasada.
     expect(pks(filtrarOs(ORDENS, { ...FILTRO_VAZIO, quando: 'atrasadas' }, AGORA))).toEqual([1])
     expect(pks(filtrarOs(ORDENS, { ...FILTRO_VAZIO, quando: 'proximas' }, AGORA))).toEqual([3])
