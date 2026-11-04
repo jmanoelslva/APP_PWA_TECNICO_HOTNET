@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import RotaProtegida from './components/RotaProtegida'
 import BottomNav from './components/BottomNav'
@@ -6,6 +6,7 @@ import StatusBanners from './components/StatusBanners'
 import RestaurarRolagem from './components/RestaurarRolagem'
 import Spinner from './components/Spinner'
 import { useSessao } from './auth/useSessao'
+import { aplicarVersaoNovaSePreciso } from './utils/atualizacaoApp'
 
 // Uma página por chunk — carregada só quando o técnico navega até ela.
 const BuscaCliente = lazy(() => import('./pages/BuscaCliente'))
@@ -33,6 +34,12 @@ function mostrarBottomNav(pathname: string): boolean {
 function App() {
   const { logado } = useSessao()
   const location = useLocation()
+
+  // Versão nova já instalada: a troca de tela recarrega já na tela de
+  // destino (ver utils/atualizacaoApp.ts).
+  useEffect(() => {
+    aplicarVersaoNovaSePreciso()
+  }, [location.pathname])
 
   return (
     <>

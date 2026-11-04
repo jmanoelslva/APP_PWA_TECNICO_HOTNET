@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_ILIKE, corpo, where_and, where_eq
+from ..where import OPER_EQ, OPER_ILIKE, corpo, where_and, where_eq, where_ilike
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
@@ -29,6 +29,23 @@ async def _em_paralelo(tarefas: Iterable[Awaitable[T]]) -> list[T]:
 
 def _somente_digitos(valor: str) -> str:
     return "".join(c for c in valor if c.isdigit())
+
+
+def _variantes_documento(digitos: str) -> list[str]:
+    """CPF/CNPJ só com números e também com a máscara usual — o
+    client_doc1 do Controllr pode estar gravado de um jeito ou de outro, e a
+    busca é por igualdade."""
+    variantes = [digitos]
+    if len(digitos) == 11:
+        variantes.append(f"{digitos[:3]}.{digitos[3:6]}.{digitos[6:9]}-{digitos[9:]}")
+    elif len(digitos) == 14:
+        variantes.append(f"{digitos[:2]}.{digitos[2:5]}.{digitos[5:8]}/{digitos[8:12]}-{digitos[12:]}")
+    return variantes
+
+
+def _mesmo_contrato(valor: Any, digitos: str) -> bool:
+    """Mesmo número de contrato ignorando zeros à esquerda ("026906" = "26906")."""
+    return _somente_digitos(str(valor or "")).lstrip("0") == digitos.lstrip("0")
 
 
 async def _contratos_por_pk(ctx: AuthContext, contract_pks: set[int]) -> dict[int, dict[str, Any]]:
@@ -62,7 +79,8 @@ async def _itens_contrato(ctx: AuthContext, contract_pk: int) -> list[dict[str, 
 @router.get("/busca")
 async def buscar_clientes(
     doc: str | None = Query(default=None, description="CPF/CNPJ do cliente"),
-    contrato: int | None = Query(default=None, description="Número do contrato"),
+    # Texto, não int: o número pode ter zeros à esquerda ("026906").
+    contrato: str | None = Query(default=None, description="Número do contrato"),
     nome: str | None = Query(default=None, description="Nome/razão social (busca parcial)"),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
@@ -76,22 +94,42 @@ async def buscar_clientes(
             return
         # client_status=0 = ativo — sem esse filtro, a busca por CPF/CNPJ
         # traz clientes desabilitados junto com os habilitados.
-        condicoes_doc = where_and(
-            {"field": "client_status", "oper": OPER_EQ, "value": 0},
-            {"field": "client_doc1", "oper": OPER_EQ, "value": _somente_digitos(doc)},
-        )
-        resposta = await ctx.controllr.client_list(corpo(condicoes_doc, action="list", start=0, limit=10))
-        if resposta.success:
-            client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
+        async def com_valor(valor: str) -> None:
+            condicoes_doc = where_and(
+                {"field": "client_status", "oper": OPER_EQ, "value": 0},
+                {"field": "client_doc1", "oper": OPER_EQ, "value": valor},
+            )
+            resposta = await ctx.controllr.client_list(corpo(condicoes_doc, action="list", start=0, limit=10))
+            if resposta.success:
+                client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
+
+        await asyncio.gather(*(com_valor(v) for v in _variantes_documento(_somente_digitos(doc))))
 
     async def por_contrato() -> None:
-        if not contrato:
+        digitos = _somente_digitos(contrato or "")
+        if not digitos:
             return
-        resposta = await ctx.controllr.contract_list(
-            corpo(where_eq("contract_number", contrato), action="list", start=0, limit=10)
-        )
-        if resposta.success:
-            client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
+        # contract_number pode ser texto com zeros à esquerda ou número: tenta
+        # igual ao digitado, igual como número e "termina com" (ILIKE; num
+        # campo numérico o Controllr só recusa esta consulta). O filtro final
+        # descarta o que só termina igual ("126906" para "26906").
+        sem_zeros = digitos.lstrip("0") or "0"
+        consultas = [
+            where_eq("contract_number", digitos),
+            where_eq("contract_number", int(digitos)),
+            where_ilike("contract_number", f"%{sem_zeros}"),
+        ]
+
+        async def consultar(condicao: str) -> None:
+            resposta = await ctx.controllr.contract_list(corpo(condicao, action="list", start=0, limit=10))
+            if resposta.success:
+                client_pks.update(
+                    int(r["client_pk"])
+                    for r in resposta.results
+                    if r.get("client_pk") and _mesmo_contrato(r.get("contract_number"), digitos)
+                )
+
+        await asyncio.gather(*(consultar(c) for c in consultas), return_exceptions=True)
 
     async def por_nome() -> None:
         if not nome:

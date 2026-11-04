@@ -208,7 +208,7 @@ export default function Home() {
                 onChange={(e) => setBusca(e.target.value)}
                 onFocus={() => setListaAberta(true)}
                 onBlur={() => setTimeout(() => setListaAberta(false), 150)}
-                placeholder="Cliente, contrato, CPF, serial da ONU ou PPPoE"
+                placeholder="Cliente, CPF, contrato, ONU, PPPoE"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}

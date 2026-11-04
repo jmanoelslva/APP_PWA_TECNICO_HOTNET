@@ -89,12 +89,15 @@ export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> 
  * qualquer coisa com letra vira busca por nome. Usado tanto na busca
  * completa (BuscaCliente.tsx) quanto no combobox rápido da Home.
  */
-export function detectarTipoBusca(valor: string): { doc?: string; contrato?: number; nome?: string } {
+export function detectarTipoBusca(valor: string): { doc?: string; contrato?: string; nome?: string } {
   const termo = valor.trim()
   const somenteDigitos = termo.replace(/\D/g, '')
-  if (somenteDigitos && somenteDigitos.length === termo.length) {
+  // Números com a máscara de CPF/CNPJ (pontos, traço, barra, espaço) ainda
+  // são número — antes "123.456.789-00" virava busca por nome.
+  if (somenteDigitos && /^[\d.\-/\s]+$/.test(termo)) {
     if (somenteDigitos.length === 11 || somenteDigitos.length === 14) return { doc: somenteDigitos }
-    return { contrato: Number(somenteDigitos) }
+    // Texto, não Number(): contrato pode ter zero à esquerda ("026906").
+    return { contrato: somenteDigitos }
   }
   return { nome: termo }
 }

@@ -53,6 +53,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - Avisos no rodapé, logo acima da barra de baixo, em fundo escuro.
   - Abertura do app na cor da marca.
 
+### Corrigido
+
+- **Busca por CPF/CNPJ e contrato:** CPF/CNPJ digitado com pontos, traço
+  ou barra virava busca por nome; o documento agora é procurado com e sem
+  máscara. Contrato com zero à esquerda ("026906") perdia o zero e não
+  achava o cliente.
+- **Telas presas na versão anterior depois de atualizar:** o app passa a
+  aplicar a versão nova na próxima troca de tela (ou ao voltar para ele),
+  sem precisar sair e entrar de novo.
+- **Texto de ajuda da busca do Início** cortado: ficou mais curto.
+
 ### Alterado
 
 - **"Minhas OS de hoje" sem OS:** aviso em fundo tingido com o botão

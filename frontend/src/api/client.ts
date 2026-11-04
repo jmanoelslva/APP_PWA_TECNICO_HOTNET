@@ -240,7 +240,7 @@ export interface BuscaClienteResponse {
   results: BuscaClienteResultado[]
 }
 
-export function buscarClientes(filtros: { doc?: string; contrato?: number; nome?: string }): Promise<BuscaClienteResponse> {
+export function buscarClientes(filtros: { doc?: string; contrato?: string; nome?: string }): Promise<BuscaClienteResponse> {
   return get<BuscaClienteResponse>('clientes/busca', filtros)
 }
 
