@@ -7,7 +7,6 @@
 .conexao-card {
   background: var(--cor-superficie);
   border-radius: 16px;
-  border-left: 4px solid var(--cor-conexao);
   padding: 18px;
   box-shadow: var(--sombra-card);
   margin-bottom: 16px;

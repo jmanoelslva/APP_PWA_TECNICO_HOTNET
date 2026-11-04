@@ -29,7 +29,6 @@
   border-radius: 16px;
   padding: 20px;
   box-shadow: var(--sombra-card);
-  border-left: 4px solid var(--cor-financeiro);
 }
 
 .fatura-topo {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { MdPeopleAlt, MdSearch, MdWifiOff } from 'react-icons/md'
+import { MdPeopleAlt, MdSearch } from 'react-icons/md'
+import { LuSearchX, LuWifiOff } from 'react-icons/lu'
 import { ApiError, listarCpeOffline, type CpeDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -92,7 +93,7 @@ export default function ClientesOffline() {
     <PullToRefresh aoAtualizar={carregar}>
       <div className="clientes-offline-tela tela-entrada">
         <CabecalhoTela
-          icone={MdWifiOff}
+          icone={LuWifiOff}
           cor={CORES.offline}
           titulo="Clientes Offline"
           subtitulo="Contrato ativo e CPE habilitado, mas sem sessão agora."
@@ -125,7 +126,7 @@ export default function ClientesOffline() {
         )}
 
         {!carregando && !erro && cpes.length === 0 && (
-          <EstadoVazio icone={MdWifiOff} titulo="Nenhum cliente offline" subtitulo="Todo mundo com contrato ativo está conectado." />
+          <EstadoVazio icone={LuWifiOff} titulo="Nenhum cliente offline" subtitulo="Todo mundo com contrato ativo está conectado." />
         )}
 
         {cpes.length > 0 && (
@@ -137,7 +138,7 @@ export default function ClientesOffline() {
 
             {cpesFiltrados.length === 0 && (
               <EstadoVazio
-                icone={MdSearch}
+                icone={LuSearchX}
                 titulo="Nenhum cliente offline bate com essa busca"
                 acao={{ rotulo: 'Limpar busca', onClick: () => setBusca('') }}
               />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { MdWifi } from 'react-icons/md'
+import { LuWifi } from 'react-icons/lu'
 import {
   ApiError,
   buscarCpe,
@@ -196,14 +196,14 @@ export default function Conexao() {
   return (
     <PullToRefresh aoAtualizar={atualizarTela}>
       <div className="conexao-tela tela-entrada">
-        <CabecalhoTela icone={MdWifi} cor={CORES.conexao} titulo="Conexão" subtitulo="Dados de acesso e sessão do cliente." />
+        <CabecalhoTela icone={LuWifi} cor={CORES.conexao} titulo="Conexão" subtitulo="Dados de acesso e sessão do cliente." />
 
         {!temParametroInicial && (
           <>
             <BuscaUsuarioPppoe onEscolher={(parametros) => setParams(parametros)} />
             {!erro && (
               <EstadoVazio
-                icone={MdWifi}
+                icone={LuWifi}
                 titulo="Busque pelo usuário PPPoE"
                 subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
               />
@@ -224,7 +224,7 @@ export default function Conexao() {
         )}
 
         {temParametroInicial && !carregando && !erro && !cpe && (
-          <EstadoVazio icone={MdWifi} titulo="Nenhuma conexão encontrada." />
+          <EstadoVazio icone={LuWifi} titulo="Nenhuma conexão encontrada." />
         )}
 
         {!carregando && !erro && cpe && (

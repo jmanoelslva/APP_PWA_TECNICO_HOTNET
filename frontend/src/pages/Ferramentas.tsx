@@ -2,19 +2,18 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { IconType } from 'react-icons'
 import {
-  MdBolt,
-  MdChevronRight,
-  MdConstruction,
-  MdLooks4,
-  MdLooks6,
-  MdManageSearch,
-  MdNetworkCheck,
-  MdOpenInNew,
-  MdPublic,
-  MdSettingsEthernet,
-  MdSpeed,
-  MdWifiTethering,
-} from 'react-icons/md'
+  LuActivity,
+  LuChevronRight,
+  LuExternalLink,
+  LuFileSearch,
+  LuGauge,
+  LuGlobe,
+  LuHammer,
+  LuNetwork,
+  LuPlug,
+  LuRadar,
+  LuZap,
+} from 'react-icons/lu'
 import { acessoAuditoria, ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
@@ -33,23 +32,23 @@ const FERRAMENTAS: Ferramenta[] = [
     nome: 'SIMET (NIC.br)',
     descricao: 'top.nic.br — teste de qualidade da conexão',
     url: 'https://top.nic.br/connection/',
-    Icone: MdWifiTethering,
+    Icone: LuRadar,
   },
-  { nome: 'Speedtest', descricao: 'speedtest.net — teste de velocidade Ookla', url: 'https://www.speedtest.net/', Icone: MdSpeed },
-  { nome: 'Fast.com', descricao: 'Teste de velocidade da Netflix', url: 'https://fast.com/', Icone: MdBolt },
-  { nome: 'ISP Focus (IPv6)', descricao: 'tcp6.ispfocus.net.br', url: 'https://tcp6.ispfocus.net.br/', Icone: MdLooks6 },
-  { nome: 'ISP Focus (IPv4)', descricao: 'tcp4.ispfocus.net.br', url: 'https://tcp4.ispfocus.net.br/', Icone: MdLooks4 },
+  { nome: 'Speedtest', descricao: 'speedtest.net — teste de velocidade Ookla', url: 'https://www.speedtest.net/', Icone: LuGauge },
+  { nome: 'Fast.com', descricao: 'Teste de velocidade da Netflix', url: 'https://fast.com/', Icone: LuZap },
+  { nome: 'ISP Focus (IPv6)', descricao: 'tcp6.ispfocus.net.br', url: 'https://tcp6.ispfocus.net.br/', Icone: LuNetwork },
+  { nome: 'ISP Focus (IPv4)', descricao: 'tcp4.ispfocus.net.br', url: 'https://tcp4.ispfocus.net.br/', Icone: LuNetwork },
   {
     nome: 'Teste de Bufferbloat',
     descricao: 'waveform.com — detecta latência sob carga (jogo/chamada travando)',
     url: 'https://www.waveform.com/tools/bufferbloat',
-    Icone: MdNetworkCheck,
+    Icone: LuActivity,
   },
   {
     nome: 'Verificador de porta aberta',
     descricao: 'yougetsignal.com — útil pra DVR/câmera não acessando remoto',
     url: 'https://www.yougetsignal.com/tools/open-ports/',
-    Icone: MdSettingsEthernet,
+    Icone: LuPlug,
   },
 ]
 
@@ -104,7 +103,7 @@ export default function Ferramentas() {
   return (
     <div className="ferramentas-tela tela-entrada">
       <CabecalhoTela
-        icone={MdConstruction}
+        icone={LuHammer}
         cor={CORES.ferramentas}
         titulo="Ferramentas"
         subtitulo="Testes de velocidade e conectividade."
@@ -113,7 +112,7 @@ export default function Ferramentas() {
       <div className="ferramentas-ip-card">
         <div className="ferramentas-ip-topo">
           <span className="ferramentas-item-icone">
-            <MdPublic size={22} />
+            <LuGlobe size={22} />
           </span>
           <span className="ferramentas-item-texto">
             <strong>Meu IP</strong>
@@ -127,6 +126,7 @@ export default function Ferramentas() {
           style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}
           onClick={consultar}
           disabled={consultando}
+          aria-busy={consultando}
         >
           {consultando ? 'Consultando…' : 'Consultar'}
         </button>
@@ -147,13 +147,13 @@ export default function Ferramentas() {
           <li>
             <Link to="/auditoria" className="ferramentas-item" viewTransition>
               <span className="ferramentas-item-icone">
-                <MdManageSearch size={22} />
+                <LuFileSearch size={22} />
               </span>
               <span className="ferramentas-item-texto">
                 <strong>Auditoria</strong>
                 <span>Quem reiniciou, removeu ou alterou ONU e Wi-Fi, quando e de qual IP</span>
               </span>
-              <MdChevronRight size={18} className="ferramentas-item-seta" />
+              <LuChevronRight size={18} className="ferramentas-item-seta" />
             </Link>
           </li>
         )}
@@ -167,7 +167,7 @@ export default function Ferramentas() {
                 <strong>{ferramenta.nome}</strong>
                 <span>{ferramenta.descricao}</span>
               </span>
-              <MdOpenInNew size={18} className="ferramentas-item-seta" />
+              <LuExternalLink size={18} className="ferramentas-item-seta" />
             </a>
           </li>
         ))}

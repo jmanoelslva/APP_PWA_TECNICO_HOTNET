@@ -44,11 +44,6 @@
   cursor: pointer;
 }
 
-/* Só nesta tela — ".ticket-card" também é reaproveitada em BuscaCliente.tsx
-   (cards de resultado do cliente), que não deve ganhar o acento de OS. */
-.suporte-lista .ticket-card {
-  border-left: 4px solid var(--cor-suporte);
-}
 
 .ticket-topo {
   display: flex;
@@ -109,8 +104,9 @@
   background: var(--cor-texto-desabilitado);
 }
 
+/* Faixa só na OS atrasada: aqui a cor tem significado. */
 .suporte-lista .ticket-card-atrasada {
-  border-left-color: var(--cor-erro);
+  border-left: 4px solid var(--cor-erro);
 }
 
 .ticket-rodape {

@@ -94,7 +94,9 @@
 
   /* Sombra dos cards — token à parte porque no escuro uma sombra preta
      não aparece contra um fundo já escuro (ver bloco dark abaixo). */
-  --sombra-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  /* Cartão "chapado" com borda fina (sombra some no sol e pesa no tema
+     escuro): o mesmo visual do Início, menu e filtros em todas as telas. */
+  --sombra-card: 0 0 0 1px var(--cor-borda);
 
   /* Largura do conteúdo principal — um token só, em vez do mesmo
      "max-width" repetido em cada página (ver HOTNET_WEB_APP/README para
@@ -129,7 +131,7 @@
   /* Laranja fechado no escuro (mesmo do app do cliente). */
   --cor-marca-escura: #8a3008;
 
-  --sombra-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --sombra-card: 0 0 0 1px var(--cor-borda);
 
   --cor-sucesso: #4caf50;
   --cor-erro: #f44336;

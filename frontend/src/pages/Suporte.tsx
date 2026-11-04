@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { MdBuild, MdClose, MdDirections, MdSearch } from 'react-icons/md'
+import { MdClose, MdDirections, MdSearch } from 'react-icons/md'
+import { LuSearchX, LuWrench } from 'react-icons/lu'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
 import Abas from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -55,11 +56,13 @@ export default function Suporte() {
 
   const [ordens, setOrdens] = useState<OrdemServicoDto[]>([])
   const [params] = useSearchParams()
-  // ?busca= vem do atalho "OS" da tela do cliente: já abre filtrado nele.
-  const [filtro, setFiltro] = useState<FiltroOs>(() => {
-    const busca = params.get('busca')?.trim()
-    return busca ? { ...FILTRO_VAZIO, busca } : lerFiltro()
-  })
+  // ?busca= vem do atalho "OS" da tela do cliente: já abre filtrado nele,
+  // mas só nesta visita — não vira o filtro lembrado (antes o nome do
+  // cliente continuava na busca ao voltar para OS pela barra de baixo).
+  const buscaDoCliente = params.get('busca')?.trim() ?? ''
+  const [filtro, setFiltro] = useState<FiltroOs>(() =>
+    buscaDoCliente ? { ...FILTRO_VAZIO, busca: buscaDoCliente } : lerFiltro(),
+  )
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -68,7 +71,17 @@ export default function Suporte() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Mesma tela reaproveitada ao trocar de endereço (ex.: OS do cliente →
+  // "OS" na barra de baixo): acompanha o filtro do endereço novo.
+  const buscaAnterior = useRef(buscaDoCliente)
   useEffect(() => {
+    if (buscaAnterior.current === buscaDoCliente) return
+    buscaAnterior.current = buscaDoCliente
+    setFiltro(buscaDoCliente ? { ...FILTRO_VAZIO, busca: buscaDoCliente } : lerFiltro())
+  }, [buscaDoCliente])
+
+  useEffect(() => {
+    if (buscaDoCliente) return
     try {
       sessionStorage.setItem(CHAVE_FILTRO, JSON.stringify(filtro))
     } catch {
@@ -101,7 +114,7 @@ export default function Suporte() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="suporte-tela tela-entrada">
-        <CabecalhoTela icone={MdBuild} cor={CORES.suporte} titulo="OS / Suporte" subtitulo="Ordens de serviço agendadas." />
+        <CabecalhoTela icone={LuWrench} cor={CORES.suporte} titulo="OS / Suporte" subtitulo="Ordens de serviço agendadas." />
 
         {carregando && (
           <ul className="suporte-lista">
@@ -121,7 +134,7 @@ export default function Suporte() {
 
         {!carregando && !erro && ordens.length === 0 && (
           <EstadoVazio
-            icone={MdBuild}
+            icone={LuWrench}
             titulo="Nenhuma OS aberta"
             subtitulo="Quando uma OS for agendada, ela aparece aqui."
             acao={{ rotulo: 'Atualizar lista', onClick: carregar }}
@@ -195,7 +208,7 @@ export default function Suporte() {
 
         {!carregando && !erro && ordens.length > 0 && filtradas.length === 0 && (
           <EstadoVazio
-            icone={MdSearch}
+            icone={LuSearchX}
             titulo="Nenhuma OS com esses filtros"
             subtitulo={filtro.busca ? `Nenhuma OS aberta para "${filtro.busca}".` : 'Mude ou limpe os filtros acima.'}
             acao={{ rotulo: 'Limpar filtros', onClick: () => setFiltro(FILTRO_VAZIO) }}

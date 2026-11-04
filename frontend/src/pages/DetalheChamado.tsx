@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { MdAttachFile, MdBuild, MdChatBubbleOutline, MdClose, MdDownload, MdPictureAsPdf } from 'react-icons/md'
+import { MdAttachFile, MdBuild, MdClose, MdDownload, MdPictureAsPdf } from 'react-icons/md'
+import { LuMessageCircle } from 'react-icons/lu'
 import VoltarInicio from '../components/VoltarInicio'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
@@ -174,7 +175,7 @@ export default function DetalheChamado() {
         )}
 
         {!carregando && !erro && mensagens.length === 0 && (
-          <EstadoVazio icone={MdChatBubbleOutline} titulo="Nenhum registro ainda" subtitulo="O histórico deste chamado aparece aqui." />
+          <EstadoVazio icone={LuMessageCircle} titulo="Nenhum registro ainda" subtitulo="O histórico deste chamado aparece aqui." />
         )}
 
         {!carregando &&

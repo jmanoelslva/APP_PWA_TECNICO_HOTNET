@@ -4,6 +4,7 @@
 
 .home-cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 12px;
   /* De borda a borda (anula o recuo de .home-conteudo), com espaço embaixo
@@ -264,11 +265,13 @@
 
 /* Progresso do dia: OS concluídas (finalizadas ou fechadas) / agendadas. */
 /* Números do dia na faixa laranja (Abertas / Atrasadas / Concluídas). */
+/* Linha inteira da faixa, abaixo da saudação e do avatar. */
 .home-numeros {
+  flex: 1 1 100%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin: 16px 0 0;
+  margin: 4px 0 0;
 }
 
 .home-numeros > div {
@@ -282,7 +285,7 @@
 
 .home-numeros dd {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -322,10 +325,11 @@
 }
 
 .home-progresso {
+  flex: 1 1 100%;
   display: flex;
   flex-direction: column-reverse;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 4px;
 }
 
 .home-progresso-trilho {

@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { MdCable, MdDeleteForever, MdPowerSettingsNew, MdRefresh } from 'react-icons/md'
+import { MdDeleteForever, MdPowerSettingsNew, MdRefresh } from 'react-icons/md'
+import { LuCable } from 'react-icons/lu'
 import { ApiError, atualizarInfoOnu, buscarOnu, reiniciarOnu, removerOnu, renomearOnu, type OnuDto } from '../api/client'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -236,13 +237,13 @@ export default function OnuStatus() {
   return (
     <PullToRefresh aoAtualizar={recarregar}>
       <div className="onu-tela tela-entrada">
-        <CabecalhoTela icone={MdCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
+        <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
 
         <BuscaOnu onEscolher={(parametros) => setParams(parametros)} />
 
         {semSelecao && !erro && (
           <EstadoVazio
-            icone={MdCable}
+            icone={LuCable}
             titulo="Busque pelo serial da ONU ou pelo usuário PPPoE"
             subtitulo="Ou acesse esta tela a partir dos detalhes de um cliente."
           />
@@ -260,7 +261,7 @@ export default function OnuStatus() {
         )}
 
         {temParametroInicial && !carregando && !erro && !onu && (
-          <EstadoVazio icone={MdCable} titulo="Nenhuma ONU encontrada para esta conexão." />
+          <EstadoVazio icone={LuCable} titulo="Nenhuma ONU encontrada para esta conexão." />
         )}
 
         {!carregando && !erro && onu && (

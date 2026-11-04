@@ -180,39 +180,6 @@ export default function Home() {
             <div className="home-header-saudacao">
               <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
               <span className="home-resumo">{textoHoje()}</span>
-              {/* Números do dia: o que está aberto, o que atrasou e o que já
-                  foi concluído hoje. */}
-              <dl className="home-numeros">
-                <div>
-                  <dt>Abertas</dt>
-                  <dd>{resumoDia?.total ?? '–'}</dd>
-                </div>
-                <div>
-                  <dt>Atrasadas</dt>
-                  <dd>{resumoDia?.atrasadas ?? '–'}</dd>
-                </div>
-                <div>
-                  <dt>Concluídas</dt>
-                  <dd>{progresso?.concluidas ?? '–'}</dd>
-                </div>
-              </dl>
-              {progresso && progresso.total > 0 && (
-                <div className="home-progresso">
-                  <div
-                    className="home-progresso-trilho"
-                    role="progressbar"
-                    aria-valuemin={0}
-                    aria-valuemax={progresso.total}
-                    aria-valuenow={progresso.concluidas}
-                    aria-label="OS concluídas hoje"
-                  >
-                    <span style={{ width: `${(progresso.concluidas / progresso.total) * 100}%` }} />
-                  </div>
-                  <span className="home-progresso-texto">
-                    {progresso.concluidas} de {progresso.total} OS concluída{progresso.total > 1 ? 's' : ''}
-                  </span>
-                </div>
-              )}
             </div>
 
             <div className="home-avatar-wrapper">
@@ -220,6 +187,39 @@ export default function Home() {
                 {iniciais(tecnico?.username)}
               </button>
             </div>
+            {/* Números do dia: o que está aberto, o que atrasou e o que já
+                foi concluído hoje. */}
+            <dl className="home-numeros">
+              <div>
+                <dt>Abertas</dt>
+                <dd>{resumoDia?.total ?? '–'}</dd>
+              </div>
+              <div>
+                <dt>Atrasadas</dt>
+                <dd>{resumoDia?.atrasadas ?? '–'}</dd>
+              </div>
+              <div>
+                <dt>Concluídas</dt>
+                <dd>{progresso?.concluidas ?? '–'}</dd>
+              </div>
+            </dl>
+            {progresso && progresso.total > 0 && (
+              <div className="home-progresso">
+                <div
+                  className="home-progresso-trilho"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={progresso.total}
+                  aria-valuenow={progresso.concluidas}
+                  aria-label="OS concluídas hoje"
+                >
+                  <span style={{ width: `${(progresso.concluidas / progresso.total) * 100}%` }} />
+                </div>
+                <span className="home-progresso-texto">
+                  {progresso.concluidas} de {progresso.total} OS concluída{progresso.total > 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
           </header>
 
           <form className="home-busca home-combobox" onSubmit={aoBuscar}>

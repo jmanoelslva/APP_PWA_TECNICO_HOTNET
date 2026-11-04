@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import type { IconType } from 'react-icons'
+import { LuFileSearch } from 'react-icons/lu'
 import {
   MdAddLocationAlt,
   MdArrowForward,
@@ -127,7 +128,7 @@ export default function Auditoria() {
       <div className="auditoria-tela tela-entrada">
         <VoltarInicio to="/ferramentas" />
         <CabecalhoTela
-          icone={MdManageSearch}
+          icone={LuFileSearch}
           cor={CORES.ferramentas}
           titulo="Auditoria"
           subtitulo="Quem mexeu no equipamento do cliente, quando e de qual IP."
@@ -176,7 +177,7 @@ export default function Auditoria() {
             <Skeleton width="40%" height={12} />
           </div>
         )}
-        {!erro && dias?.length === 0 && <EstadoVazio icone={MdManageSearch} titulo="Nenhuma ação encontrada." />}
+        {!erro && dias?.length === 0 && <EstadoVazio icone={LuFileSearch} titulo="Nenhuma ação encontrada." />}
 
         {!erro &&
           dias?.map((grupo) => (

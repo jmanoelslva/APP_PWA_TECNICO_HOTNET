@@ -14,7 +14,6 @@
 .detalhe-cliente-card {
   background: var(--cor-superficie);
   border-radius: 16px;
-  border-left: 4px solid var(--cor-cliente);
   padding: 18px;
   box-shadow: var(--sombra-card);
   display: flex;
@@ -35,14 +34,14 @@
 
 .detalhe-cliente-card strong {
   display: block;
-  font-size: 15px;
+  font-size: 17px;
   color: var(--cor-texto);
 }
 
 .detalhe-cliente-card p {
   margin: 4px 0 0;
-  font-size: 12px;
-  color: var(--cor-texto-terciario);
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
 }
 
 .detalhe-cliente-secao {
@@ -50,34 +49,36 @@
 }
 
 .detalhe-cliente-secao h2 {
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--cor-texto-secundario);
   margin: 0 0 10px;
 }
 
 .detalhe-cliente-vazio {
-  font-size: 13px;
-  color: var(--cor-texto-terciario);
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
 }
 
+/* Mesmo cartão das outras telas (Conexões, Contratos e Contato). */
 .detalhe-cliente-item {
   background: var(--cor-superficie);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 16px;
+  padding: 16px;
   box-shadow: var(--sombra-card);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .detalhe-cliente-item strong {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--cor-texto);
 }
 
 .detalhe-cliente-item p {
   margin: 4px 0 0;
-  font-size: 12px;
-  color: var(--cor-texto-terciario);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--cor-texto-secundario);
 }
 
 .detalhe-cliente-item-topo {
@@ -87,6 +88,7 @@
 }
 
 .detalhe-cliente-contrato-toggle {
+  min-height: 44px;
   width: 100%;
   border: none;
   background: transparent;
@@ -354,12 +356,9 @@
   margin: 0;
 }
 
-/* Atalhos do cliente: OS, Conexão, ONU e Financeiro sem voltar à Home.
-   Fica grudado no topo enquanto rola, para trocar de área a qualquer altura. */
+/* Atalhos do cliente (OS e Financeiro). Não grudam no topo: quem gruda
+   são as abas logo abaixo — antes os dois se sobrepunham ao rolar. */
 .detalhe-cliente-atalhos {
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 5;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
   gap: 8px;
@@ -381,7 +380,7 @@
   background: color-mix(in srgb, var(--atalho-cor) 10%, var(--cor-superficie));
   color: var(--atalho-cor);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;

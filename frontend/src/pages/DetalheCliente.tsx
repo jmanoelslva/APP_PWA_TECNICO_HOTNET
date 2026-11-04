@@ -1,16 +1,14 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { LuReceipt, LuUser, LuWrench } from 'react-icons/lu'
 import {
   MdAdd,
-  MdBuild,
   MdCable,
   MdDescription,
   MdEdit,
   MdExpandLess,
   MdExpandMore,
   MdLocationOn,
-  MdPeopleAlt,
-  MdReceipt,
   MdWifi,
 } from 'react-icons/md'
 import {
@@ -28,7 +26,6 @@ import {
   type OnuDto,
   type TelefoneDto,
 } from '../api/client'
-import VoltarInicio from '../components/VoltarInicio'
 import AcoesContato from '../components/AcoesContato'
 import LidoHa from '../components/LidoHa'
 import SeloStatusCliente from '../components/SeloStatusCliente'
@@ -119,13 +116,12 @@ export default function DetalheCliente() {
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   const [telefoneEditando, setTelefoneEditando] = useState<TelefoneDto | null>(null)
   const [adicionandoTelefone, setAdicionandoTelefone] = useState(false)
-  // Contrato traz bastante informação (assinatura, itens...) que só
-  // interessa quando o técnico realmente precisa dela — fica recolhido
-  // por padrão para não ocupar a tela à toa, expande sob demanda.
-  const [contratosExpandidos, setContratosExpandidos] = useState<Set<number>>(new Set())
+  // Contratos já abrem expandidos (na aba Contratos é o que se quer ver);
+  // o técnico recolhe o que não precisa. Guarda os recolhidos.
+  const [contratosRecolhidos, setContratosRecolhidos] = useState<Set<number>>(new Set())
 
   function alternarContrato(chave: number) {
-    setContratosExpandidos((atual) => {
+    setContratosRecolhidos((atual) => {
       const novo = new Set(atual)
       if (novo.has(chave)) novo.delete(chave)
       else novo.add(chave)
@@ -208,7 +204,6 @@ export default function DetalheCliente() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="detalhe-cliente-tela tela-entrada">
-        <VoltarInicio to="/clientes" />
         {carregando && (
           <div className="detalhe-cliente-card">
             <Skeleton width="50%" height={18} />
@@ -224,7 +219,7 @@ export default function DetalheCliente() {
           <>
             <div className="detalhe-cliente-card">
               <span className="detalhe-cliente-icone" style={{ background: CORES.cliente }}>
-                <MdPeopleAlt size={22} color={CORES.branco} />
+                <LuUser size={22} color={CORES.branco} />
               </span>
               <div className="detalhe-cliente-card-texto">
                 <strong>{nome ?? `Cliente #${pk}`}</strong>
@@ -242,7 +237,7 @@ export default function DetalheCliente() {
                 style={{ '--atalho-cor': CORES.suporte } as CSSProperties}
                 viewTransition
               >
-                <MdBuild size={22} /> OS
+                <LuWrench size={22} /> OS
               </Link>
               <Link
                 to={`/financeiro?client_pk=${pk}`}
@@ -250,7 +245,7 @@ export default function DetalheCliente() {
                 style={{ '--atalho-cor': CORES.financeiro } as CSSProperties}
                 viewTransition
               >
-                <MdReceipt size={22} /> Financeiro
+                <LuReceipt size={22} /> Financeiro
               </Link>
             </nav>
 
@@ -349,7 +344,7 @@ export default function DetalheCliente() {
                 {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
                 {contratos.map((contrato, indice) => {
                   const chave = contrato.contract_pk ?? indice
-                  const expandido = contratosExpandidos.has(chave)
+                  const expandido = !contratosRecolhidos.has(chave)
                   return (
                     <div key={chave} className="detalhe-cliente-item">
                       <button

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
-import { MdBuild, MdDirections, MdOpenInNew, MdPhone } from 'react-icons/md'
+import { MdDirections, MdOpenInNew, MdPhone } from 'react-icons/md'
+import { LuWrench } from 'react-icons/lu'
 import { buscarDetalheCliente, listarOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
 import {
   enderecoCurto,
@@ -113,7 +114,7 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
 
       {!proxima && (
         <div className="minhas-os-vazio">
-          <MdBuild size={18} />
+          <LuWrench size={18} />
           <span className="minhas-os-vazio-texto">
             Nenhuma OS sua para hoje.
             {futura?.op_date_sched && (

@@ -62,6 +62,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Busca da OS ficava com o nome do cliente:** ao abrir as OS pelo
+  cadastro do cliente, o filtro passava a ser o lembrado da tela de OS e
+  continuava preenchido depois. Agora vale só nessa visita.
 - **Lista de chamados** dava erro 500 sem `client_pk` (lia `user_pk`, que
   a sessão não tem mais); agora lista os chamados que o Controllr libera
   para o técnico. O app não usava essa rota ainda.
@@ -83,6 +86,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
+- **Telas padronizadas:** cartões com borda fina no app inteiro, sem a
+  faixa colorida à esquerda (na lista de OS ela fica só na atrasada, em
+  vermelho); ícones Lucide também nos cabeçalhos, avisos vazios, atalhos
+  do cliente e em "Minhas OS de hoje".
+- **Ferramentas:** Meu IP no cartão padrão e as ferramentas numa lista
+  única com divisórias, textos maiores.
+- **Cliente:** contratos já abrem expandidos; Conexões, Contratos e
+  Contato no cartão padrão com textos maiores; atalhos não grudam mais no
+  topo junto com as abas; sem a barra de voltar.
+- **Início:** Abertas, Atrasadas e Concluídas ocupam a largura toda da
+  faixa, abaixo da saudação e do avatar.
 - **Filtros de OS / Suporte no padrão do app:** "Todas / Hoje / Atrasadas
   / Próximas" com as mesmas abas das outras telas (antes cada botão tinha
   uma cor), busca igual à do Início e Etapa/Serviço como campos de 48 px.

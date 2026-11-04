@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { MdAttachMoney, MdNoteAdd, MdReceipt } from 'react-icons/md'
+import { MdNoteAdd } from 'react-icons/md'
+import { LuReceipt, LuWallet } from 'react-icons/lu'
 import { ApiError, criarObservacaoFatura, listarFaturas, type FaturaDto } from '../api/client'
 import VoltarInicio from '../components/VoltarInicio'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -76,7 +77,7 @@ export default function Financeiro() {
       <div className="financeiro-tela tela-entrada">
         <VoltarInicio to="/" />
         <CabecalhoTela
-          icone={MdAttachMoney}
+          icone={LuWallet}
           cor={CORES.financeiro}
           titulo="Financeiro"
           subtitulo="Faturas e pagamentos em observação."
@@ -104,7 +105,7 @@ export default function Financeiro() {
         )}
 
         {!carregando && !naoPermitido && !erro && faturas.length === 0 && (
-          <EstadoVazio icone={MdReceipt} titulo="Nenhuma fatura encontrada" />
+          <EstadoVazio icone={LuReceipt} titulo="Nenhuma fatura encontrada" />
         )}
 
         {!carregando && !naoPermitido && !erro && faturas.length > 0 && (
