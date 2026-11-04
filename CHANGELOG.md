@@ -29,7 +29,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   IPv4/IPv6, que continua em Ferramentas → Meu IP.
 - **Conexão em abas:** Resumo (sessão online, ONU e PPPoE), Wi-Fi,
   Roteador (acesso e observação) e Rede (CTO e rede). O card do cliente
-  com o selo de status fica acima das abas.
+  com o selo de status fica acima das abas. Wi-Fi e Roteador já abrem com
+  os blocos expandidos.
 - **Detalhe do cliente:** Conexões vem primeiro e aberta; Telefones,
   Endereços e Contratos começam recolhidos, mostrando a quantidade.
 - **Detalhe da OS na ordem de campo:** endereço (com Rota) primeiro, depois

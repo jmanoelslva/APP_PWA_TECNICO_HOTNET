@@ -50,6 +50,14 @@ const ABAS: { chave: Aba; rotulo: string }[] = [
   { chave: 'rede', rotulo: 'Rede' },
 ]
 
+// Blocos recolhíveis que já abrem expandidos ao entrar na aba.
+const BLOCOS_DA_ABA: Record<Aba, Bloco[]> = {
+  resumo: [],
+  wifi: ['wifi'],
+  roteador: ['roteador', 'obs'],
+  rede: [],
+}
+
 // Aba escolhida vale enquanto o app estiver aberto (troca de cliente e
 // continua na mesma parte).
 const CHAVE_ABA = 'hotnet-tecnico-aba-conexao'
@@ -91,7 +99,7 @@ export default function Conexao() {
   const [dps, setDps] = useState<DpDto[]>([])
   // Quais cartões recolhíveis estão abertos — fica aqui (e não em cada
   // cartão) para continuar aberto depois de recarregar a conexão.
-  const [blocosAbertos, setBlocosAbertos] = useState<Set<Bloco>>(() => new Set(lerAba() === 'wifi' ? ['wifi'] : []))
+  const [blocosAbertos, setBlocosAbertos] = useState<Set<Bloco>>(() => new Set(BLOCOS_DA_ABA[lerAba()]))
   const [aba, setAba] = useState<Aba>(lerAba)
 
   function escolherAba(nova: Aba) {
@@ -101,8 +109,9 @@ export default function Conexao() {
     } catch {
       // sem armazenamento: vale só nesta tela
     }
-    // Wi-Fi é a única coisa da aba: já abre o bloco, sem toque a mais.
-    if (nova === 'wifi') setBlocosAbertos((atual) => new Set(atual).add('wifi'))
+    // Com as abas separando cada parte, os blocos da aba já abrem
+    // expandidos, sem toque a mais.
+    setBlocosAbertos((atual) => new Set([...atual, ...BLOCOS_DA_ABA[nova]]))
   }
 
   function alternarBloco(chave: Bloco) {
