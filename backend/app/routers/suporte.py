@@ -6,6 +6,7 @@ ordens_servico.py): um ticket pode ter uma ou mais OS vinculadas
 técnico neste app — quem se fecha é a OS (support_ctl/os/close).
 """
 
+import asyncio
 import logging
 from typing import Any
 from urllib.parse import quote, urlencode
@@ -20,7 +21,7 @@ from ..config import ANEXO_MAX_MB, CONTROLLR_URL
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 from ..where import corpo as montar_corpo
-from ..where import where_eq, where_in
+from ..where import where_eq
 
 router = APIRouter(prefix="/suporte", tags=["suporte"])
 logger = logging.getLogger(__name__)
@@ -30,8 +31,8 @@ logger = logging.getLogger(__name__)
 async def listar_tickets(
     minhas: bool = Query(default=True),
     client_pk: int | None = Query(default=None, description="Filtra pelos chamados de um cliente específico"),
-    start: int = Query(default=0),
-    limit: int = Query(default=20),
+    start: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     where = None
@@ -42,12 +43,11 @@ async def listar_tickets(
         # (client_complete_name, category_name etc.), o que torna
         # "client_pk" sozinho ambíguo.
         where = where_eq("ticket.client_pk", client_pk)
-    elif minhas and ctx.session.user_pk is not None:
-        # oper 21 = IN — necessário porque o valor é uma lista de um item,
-        # não um escalar (oper 5 = "="). Se user_pk ainda não foi
-        # resolvido (ver auth.py::_find_user_pk), cai para "todos" em vez
-        # de mostrar uma lista vazia enganosa.
-        where = where_in("user_pk", [ctx.session.user_pk])
+    # "minhas" filtrava por ctx.session.user_pk, campo que a sessão não tem
+    # mais (só username + cookie do Controllr): dava erro 500. Sem client_pk,
+    # lista os chamados que o próprio Controllr deixa o técnico ver (ACL) —
+    # mesmo resultado que o código antigo tinha quando o user_pk faltava.
+    # O parâmetro "minhas" fica aceito para não quebrar quem já o envia.
 
     resposta = await ctx.controllr.ticket_list(montar_corpo(where, action="list", start=start, limit=limit))
     if not resposta.success:
@@ -89,6 +89,12 @@ async def criar_mensagem_ticket(
     return {"success": True, "results": resposta.results}
 
 
+# No máximo 3 anexos sendo lidos/enviados ao mesmo tempo: cada um fica
+# inteiro na memória (até ANEXO_MAX_MB) até seguir para o Controllr. Os
+# demais esperam a vez em vez de somar memória.
+_ENVIOS_ANEXO = asyncio.Semaphore(3)
+
+
 async def _ler_anexo(file: UploadFile) -> bytes:
     """Lê o anexo em pedaços e recusa (413) o que passar de ANEXO_MAX_MB."""
     limite = ANEXO_MAX_MB * 1024 * 1024
@@ -106,12 +112,13 @@ async def _ler_anexo(file: UploadFile) -> bytes:
 async def enviar_anexo_ticket(
     ticket_pk: int, file: UploadFile, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
-    conteudo = await _ler_anexo(file)
-    form = FormData()
-    form.add_field("file", conteudo, filename=file.filename, content_type=file.content_type)
-    form.add_field("ticket_pk", str(ticket_pk))
+    async with _ENVIOS_ANEXO:
+        conteudo = await _ler_anexo(file)
+        form = FormData()
+        form.add_field("file", conteudo, filename=file.filename, content_type=file.content_type)
+        form.add_field("ticket_pk", str(ticket_pk))
 
-    resposta = await ctx.controllr.support_annex_upload(form)
+        resposta = await ctx.controllr.support_annex_upload(form)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível enviar o anexo.", resposta))
     return {"success": True, "results": resposta.results}

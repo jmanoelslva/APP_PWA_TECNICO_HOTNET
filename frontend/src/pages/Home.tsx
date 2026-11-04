@@ -1,13 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  MdBuild,
-  MdConstruction,
-  MdQrCodeScanner,
-  MdRouter,
-  MdSearch,
-  MdWifiOff,
-} from 'react-icons/md'
+import { MdQrCodeScanner, MdSearch } from 'react-icons/md'
+// Atalhos com ícones Lucide, iguais aos da barra de baixo.
+import { LuHammer, LuServer, LuWifiOff, LuWrench } from 'react-icons/lu'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -23,6 +18,7 @@ import {
   buscarClientes,
   buscarCpe,
   buscarOnu,
+  listarCpeOffline,
   resumoDoDia,
   type BuscaClienteResultado,
   type CpeDto,
@@ -42,17 +38,14 @@ function saudacaoPorHorario(nome: string): string {
 // um botão que só leva para outra tela para então buscar. Conexão e ONU
 // também saíram: já estão na barra de baixo (sem atalho duplicado).
 const ITENS_MENU = [
-  { to: '/suporte', Icone: MdBuild, cor: CORES.suporte, label: 'OS / Suporte' },
-  { to: '/offline', Icone: MdWifiOff, cor: CORES.offline, label: 'Clientes Offline' },
-  { to: '/ferramentas', Icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
+  { to: '/suporte', Icone: LuWrench, cor: CORES.suporte, label: 'OS / Suporte' },
+  { to: '/offline', Icone: LuWifiOff, cor: CORES.offline, label: 'Clientes Offline' },
+  { to: '/ferramentas', Icone: LuHammer, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
 
-function textoResumo(resumo: ResumoDoDia | null): string {
-  const hoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })
-  if (!resumo) return hoje
-  if (resumo.total === 0) return `${hoje} · nenhuma OS para hoje`
-  const os = resumo.total === 1 ? '1 OS para hoje' : `${resumo.total} OS para hoje`
-  return resumo.atrasadas ? `${os} · ${resumo.atrasadas} atrasada${resumo.atrasadas > 1 ? 's' : ''}` : os
+/** Data de hoje ("quarta-feira, 04/11") — as quantidades ficam nos números abaixo. */
+function textoHoje(): string {
+  return new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })
 }
 
 export default function Home() {
@@ -67,6 +60,9 @@ export default function Home() {
   // Barra "X de Y OS concluídas": vem de rota própria porque a lista de OS
   // tira as finalizadas/fechadas (ver backend ordens_servico.py::resumo_do_dia).
   const [progresso, setProgresso] = useState<{ total: number; concluidas: number } | null>(null)
+  // Quantos clientes estão offline agora (atalho "Clientes Offline"). Só o
+  // total: a consulta pede 1 registro.
+  const [totalOffline, setTotalOffline] = useState<number | null>(null)
   const avisos = useAvisos()
   // Por que o interruptor está travado, quando está.
   const dicaAvisos =
@@ -105,6 +101,11 @@ export default function Home() {
     resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
       .then((resposta) => {
         if (!cancelado) setProgresso({ total: resposta.total, concluidas: resposta.concluidas })
+      })
+      .catch(() => {})
+    listarCpeOffline({ start: 0, limit: 1 })
+      .then((resposta) => {
+        if (!cancelado) setTotalOffline(resposta.total)
       })
       .catch(() => {})
     return () => {
@@ -147,9 +148,14 @@ export default function Home() {
 
   async function atualizarTela() {
     setRecarga((atual) => atual + 1)
-    await resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
-      .then((resposta) => setProgresso({ total: resposta.total, concluidas: resposta.concluidas }))
-      .catch(() => {})
+    await Promise.all([
+      resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
+        .then((resposta) => setProgresso({ total: resposta.total, concluidas: resposta.concluidas }))
+        .catch(() => {}),
+      listarCpeOffline({ start: 0, limit: 1 })
+        .then((resposta) => setTotalOffline(resposta.total))
+        .catch(() => {}),
+    ])
   }
 
   async function aoClicarInstalarMenu() {
@@ -173,7 +179,23 @@ export default function Home() {
           <header className="home-cabecalho">
             <div className="home-header-saudacao">
               <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
-              <span className="home-resumo">{textoResumo(resumoDia)}</span>
+              <span className="home-resumo">{textoHoje()}</span>
+              {/* Números do dia: o que está aberto, o que atrasou e o que já
+                  foi concluído hoje. */}
+              <dl className="home-numeros">
+                <div>
+                  <dt>Abertas</dt>
+                  <dd>{resumoDia?.total ?? '–'}</dd>
+                </div>
+                <div>
+                  <dt>Atrasadas</dt>
+                  <dd>{resumoDia?.atrasadas ?? '–'}</dd>
+                </div>
+                <div>
+                  <dt>Concluídas</dt>
+                  <dd>{progresso?.concluidas ?? '–'}</dd>
+                </div>
+              </dl>
               {progresso && progresso.total > 0 && (
                 <div className="home-progresso">
                   <div
@@ -301,6 +323,11 @@ export default function Home() {
                   <item.Icone size={24} />
                 </span>
                 <span className="home-menu-label">{item.label}</span>
+                {item.to === '/offline' && totalOffline != null && (
+                  <span className="home-menu-contagem" aria-label={`${totalOffline} offline agora`}>
+                    {totalOffline}
+                  </span>
+                )}
               </Link>
             ))}
             {/* Coletor de OLTs: outro app no mesmo domínio (/olt/), opcional —
@@ -309,7 +336,7 @@ export default function Home() {
             {coletorOlt && (
               <a href="/olt/" className="home-menu-item">
                 <span className="home-menu-icone" style={{ background: comAlpha(CORES.olts, 14), color: CORES.olts }}>
-                  <MdRouter size={24} />
+                  <LuServer size={24} />
                 </span>
                 <span className="home-menu-label">OLTs</span>
               </a>

@@ -37,6 +37,29 @@ export function osDoDia(ordens: OrdemServicoDto[], agora: Date = new Date()): Os
     .map((os) => ({ os, atrasada: osAtrasada(os, agora), diaAnterior: os.op_date_sched!.slice(0, 10) < hoje }))
 }
 
+/**
+ * Primeira OS em aberto agendada para depois de hoje — o Início mostra
+ * quando não há nenhuma para hoje. Vem da mesma lista já carregada (as de
+ * dias seguintes que osDoDia deixa de fora), sem consulta a mais.
+ */
+export function proximaOsFutura(ordens: OrdemServicoDto[], agora: Date = new Date()): OrdemServicoDto | null {
+  const hoje = dataParaFormatoServidor(agora).slice(0, 10)
+  return (
+    ordens
+      .filter((os) => !!os.op_date_sched && !os.op_date_close && !os.op_date_cancel)
+      .filter((os) => os.op_date_sched!.slice(0, 10) > hoje)
+      .sort((a, b) => a.op_date_sched!.localeCompare(b.op_date_sched!))[0] ?? null
+  )
+}
+
+/** "qui 06/11 08:00" de uma data agendada "AAAA-MM-DD HH:mm:ss". */
+export function quandoOsFutura(sched: string): string {
+  const [ano, mes, dia] = sched.slice(0, 10).split('-').map(Number)
+  const semana = new Date(ano, mes - 1, dia).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')
+  const hora = sched.slice(11, 16)
+  return `${semana} ${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}${hora ? ` ${hora}` : ''}`
+}
+
 /** "HH:mm" da data agendada; para OS de dia anterior, "DD/MM HH:mm". */
 export function horarioOs(item: OsDoDia): string {
   const sched = item.os.op_date_sched ?? ''

@@ -70,7 +70,7 @@ export function ModalRenomear({
           <button className="botao botao-secundario" onClick={onCancelar} disabled={salvando}>
             Cancelar
           </button>
-          <button
+          <button aria-busy={salvando}
             className="botao botao-primario"
             style={{ '--botao-cor': CORES.onu } as CSSProperties}
             disabled={salvando || !novoNome.trim()}

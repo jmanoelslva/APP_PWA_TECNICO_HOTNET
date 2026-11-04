@@ -246,7 +246,7 @@ function ModalObservacao({
 
         <div className="financeiro-modal-acoes">
           <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
-          <button
+          <button aria-busy={salvando}
             className="botao botao-primario"
             style={{ '--botao-cor': CORES.financeiro } as CSSProperties}
             disabled={salvando}

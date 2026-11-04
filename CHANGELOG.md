@@ -9,6 +9,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
+- **Início com os números do dia:** Abertas, Atrasadas e Concluídas na
+  faixa laranja; sem OS para hoje, mostra a próxima agendada (dia, hora e
+  cliente) com o botão Abrir; o atalho Clientes Offline mostra quantos
+  estão offline agora.
+- **Botão "carregando":** salvar, enviar, associar e confirmar etapa
+  mostram uma rodinha e não aceitam segundo toque enquanto a ação não
+  termina.
 - **Checklist de saída na OS:** sinal da ONU conferido, fotos anexadas,
   teste de velocidade e equipamentos organizados. Fica salvo no aparelho
   por OS e, ao finalizar, o que estiver marcado já entra na descrição
@@ -55,6 +62,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Lista de chamados** dava erro 500 sem `client_pk` (lia `user_pk`, que
+  a sessão não tem mais); agora lista os chamados que o Controllr libera
+  para o técnico. O app não usava essa rota ainda.
+- **Limites no servidor:** listas de OS, chamados, financeiro e offline
+  aceitam no máximo 100 por página e não aceitam início negativo; no
+  máximo 3 anexos são processados ao mesmo tempo (cada um fica na memória
+  até seguir para o Controllr).
 - **Busca por CPF/CNPJ e contrato:** agora acha o cliente por um trecho
   do CPF/CNPJ, como no painel do Controllr (antes só com o documento
   completo); números buscam documento e contrato ao mesmo tempo
@@ -69,6 +83,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
+- **Filtros de OS / Suporte no padrão do app:** "Todas / Hoje / Atrasadas
+  / Próximas" com as mesmas abas das outras telas (antes cada botão tinha
+  uma cor), busca igual à do Início e Etapa/Serviço como campos de 48 px.
+- **Campos e botões padronizados:** classe de campo única (48 px, letra
+  16 px, seta própria nos selects) e texto dos botões maior (15 px).
+- **Login:** logo e nome centralizados no espaço laranja acima do
+  formulário (antes sobrava um vazio grande em cima); o formulário ficou
+  no mesmo lugar.
+- **Ícones Lucide** na barra de baixo e nos atalhos do Início (já vinham
+  na biblioteca de ícones instalada, sem dependência nova); troca de tela
+  em 250 ms.
 - **"Minhas OS de hoje" sem OS:** aviso em fundo tingido com o botão
   "Ver todas as OS" (antes parecia um campo de busca).
 - **Cores da empresa:** mesma paleta do app do cliente — laranja do

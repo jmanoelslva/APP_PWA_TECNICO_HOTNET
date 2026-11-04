@@ -263,6 +263,64 @@
 }
 
 /* Progresso do dia: OS concluídas (finalizadas ou fechadas) / agendadas. */
+/* Números do dia na faixa laranja (Abertas / Atrasadas / Concluídas). */
+.home-numeros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 0;
+}
+
+.home-numeros > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cor-branco-fixo) 14%, transparent);
+}
+
+.home-numeros dd {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-numeros dt {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+:root[data-sol='1'] .home-numeros > div {
+  background: var(--cor-fundo);
+  border: 1.5px solid var(--cor-borda);
+}
+
+/* Quantidade no atalho (ex.: clientes offline agora). */
+.home-menu-item {
+  position: relative;
+}
+
+.home-menu-contagem {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--cor-offline);
+  color: var(--cor-branco-fixo);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 .home-progresso {
   display: flex;
   flex-direction: column-reverse;

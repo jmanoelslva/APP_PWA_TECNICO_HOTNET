@@ -141,7 +141,7 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
 
         <div className="modal-editar-endereco-acoes">
           <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
-          <button className="botao botao-primario" style={estiloBotaoPrimario} disabled={salvando} onClick={salvar}>
+          <button aria-busy={salvando} className="botao botao-primario" style={estiloBotaoPrimario} disabled={salvando} onClick={salvar}>
             {salvando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>

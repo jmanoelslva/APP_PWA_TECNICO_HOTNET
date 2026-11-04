@@ -1,16 +1,17 @@
 import type { CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MdBuild, MdCable, MdHome, MdWifi } from 'react-icons/md'
+// Ícones Lucide (traço uniforme, mesmo conjunto dos atalhos do Início).
+import { LuCable, LuHouse, LuWifi, LuWrench } from 'react-icons/lu'
 import { CORES, comAlpha } from '../utils/cores'
 import './BottomNav.css'
 
 // Sem "Buscar" de propósito: a busca geral é o campo do topo da Home
 // (cliente, serial da ONU e PPPoE) — um item aqui só a repetia.
 const ITENS = [
-  { to: '/', icone: MdHome, cor: CORES.primaria, label: 'Início', fim: true },
-  { to: '/suporte', icone: MdBuild, cor: CORES.suporte, label: 'OS' },
-  { to: '/conexao', icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
-  { to: '/onu', icone: MdCable, cor: CORES.onu, label: 'ONU' },
+  { to: '/', icone: LuHouse, cor: CORES.primaria, label: 'Início', fim: true },
+  { to: '/suporte', icone: LuWrench, cor: CORES.suporte, label: 'OS' },
+  { to: '/conexao', icone: LuWifi, cor: CORES.conexao, label: 'Conexão' },
+  { to: '/onu', icone: LuCable, cor: CORES.onu, label: 'ONU' },
 ]
 // Sem "Sair" de propósito: já fica em Configurações (avatar da tela
 // inicial); aqui só repetia. A pill usa o total para calcular a largura

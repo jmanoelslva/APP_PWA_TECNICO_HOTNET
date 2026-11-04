@@ -273,7 +273,7 @@ export default function CardCto({
           <MdMyLocation size={12} /> para usar sua localização.
         </p>
       )}
-      <button
+      <button aria-busy={salvando}
         className="botao botao-secundario botao-pequeno"
         style={{ '--botao-cor': CORES.conexao } as CSSProperties}
         onClick={salvar}

@@ -190,7 +190,7 @@ export default function ModalRegistrarCliente({
               <button className="botao botao-secundario" onClick={() => setCpeEscolhida(null)} disabled={associando}>
                 Voltar
               </button>
-              <button
+              <button aria-busy={associando}
                 className="botao botao-primario"
                 style={{ '--botao-cor': CORES.onu } as CSSProperties}
                 disabled={associando}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { MdBuild, MdClose, MdDirections, MdSearch } from 'react-icons/md'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
+import Abas from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
@@ -143,22 +144,19 @@ export default function Suporte() {
               />
             </div>
 
-            <div className="suporte-chips" role="group" aria-label="Quando">
-              {OPCOES_QUANDO.map((opcao) => (
-                <button
-                  key={opcao.valor}
-                  type="button"
-                  className={`suporte-chip suporte-chip-${opcao.valor}${filtro.quando === opcao.valor ? ' ativo' : ''}`}
-                  aria-pressed={filtro.quando === opcao.valor}
-                  onClick={() => mudar({ quando: opcao.valor })}
-                >
-                  {opcao.rotulo}
-                </button>
-              ))}
-            </div>
+            {/* Mesmo componente de abas das outras telas (antes eram 4
+                botões cada um de uma cor). */}
+            <Abas
+              abas={OPCOES_QUANDO.map((opcao) => ({ chave: opcao.valor, rotulo: opcao.rotulo }))}
+              ativa={filtro.quando}
+              onEscolher={(quando) => mudar({ quando })}
+              cor={CORES.suporte}
+              rotulo="Quando"
+            />
 
             <div className="suporte-selects">
               <select
+                className="campo"
                 value={filtro.etapa}
                 onChange={(e) => mudar({ etapa: e.target.value as FiltroOs['etapa'] })}
                 aria-label="Etapa"
@@ -168,7 +166,12 @@ export default function Suporte() {
                 <option value="respondida">Respondida</option>
                 <option value="iniciada">Em andamento</option>
               </select>
-              <select value={filtro.tarefa} onChange={(e) => mudar({ tarefa: e.target.value })} aria-label="Tipo de serviço">
+              <select
+                className="campo"
+                value={filtro.tarefa}
+                onChange={(e) => mudar({ tarefa: e.target.value })}
+                aria-label="Tipo de serviço"
+              >
                 <option value="">Todos os serviços</option>
                 {/* Mantém a escolha mesmo se o serviço sumiu da lista ao atualizar. */}
                 {[...new Set([...tarefas, ...(filtro.tarefa ? [filtro.tarefa] : [])])].map((tarefa) => (

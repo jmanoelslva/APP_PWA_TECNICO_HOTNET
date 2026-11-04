@@ -3,7 +3,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import { MdBuild, MdDirections, MdOpenInNew, MdPhone } from 'react-icons/md'
 import { buscarDetalheCliente, listarOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
-import { enderecoCurto, horarioOs, linkRota, osDoDia, telefonesDoCliente, type OsDoDia } from '../utils/minhasOs'
+import {
+  enderecoCurto,
+  horarioOs,
+  linkRota,
+  osDoDia,
+  proximaOsFutura,
+  quandoOsFutura,
+  telefonesDoCliente,
+  type OsDoDia,
+} from '../utils/minhasOs'
 import { linkLigar, linkWhatsapp } from '../utils/formatacao'
 import Skeleton from './Skeleton'
 import './MinhasOsHoje.css'
@@ -29,6 +38,8 @@ export interface ResumoDoDia {
 export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoDoDia | null) => void }) {
   const navigate = useNavigate()
   const [itens, setItens] = useState<OsDoDia[] | null>(null)
+  // Sem OS hoje: a próxima agendada para os dias seguintes (mesma lista).
+  const [futura, setFutura] = useState<OrdemServicoDto | null>(null)
   const [erro, setErro] = useState(false)
   // Endereço completo (coordenadas) e telefone só da próxima OS — uma
   // chamada a mais ao Controllr, não uma por OS.
@@ -42,6 +53,7 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
         if (cancelado) return
         const lista = osDoDia(resposta.results)
         setItens(lista)
+        setFutura(proximaOsFutura(resposta.results))
         onResumo?.({ total: lista.length, atrasadas: lista.filter((item) => item.atrasada).length })
         const proxima = lista[0]?.os
         if (!proxima?.client_pk) return
@@ -101,10 +113,25 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
 
       {!proxima && (
         <div className="minhas-os-vazio">
-          <MdBuild size={18} /> Nenhuma OS sua para hoje.
-          <Link to="/suporte" className="minhas-os-vazio-link" viewTransition>
-            Ver todas as OS
-          </Link>
+          <MdBuild size={18} />
+          <span className="minhas-os-vazio-texto">
+            Nenhuma OS sua para hoje.
+            {futura?.op_date_sched && (
+              <small>
+                Próxima: {quandoOsFutura(futura.op_date_sched)}
+                {futura.client_complete_name ? ` · ${futura.client_complete_name}` : ''}
+              </small>
+            )}
+          </span>
+          {futura ? (
+            <button type="button" className="minhas-os-vazio-link" onClick={() => abrir(futura)}>
+              Abrir
+            </button>
+          ) : (
+            <Link to="/suporte" className="minhas-os-vazio-link" viewTransition>
+              Ver todas as OS
+            </Link>
+          )}
         </div>
       )}
 

@@ -14,8 +14,8 @@ router = APIRouter(prefix="/cpe", tags=["conexao"])
 
 @router.get("/offline")
 async def listar_cpe_offline(
-    start: int = Query(default=0),
-    limit: int = Query(default=20, le=100),
+    start: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     """

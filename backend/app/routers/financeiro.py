@@ -38,8 +38,8 @@ router = APIRouter(prefix="/financeiro", tags=["financeiro"])
 @router.get("/faturas")
 async def listar_faturas(
     client_pk: int = Query(...),
-    start: int = Query(default=0),
-    limit: int = Query(default=30),
+    start: int = Query(default=0, ge=0),
+    limit: int = Query(default=30, ge=1, le=100),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     where = where_and(

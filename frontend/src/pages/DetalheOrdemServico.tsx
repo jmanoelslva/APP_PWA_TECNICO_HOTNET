@@ -754,7 +754,7 @@ export default function DetalheOrdemServico() {
                     >
                       <MdPhotoCamera size={18} /> Tirar foto
                     </button>
-                    <button
+                    <button aria-busy={enviandoAnexo}
                       className="botao botao-secundario"
                       style={{ '--botao-cor': CORES.suporte } as CSSProperties}
                       disabled={enviandoAnexo}
@@ -934,7 +934,7 @@ export default function DetalheOrdemServico() {
                 >
                   Cancelar
                 </button>
-                <button
+                <button aria-busy={executandoEtapa}
                   className="botao botao-primario"
                   style={{ '--botao-cor': CORES.suporte } as CSSProperties}
                   disabled={executandoEtapa}

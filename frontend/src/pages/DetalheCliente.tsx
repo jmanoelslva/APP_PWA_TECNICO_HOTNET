@@ -579,7 +579,7 @@ function ModalEditarTelefone({
 
         <div className="detalhe-cliente-modal-acoes">
           <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
-          <button
+          <button aria-busy={salvando}
             className="botao botao-primario"
             style={{ '--botao-cor': CORES.cliente } as CSSProperties}
             disabled={salvando}
@@ -636,7 +636,7 @@ function ModalAdicionarTelefone({
 
         <div className="detalhe-cliente-modal-acoes">
           <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
-          <button
+          <button aria-busy={salvando}
             className="botao botao-primario"
             style={{ '--botao-cor': CORES.cliente } as CSSProperties}
             disabled={salvando}

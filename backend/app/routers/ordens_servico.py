@@ -69,8 +69,8 @@ async def listar_ordens_servico(
     minhas: bool = Query(default=True),
     abertas: bool = Query(default=True, description="Só OS agendadas e ainda não fechadas/canceladas"),
     ticket_pk: int | None = Query(default=None, description="Filtra pelas OS de um ticket específico"),
-    start: int = Query(default=0),
-    limit: int = Query(default=20),
+    start: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     condicoes: list[dict[str, Any]] = []

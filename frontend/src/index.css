@@ -336,7 +336,7 @@ a:active,
   border-radius: 12px;
   border: 1.5px solid transparent;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
@@ -353,7 +353,72 @@ a:active,
 .botao-pequeno {
   height: 48px;
   padding: 0 14px;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+/* Botão carregando (aria-busy="true"): rodinha no lugar do ícone e sem
+   novo toque enquanto a ação não termina. */
+.botao[aria-busy='true'] {
+  pointer-events: none;
+}
+
+.botao[aria-busy='true'] > svg {
+  display: none;
+}
+
+.botao[aria-busy='true']::before {
+  content: '';
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  animation: botao-girar 0.7s linear infinite;
+}
+
+@keyframes botao-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Campo padrão (input/select) do app: 48px de toque, letra 16px (o iPhone
+   não dá zoom ao focar), mesma borda e foco em todas as telas. */
+.campo {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--cor-borda);
+  background-color: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.campo:focus {
+  outline: none;
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 18%, transparent);
+}
+
+/* Select com a seta do app no lugar da do navegador. */
+select.campo {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23737f8e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .botao[aria-busy='true']::before {
+    animation-duration: 2s;
+  }
 }
 
 .botao-primario {
@@ -506,7 +571,7 @@ a:active,
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 0.3s;
+    animation-duration: 0.25s;
     animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 

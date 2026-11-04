@@ -90,7 +90,7 @@ export default function CardAcessoRoteador({
           placeholder="Não informado"
         />
       </div>
-      <button
+      <button aria-busy={salvando}
         className="botao botao-secundario botao-pequeno"
         style={{ '--botao-cor': CORES.conexao } as CSSProperties}
         onClick={salvar}
