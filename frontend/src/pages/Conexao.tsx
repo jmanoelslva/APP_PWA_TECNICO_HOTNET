@@ -265,6 +265,7 @@ export default function Conexao() {
 
             {aba === 'resumo' && (
               <>
+                <CardPppoe cpe={cpe} />
                 <CardSessaoOnline
                   sessao={sessao}
                   carregando={carregandoSessao}
@@ -272,7 +273,6 @@ export default function Conexao() {
                   onAtualizar={() => cpe.pk != null && carregarSessaoOnline(cpe.pk)}
                 />
                 <CardOnuResumo onu={onuResumo} carregando={carregandoOnuResumo} username={cpe.username} />
-                <CardPppoe cpe={cpe} />
               </>
             )}
             {aba === 'wifi' && (

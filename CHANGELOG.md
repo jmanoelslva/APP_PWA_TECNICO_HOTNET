@@ -27,7 +27,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   no rodapé. Substitui o menu suspenso.
 - **Tela inicial mais curta:** grade de atalhos compacta e sem o rodapé de
   IPv4/IPv6, que continua em Ferramentas → Meu IP.
-- **Conexão em abas:** Resumo (sessão online, ONU e PPPoE), Wi-Fi,
+- **Conexão em abas:** Resumo (acesso PPPoE primeiro, sessão online e ONU), Wi-Fi,
   Roteador (acesso e observação) e Rede (CTO e rede). O card do cliente
   com o selo de status fica acima das abas. Wi-Fi e Roteador já abrem com
   os blocos expandidos.
