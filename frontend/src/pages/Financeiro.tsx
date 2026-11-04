@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MdAttachMoney, MdNoteAdd, MdReceipt } from 'react-icons/md'
 import { ApiError, criarObservacaoFatura, listarFaturas, type FaturaDto } from '../api/client'
+import VoltarInicio from '../components/VoltarInicio'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
@@ -73,6 +74,7 @@ export default function Financeiro() {
     <>
     <PullToRefresh aoAtualizar={carregar}>
       <div className="financeiro-tela tela-entrada">
+        <VoltarInicio to="/" />
         <CabecalhoTela
           icone={MdAttachMoney}
           cor={CORES.financeiro}

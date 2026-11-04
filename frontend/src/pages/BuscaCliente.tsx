@@ -10,6 +10,7 @@ import {
   type CpeDto,
   type OnuDto,
 } from '../api/client'
+import VoltarInicio from '../components/VoltarInicio'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
@@ -103,6 +104,7 @@ export default function BuscaCliente() {
 
   return (
     <div className="busca-cliente-tela tela-entrada">
+      <VoltarInicio to="/" />
       <CabecalhoTela
         icone={MdPeopleAlt}
         cor={CORES.cliente}

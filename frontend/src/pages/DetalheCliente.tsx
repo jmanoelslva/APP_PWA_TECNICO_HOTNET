@@ -28,6 +28,7 @@ import {
   type OnuDto,
   type TelefoneDto,
 } from '../api/client'
+import VoltarInicio from '../components/VoltarInicio'
 import AcoesContato from '../components/AcoesContato'
 import LidoHa from '../components/LidoHa'
 import SeloStatusCliente from '../components/SeloStatusCliente'
@@ -207,6 +208,7 @@ export default function DetalheCliente() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="detalhe-cliente-tela tela-entrada">
+        <VoltarInicio to="/clientes" />
         {carregando && (
           <div className="detalhe-cliente-card">
             <Skeleton width="50%" height={18} />

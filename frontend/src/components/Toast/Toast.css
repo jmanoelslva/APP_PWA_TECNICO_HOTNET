@@ -2,7 +2,8 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  /* Acima da barra de baixo (sem ela, no login, a variável cai para 0). */
+  bottom: calc(12px + var(--altura-toast-base, env(safe-area-inset-bottom, 0px)));
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -15,13 +16,16 @@
 .toast {
   max-width: 420px;
   width: 100%;
-  padding: 12px 18px;
-  border-radius: 12px;
-  font-size: 13px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--cor-branco-fixo);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  text-align: left;
   animation: toast-entrar 0.2s ease;
 }
 
@@ -36,14 +40,15 @@
   }
 }
 
+/* Fundos escuros fixos (texto branco sempre legível, nos dois temas). */
 .toast-info {
-  background: var(--cor-endereco);
+  background: #2a343c;
 }
 
 .toast-sucesso {
-  background: var(--cor-sucesso-vivo);
+  background: #1b6e2f;
 }
 
 .toast-erro {
-  background: var(--cor-primaria-escura);
+  background: #b42318;
 }

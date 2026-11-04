@@ -1,4 +1,7 @@
 .detalhe-chamado-tela {
+  /* Sem recuo próprio: a barra de voltar não precisa compensar. */
+  --recuo-topo: 0px;
+  --recuo-lado: 0px;
   max-width: var(--largura-conteudo);
   margin: 0 auto;
   height: 100vh;

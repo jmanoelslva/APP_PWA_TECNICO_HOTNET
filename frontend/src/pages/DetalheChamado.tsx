@@ -139,7 +139,7 @@ export default function DetalheChamado() {
   return (
     <div className="detalhe-chamado-tela tela-entrada">
       <header className="detalhe-chamado-cabecalho">
-        <VoltarInicio to="/suporte" label="OS" />
+        <VoltarInicio to="/suporte" />
         {ticket && (
           <div className="detalhe-chamado-resumo">
             <div className="detalhe-chamado-resumo-topo">

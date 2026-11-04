@@ -6,6 +6,7 @@ import { ToastProvider } from './components/Toast/ToastContext.tsx'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
 import { iniciarTema } from './utils/tema.ts'
 import { iniciarFilaAnexos } from './utils/filaAnexos.ts'
+import { iniciarArrastarFolhas } from './utils/arrastarFolhas.ts'
 import './index.css'
 import App from './App.tsx'
 
@@ -13,6 +14,8 @@ import App from './App.tsx'
 iniciarTema()
 // Anexos que ficaram na fila sem sinal: envia agora e quando a rede voltar.
 iniciarFilaAnexos()
+// Janelas que sobem de baixo fecham ao arrastar para baixo.
+iniciarArrastarFolhas()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -268,6 +268,7 @@ textarea,
 /* Reserva espaço para o conteúdo não ficar escondido atrás da barra de
    navegação fixa no rodapé, quando ela está presente na página. */
 body:has(.bottom-nav) {
+  --altura-toast-base: var(--altura-nav);
   padding-bottom: var(--altura-nav);
 }
 
@@ -467,30 +468,89 @@ a:active,
   }
 }
 
+/* Como no Android/iOS: a tela nova entra inteira pela direita por cima da
+   anterior, que recua um pouco e escurece. No "voltar" é o inverso — a tela
+   que sai fica por cima e desliza para a direita. */
 @keyframes tela-sai-direita {
   to {
-    opacity: 0;
-    transform: translateX(16px);
+    transform: translateX(100%);
   }
 }
 
 @keyframes tela-entra-esquerda {
   from {
-    opacity: 0;
-    transform: translateX(-16px);
+    transform: translateX(-25%);
+    filter: brightness(0.85);
   }
 }
 
 @keyframes tela-sai {
   to {
-    opacity: 0;
-    transform: translateX(-16px);
+    transform: translateX(-25%);
+    filter: brightness(0.85);
   }
 }
 
 @keyframes tela-entra {
   from {
-    opacity: 0;
-    transform: translateX(16px);
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  html[data-sentido='voltar']::view-transition-old(root) {
+    z-index: 1;
+  }
+}
+
+/* --- Toque como app nativo ------------------------------------------------ */
+html {
+  /* Sem o realce azul do navegador ao tocar e sem zoom no toque duplo. */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Botões, abas, rótulos e títulos não selecionam texto ao segurar o dedo
+   (campos de texto e valores para copiar continuam selecionáveis). */
+button,
+[role='tab'],
+nav,
+label,
+h1,
+h2,
+h3,
+.botao {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Botão "afunda" de leve ao tocar. `scale` (não transform) para não brigar
+   com elementos que já usam transform para se posicionar. */
+@media (pointer: coarse) {
+  button,
+  a,
+  [role='tab'] {
+    transition: scale 0.12s ease;
+  }
+
+  button:active:not(:disabled),
+  a:active,
+  [role='tab']:active {
+    scale: 0.97;
+  }
+
+  /* Sem barra de rolagem visível no celular. */
+  html {
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
   }
 }

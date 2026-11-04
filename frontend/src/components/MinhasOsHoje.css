@@ -23,16 +23,29 @@
   text-align: center;
 }
 
+/* Sem OS: aviso em fundo tingido, sem borda branca (com borda parecia um
+   campo de busca). */
 .minhas-os-vazio {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px 4px 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 12px 12px 16px;
   border-radius: 16px;
-  background: var(--cor-superficie);
-  border: 1px solid var(--cor-borda);
+  background: color-mix(in srgb, var(--cor-suporte) 9%, var(--cor-fundo));
   font-size: 14px;
-  color: var(--cor-texto-secundario);
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.minhas-os-vazio > svg {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cor-suporte) 16%, var(--cor-superficie));
+  color: var(--cor-suporte);
 }
 
 .minhas-os-proxima {
@@ -193,8 +206,11 @@
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  min-height: 48px;
-  padding: 0 4px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--cor-superficie);
+  border: 1.5px solid color-mix(in srgb, var(--cor-suporte) 45%, transparent);
   font-weight: 700;
   color: var(--cor-suporte);
   text-decoration: none;

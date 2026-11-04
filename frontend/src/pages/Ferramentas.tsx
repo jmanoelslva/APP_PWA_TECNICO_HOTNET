@@ -16,6 +16,7 @@ import {
   MdWifiTethering,
 } from 'react-icons/md'
 import { acessoAuditoria, ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
+import VoltarInicio from '../components/VoltarInicio'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
 import { buscarIpsPublicos } from '../utils/ipPublico'
@@ -103,6 +104,7 @@ export default function Ferramentas() {
 
   return (
     <div className="ferramentas-tela tela-entrada">
+      <VoltarInicio to="/" />
       <CabecalhoTela
         icone={MdConstruction}
         cor={CORES.ferramentas}

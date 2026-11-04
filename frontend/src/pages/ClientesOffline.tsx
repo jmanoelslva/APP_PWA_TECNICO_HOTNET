@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { MdPeopleAlt, MdSearch, MdWifiOff } from 'react-icons/md'
 import { ApiError, listarCpeOffline, type CpeDto } from '../api/client'
+import VoltarInicio from '../components/VoltarInicio'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
@@ -91,6 +92,7 @@ export default function ClientesOffline() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="clientes-offline-tela tela-entrada">
+        <VoltarInicio to="/" />
         <CabecalhoTela
           icone={MdWifiOff}
           cor={CORES.offline}

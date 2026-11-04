@@ -488,7 +488,7 @@ export default function DetalheOrdemServico() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="detalhe-ordem-tela tela-entrada">
-        <VoltarInicio to="/suporte" label="OS" />
+        <VoltarInicio to="/suporte" />
 
         {carregando && (
           <div className="detalhe-ordem-card">

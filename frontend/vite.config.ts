@@ -52,7 +52,7 @@ export default defineConfig({
         // Cor da tela de abertura (só aceita uma): a escura pisca menos que
         // um clarão para quem usa o tema escuro; o index.html pinta o fundo
         // do tema certo logo em seguida.
-        background_color: '#141a1f',
+        background_color: '#c94300',
         theme_color: '#c94300',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },

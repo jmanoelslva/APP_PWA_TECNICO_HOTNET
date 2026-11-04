@@ -39,8 +39,24 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
     (detalhes, reiniciar e remover, longe do toque acidental).
   - Cliente: Conexões, Contratos e Contato (telefones e endereços).
 
+- **Jeito de app nativo:**
+  - Troca de tela deslizando inteira pela direita (e de volta pela
+    esquerda), como no Android.
+  - Barra fixa no topo das telas internas (OS, chamado, cliente,
+    Financeiro, busca, Offline, Ferramentas e Auditoria) com a seta de
+    voltar, que volta para a tela de onde se veio.
+  - Janelas que sobem de baixo fecham ao arrastar para baixo; a de
+    confirmar etapa da OS também passou a subir de baixo.
+  - Botões afundam de leve ao tocar; sem realce azul do navegador, sem
+    zoom no toque duplo, sem seleção de texto em botões e títulos e sem
+    barra de rolagem.
+  - Avisos no rodapé, logo acima da barra de baixo, em fundo escuro.
+  - Abertura do app na cor da marca.
+
 ### Alterado
 
+- **"Minhas OS de hoje" sem OS:** aviso em fundo tingido com o botão
+  "Ver todas as OS" (antes parecia um campo de busca).
 - **Cores da empresa:** mesma paleta do app do cliente — laranja do
   logotipo nos botões, nos destaques, na barra de status e na faixa do
   login e do Início (como o topo do login do app do cliente; de borda a
