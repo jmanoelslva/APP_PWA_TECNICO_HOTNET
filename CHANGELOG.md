@@ -7,15 +7,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.21.0] - 2026-11-04
+
 ### Adicionado
 
 - **Início com os números do dia:** Abertas, Atrasadas e Concluídas na
   faixa laranja; sem OS para hoje, mostra a próxima agendada (dia, hora e
   cliente) com o botão Abrir; o atalho Clientes Offline mostra quantos
   estão offline agora.
-- **Botão "carregando":** salvar, enviar, associar e confirmar etapa
-  mostram uma rodinha e não aceitam segundo toque enquanto a ação não
-  termina.
+- **Leitor de código na busca do Início:** o botão no campo lê o código
+  de barras ou QR da etiqueta pela câmera; o valor entra na busca geral
+  (serial de ONU, PPPoE e cliente).
 - **Checklist de saída na OS:** sinal da ONU conferido, fotos anexadas,
   teste de velocidade e equipamentos organizados. Fica salvo no aparelho
   por OS e, ao finalizar, o que estiver marcado já entra na descrição
@@ -29,135 +31,111 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Faixa do sinal da ONU:** o RX aparece numa barra vermelha, amarela e
   verde com o selo Bom, Limite ou Crítico (mesmos limites de antes), na
   tela da ONU e no Resumo da Conexão.
-- **Leitor de código na busca do Início:** o botão no campo lê o código
-  de barras ou QR da etiqueta pela câmera; o valor entra na busca geral
-  (serial de ONU, PPPoE e cliente).
+- **Abas na OS:** Resumo (descrição e endereço), Conexão, Checklist
+  (checklist de saída e fotos) e Histórico (cliente, contrato e etapas).
+  Título, etapas, rota e o botão do rodapé ficam sempre à vista.
+- **Abas na ONU:** Sinal (com "Atualizar agora"), Credenciais e
+  Equipamento (detalhes, reiniciar e remover, longe do toque acidental).
+- **Abas no cliente:** Conexões, Contratos e Contato (telefones e
+  endereços). Como na Conexão, cada tela lembra a aba enquanto o app
+  estiver aberto.
 - **Lembrar meu usuário no login:** só o nome de usuário fica no
   aparelho, nunca a senha; o cursor já abre na senha.
 - **Configurações:** tema Claro, Escuro ou Automático (segue o celular),
   cada um com seu ícone, e texto grande para o app inteiro.
-- **Abas na OS, na ONU e no cliente**, iguais às da Conexão e lembradas
-  enquanto o app estiver aberto:
-  - OS: Resumo (descrição e endereço), Conexão, Checklist (checklist de
-    saída e fotos)
-    e Histórico (cliente, contrato e etapas). Título, etapas, rota e o
-    botão do rodapé ficam sempre à vista.
-  - ONU: Sinal (com "Atualizar agora"), Credenciais e Equipamento
-    (detalhes, reiniciar e remover, longe do toque acidental).
-  - Cliente: Conexões, Contratos e Contato (telefones e endereços).
+- **Botão "carregando":** salvar, enviar, associar, consultar e confirmar
+  etapa mostram uma rodinha e não aceitam segundo toque enquanto a ação
+  não termina.
 
-- **Jeito de app nativo:**
-  - Troca de tela deslizando inteira pela direita (e de volta pela
-    esquerda), como no Android.
-  - Sem botão de voltar nas telas: volta-se pelo botão/gesto do próprio
-    celular, como num app Android.
-  - Janelas que sobem de baixo fecham ao arrastar para baixo; a de
-    confirmar etapa da OS também passou a subir de baixo.
-  - Botões afundam de leve ao tocar; sem realce azul do navegador, sem
-    zoom na tela (pinça ou toque duplo — o mapa da CTO continua com zoom),
-    sem seleção de texto em botões e títulos e sem barra de rolagem.
-  - Avisos no rodapé, logo acima da barra de baixo, em fundo escuro.
-  - Abertura do app na cor da marca.
+### Alterado
+
+- **Cores da empresa:** mesma paleta do app do cliente — laranja do
+  logotipo nos botões, nos destaques, na barra de status e na faixa do
+  login e do Início, grafite nos textos. O ícone do app continua o mesmo.
+- **Jeito de app nativo:** a tela nova entra deslizando pela direita;
+  janelas que sobem de baixo fecham ao arrastar para baixo; botões afundam
+  de leve ao tocar; sem realce do navegador, sem zoom na tela (o mapa da
+  CTO continua com zoom), sem seleção de texto em botões e sem barra de
+  rolagem; avisos acima da barra de baixo; abertura do app na cor da
+  marca.
+- **Sem botão de voltar nas telas:** volta-se pelo botão ou gesto do
+  próprio celular.
+- **Puxar para atualizar sem arrastar a tela:** uma bolinha com a seta
+  desce por cima do conteúdo e gira enquanto atualiza; a tela fica parada.
+- **Telas padronizadas:** cartões com borda fina no app inteiro, sem a
+  faixa colorida à esquerda (na lista de OS ela fica só na OS atrasada, em
+  vermelho); ícones Lucide na barra de baixo, nos atalhos, nos cabeçalhos
+  e nos avisos; campos de 48 px com letra de 16 px; texto dos botões
+  maior; troca de tela em 250 ms.
+- **Nada mais abre e fecha:** aba Roteador (Wi-Fi, acesso ao roteador e
+  observação), contratos do cliente e Cliente/Contrato/Histórico das
+  etapas na OS ficam sempre abertos.
+- **Login:** formulário como folha clara sobre a faixa laranja; logo do
+  técnico num quadro branco, centralizado com o nome no espaço acima do
+  formulário; campos e botão maiores.
+- **Início:** faixa de borda a borda com a saudação, a data e os números
+  do dia; busca por cima da faixa; Conexão e ONU saíram da grade (já estão
+  na barra de baixo); "Minhas OS de hoje" sem OS como aviso, não mais com
+  cara de campo de busca.
+- **Conexão em abas reorganizadas:** Resumo (sinal da ONU primeiro),
+  Roteador (Wi-Fi, acesso ao roteador e observação), CTO e Histórico (IP,
+  MAC, última autenticação e histórico de conexão).
+- **Aba Sinal da ONU mais compacta:** ONU e OLT num cartão só, lado a
+  lado; o selo fica na linha do título e o valor e a barra não quebram
+  linha.
+- **Filtros de OS / Suporte:** "Todas / Hoje / Atrasadas / Próximas" com
+  as mesmas abas das outras telas, busca igual à do Início e Etapa/Serviço
+  no campo padrão.
+- **Filtros da Auditoria:** período em abas (Tudo, Hoje, 7 dias, 30 dias,
+  Período), tipo de ação numa lista agrupada (ONU, Conexão, Cliente, OS)
+  no lugar de 11 botões, técnico no campo padrão, tudo aplicado na hora,
+  com a contagem e "Limpar filtros".
+- **Ferramentas:** Meu IP no cartão padrão e as ferramentas numa lista
+  única com divisórias.
+- **Cliente:** Conexões, Contratos e Contato no cartão padrão com textos
+  maiores; atalhos OS/Financeiro não grudam mais no topo junto com as abas.
+- **Contraste corrigido:** verde de OS, dourado do Financeiro, vermelho
+  de Offline e o "Enviado" dos anexos escurecidos para o mínimo de leitura
+  (4,5:1) sobre o branco.
+- **Fontes:** Inter no lugar da Plus Jakarta Sans e IBM Plex Mono em
+  serial, MAC, PPPoE e senha, servidas pelo próprio app (não dependem
+  mais do Google Fonts) e com algarismos de largura fixa.
 
 ### Corrigido
 
+- **Busca por CPF/CNPJ e contrato:** acha o cliente por um trecho do
+  CPF/CNPJ, como no painel do Controllr (antes só com o documento
+  completo); números buscam documento e contrato ao mesmo tempo
+  (contratos desativados não aparecem; cancelados, sim). CPF/CNPJ com
+  pontos, traço ou barra virava busca por nome.
 - **Telas guardavam dados do item anterior:** ao buscar outro usuário
   PPPoE dentro da Conexão, Wi-Fi, acesso ao roteador, observação e CTO
   continuavam com os valores do cliente anterior (e "Salvar" gravaria
   esses valores no novo). O mesmo valia para anexos, checklist e textos
   ao trocar de OS, cliente ou chamado sem sair da tela. Agora cada um
   começa do zero.
+- **Telas presas na versão anterior depois de atualizar:** o app aplica
+  a versão nova na próxima troca de tela (ou ao voltar para ele), sem
+  precisar sair e entrar de novo.
+- **Busca da OS ficava com o nome do cliente** depois de abrir as OS pelo
+  cadastro dele; agora o filtro vale só nessa visita.
 - **Checklist apagado depois de finalizar a OS:** não fica marcado no
   aparelho nem reaparece se a OS for reaberta.
-- **Nome do cliente repetido:** seção aberta (ex.: Cliente e Contrato na
-  aba Histórico da OS) não repete mais o resumo no título.
-- **Busca da OS ficava com o nome do cliente:** ao abrir as OS pelo
-  cadastro do cliente, o filtro passava a ser o lembrado da tela de OS e
-  continuava preenchido depois. Agora vale só nessa visita.
+- **Nome do cliente repetido** no título e no conteúdo das seções da OS.
+- **"Limpar filtros" duplicado** na tela de OS quando o filtro não acha
+  nada.
+- **Textos de ajuda das buscas cortados:** ficaram mais curtos e, se
+  ainda não couberem, terminam em "…".
 - **Lista de chamados** dava erro 500 sem `client_pk` (lia `user_pk`, que
-  a sessão não tem mais); agora lista os chamados que o Controllr libera
-  para o técnico. O app não usava essa rota ainda.
+  a sessão não tem mais); o app ainda não usava essa rota.
 - **Limites no servidor:** listas de OS, chamados, financeiro e offline
   aceitam no máximo 100 por página e não aceitam início negativo; no
-  máximo 3 anexos são processados ao mesmo tempo (cada um fica na memória
-  até seguir para o Controllr).
-- **Busca por CPF/CNPJ e contrato:** agora acha o cliente por um trecho
-  do CPF/CNPJ, como no painel do Controllr (antes só com o documento
-  completo); números buscam documento e contrato ao mesmo tempo
-  (contratos desativados não aparecem; cancelados, sim). CPF/CNPJ com
-  pontos, traço ou barra virava busca por nome.
-- **Telas presas na versão anterior depois de atualizar:** o app passa a
-  aplicar a versão nova na próxima troca de tela (ou ao voltar para ele),
-  sem precisar sair e entrar de novo.
-- **Textos de ajuda das buscas cortados** (Início, clientes, OS, ONU,
-  Offline, PPPoE e CTO): ficaram mais curtos e, se ainda não couberem,
-  terminam em "…".
+  máximo 3 anexos são processados ao mesmo tempo.
 
-### Alterado
+### Segurança
 
-- **Telas padronizadas:** cartões com borda fina no app inteiro, sem a
-  faixa colorida à esquerda (na lista de OS ela fica só na atrasada, em
-  vermelho); ícones Lucide também nos cabeçalhos, avisos vazios, atalhos
-  do cliente e em "Minhas OS de hoje".
-- **Nada mais abre e fecha:** aba Roteador (Wi-Fi, acesso ao roteador e
-  observação), contratos do cliente e Cliente/Contrato/Histórico das
-  etapas na OS ficam sempre abertos, sem a seta.
-- **Aba Sinal da ONU mais compacta:** ONU e OLT num cartão só, lado a
-  lado; o selo Bom/Limite/Crítico fica na linha do título e o valor e a
-  barra não quebram mais linha.
-- **Filtros da Auditoria:** período em abas (Tudo, Hoje, 7 dias, 30 dias,
-  Período — este mostra De/Até), tipo de ação numa lista agrupada (ONU,
-  Conexão, Cliente, OS) no lugar de 11 botões, técnico no campo padrão,
-  tudo aplicado na hora (sem "Filtrar"), com a contagem e "Limpar
-  filtros".
-- **Puxar para atualizar sem arrastar a tela:** uma bolinha com a seta
-  desce por cima do conteúdo e gira enquanto atualiza, como no Android;
-  a tela fica parada.
-- **Ferramentas:** Meu IP no cartão padrão e as ferramentas numa lista
-  única com divisórias, textos maiores.
-- **Cliente:** contratos já abrem expandidos; Conexões, Contratos e
-  Contato no cartão padrão com textos maiores; atalhos não grudam mais no
-  topo junto com as abas.
-- **Início:** Abertas, Atrasadas e Concluídas ocupam a largura toda da
-  faixa, abaixo da saudação e do avatar.
-- **Filtros de OS / Suporte no padrão do app:** "Todas / Hoje / Atrasadas
-  / Próximas" com as mesmas abas das outras telas (antes cada botão tinha
-  uma cor), busca igual à do Início e Etapa/Serviço como campos de 48 px.
-- **Campos e botões padronizados:** classe de campo única (48 px, letra
-  16 px, seta própria nos selects) e texto dos botões maior (15 px).
-- **Login:** logo e nome centralizados no espaço laranja acima do
-  formulário (antes sobrava um vazio grande em cima); o formulário ficou
-  no mesmo lugar.
-- **Ícones Lucide** na barra de baixo e nos atalhos do Início (já vinham
-  na biblioteca de ícones instalada, sem dependência nova); troca de tela
-  em 250 ms.
-- **"Minhas OS de hoje" sem OS:** aviso em fundo tingido com o botão
-  "Ver todas as OS" (antes parecia um campo de busca).
-- **Cores da empresa:** mesma paleta do app do cliente — laranja do
-  logotipo nos botões, nos destaques, na barra de status e na faixa do
-  login e do Início (como o topo do login do app do cliente; de borda a
-  borda, sem cantos, com a busca por cima), grafite nos textos. Botões em cor sólida e IBM Plex Mono (servida pelo próprio app)
-  em serial, MAC, PPPoE e senha. O ícone do app continua o mesmo.
-- **Telas internas:** cabeçalho sem caixa colorida (ícone num selo e
-  título maior), barra de baixo com destaque só atrás do ícone, próxima OS
-  em cartão branco com "Abrir OS" em destaque, menu com avatar e sinal da
-  ONU no topo do Resumo da Conexão.
-- **Contraste corrigido:** verde de OS, dourado do Financeiro e vermelho
-  de Offline escurecidos para passar no mínimo de leitura (4,5:1) sobre o
-  branco, assim como o "Enviado" dos anexos.
-- **Login:** formulário como folha clara sobre a faixa da marca, logo do
-  técnico num quadro branco e centralizado com o nome, campos e botão
-  maiores.
-- **Início sem atalhos duplicados:** Conexão e ONU saíram da grade, já que
-  estão na barra de baixo.
-- **Abas da Conexão reorganizadas:** Resumo, Roteador (Wi-Fi, acesso ao
-  roteador e observação, já expandidos), CTO (fibra) e Histórico (IP/MAC,
-  última autenticação e histórico de conexão, carregado ao abrir a aba,
-  sem toque a mais).
-- **Fonte Inter no lugar da Plus Jakarta Sans:** mais legível em tamanhos
-  pequenos e no sol, com algarismos de largura fixa (datas, IPs e consumo
-  alinhados). Servida pelo próprio app (48 KB, subconjunto latino) e
-  pré-cacheada pelo service worker — não depende mais do Google Fonts.
+- **CSP sem o Google Fonts:** com as fontes servidas pelo próprio app, o
+  servidor só libera fontes e estilos do próprio domínio.
 
 ## [1.20.0] - 2026-11-04
 
@@ -796,6 +774,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.21.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.3...v1.20.0
 [1.19.3]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.3
 [1.18.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...v1.18.1
