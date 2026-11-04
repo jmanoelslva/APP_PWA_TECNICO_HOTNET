@@ -226,42 +226,6 @@
   color: var(--cor-texto-terciario);
 }
 
-/* 3 colunas: os atalhos cabem sem rolar a tela. */
-.home-menu {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.home-menu-item {
-  background: var(--cor-superficie);
-  border-radius: 14px;
-  padding: 14px 6px;
-  border: 1px solid var(--cor-borda);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
-  color: inherit;
-}
-
-.home-menu-icone {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.home-menu-label {
-  font-size: 13px;
-  line-height: 1.25;
-  font-weight: 700;
-  color: var(--cor-texto);
-  text-align: center;
-}
 
 /* Progresso do dia: OS concluídas (finalizadas ou fechadas) / agendadas. */
 /* Números do dia na faixa laranja (Abertas / Atrasadas / Concluídas). */
@@ -334,27 +298,6 @@
   color: var(--cor-branco-fixo);
 }
 
-/* Quantidade no atalho (ex.: clientes offline agora). */
-.home-menu-item {
-  position: relative;
-}
-
-.home-menu-contagem {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 7px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: var(--cor-offline);
-  color: var(--cor-branco-fixo);
-  font-size: 12px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
 
 .home-progresso {
   flex: 1 1 100%;
@@ -402,4 +345,70 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+/* Atalhos em lista (como Ferramentas e Configurações): ícone, nome, uma
+   informação útil e seta — fica igual com 3 ou 4 itens. */
+.home-atalhos {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-card);
+  overflow: hidden;
+}
+
+.home-atalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 12px 12px 12px 16px;
+  color: var(--cor-texto);
+  text-decoration: none;
+}
+
+.home-atalho + .home-atalho {
+  border-top: 1px solid var(--cor-borda-suave);
+}
+
+.home-atalho-icone {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+}
+
+.home-atalho-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-atalho-texto strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.home-atalho-texto > span {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-atalho-destaque {
+  color: var(--cor-offline);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-atalho-seta {
+  flex: none;
+  color: var(--cor-texto-terciario);
 }

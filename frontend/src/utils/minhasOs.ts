@@ -38,18 +38,21 @@ export function osDoDia(ordens: OrdemServicoDto[], agora: Date = new Date()): Os
 }
 
 /**
- * Primeira OS em aberto agendada para depois de hoje — o Início mostra
- * quando não há nenhuma para hoje. Vem da mesma lista já carregada (as de
- * dias seguintes que osDoDia deixa de fora), sem consulta a mais.
+ * OS em aberto agendadas para depois de hoje, da mais próxima para a mais
+ * distante — as de dias seguintes que osDoDia deixa de fora, da mesma lista
+ * já carregada (sem consulta a mais).
  */
-export function proximaOsFutura(ordens: OrdemServicoDto[], agora: Date = new Date()): OrdemServicoDto | null {
+export function osFuturas(ordens: OrdemServicoDto[], agora: Date = new Date()): OrdemServicoDto[] {
   const hoje = dataParaFormatoServidor(agora).slice(0, 10)
-  return (
-    ordens
-      .filter((os) => !!os.op_date_sched && !os.op_date_close && !os.op_date_cancel)
-      .filter((os) => os.op_date_sched!.slice(0, 10) > hoje)
-      .sort((a, b) => a.op_date_sched!.localeCompare(b.op_date_sched!))[0] ?? null
-  )
+  return ordens
+    .filter((os) => !!os.op_date_sched && !os.op_date_close && !os.op_date_cancel)
+    .filter((os) => os.op_date_sched!.slice(0, 10) > hoje)
+    .sort((a, b) => a.op_date_sched!.localeCompare(b.op_date_sched!))
+}
+
+/** A próxima OS agendada depois de hoje — o Início mostra quando não há nenhuma para hoje. */
+export function proximaOsFutura(ordens: OrdemServicoDto[], agora: Date = new Date()): OrdemServicoDto | null {
+  return osFuturas(ordens, agora)[0] ?? null
 }
 
 /** "qui 06/11 08:00" de uma data agendada "AAAA-MM-DD HH:mm:ss". */

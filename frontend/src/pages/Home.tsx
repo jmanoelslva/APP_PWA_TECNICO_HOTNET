@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MdQrCodeScanner, MdSearch } from 'react-icons/md'
 // Atalhos com ícones Lucide, iguais aos da barra de baixo.
-import { LuHammer, LuServer, LuWifiOff, LuWrench } from 'react-icons/lu'
+import { LuCalendarClock, LuChevronRight, LuHammer, LuServer, LuWifiOff } from 'react-icons/lu'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -33,15 +33,12 @@ function saudacaoPorHorario(nome: string): string {
   return `${periodo}, ${nome}!`
 }
 
-// "Clientes" saiu daqui de propósito — virou o campo de busca direto no
-// topo da tela (ver <form> abaixo), como primeira opção, em vez de mais
-// um botão que só leva para outra tela para então buscar. Conexão e ONU
-// também saíram: já estão na barra de baixo (sem atalho duplicado).
-const ITENS_MENU = [
-  { to: '/suporte', Icone: LuWrench, cor: CORES.suporte, label: 'OS / Suporte' },
-  { to: '/offline', Icone: LuWifiOff, cor: CORES.offline, label: 'Clientes Offline' },
-  { to: '/ferramentas', Icone: LuHammer, cor: CORES.ferramentas, label: 'Ferramentas' },
-]
+// Atalhos em lista, cada um com uma informação útil. Sem "OS / Suporte",
+// Conexão e ONU (já estão na barra de baixo) e sem "Clientes" (é a busca
+// do topo).
+function plural(n: number, um: string, varios: string): string {
+  return n === 1 ? `1 ${um}` : `${n} ${varios}`
+}
 
 /** Data de hoje ("quarta-feira, 04/11") — as quantidades ficam nos números abaixo. */
 function textoHoje(): string {
@@ -316,35 +313,67 @@ export default function Home() {
 
           <MinhasOsHoje key={recarga} onResumo={setResumoDia} />
 
-          <div className="home-menu">
-            {ITENS_MENU.map((item) => (
-              <Link key={item.to} to={item.to} className="home-menu-item" viewTransition>
-                {/* Fundo em tom claro da cor da área e ícone na cor cheia: a
-                    grade fica mais calma que 6 blocos sólidos e o ícone passa
-                    no contraste nos dois temas. */}
-                <span className="home-menu-icone" style={{ background: comAlpha(item.cor, 14), color: item.cor }}>
-                  <item.Icone size={24} />
+          <nav className="home-atalhos" aria-label="Atalhos">
+            <Link to="/suporte?quando=proximas" className="home-atalho" viewTransition>
+              <span className="home-atalho-icone" style={{ background: comAlpha(CORES.suporte, 14), color: CORES.suporte }}>
+                <LuCalendarClock size={22} />
+              </span>
+              <span className="home-atalho-texto">
+                <strong>Próximas OS</strong>
+                <span>
+                  {resumoDia == null
+                    ? 'Agendadas para os próximos dias'
+                    : resumoDia.proximas === 0
+                      ? 'Nenhuma agendada para os próximos dias'
+                      : `${plural(resumoDia.proximas, 'agendada', 'agendadas')} para os próximos dias`}
                 </span>
-                <span className="home-menu-label">{item.label}</span>
-                {item.to === '/offline' && totalOffline != null && (
-                  <span className="home-menu-contagem" aria-label={`${totalOffline} offline agora`}>
-                    {totalOffline}
-                  </span>
-                )}
-              </Link>
-            ))}
+              </span>
+              <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
+            </Link>
+            <Link to="/offline" className="home-atalho" viewTransition>
+              <span className="home-atalho-icone" style={{ background: comAlpha(CORES.offline, 14), color: CORES.offline }}>
+                <LuWifiOff size={22} />
+              </span>
+              <span className="home-atalho-texto">
+                <strong>Clientes offline</strong>
+                <span>
+                  {totalOffline == null ? (
+                    'Sem sessão de internet agora'
+                  ) : (
+                    <>
+                      <b className="home-atalho-destaque">{totalOffline}</b> offline agora
+                    </>
+                  )}
+                </span>
+              </span>
+              <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
+            </Link>
+            <Link to="/ferramentas" className="home-atalho" viewTransition>
+              <span className="home-atalho-icone" style={{ background: comAlpha(CORES.ferramentas, 14), color: CORES.ferramentas }}>
+                <LuHammer size={22} />
+              </span>
+              <span className="home-atalho-texto">
+                <strong>Ferramentas</strong>
+                <span>Meu IP e testes de velocidade</span>
+              </span>
+              <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
+            </Link>
             {/* Coletor de OLTs: outro app no mesmo domínio (/olt/), opcional —
                 só aparece se estiver instalado. Link normal (não do router):
                 sai do PWA do técnico e abre o coletor, que usa a mesma sessão. */}
             {coletorOlt && (
-              <a href="/olt/" className="home-menu-item">
-                <span className="home-menu-icone" style={{ background: comAlpha(CORES.olts, 14), color: CORES.olts }}>
-                  <LuServer size={24} />
+              <a href="/olt/" className="home-atalho">
+                <span className="home-atalho-icone" style={{ background: comAlpha(CORES.olts, 14), color: CORES.olts }}>
+                  <LuServer size={22} />
                 </span>
-                <span className="home-menu-label">OLTs</span>
+                <span className="home-atalho-texto">
+                  <strong>OLTs</strong>
+                  <span>Coletor de OLTs</span>
+                </span>
+                <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
               </a>
             )}
-          </div>
+          </nav>
 
         </div>
 

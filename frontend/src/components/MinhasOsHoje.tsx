@@ -9,7 +9,7 @@ import {
   horarioOs,
   linkRota,
   osDoDia,
-  proximaOsFutura,
+  osFuturas,
   quandoOsFutura,
   telefonesDoCliente,
   type OsDoDia,
@@ -34,6 +34,8 @@ function tituloOs(os: OrdemServicoDto): string {
 export interface ResumoDoDia {
   total: number
   atrasadas: number
+  /** Agendadas para os próximos dias (atalho "Próximas OS" do Início). */
+  proximas: number
 }
 
 export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoDoDia | null) => void }) {
@@ -53,9 +55,14 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
       .then((resposta) => {
         if (cancelado) return
         const lista = osDoDia(resposta.results)
+        const futuras = osFuturas(resposta.results)
         setItens(lista)
-        setFutura(proximaOsFutura(resposta.results))
-        onResumo?.({ total: lista.length, atrasadas: lista.filter((item) => item.atrasada).length })
+        setFutura(futuras[0] ?? null)
+        onResumo?.({
+          total: lista.length,
+          atrasadas: lista.filter((item) => item.atrasada).length,
+          proximas: futuras.length,
+        })
         const proxima = lista[0]?.os
         if (!proxima?.client_pk) return
         buscarDetalheCliente(proxima.client_pk)

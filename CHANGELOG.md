@@ -13,6 +13,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   Atrasadas e Concluídas em cartão claro com o número na cor da marca;
   Abertas e Atrasadas abrem a tela de OS já filtrada (Concluídas não tem
   lista: a tela de OS só traz OS em aberto).
+- **Atalhos do Início em lista com informação:** Próximas OS ("N
+  agendadas para os próximos dias", abre a tela de OS em "Próximas"),
+  Clientes offline ("N offline agora"), Ferramentas e OLTs (se
+  instalado). "OS / Suporte" saiu: já está na barra de baixo.
 
 ### Corrigido
 
