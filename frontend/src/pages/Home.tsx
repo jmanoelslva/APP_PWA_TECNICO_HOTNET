@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MdQrCodeScanner, MdSearch } from 'react-icons/md'
 // Atalhos com ícones Lucide, iguais aos da barra de baixo.
-import { LuChevronRight, LuHammer, LuServer, LuWifiOff, LuWrench } from 'react-icons/lu'
+import { LuHammer, LuServer, LuWifiOff, LuWrench } from 'react-icons/lu'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -189,18 +189,17 @@ export default function Home() {
             </div>
             {/* Números do dia: o que está aberto, o que atrasou e o que já
                 foi concluído hoje. */}
-            {/* Abertas e Atrasadas levam à tela de OS já filtrada; Concluídas
-                não tem lista (a tela de OS só carrega OS em aberto). */}
+            {/* Os três com o mesmo destaque. Abertas e Atrasadas levam à tela
+                de OS já filtrada; Concluídas não tem lista (a tela de OS só
+                carrega OS em aberto). */}
             <nav className="home-numeros" aria-label="OS do dia">
               <Link to="/suporte?quando=hoje" className="home-numero" viewTransition>
                 <strong>{resumoDia?.total ?? '–'}</strong>
                 <span>Abertas</span>
-                <LuChevronRight className="home-numero-seta" size={18} aria-hidden="true" />
               </Link>
               <Link to="/suporte?quando=atrasadas" className="home-numero" viewTransition>
                 <strong>{resumoDia?.atrasadas ?? '–'}</strong>
                 <span>Atrasadas</span>
-                <LuChevronRight className="home-numero-seta" size={18} aria-hidden="true" />
               </Link>
               <div className="home-numero">
                 <strong>{progresso?.concluidas ?? '–'}</strong>

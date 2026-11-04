@@ -285,32 +285,24 @@
   text-decoration: none;
 }
 
-/* Abertas/Atrasadas são botões: cartão claro sólido, número na cor da
-   marca e seta — o "Concluídas" (só informação) fica translúcido. */
-a.home-numero {
-  position: relative;
+/* Os três números em cartão claro sólido, com o número na cor da marca
+   (Abertas e Atrasadas ainda abrem a lista ao tocar). */
+.home-numeros .home-numero {
   background: var(--cor-superficie);
   color: var(--cor-texto);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
-a.home-numero strong {
+.home-numeros .home-numero strong {
   color: var(--cor-primaria-escura);
 }
 
-:root[data-theme='dark'] a.home-numero strong {
+:root[data-theme='dark'] .home-numeros .home-numero strong {
   color: var(--cor-primaria-clara);
 }
 
-a.home-numero span {
+.home-numeros .home-numero span {
   opacity: 1;
-  color: var(--cor-texto-secundario);
-}
-
-.home-numero-seta {
-  position: absolute;
-  top: 10px;
-  right: 8px;
   color: var(--cor-texto-secundario);
 }
 
@@ -328,14 +320,9 @@ a.home-numero span {
   opacity: 0.92;
 }
 
-:root[data-sol='1'] .home-numero {
-  background: var(--cor-fundo);
-  border: 1.5px solid var(--cor-borda);
-}
-
-:root[data-sol='1'] a.home-numero {
+:root[data-sol='1'] .home-numeros .home-numero {
   background: var(--cor-superficie);
-  border-color: var(--cor-texto);
+  border: 1.5px solid var(--cor-texto);
   box-shadow: none;
 }
 
