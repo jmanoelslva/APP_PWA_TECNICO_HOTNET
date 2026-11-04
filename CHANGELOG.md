@@ -7,6 +7,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.19.1] - 2026-11-04
+
+### Corrigido
+
+- **Busca da barra de navegação:** agora busca enquanto se digita, como a
+  busca da tela inicial e as de Conexão e ONU (a partir de 2 letras, sem
+  tocar em Buscar). O botão Buscar saiu.
+- **Financeiro duplicado no cliente:** a seção "Financeiro" com o botão
+  Cobranças saiu do detalhe do cliente; o atalho Financeiro do topo já
+  leva para a mesma tela.
+
 ## [1.19.0] - 2026-11-04
 
 ### Adicionado
@@ -601,6 +612,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.19.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.0...v1.19.1
 [1.19.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.0
 [1.18.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...v1.18.1
 [1.18.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...v1.18.0

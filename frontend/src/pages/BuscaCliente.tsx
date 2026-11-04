@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MdCable, MdHistory, MdPeopleAlt, MdSearch, MdWifi } from 'react-icons/md'
+import { MdCable, MdHistory, MdPeopleAlt, MdWifi } from 'react-icons/md'
 import { ApiError, buscarClientes, type BuscaClienteResultado } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
@@ -21,37 +21,52 @@ export default function BuscaCliente() {
   // Serial de ONU / login PPPoE reconhecidos no texto: atalho direto.
   const atalhos = atalhosDaBusca(busca)
 
-  async function buscar(termo: string) {
+  // Busca ao vivo, como a da Home e as de Conexão/ONU: digitou 2 letras,
+  // espera 350 ms parado e já consulta, sem precisar tocar em Buscar. O
+  // termo fica na URL (?busca=) para voltar de um resultado e achar a
+  // mesma lista.
+  useEffect(() => {
+    const termo = busca.trim()
+    if (termo.length < 2) {
+      setResultados([])
+      setJaBuscou(false)
+      setCarregando(false)
+      setErro(null)
+      return
+    }
+    let cancelado = false
     setCarregando(true)
     setErro(null)
-    try {
-      const resposta = await buscarClientes(detectarTipoBusca(termo))
-      setResultados(resposta.results)
-      setJaBuscou(true)
-    } catch (excecao) {
-      setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível buscar o cliente.')
-    } finally {
-      setCarregando(false)
+    const temporizador = setTimeout(() => {
+      setParams({ busca: termo }, { replace: true })
+      buscarClientes(detectarTipoBusca(termo))
+        .then((resposta) => {
+          if (cancelado) return
+          setResultados(resposta.results)
+          setJaBuscou(true)
+        })
+        .catch((excecao) => {
+          if (!cancelado) setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível buscar o cliente.')
+        })
+        .finally(() => {
+          if (!cancelado) setCarregando(false)
+        })
+    }, 350)
+    return () => {
+      cancelado = true
+      clearTimeout(temporizador)
     }
-  }
-
-  useEffect(() => {
-    // Refaz a busca sozinho quando a tela é montada com o termo já na
-    // URL — sem isso, sair para ver Conexão/ONU/detalhe de um resultado e
-    // voltar perdia a busca inteira, obrigando o técnico a buscar de novo.
-    const termoInicial = params.get('busca')
-    if (termoInicial) buscar(termoInicial)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [busca])
 
   function aoBuscar(evento: FormEvent) {
     evento.preventDefault()
-    if (!busca.trim()) {
+    if (busca.trim().length < 2) {
       setErro('Digite um nome, contrato, CPF/CNPJ, serial da ONU ou login PPPoE.')
       return
     }
-    setParams({ busca: busca.trim() })
-    buscar(busca)
+    // A busca já roda sozinha; Enter só fecha o teclado.
+    ;(document.activeElement as HTMLElement | null)?.blur()
   }
 
   return (
@@ -96,10 +111,6 @@ export default function BuscaCliente() {
         )}
 
         {erro && <p className="busca-cliente-erro">{erro}</p>}
-
-        <button type="submit" className="busca-cliente-btn" disabled={carregando}>
-          <MdSearch size={18} /> {carregando ? 'Buscando…' : 'Buscar'}
-        </button>
       </form>
 
       {carregando && (

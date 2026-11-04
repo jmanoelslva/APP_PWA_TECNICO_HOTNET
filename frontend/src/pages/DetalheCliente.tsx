@@ -290,20 +290,6 @@ export default function DetalheCliente() {
             </nav>
 
             <section className="detalhe-cliente-secao">
-              <h2>Financeiro</h2>
-              <div className="detalhe-cliente-item-acoes">
-                <Link
-                  to={`/financeiro?client_pk=${pk}`}
-                  className="botao botao-secundario botao-pequeno"
-                  style={{ '--botao-cor': CORES.financeiro } as CSSProperties}
-                  viewTransition
-                >
-                  <MdReceipt size={14} /> Cobranças
-                </Link>
-              </div>
-            </section>
-
-            <section className="detalhe-cliente-secao">
               <h2>Telefones</h2>
               {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
               {telefones.map((tel) => (
