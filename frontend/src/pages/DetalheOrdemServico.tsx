@@ -16,7 +16,6 @@ import {
   MdWifi,
 } from 'react-icons/md'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
-import VoltarInicio from '../components/VoltarInicio'
 import SecaoRecolhivel from '../components/SecaoRecolhivel'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
@@ -488,7 +487,6 @@ export default function DetalheOrdemServico() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="detalhe-ordem-tela tela-entrada">
-        <VoltarInicio to="/suporte" />
 
         {carregando && (
           <div className="detalhe-ordem-card">

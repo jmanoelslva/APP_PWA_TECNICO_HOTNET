@@ -529,34 +529,9 @@ select.campo {
   animation: none;
 }
 
-/* Voltar (botão do app ou do celular) entra pela esquerda — ver
-   utils/sentidoTransicao.ts, que marca data-sentido no <html>. */
-@media (prefers-reduced-motion: no-preference) {
-  html[data-sentido='voltar']::view-transition-old(root) {
-    animation-name: tela-sai-direita;
-  }
-
-  html[data-sentido='voltar']::view-transition-new(root) {
-    animation-name: tela-entra-esquerda;
-  }
-}
-
 /* Como no Android/iOS: a tela nova entra inteira pela direita por cima da
-   anterior, que recua um pouco e escurece. No "voltar" é o inverso — a tela
-   que sai fica por cima e desliza para a direita. */
-@keyframes tela-sai-direita {
-  to {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes tela-entra-esquerda {
-  from {
-    transform: translateX(-25%);
-    filter: brightness(0.85);
-  }
-}
-
+   anterior, que recua um pouco e escurece. (O voltar é só o do celular,
+   sem animação própria.) */
 @keyframes tela-sai {
   to {
     transform: translateX(-25%);
@@ -575,10 +550,6 @@ select.campo {
   ::view-transition-new(root) {
     animation-duration: 0.25s;
     animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  html[data-sentido='voltar']::view-transition-old(root) {
-    z-index: 1;
   }
 }
 

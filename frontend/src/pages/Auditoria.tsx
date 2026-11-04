@@ -19,7 +19,6 @@ import {
   MdWifi,
 } from 'react-icons/md'
 import { ApiError, listarAuditoria } from '../api/client'
-import VoltarInicio from '../components/VoltarInicio'
 import CabecalhoTela from '../components/CabecalhoTela'
 import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
@@ -126,7 +125,6 @@ export default function Auditoria() {
   return (
     <PullToRefresh aoAtualizar={async () => setRecarga((atual) => atual + 1)}>
       <div className="auditoria-tela tela-entrada">
-        <VoltarInicio to="/ferramentas" />
         <CabecalhoTela
           icone={LuFileSearch}
           cor={CORES.ferramentas}

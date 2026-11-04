@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { MdAttachFile, MdBuild, MdClose, MdDownload, MdPictureAsPdf } from 'react-icons/md'
 import { LuMessageCircle } from 'react-icons/lu'
-import VoltarInicio from '../components/VoltarInicio'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
 import Skeleton from '../components/Skeleton'
@@ -140,7 +139,6 @@ export default function DetalheChamado() {
   return (
     <div className="detalhe-chamado-tela tela-entrada">
       <header className="detalhe-chamado-cabecalho">
-        <VoltarInicio to="/suporte" />
         {ticket && (
           <div className="detalhe-chamado-resumo">
             <div className="detalhe-chamado-resumo-topo">

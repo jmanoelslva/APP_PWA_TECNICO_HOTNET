@@ -49,9 +49,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Jeito de app nativo:**
   - Troca de tela deslizando inteira pela direita (e de volta pela
     esquerda), como no Android.
-  - Barra fixa no topo das telas internas (OS, chamado, cliente,
-    Financeiro, busca e Auditoria) com a seta de voltar, que volta para a
-    tela de onde se veio.
+  - Sem botão de voltar nas telas: volta-se pelo botão/gesto do próprio
+    celular, como num app Android.
   - Janelas que sobem de baixo fecham ao arrastar para baixo; a de
     confirmar etapa da OS também passou a subir de baixo.
   - Botões afundam de leve ao tocar; sem realce azul do navegador, sem
@@ -94,7 +93,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   única com divisórias, textos maiores.
 - **Cliente:** contratos já abrem expandidos; Conexões, Contratos e
   Contato no cartão padrão com textos maiores; atalhos não grudam mais no
-  topo junto com as abas; sem a barra de voltar.
+  topo junto com as abas.
 - **Início:** Abertas, Atrasadas e Concluídas ocupam a largura toda da
   faixa, abaixo da saudação e do avatar.
 - **Filtros de OS / Suporte no padrão do app:** "Todas / Hoje / Atrasadas
