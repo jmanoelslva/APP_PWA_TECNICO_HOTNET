@@ -7,6 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+
+- **Voltar do Android depois de sair:** na tela de login, o botão voltar
+  passava pelas telas visitadas antes de sair (cada uma voltava para o
+  login), parecendo várias telas invisíveis abertas. Agora o voltar fecha
+  o app. Depois de entrar, o login também sai do histórico: voltar na tela
+  inicial fecha o app em vez de mostrar o login de novo.
+
 ### Alterado
 
 - **Busca geral só na tela inicial:** o item "Buscar" saiu da barra de

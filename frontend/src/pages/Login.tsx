@@ -45,6 +45,24 @@ export default function Login() {
 
   // Em iOS não existe prompt automático do navegador (ver usePwaInstall.ts)
   // — esse é o jeito de aparecer "sozinho" logo na tela de login.
+  // Ao sair (ou com a sessão encerrada), as telas visitadas continuam no
+  // histórico atrás do login: o "voltar" do Android passava por elas (cada
+  // uma redireciona de novo para cá) em vez de fechar o app. Volta para a
+  // primeira entrada do app nesta aba — o React Router guarda a posição em
+  // history.state.idx — e ela redireciona para o login com replace; aí o
+  // "voltar" fecha o app. Com ?voltar= (veio do Coletor de OLTs) não mexe,
+  // para não perder o destino.
+  const voltouAoInicio = useRef(false)
+  useEffect(() => {
+    if (voltouAoInicio.current) return
+    const posicao = (window.history.state as { idx?: number } | null)?.idx ?? 0
+    const temVoltar = new URLSearchParams(window.location.search).has('voltar')
+    if (posicao > 0 && !temVoltar) {
+      voltouAoInicio.current = true
+      window.history.go(-posicao)
+    }
+  }, [])
+
   useEffect(() => {
     if (!podeInstalarIos) return
     aoClicarInstalar()
@@ -95,7 +113,9 @@ export default function Login() {
       window.location.assign(voltar)
       return
     }
-    navigate('/', { viewTransition: true })
+    // replace: o login sai do histórico — "voltar" na tela inicial fecha o
+    // app em vez de mostrar o login de novo com a sessão aberta.
+    navigate('/', { replace: true, viewTransition: true })
   }
 
   const erroVisivel = erro && !editouDepoisDoErro ? erro : null
