@@ -1,34 +1,52 @@
-import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { MdCable, MdHistory, MdPeopleAlt, MdWifi } from 'react-icons/md'
-import { ApiError, buscarClientes, type BuscaClienteResultado } from '../api/client'
+import {
+  ApiError,
+  buscarClientes,
+  buscarCpe,
+  buscarOnu,
+  type BuscaClienteResultado,
+  type CpeDto,
+  type OnuDto,
+} from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import { CORES } from '../utils/cores'
 import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
-import { atalhosDaBusca, lerRecentes, limparRecentes, type ClienteRecente } from '../utils/buscaUnica'
+import { lerRecentes, limparRecentes, type ClienteRecente } from '../utils/buscaUnica'
 import './BuscaCliente.css'
 
+interface Resultados {
+  clientes: BuscaClienteResultado[]
+  onus: OnuDto[]
+  conexoes: CpeDto[]
+}
+
+const VAZIO: Resultados = { clientes: [], onus: [], conexoes: [] }
+
+/**
+ * Busca única (item "Buscar" da barra de navegação). Ao vivo, como a da
+ * Home e as de Conexão/ONU: digitou 2 letras, espera 350 ms parado e
+ * consulta. Em paralelo: cliente (nome/contrato/CPF), ONU pelo serial
+ * (prefixo, mesma consulta da tela ONU) e conexão pelo usuário PPPoE
+ * (parcial). Texto com espaço é nome — aí só busca cliente. O termo fica
+ * na URL (?busca=) para voltar de um resultado e achar a mesma lista.
+ */
 export default function BuscaCliente() {
   const [params, setParams] = useSearchParams()
   const [busca, setBusca] = useState(params.get('busca') ?? '')
   const [carregando, setCarregando] = useState(false)
   const [jaBuscou, setJaBuscou] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
-  const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
+  const [resultados, setResultados] = useState<Resultados>(VAZIO)
   const [recentes, setRecentes] = useState<ClienteRecente[]>(lerRecentes)
-  // Serial de ONU / login PPPoE reconhecidos no texto: atalho direto.
-  const atalhos = atalhosDaBusca(busca)
 
-  // Busca ao vivo, como a da Home e as de Conexão/ONU: digitou 2 letras,
-  // espera 350 ms parado e já consulta, sem precisar tocar em Buscar. O
-  // termo fica na URL (?busca=) para voltar de um resultado e achar a
-  // mesma lista.
   useEffect(() => {
     const termo = busca.trim()
     if (termo.length < 2) {
-      setResultados([])
+      setResultados(VAZIO)
       setJaBuscou(false)
       setCarregando(false)
       setErro(null)
@@ -39,14 +57,26 @@ export default function BuscaCliente() {
     setErro(null)
     const temporizador = setTimeout(() => {
       setParams({ busca: termo }, { replace: true })
-      buscarClientes(detectarTipoBusca(termo))
-        .then((resposta) => {
+      const semEspaco = !/\s/.test(termo)
+      Promise.allSettled([
+        buscarClientes(detectarTipoBusca(termo)),
+        semEspaco ? buscarOnu({ serial: termo }) : Promise.resolve({ results: [] as OnuDto[] }),
+        semEspaco ? buscarCpe({ username: termo }) : Promise.resolve({ results: [] as CpeDto[] }),
+      ])
+        .then(([clientes, onus, conexoes]) => {
           if (cancelado) return
-          setResultados(resposta.results)
+          setResultados({
+            clientes: clientes.status === 'fulfilled' ? clientes.value.results : [],
+            onus: onus.status === 'fulfilled' ? onus.value.results : [],
+            conexoes: conexoes.status === 'fulfilled' ? conexoes.value.results : [],
+          })
+          // Erro só quando as três falharam — uma falha sozinha só deixa
+          // aquele grupo vazio.
+          if (clientes.status === 'rejected' && onus.status === 'rejected' && conexoes.status === 'rejected') {
+            const motivo = clientes.reason
+            setErro(motivo instanceof ApiError ? motivo.message : 'Não foi possível buscar agora.')
+          }
           setJaBuscou(true)
-        })
-        .catch((excecao) => {
-          if (!cancelado) setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível buscar o cliente.')
         })
         .finally(() => {
           if (!cancelado) setCarregando(false)
@@ -69,6 +99,8 @@ export default function BuscaCliente() {
     ;(document.activeElement as HTMLElement | null)?.blur()
   }
 
+  const total = resultados.clientes.length + resultados.onus.length + resultados.conexoes.length
+
   return (
     <div className="busca-cliente-tela tela-entrada">
       <CabecalhoTela
@@ -85,30 +117,13 @@ export default function BuscaCliente() {
           type="search"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          placeholder="Ex: João Silva, 12345 ou FHTT9A3C21B0"
+          placeholder="Ex: João Silva, 12345 ou FHTT9A3C"
           autoFocus={!params.get('busca')}
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
           enterKeyHint="search"
         />
-
-        {atalhos.length > 0 && (
-          <div className="busca-cliente-atalhos">
-            {atalhos.map((atalho) => (
-              <Link
-                key={atalho.tipo}
-                to={atalho.rota}
-                className="botao botao-secundario"
-                style={{ '--botao-cor': atalho.tipo === 'onu-serial' ? CORES.onu : CORES.conexao } as CSSProperties}
-                viewTransition
-              >
-                {atalho.tipo === 'onu-serial' ? <MdCable size={18} /> : <MdWifi size={18} />}
-                {atalho.tipo === 'onu-serial' ? `Abrir ONU ${atalho.valor}` : `Abrir conexão ${atalho.valor}`}
-              </Link>
-            ))}
-          </div>
-        )}
 
         {erro && <p className="busca-cliente-erro">{erro}</p>}
       </form>
@@ -153,35 +168,75 @@ export default function BuscaCliente() {
         </section>
       )}
 
-      {!carregando && jaBuscou && resultados.length === 0 && (
-        <EstadoVazio
-          icone={MdPeopleAlt}
-          titulo="Nenhum cliente encontrado"
-          subtitulo={
-            atalhos.length > 0
-              ? 'Se for serial da ONU ou login PPPoE, use o atalho acima.'
-              : 'Confira os dados e tente novamente.'
-          }
-        />
+      {!carregando && jaBuscou && !erro && total === 0 && (
+        <EstadoVazio icone={MdPeopleAlt} titulo="Nada encontrado" subtitulo="Confira os dados e tente novamente." />
       )}
 
-      {!carregando && resultados.length > 0 && (
-        <ul className="busca-cliente-lista">
-          {resultados.map((resultado) => (
-            <li key={resultado.client_pk} className="ticket-card">
-              <Link to={`/clientes/${resultado.client_pk}`} className="busca-cliente-link" viewTransition>
-                <strong>{resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}</strong>
-                {resultado.cliente.client_doc1 && <p>Documento: {formatarDocumento(resultado.cliente.client_doc1)}</p>}
-                {resultado.cpes.length > 0 && (
-                  <p>
-                    {resultado.cpes.length} conexão(ões) — contrato(s):{' '}
-                    {resultado.cpes.map((c) => c.contract_number ?? c.contract_pk).filter(Boolean).join(', ') || 'não informado'}
-                  </p>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
+      {!carregando && resultados.onus.length > 0 && (
+        <section className="busca-cliente-grupo">
+          <h2>
+            <MdCable size={16} /> ONU
+          </h2>
+          <ul className="busca-cliente-lista">
+            {resultados.onus.map((onu) => (
+              <li key={`onu-${onu.pk}`} className="ticket-card">
+                <Link
+                  to={`/onu?serial=${encodeURIComponent(onu.sn ?? '')}`}
+                  className="busca-cliente-link"
+                  viewTransition
+                >
+                  <strong>{onu.sn ?? `ONU #${onu.pk}`}</strong>
+                  {onu.client_name && <p>{onu.client_name}</p>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {!carregando && resultados.conexoes.length > 0 && (
+        <section className="busca-cliente-grupo">
+          <h2>
+            <MdWifi size={16} /> Conexão (PPPoE)
+          </h2>
+          <ul className="busca-cliente-lista">
+            {resultados.conexoes.map((cpe) => (
+              <li key={`cpe-${cpe.pk}`} className="ticket-card">
+                <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="busca-cliente-link" viewTransition>
+                  <strong>{cpe.username ?? `Conexão #${cpe.pk}`}</strong>
+                  {cpe.client_complete_name && <p>{cpe.client_complete_name}</p>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {!carregando && resultados.clientes.length > 0 && (
+        <section className="busca-cliente-grupo">
+          <h2>
+            <MdPeopleAlt size={16} /> Clientes
+          </h2>
+          <ul className="busca-cliente-lista">
+            {resultados.clientes.map((resultado) => (
+              <li key={resultado.client_pk} className="ticket-card">
+                <Link to={`/clientes/${resultado.client_pk}`} className="busca-cliente-link" viewTransition>
+                  <strong>
+                    {resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}
+                  </strong>
+                  {resultado.cliente.client_doc1 && <p>Documento: {formatarDocumento(resultado.cliente.client_doc1)}</p>}
+                  {resultado.cpes.length > 0 && (
+                    <p>
+                      {resultado.cpes.length} conexão(ões) — contrato(s):{' '}
+                      {resultado.cpes.map((c) => c.contract_number ?? c.contract_pk).filter(Boolean).join(', ') ||
+                        'não informado'}
+                    </p>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   )

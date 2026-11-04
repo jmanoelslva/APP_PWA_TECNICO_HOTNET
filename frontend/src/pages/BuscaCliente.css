@@ -96,20 +96,6 @@
   color: var(--cor-texto-terciario);
 }
 
-/* Busca única: atalho direto quando o texto é serial de ONU ou login PPPoE. */
-.busca-cliente-atalhos {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.busca-cliente-atalhos .botao {
-  justify-content: flex-start;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .busca-cliente-recentes-topo {
   display: flex;
   align-items: center;
@@ -123,6 +109,20 @@
   align-items: center;
   gap: 6px;
   margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+}
+
+.busca-cliente-grupo {
+  margin-bottom: 16px;
+}
+
+.busca-cliente-grupo h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
   font-size: 13px;
   font-weight: 700;
   color: var(--cor-texto-secundario);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { statusDoCliente, tempoDesde } from './statusCliente'
-import { atalhosDaBusca, lerRecentes, registrarRecente } from './buscaUnica'
+import { lerRecentes, registrarRecente } from './buscaUnica'
 
 describe('statusDoCliente', () => {
   it('bloqueado vence online', () => {
@@ -26,22 +26,6 @@ describe('tempoDesde', () => {
     expect(tempoDesde(agora - 40_000, agora)).toBe('há 40s')
     expect(tempoDesde(agora - 125_000, agora)).toBe('há 2 min')
     expect(tempoDesde(agora - 2 * 3600_000, agora)).toBe('há 2 h')
-  })
-})
-
-describe('atalhosDaBusca', () => {
-  it('reconhece serial de ONU', () => {
-    expect(atalhosDaBusca('fhtt9a3c21b0')).toEqual([
-      { tipo: 'onu-serial', valor: 'FHTT9A3C21B0', rota: '/onu?serial=FHTT9A3C21B0' },
-    ])
-  })
-  it('reconhece login PPPoE', () => {
-    expect(atalhosDaBusca('maria.santos')[0]).toMatchObject({ tipo: 'pppoe', rota: '/conexao?username=maria.santos' })
-  })
-  it('nome com espaço, só dígitos ou palavra solta não geram atalho', () => {
-    expect(atalhosDaBusca('Maria Santos')).toEqual([])
-    expect(atalhosDaBusca('12345678900')).toEqual([])
-    expect(atalhosDaBusca('maria')).toEqual([])
   })
 })
 

@@ -7,6 +7,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.19.2] - 2026-11-04
+
+### Corrigido
+
+- **Busca geral não achava ONU pelo serial:** o atalho só aparecia com o
+  serial completo no formato exato (4 letras + 8 hexadecimais). Agora a
+  busca geral consulta, junto com o cliente, a ONU pelo serial (bastam os
+  primeiros caracteres, como na tela ONU) e a conexão pelo usuário PPPoE,
+  e mostra os resultados em grupos: ONU, Conexão e Clientes.
+
 ## [1.19.1] - 2026-11-04
 
 ### Corrigido
@@ -612,6 +622,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.19.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.1...v1.19.2
 [1.19.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.0...v1.19.1
 [1.19.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.0
 [1.18.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...v1.18.1

@@ -1,31 +1,4 @@
-/**
- * Busca única (botão Buscar da barra de navegação): o mesmo campo aceita
- * nome/contrato/CPF (busca de cliente) e reconhece serial de ONU, MAC e
- * login PPPoE para oferecer o atalho direto para a tela certa.
- */
-
-export type AtalhoBusca =
-  | { tipo: 'onu-serial'; valor: string; rota: string }
-  | { tipo: 'pppoe'; valor: string; rota: string }
-
-// Serial GPON: 4 letras do fabricante + 8 hexadecimais (ex.: FHTT9A3C21B0, ZTEGC1234567).
-const SERIAL_ONU = /^[A-Za-z]{4}[0-9A-Fa-f]{8}$/
-// Login PPPoE: sem espaço, com letra e com ponto, @, _ ou - (ex.: maria.santos, joao@hotnet).
-const LOGIN_PPPOE = /^(?=.*[A-Za-z])[A-Za-z0-9._@-]+$/
-
-export function atalhosDaBusca(texto: string): AtalhoBusca[] {
-  const termo = texto.trim()
-  if (termo.length < 3 || /\s/.test(termo)) return []
-  const atalhos: AtalhoBusca[] = []
-  if (SERIAL_ONU.test(termo)) {
-    const serial = termo.toUpperCase()
-    atalhos.push({ tipo: 'onu-serial', valor: serial, rota: `/onu?serial=${encodeURIComponent(serial)}` })
-  }
-  if (LOGIN_PPPOE.test(termo) && /[._@-]/.test(termo)) {
-    atalhos.push({ tipo: 'pppoe', valor: termo, rota: `/conexao?username=${encodeURIComponent(termo)}` })
-  }
-  return atalhos
-}
+/** Clientes abertos por último — lista da busca única (BuscaCliente.tsx). */
 
 // Clientes abertos por último, só neste celular.
 const CHAVE_RECENTES = 'hotnet-tecnico-clientes-recentes'
