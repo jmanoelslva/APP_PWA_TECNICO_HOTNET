@@ -55,10 +55,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
-- **Busca por CPF/CNPJ e contrato:** CPF/CNPJ digitado com pontos, traço
-  ou barra virava busca por nome; o documento agora é procurado com e sem
-  máscara. Contrato com zero à esquerda ("026906") perdia o zero e não
-  achava o cliente.
+- **Busca por CPF/CNPJ e contrato:** agora acha o cliente por um trecho
+  do CPF/CNPJ, como no painel do Controllr (antes só com o documento
+  completo); números buscam documento e contrato ao mesmo tempo. CPF/CNPJ
+  com pontos, traço ou barra virava busca por nome, e contrato com zero à
+  esquerda ("026906") perdia o zero.
 - **Telas presas na versão anterior depois de atualizar:** o app passa a
   aplicar a versão nova na próxima troca de tela (ou ao voltar para ele),
   sem precisar sair e entrar de novo.

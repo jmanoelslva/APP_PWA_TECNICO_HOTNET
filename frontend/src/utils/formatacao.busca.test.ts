@@ -8,9 +8,13 @@ describe('detectarTipoBusca', () => {
     expect(detectarTipoBusca('12.345.678/0001-90')).toEqual({ doc: '12345678000190' })
   })
 
-  it('contrato mantém o zero à esquerda', () => {
-    expect(detectarTipoBusca('026906')).toEqual({ contrato: '026906' })
-    expect(detectarTipoBusca(' 1024 ')).toEqual({ contrato: '1024' })
+  it('trecho numérico busca documento e contrato, com o zero à esquerda', () => {
+    expect(detectarTipoBusca('026906')).toEqual({ doc: '026906', contrato: '026906' })
+    expect(detectarTipoBusca(' 1024 ')).toEqual({ doc: '1024', contrato: '1024' })
+  })
+
+  it('menos de 4 dígitos é só contrato', () => {
+    expect(detectarTipoBusca('269')).toEqual({ contrato: '269' })
   })
 
   it('com letra é nome', () => {

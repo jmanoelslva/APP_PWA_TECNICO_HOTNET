@@ -775,3 +775,21 @@ usado no fechamento de OS (seção 3), sem nenhuma pré-checagem.
 6. Pra descobrir o prefixo certo de uma coluna ambígua: testar
    candidatos plausíveis (nome real da tabela, visível em outros
    endpoints que já lidam com o mesmo dado) até um devolver sucesso.
+
+## 13. Busca de cliente por CPF/CNPJ (`/controllrctl/client/list`)
+
+Capturado do próprio painel do Controllr em 04/11/2026: a busca por
+documento usa `client_doc1` com **ILIKE** (oper 10) e o valor entre `%`,
+junto com `client_status = 0`:
+
+```json
+[{"field":"client_status","oper":5,"value":0},{"field":"AND"},
+ {"field":"client_doc1","oper":10,"value":"%026906%"}]
+```
+
+Ou seja, acha pelo documento inteiro **ou por um trecho** dele. Antes o
+app só buscava documento com 11/14 dígitos e por igualdade (oper 5), e um
+trecho de CPF virava busca por número de contrato — não achava nada. Hoje
+`/clientes/busca` faz o mesmo ILIKE (só números e, para CPF/CNPJ
+completo, também com a máscara) e, para números a partir de 4 dígitos,
+busca documento e contrato ao mesmo tempo.

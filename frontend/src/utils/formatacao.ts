@@ -83,11 +83,12 @@ export const OPCOES_CRIPTOGRAFIA_WIFI: Array<{ valor: number; rotulo: string }> 
 
 /**
  * Um campo só decide sozinho o que foi digitado, em vez de pedir para o
- * técnico escolher entre nome/contrato/documento: CPF tem 11 dígitos,
- * CNPJ tem 14 — só números com uma dessas contagens vira busca por
- * documento; outra quantidade de dígitos vira busca por contrato;
- * qualquer coisa com letra vira busca por nome. Usado tanto na busca
- * completa (BuscaCliente.tsx) quanto no combobox rápido da Home.
+ * técnico escolher entre nome/contrato/documento. Números (com ou sem a
+ * máscara de CPF/CNPJ) buscam como trecho do documento — igual ao painel
+ * do Controllr — e também como número de contrato, já que "026906" pode
+ * ser qualquer um dos dois; CPF/CNPJ completo (11 ou 14 dígitos) busca só
+ * documento. Qualquer coisa com letra vira busca por nome. Usado tanto na
+ * busca completa (BuscaCliente.tsx) quanto no combobox rápido da Home.
  */
 export function detectarTipoBusca(valor: string): { doc?: string; contrato?: string; nome?: string } {
   const termo = valor.trim()
@@ -96,8 +97,10 @@ export function detectarTipoBusca(valor: string): { doc?: string; contrato?: str
   // são número — antes "123.456.789-00" virava busca por nome.
   if (somenteDigitos && /^[\d.\-/\s]+$/.test(termo)) {
     if (somenteDigitos.length === 11 || somenteDigitos.length === 14) return { doc: somenteDigitos }
-    // Texto, não Number(): contrato pode ter zero à esquerda ("026906").
-    return { contrato: somenteDigitos }
+    // Trecho curto de documento traria clientes demais: abaixo de 4 dígitos,
+    // só contrato. Texto, não Number(): contrato pode ter zero à esquerda.
+    if (somenteDigitos.length < 4) return { contrato: somenteDigitos }
+    return { doc: somenteDigitos, contrato: somenteDigitos }
   }
   return { nome: termo }
 }

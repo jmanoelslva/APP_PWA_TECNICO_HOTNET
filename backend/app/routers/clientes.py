@@ -94,10 +94,13 @@ async def buscar_clientes(
             return
         # client_status=0 = ativo — sem esse filtro, a busca por CPF/CNPJ
         # traz clientes desabilitados junto com os habilitados.
+        # Mesmo jeito do painel do Controllr (capturado em 04/11): client_doc1
+        # com ILIKE "%trecho%" — acha pelo CPF/CNPJ inteiro ou só por um
+        # pedaço. A variante com máscara cobre documento gravado formatado.
         async def com_valor(valor: str) -> None:
             condicoes_doc = where_and(
                 {"field": "client_status", "oper": OPER_EQ, "value": 0},
-                {"field": "client_doc1", "oper": OPER_EQ, "value": valor},
+                {"field": "client_doc1", "oper": OPER_ILIKE, "value": f"%{valor}%"},
             )
             resposta = await ctx.controllr.client_list(corpo(condicoes_doc, action="list", start=0, limit=10))
             if resposta.success:
