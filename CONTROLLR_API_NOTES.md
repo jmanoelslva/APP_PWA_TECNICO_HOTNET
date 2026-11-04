@@ -804,6 +804,6 @@ mais `contract_status IN [1,2,3,4,5]` (oper 21):
 ```
 
 `contract_number` é numérico — zero à esquerda não existe nele. O app
-não aplica o filtro de `contract_status` (o técnico pode precisar achar o
-cliente por um contrato cancelado); o filtro de cliente habilitado vem
-depois, em `/clientes/busca`.
+filtra só contratos habilitados, `contract_status IN [1,2,3,4]` (Ativado,
+Alertado, Pendente, Bloqueado): diferente do painel, deixa de fora o
+Cancelado (5), por decisão do usuário em 04/11.

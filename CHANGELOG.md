@@ -57,8 +57,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - **Busca por CPF/CNPJ e contrato:** agora acha o cliente por um trecho
   do CPF/CNPJ, como no painel do Controllr (antes só com o documento
-  completo); números buscam documento e contrato ao mesmo tempo. CPF/CNPJ
-  com pontos, traço ou barra virava busca por nome.
+  completo); números buscam documento e contrato ao mesmo tempo, só
+  contratos habilitados (fora desativados e cancelados). CPF/CNPJ com
+  pontos, traço ou barra virava busca por nome.
 - **Telas presas na versão anterior depois de atualizar:** o app passa a
   aplicar a versão nova na próxima troca de tela (ou ao voltar para ele),
   sem precisar sair e entrar de novo.

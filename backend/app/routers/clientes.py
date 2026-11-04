@@ -6,7 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
-from ..where import OPER_EQ, OPER_ILIKE, corpo, where_and, where_eq
+from ..where import OPER_EQ, OPER_ILIKE, OPER_IN, corpo, where_and, where_eq
+
+# contract_status habilitado (CONTROLLR_API_NOTES.md, seção 6).
+_CONTRATO_HABILITADO = [1, 2, 3, 4]
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
@@ -110,9 +113,13 @@ async def buscar_clientes(
         # contract_number é numérico: o painel do Controllr busca com "=" e o
         # número como inteiro (capturado em 04/11, ver CONTROLLR_API_NOTES.md
         # seção 13) — zero à esquerda não conta ("026906" = 26906).
-        resposta = await ctx.controllr.contract_list(
-            corpo(where_eq("contract_number", int(digitos)), action="list", start=0, limit=10)
+        # Só contratos habilitados: 1 Ativado, 2 Alertado, 3 Pendente e
+        # 4 Bloqueado (fora 0 Desativado e 5 Cancelado — seção 6).
+        condicoes = where_and(
+            {"field": "contract_status", "oper": OPER_IN, "value": _CONTRATO_HABILITADO},
+            {"field": "contract_number", "oper": OPER_EQ, "value": int(digitos)},
         )
+        resposta = await ctx.controllr.contract_list(corpo(condicoes, action="list", start=0, limit=10))
         if resposta.success:
             client_pks.update(int(r["client_pk"]) for r in resposta.results if r.get("client_pk"))
 
