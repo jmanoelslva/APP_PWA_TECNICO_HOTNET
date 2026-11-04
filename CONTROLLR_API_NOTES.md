@@ -803,7 +803,7 @@ mais `contract_status IN [1,2,3,4,5]` (oper 21):
  {"field":"contract_number","oper":5,"value":550}]
 ```
 
-`contract_number` é numérico — zero à esquerda não existe nele. O app
-filtra só contratos habilitados, `contract_status IN [1,2,3,4]` (Ativado,
-Alertado, Pendente, Bloqueado): diferente do painel, deixa de fora o
-Cancelado (5), por decisão do usuário em 04/11.
+`contract_number` é numérico — zero à esquerda não existe nele. O app usa
+o mesmo filtro do painel, `contract_status IN [1,2,3,4,5]`: mostra
+cancelados e deixa de fora só os desativados (0), por decisão do usuário
+em 04/11.
