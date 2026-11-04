@@ -172,8 +172,8 @@ export default function Home() {
         <div className="home-conteudo">
           <header className="home-cabecalho">
             <div className="home-header-saudacao">
-              <span className="home-resumo">{textoResumo(resumoDia)}</span>
               <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
+              <span className="home-resumo">{textoResumo(resumoDia)}</span>
               {progresso && progresso.total > 0 && (
                 <div className="home-progresso">
                   <div

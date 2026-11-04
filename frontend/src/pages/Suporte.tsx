@@ -181,7 +181,7 @@ export default function Suporte() {
 
             <div className="suporte-resumo">
               <span>{comFiltro ? `${filtradas.length} de ${ordens.length} OS` : `${ordens.length} OS`}</span>
-              {comFiltro && (
+              {comFiltro && filtradas.length > 0 && (
                 <button type="button" className="suporte-limpar" onClick={() => setFiltro(FILTRO_VAZIO)}>
                   <MdClose size={16} /> Limpar filtros
                 </button>

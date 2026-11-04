@@ -72,7 +72,7 @@ function aplicar(tema: Tema): void {
   const sol = solLigado()
   if (sol) document.documentElement.setAttribute('data-sol', '1')
   else document.documentElement.removeAttribute('data-sol')
-  const corBarra = sol ? '#243642' : tema === 'dark' ? '#141a1f' : '#243642'
+  const corBarra = sol ? '#c94300' : tema === 'dark' ? '#141a1f' : '#c94300'
   document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => meta.setAttribute('content', corBarra))
 }
 

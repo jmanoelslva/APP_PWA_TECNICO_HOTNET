@@ -44,9 +44,10 @@
   --cor-primaria-escura: #a33700;
   --cor-primaria-clara: #ff8a4c;
   --cor-primaria-gradiente-fim: #5c1f00;
-  /* Faixa escura do login/início: grafite do logotipo (como o cartão de
-     conexão do app do cliente). */
-  --cor-marca-escura: #243642;
+  /* Faixa da marca no login/início: laranja sólido, como o topo do login
+     do app do cliente (texto branco 4,9:1). O nome ficou "escura" por ser
+     sempre fundo de texto branco. */
+  --cor-marca-escura: #c94300;
   --cor-sinal: #ff5a0a;
   --cor-destaque: #c21624;
 
@@ -125,7 +126,8 @@
   --cor-texto-terciario: #8a96a4;
   --cor-texto-fraco: #7f8b99;
   --cor-texto-desabilitado: #6e7a88;
-  --cor-marca-escura: #1e2c36;
+  /* Laranja fechado no escuro (mesmo do app do cliente). */
+  --cor-marca-escura: #8a3008;
 
   --sombra-card: 0 4px 16px rgba(0, 0, 0, 0.35);
 

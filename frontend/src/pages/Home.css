@@ -30,7 +30,6 @@
 
 .home-saudacao {
   display: block;
-  margin-top: 4px;
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -39,10 +38,11 @@
 
 .home-resumo {
   display: block;
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 14px;
   font-weight: 600;
-  color: #c9d3dc;
+  color: var(--cor-branco-fixo);
+  opacity: 0.92;
 }
 
 :root[data-sol='1'] .home-resumo {
@@ -62,9 +62,10 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 2px solid var(--cor-primaria-clara);
+  /* Sobre a faixa laranja: círculo translúcido com borda branca. */
+  border: 2px solid color-mix(in srgb, var(--cor-branco-fixo) 70%, transparent);
   overflow: hidden;
-  background: var(--cor-primaria);
+  background: color-mix(in srgb, var(--cor-branco-fixo) 18%, transparent);
   color: var(--cor-branco-fixo);
   font-size: 15px;
   font-weight: 800;
