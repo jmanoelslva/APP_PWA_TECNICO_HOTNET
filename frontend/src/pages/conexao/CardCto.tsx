@@ -186,7 +186,7 @@ export default function CardCto({
             className="conexao-input"
             type="text"
             value={dpBusca}
-            placeholder="Digite para buscar a CTO"
+            placeholder="Buscar CTO"
             onChange={(e) => {
               setDpBusca(e.target.value)
               setDpPk('')

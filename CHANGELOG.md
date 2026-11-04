@@ -62,7 +62,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Telas presas na versão anterior depois de atualizar:** o app passa a
   aplicar a versão nova na próxima troca de tela (ou ao voltar para ele),
   sem precisar sair e entrar de novo.
-- **Texto de ajuda da busca do Início** cortado: ficou mais curto.
+- **Textos de ajuda das buscas cortados** (Início, clientes, OS, ONU,
+  Offline, PPPoE e CTO): ficaram mais curtos e, se ainda não couberem,
+  terminam em "…".
 
 ### Alterado
 

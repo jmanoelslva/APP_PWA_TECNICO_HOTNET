@@ -84,7 +84,7 @@ export default function BuscaOnu({
           <input
             id="onu-busca-input"
             type="text"
-            placeholder="Digite o serial ou o usuário"
+            placeholder="Serial ou usuário PPPoE"
             value={busca}
             onChange={(e) => {
               setBusca(e.target.value)

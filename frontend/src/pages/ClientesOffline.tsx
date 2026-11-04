@@ -106,7 +106,7 @@ export default function ClientesOffline() {
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              placeholder="Filtrar por nome, usuário, contrato ou CTO"
+              placeholder="Nome, usuário, contrato ou CTO"
             />
           </div>
         )}

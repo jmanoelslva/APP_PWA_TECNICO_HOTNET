@@ -204,6 +204,12 @@
 
 /* Campos e botões não herdam a fonte do app por padrão (caíam em Arial/
    Roboto): herdam aqui, de uma vez para o app todo. */
+/* Texto de ajuda (placeholder) que não cabe termina em "…" em vez de
+   ser cortado no meio. */
+input {
+  text-overflow: ellipsis;
+}
+
 button,
 input,
 select,

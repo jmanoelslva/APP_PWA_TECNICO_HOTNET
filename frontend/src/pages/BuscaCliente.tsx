@@ -119,7 +119,7 @@ export default function BuscaCliente() {
           type="search"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          placeholder="Ex: João Silva, 12345 ou FHTT9A3C"
+          placeholder="Nome, CPF, contrato ou serial"
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}

@@ -61,7 +61,7 @@ export default function BuscaUsuarioPppoe({
         <input
           id="conexao-usuario-input"
           type="text"
-          placeholder="Digite o usuário"
+          placeholder="Usuário PPPoE"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           onFocus={() => setListaAberta(true)}

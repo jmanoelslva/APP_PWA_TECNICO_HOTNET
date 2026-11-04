@@ -135,7 +135,7 @@ export default function Suporte() {
                 type="search"
                 value={filtro.busca}
                 onChange={(e) => mudar({ busca: e.target.value })}
-                placeholder="Cliente, rua, bairro, serviço ou protocolo"
+                placeholder="Cliente, endereço ou protocolo"
                 aria-label="Buscar OS"
                 autoCapitalize="none"
                 autoCorrect="off"
