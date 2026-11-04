@@ -483,3 +483,34 @@
   height: 52px;
   font-size: 15px;
 }
+
+/* Sinal da ONU no card Conexão — mesmas faixas de nivelSinalOnu. */
+.detalhe-ordem-sinal {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cor-texto);
+  border: 1.5px solid var(--cor-borda);
+}
+
+.detalhe-ordem-sinal.boa {
+  border-color: color-mix(in srgb, var(--cor-sucesso) 40%, transparent);
+  background: color-mix(in srgb, var(--cor-sucesso) 14%, var(--cor-superficie));
+}
+
+.detalhe-ordem-sinal.alerta {
+  border-color: color-mix(in srgb, var(--cor-atencao) 50%, transparent);
+  background: color-mix(in srgb, var(--cor-atencao) 16%, var(--cor-superficie));
+}
+
+.detalhe-ordem-sinal.critica {
+  border-color: color-mix(in srgb, var(--cor-erro) 40%, transparent);
+  background: color-mix(in srgb, var(--cor-erro) 14%, var(--cor-superficie));
+}
+
+.detalhe-ordem-lido {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  color: var(--cor-texto-secundario);
+}

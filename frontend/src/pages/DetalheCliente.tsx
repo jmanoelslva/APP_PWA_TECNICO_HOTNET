@@ -31,6 +31,7 @@ import {
 import AcoesContato from '../components/AcoesContato'
 import LidoHa from '../components/LidoHa'
 import SeloStatusCliente from '../components/SeloStatusCliente'
+import SecaoRecolhivel from '../components/SecaoRecolhivel'
 import { statusDoCliente } from '../utils/statusCliente'
 import { registrarRecente } from '../utils/buscaUnica'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
@@ -289,68 +290,6 @@ export default function DetalheCliente() {
               </Link>
             </nav>
 
-            <section className="detalhe-cliente-secao">
-              <h2>Telefones</h2>
-              {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
-              {telefones.map((tel) => (
-                <div key={tel.phone_pk} className="detalhe-cliente-item">
-                  <div className="detalhe-cliente-item-topo">
-                    <strong>{tel.phone_identification ?? 'Telefone'}</strong>
-                    <button className="detalhe-cliente-btn-icone" onClick={() => setTelefoneEditando(tel)} aria-label="Editar telefone">
-                      <MdEdit size={18} />
-                    </button>
-                  </div>
-                  <p>{tel.phone_number ? formatarTelefone(tel.phone_number) : 'Número não informado'}</p>
-                  <AcoesContato numero={tel.phone_number} />
-                </div>
-              ))}
-              <button
-                type="button"
-                className="botao botao-secundario botao-pequeno"
-                style={{ '--botao-cor': CORES.cliente } as CSSProperties}
-                onClick={() => setAdicionandoTelefone(true)}
-              >
-                <MdAdd size={14} /> Adicionar telefone
-              </button>
-            </section>
-
-            <section className="detalhe-cliente-secao">
-              <h2>Endereços</h2>
-              {enderecos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum endereço cadastrado.</p>}
-              {enderecos.map((endereco) => (
-                <div key={endereco.address_pk} className="detalhe-cliente-item">
-                  <div className="detalhe-cliente-item-topo">
-                    <strong>{endereco.address_identification ?? 'Endereço'}</strong>
-                    <button className="detalhe-cliente-btn-icone" onClick={() => setEnderecoEditando(endereco)} aria-label="Editar endereço">
-                      <MdEdit size={18} />
-                    </button>
-                  </div>
-                  <p>
-                    {[endereco.address, endereco.address_number, endereco.address_neighborhood]
-                      .filter(Boolean)
-                      .join(', ') || 'Endereço não informado'}
-                  </p>
-                  {(endereco.address_province || endereco.address_state) && (
-                    <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
-                  )}
-                  {endereco.address_zipcode && <p>CEP: {formatarCep(endereco.address_zipcode)}</p>}
-                  {endereco.address_latitude && endereco.address_longitude && (
-                    <div className="detalhe-cliente-item-acoes">
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="botao botao-secundario botao-pequeno"
-                        style={{ '--botao-cor': CORES.endereco } as CSSProperties}
-                      >
-                        <MdLocationOn size={14} /> Ver no Google Maps
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </section>
-
             <section className="detalhe-cliente-secao" ref={secaoConexoesRef}>
               <h2>Conexões (CPE)</h2>
               {cpes.length === 0 && <p className="detalhe-cliente-vazio">Nenhuma conexão encontrada.</p>}
@@ -436,8 +375,67 @@ export default function DetalheCliente() {
               })}
             </section>
 
-            <section className="detalhe-cliente-secao">
-              <h2>Contratos</h2>
+            <SecaoRecolhivel className="detalhe-cliente-secao" titulo="Telefones" resumo={`${telefones.length} ${telefones.length === 1 ? 'telefone' : 'telefones'}`}>
+              {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
+              {telefones.map((tel) => (
+                <div key={tel.phone_pk} className="detalhe-cliente-item">
+                  <div className="detalhe-cliente-item-topo">
+                    <strong>{tel.phone_identification ?? 'Telefone'}</strong>
+                    <button className="detalhe-cliente-btn-icone" onClick={() => setTelefoneEditando(tel)} aria-label="Editar telefone">
+                      <MdEdit size={18} />
+                    </button>
+                  </div>
+                  <p>{tel.phone_number ? formatarTelefone(tel.phone_number) : 'Número não informado'}</p>
+                  <AcoesContato numero={tel.phone_number} />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="botao botao-secundario botao-pequeno"
+                style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+                onClick={() => setAdicionandoTelefone(true)}
+              >
+                <MdAdd size={14} /> Adicionar telefone
+              </button>
+            </SecaoRecolhivel>
+
+            <SecaoRecolhivel className="detalhe-cliente-secao" titulo="Endereços" resumo={`${enderecos.length} ${enderecos.length === 1 ? 'endereço' : 'endereços'}`}>
+              {enderecos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum endereço cadastrado.</p>}
+              {enderecos.map((endereco) => (
+                <div key={endereco.address_pk} className="detalhe-cliente-item">
+                  <div className="detalhe-cliente-item-topo">
+                    <strong>{endereco.address_identification ?? 'Endereço'}</strong>
+                    <button className="detalhe-cliente-btn-icone" onClick={() => setEnderecoEditando(endereco)} aria-label="Editar endereço">
+                      <MdEdit size={18} />
+                    </button>
+                  </div>
+                  <p>
+                    {[endereco.address, endereco.address_number, endereco.address_neighborhood]
+                      .filter(Boolean)
+                      .join(', ') || 'Endereço não informado'}
+                  </p>
+                  {(endereco.address_province || endereco.address_state) && (
+                    <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
+                  )}
+                  {endereco.address_zipcode && <p>CEP: {formatarCep(endereco.address_zipcode)}</p>}
+                  {endereco.address_latitude && endereco.address_longitude && (
+                    <div className="detalhe-cliente-item-acoes">
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="botao botao-secundario botao-pequeno"
+                        style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                      >
+                        <MdLocationOn size={14} /> Ver no Google Maps
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </SecaoRecolhivel>
+
+            <SecaoRecolhivel className="detalhe-cliente-secao" titulo="Contratos" resumo={`${contratos.length} ${contratos.length === 1 ? 'contrato' : 'contratos'}`}>
               {contratos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum contrato encontrado.</p>}
               {contratos.map((contrato, indice) => {
                 const chave = contrato.contract_pk ?? indice
@@ -514,7 +512,7 @@ export default function DetalheCliente() {
                   </div>
                 )
               })}
-            </section>
+            </SecaoRecolhivel>
           </>
         )}
 

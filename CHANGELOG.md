@@ -9,6 +9,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Rolar a lista da busca da tela inicial para cima** às vezes disparava
+  o "puxar para atualizar". Toque dentro de uma lista com rolagem própria
+  não aciona mais a atualização da tela.
 - **Voltar do Android depois de sair:** na tela de login, o botão voltar
   passava pelas telas visitadas antes de sair (cada uma voltava para o
   login), parecendo várias telas invisíveis abertas. Agora o voltar fecha
@@ -17,6 +20,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
+- **Barra de navegação sem "Sair":** ficam Início, OS, Conexão e ONU.
+  Sair continua em Configurações.
+- **Configurações:** o avatar da tela inicial abre uma folha com tema
+  escuro, modo sol, avisos de OS, instalar app e sair, com a versão do app
+  no rodapé. Substitui o menu suspenso.
+- **Tela inicial mais curta:** grade de atalhos compacta e sem o rodapé de
+  IPv4/IPv6, que continua em Ferramentas → Meu IP.
+- **Conexão em abas:** Resumo (sessão online, ONU e PPPoE), Wi-Fi,
+  Roteador (acesso e observação) e Rede (CTO e rede). O card do cliente
+  com o selo de status fica acima das abas.
+- **Detalhe do cliente:** Conexões vem primeiro e aberta; Telefones,
+  Endereços e Contratos começam recolhidos, mostrando a quantidade.
+- **Detalhe da OS na ordem de campo:** endereço (com Rota) primeiro, depois
+  descrição, conexão (agora com o sinal da ONU e "Lido há") e anexo;
+  Cliente, Contrato e Histórico das etapas ficam recolhidos no fim.
 - **Busca geral só na tela inicial:** o item "Buscar" saiu da barra de
   navegação, porque repetia o campo da tela inicial. Esse campo agora acha
   também a ONU pelo serial e a conexão pelo usuário PPPoE, além do

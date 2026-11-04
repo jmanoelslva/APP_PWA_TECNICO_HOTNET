@@ -16,6 +16,8 @@ import {
 } from 'react-icons/md'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import VoltarInicio from '../components/VoltarInicio'
+import SecaoRecolhivel from '../components/SecaoRecolhivel'
+import LidoHa from '../components/LidoHa'
 import PullToRefresh from '../components/PullToRefresh'
 import AcoesContato from '../components/AcoesContato'
 import Skeleton from '../components/Skeleton'
@@ -26,6 +28,7 @@ import {
   ApiError,
   buscarCpe,
   buscarDetalheCliente,
+  buscarOnu,
   desfazerFinalizacaoOrdemServico,
   desfazerInicioOrdemServico,
   desfazerRespostaOrdemServico,
@@ -39,6 +42,7 @@ import {
   type ContratoDto,
   type CpeDto,
   type EnderecoDto,
+  type OnuDto,
   type OperacaoDto,
   type OrdemServicoDto,
   type TicketDto,
@@ -49,7 +53,9 @@ import {
   formatarDataHora,
   formatarStatusContrato,
   formatarTelefone,
+  nivelSinalOnu,
   separarTelefones,
+  TEXTO_SINAL_ONU,
 } from '../utils/formatacao'
 import { linkRota, osAtrasada, quandoOs } from '../utils/minhasOs'
 import './DetalheOrdemServico.css'
@@ -195,6 +201,10 @@ export default function DetalheOrdemServico() {
   const [endereco, setEndereco] = useState<EnderecoDto | null>(null)
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
   const [cpe, setCpe] = useState<CpeDto | null>(null)
+  // Sinal da ONU desta conexão (mostrado no card Conexão).
+  const [onuOs, setOnuOs] = useState<OnuDto | null>(null)
+  const [carregandoOnu, setCarregandoOnu] = useState(false)
+  const [onuLidaEm, setOnuLidaEm] = useState<number | null>(null)
   const [eventos, setEventos] = useState<OperacaoDto[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
@@ -251,7 +261,19 @@ export default function DetalheOrdemServico() {
         // client_pk sozinho poderia trazer a CPE de outro contrato do
         // mesmo cliente, se ele tiver mais de uma conexão.
         buscarCpe(os.contract_pk ? { contract_pk: os.contract_pk } : { client_pk: os.client_pk })
-          .then((resposta) => setCpe(resposta.results[0] ?? null))
+          .then((resposta) => {
+            const cpeDaOs = resposta.results[0] ?? null
+            setCpe(cpeDaOs)
+            if (!cpeDaOs?.username) return
+            setCarregandoOnu(true)
+            buscarOnu({ username: cpeDaOs.username })
+              .then((respostaOnu) => {
+                setOnuOs(respostaOnu.results[0] ?? null)
+                setOnuLidaEm(Date.now())
+              })
+              .catch(() => setOnuOs(null))
+              .finally(() => setCarregandoOnu(false))
+          })
           .catch(() => {})
       }
     } catch (excecao) {
@@ -466,46 +488,6 @@ export default function DetalheOrdemServico() {
               </Link>
             </div>
 
-            {(ticket?.ticket_desc || osAtual.op_obs) && (
-              <div className="detalhe-ordem-card">
-                {ticket?.ticket_desc && (
-                  <>
-                    <h2>Descrição do problema</h2>
-                    <p className="detalhe-ordem-descricao">{ticket.ticket_desc}</p>
-                  </>
-                )}
-                {osAtual.op_obs && (
-                  <>
-                    <h2>Observação</h2>
-                    <p className="detalhe-ordem-descricao">{osAtual.op_obs}</p>
-                  </>
-                )}
-              </div>
-            )}
-
-            <div className="detalhe-ordem-card">
-              <h2>Cliente</h2>
-              <div className="detalhe-ordem-linha-campo">
-                <span>Nome</span>
-                {osAtual.client_pk ? (
-                  <Link to={`/clientes/${osAtual.client_pk}`} className="detalhe-ordem-link" viewTransition>
-                    <MdPeopleAlt size={14} /> {osAtual.client_complete_name ?? '—'}
-                  </Link>
-                ) : (
-                  <strong>{osAtual.client_complete_name ?? '—'}</strong>
-                )}
-              </div>
-              {telefone && (
-                <>
-                  <div className="detalhe-ordem-linha-campo">
-                    <span>Contato</span>
-                    <strong>{separarTelefones(telefone).map(formatarTelefone).join(', ') || telefone}</strong>
-                  </div>
-                  {/* Ligar/WhatsApp de cada número ficam no cabeçalho da OS. */}
-                </>
-              )}
-            </div>
-
             <div className="detalhe-ordem-card">
               <div className="detalhe-ordem-topo">
                 <h2>Endereço</h2>
@@ -541,23 +523,29 @@ export default function DetalheOrdemServico() {
                   <MdLocationOn size={14} /> Ver no Google Maps
                 </a>
               )}
+              {rota && (
+                <a href={rota} target="_blank" rel="noreferrer" className="detalhe-ordem-chip">
+                  <MdDirections size={14} /> Rota até o cliente
+                </a>
+              )}
             </div>
 
-            <div className="detalhe-ordem-card">
-              <h2>Contrato</h2>
-              <div className="detalhe-ordem-linha-campo">
-                <span>Número</span>
-                <strong>{contrato?.contract_number ?? osAtual.contract_number ?? '—'}</strong>
+            {(ticket?.ticket_desc || osAtual.op_obs) && (
+              <div className="detalhe-ordem-card">
+                {ticket?.ticket_desc && (
+                  <>
+                    <h2>Descrição do problema</h2>
+                    <p className="detalhe-ordem-descricao">{ticket.ticket_desc}</p>
+                  </>
+                )}
+                {osAtual.op_obs && (
+                  <>
+                    <h2>Observação</h2>
+                    <p className="detalhe-ordem-descricao">{osAtual.op_obs}</p>
+                  </>
+                )}
               </div>
-              <div className="detalhe-ordem-linha-campo">
-                <span>Vencimento</span>
-                <strong>{contrato?.contract_pay_day ? `Dia ${contrato.contract_pay_day}` : '—'}</strong>
-              </div>
-              <div className="detalhe-ordem-linha-campo">
-                <span>Status</span>
-                <strong>{contrato?.contract_status != null ? formatarStatusContrato(contrato.contract_status) : '—'}</strong>
-              </div>
-            </div>
+            )}
 
             <div className="detalhe-ordem-card">
               <h2>Conexão</h2>
@@ -598,6 +586,25 @@ export default function DetalheOrdemServico() {
                 <span>Porta da CTO</span>
                 <strong>{cpe?.dp_port ?? '—'}</strong>
               </div>
+              {(onuOs || carregandoOnu) && (
+                <div className="detalhe-ordem-linha-campo">
+                  <span>Sinal ONU</span>
+                  {carregandoOnu ? (
+                    <strong>Consultando…</strong>
+                  ) : (
+                    <span className={`detalhe-ordem-sinal ${nivelSinalOnu(onuOs?.omddm_rx_power)}`}>
+                      {onuOs?.omddm_rx_power != null
+                        ? `${onuOs.omddm_rx_power} dBm`
+                        : TEXTO_SINAL_ONU[nivelSinalOnu(onuOs?.omddm_rx_power)]}
+                    </span>
+                  )}
+                </div>
+              )}
+              {onuOs && (
+                <p className="detalhe-ordem-lido">
+                  <LidoHa momento={onuLidaEm} />
+                </p>
+              )}
               {cpe?.pk && (
                 <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip" viewTransition>
                   <MdWifi size={14} /> Ver conexão completa
@@ -637,8 +644,44 @@ export default function DetalheOrdemServico() {
               )}
             </div>
 
-            <div className="detalhe-ordem-card">
-              <h2>Histórico das etapas</h2>
+            <SecaoRecolhivel className="detalhe-ordem-card" titulo="Cliente" resumo={osAtual.client_complete_name ?? undefined}>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Nome</span>
+                {osAtual.client_pk ? (
+                  <Link to={`/clientes/${osAtual.client_pk}`} className="detalhe-ordem-link" viewTransition>
+                    <MdPeopleAlt size={14} /> {osAtual.client_complete_name ?? '—'}
+                  </Link>
+                ) : (
+                  <strong>{osAtual.client_complete_name ?? '—'}</strong>
+                )}
+              </div>
+              {telefone && (
+                <>
+                  <div className="detalhe-ordem-linha-campo">
+                    <span>Contato</span>
+                    <strong>{separarTelefones(telefone).map(formatarTelefone).join(', ') || telefone}</strong>
+                  </div>
+                  {/* Ligar/WhatsApp de cada número ficam no cabeçalho da OS. */}
+                </>
+              )}
+            </SecaoRecolhivel>
+
+            <SecaoRecolhivel className="detalhe-ordem-card" titulo="Contrato" resumo={(contrato?.contract_number ?? osAtual.contract_number)?.toString()}>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Número</span>
+                <strong>{contrato?.contract_number ?? osAtual.contract_number ?? '—'}</strong>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Vencimento</span>
+                <strong>{contrato?.contract_pay_day ? `Dia ${contrato.contract_pay_day}` : '—'}</strong>
+              </div>
+              <div className="detalhe-ordem-linha-campo">
+                <span>Status</span>
+                <strong>{contrato?.contract_status != null ? formatarStatusContrato(contrato.contract_status) : '—'}</strong>
+              </div>
+            </SecaoRecolhivel>
+
+            <SecaoRecolhivel className="detalhe-ordem-card" titulo="Histórico das etapas" resumo={`${concluidas.filter(Boolean).length + 1} de ${ETAPAS.length + 1} etapas`}>
               <div className="detalhe-ordem-etapa-item">
                 <div className="detalhe-ordem-etapa-item-texto">
                   <strong>Agendamento</strong>
@@ -687,7 +730,7 @@ export default function DetalheOrdemServico() {
                   )
                 })
               })()}
-            </div>
+            </SecaoRecolhivel>
             {proximaEtapa && (
               <div className="detalhe-ordem-barra-acao">
                 <button

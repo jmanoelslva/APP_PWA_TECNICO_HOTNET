@@ -60,64 +60,7 @@
   padding: 0;
 }
 
-.home-avatar-menu-fundo {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-}
-
-.home-avatar-menu {
-  position: absolute;
-  top: 52px;
-  right: 0;
-  z-index: 11;
-  background: var(--cor-superficie);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  min-width: 150px;
-}
-
-.home-avatar-menu button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--cor-texto);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.home-avatar-menu button:hover {
-  background: var(--cor-fundo);
-}
-
-.home-avatar-menu-avisos-texto {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.home-avatar-menu-avisos-texto small {
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--cor-texto-terciario);
-  white-space: normal;
-  max-width: 170px;
-}
-
-.home-avatar-menu-avisos:disabled {
-  cursor: default;
-  opacity: 0.75;
-}
-
-/* Interruptor liga/desliga dos avisos de OS. */
+/* Interruptor liga/desliga (folha Configurações). */
 .home-interruptor {
   position: relative;
   flex: none;
@@ -148,10 +91,6 @@
 
 .home-interruptor[data-ligado='true']::after {
   transform: translateX(14px);
-}
-
-.home-avatar-menu-sair {
-  color: var(--cor-erro) !important;
 }
 
 .home-conteudo {
@@ -209,6 +148,7 @@
   list-style: none;
   max-height: 260px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--cor-superficie);
   border: 1.5px solid var(--cor-borda);
   border-radius: 14px;
@@ -242,25 +182,25 @@
 .home-menu {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
 .home-menu-item {
   background: var(--cor-superficie);
-  border-radius: 16px;
-  padding: 14px 6px;
+  border-radius: 14px;
+  padding: 10px 6px;
   box-shadow: var(--sombra-card);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   text-decoration: none;
   color: inherit;
 }
 
 .home-menu-icone {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -273,32 +213,6 @@
   font-weight: 700;
   color: var(--cor-texto);
   text-align: center;
-}
-
-.home-rodape-ip {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 24px;
-}
-
-.home-rodape-ip-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  max-width: 100%;
-  padding: 5px 12px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--cor-conexao) 10%, var(--cor-superficie));
-  border: 1px solid color-mix(in srgb, var(--cor-conexao) 35%, transparent);
-  font-size: 11px;
-  color: var(--cor-conexao);
-  overflow-wrap: anywhere;
-}
-
-.home-rodape-ip-item strong {
-  font-weight: 800;
 }
 
 /* Progresso do dia: OS concluídas (finalizadas ou fechadas) / agendadas. */

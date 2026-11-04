@@ -32,8 +32,23 @@ export default function PullToRefresh({ aoAtualizar, children }: Props) {
     const elemento = containerRef.current
     if (!elemento) return
 
+    // Toque dentro de uma lista com rolagem própria (ex.: resultados da
+    // busca da tela inicial) é rolagem dessa lista — subir a lista não
+    // pode virar "puxar para atualizar" só porque a página está no topo.
+    function dentroDeRolagemPropria(alvo: EventTarget | null): boolean {
+      let no = alvo instanceof Element ? alvo : null
+      while (no && no !== elemento) {
+        if (no.scrollHeight > no.clientHeight) {
+          const overflowY = getComputedStyle(no).overflowY
+          if (overflowY === 'auto' || overflowY === 'scroll') return true
+        }
+        no = no.parentElement
+      }
+      return false
+    }
+
     function aoComecar(e: TouchEvent) {
-      const podeComecar = window.scrollY <= 0 && !atualizandoRef.current
+      const podeComecar = window.scrollY <= 0 && !atualizandoRef.current && !dentroDeRolagemPropria(e.target)
       inicioYRef.current = podeComecar ? e.touches[0].clientY : null
       if (podeComecar) setArrastando(true)
     }

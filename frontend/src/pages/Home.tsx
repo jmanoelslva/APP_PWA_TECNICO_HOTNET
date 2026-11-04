@@ -1,29 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  MdBuild,
-  MdCable,
-  MdConstruction,
-  MdDarkMode,
-  MdGetApp,
-  MdLightMode,
-  MdLogout,
-  MdNotificationsActive,
-  MdNotificationsOff,
-  MdRouter,
-  MdSearch,
-  MdWbSunny,
-  MdWifi,
-  MdWifiOff,
-} from 'react-icons/md'
+import { MdBuild, MdCable, MdConstruction, MdRouter, MdSearch, MdWifi, MdWifiOff } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
-import { useTema } from '../hooks/useTema'
 import { useColetorOlt } from '../hooks/useColetorOlt'
 import { useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
+import FolhaConfiguracoes from '../components/FolhaConfiguracoes'
 import MinhasOsHoje, { type ResumoDoDia } from '../components/MinhasOsHoje'
 import PullToRefresh from '../components/PullToRefresh'
 import {
@@ -36,7 +21,6 @@ import {
   type OnuDto,
 } from '../api/client'
 import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
-import { buscarIpsPublicos } from '../utils/ipPublico'
 import './Home.css'
 
 function saudacaoPorHorario(nome: string): string {
@@ -75,8 +59,7 @@ export default function Home() {
   const { tecnico, sair } = useSessao()
   const navigate = useNavigate()
   const { podeInstalar, aoClicarInstalar, modalIosAberto, fecharModalIos } = usePwaInstall()
-  const { tema, alternarTema, sol, alternarSol } = useTema()
-  const [menuAvatarAberto, setMenuAvatarAberto] = useState(false)
+  const [configuracoesAberta, setConfiguracoesAberta] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
   const coletorOlt = useColetorOlt()
   // Resumo do dia embaixo da saudação (vem de "Minhas OS de hoje").
@@ -85,7 +68,6 @@ export default function Home() {
   // tira as finalizadas/fechadas (ver backend ordens_servico.py::resumo_do_dia).
   const [progresso, setProgresso] = useState<{ total: number; concluidas: number } | null>(null)
   const avisos = useAvisos()
-  const avisosLigados = avisos.estado === 'ligado'
   // Por que o interruptor está travado, quando está.
   const dicaAvisos =
     avisos.estado === 'instalar'
@@ -112,11 +94,6 @@ export default function Home() {
   const [buscando, setBuscando] = useState(false)
   const [listaAberta, setListaAberta] = useState(false)
 
-  // Rodapé com IPv4/IPv6 da rede atual — consulta automática ao entrar
-  // na Home, sem precisar de clique (ver Ferramentas.tsx para a versão
-  // com localização/provedor sob demanda).
-  const [ipv4, setIpv4] = useState<string | null>(null)
-  const [ipv6, setIpv6] = useState<string | null>(null)
   // Muda a cada "puxar para atualizar" — remonta MinhasOsHoje, que relê a
   // lista sozinha ao montar.
   const [recarga, setRecarga] = useState(0)
@@ -128,18 +105,6 @@ export default function Home() {
         if (!cancelado) setProgresso({ total: resposta.total, concluidas: resposta.concluidas })
       })
       .catch(() => {})
-    return () => {
-      cancelado = true
-    }
-  }, [])
-
-  useEffect(() => {
-    let cancelado = false
-    buscarIpsPublicos().then((resultado) => {
-      if (cancelado) return
-      setIpv4(resultado.ipv4)
-      setIpv6(resultado.ipv6)
-    })
     return () => {
       cancelado = true
     }
@@ -180,19 +145,13 @@ export default function Home() {
 
   async function atualizarTela() {
     setRecarga((atual) => atual + 1)
-    await Promise.all([
-      resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
-        .then((resposta) => setProgresso({ total: resposta.total, concluidas: resposta.concluidas }))
-        .catch(() => {}),
-      buscarIpsPublicos().then((resultado) => {
-        setIpv4(resultado.ipv4)
-        setIpv6(resultado.ipv6)
-      }),
-    ])
+    await resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
+      .then((resposta) => setProgresso({ total: resposta.total, concluidas: resposta.concluidas }))
+      .catch(() => {})
   }
 
   async function aoClicarInstalarMenu() {
-    setMenuAvatarAberto(false)
+    setConfiguracoesAberta(false)
     await aoClicarInstalar()
   }
 
@@ -236,62 +195,9 @@ export default function Home() {
             </div>
 
             <div className="home-avatar-wrapper">
-              <button className="home-avatar" onClick={() => setMenuAvatarAberto((v) => !v)} aria-label="Menu do usuário">
+              <button className="home-avatar" onClick={() => setConfiguracoesAberta(true)} aria-label="Configurações">
                 {iniciais(tecnico?.username)}
               </button>
-              {menuAvatarAberto && (
-                <>
-                  <div className="home-avatar-menu-fundo" onClick={() => setMenuAvatarAberto(false)} />
-                  <div className="home-avatar-menu">
-                    {podeInstalar && (
-                      <button onClick={aoClicarInstalarMenu}>
-                        <MdGetApp size={18} /> Instalar app
-                      </button>
-                    )}
-                    {avisos.estado !== 'indisponivel' && avisos.estado !== 'carregando' && (
-                      <button
-                        role="switch"
-                        aria-checked={avisosLigados}
-                        className="home-avatar-menu-avisos"
-                        disabled={avisos.ocupado || avisos.estado === 'instalar' || avisos.estado === 'sem-suporte'}
-                        onClick={() => {
-                          if (avisos.estado === 'bloqueado') return
-                          void (avisosLigados ? avisos.desligar() : avisos.ligar())
-                        }}
-                      >
-                        {avisosLigados ? <MdNotificationsActive size={18} /> : <MdNotificationsOff size={18} />}
-                        <span className="home-avatar-menu-avisos-texto">
-                          Avisos de OS
-                          {dicaAvisos && <small>{dicaAvisos}</small>}
-                        </span>
-                        <span className="home-interruptor" data-ligado={avisosLigados} aria-hidden="true" />
-                      </button>
-                    )}
-                    <button onClick={alternarTema}>
-                      {tema === 'dark' ? <MdLightMode size={18} /> : <MdDarkMode size={18} />}
-                      {tema === 'dark' ? 'Tema claro' : 'Tema escuro'}
-                    </button>
-                    {/* Alto contraste para trabalhar no sol — vale por cima do tema. */}
-                    <button role="switch" aria-checked={sol} className="home-avatar-menu-avisos" onClick={alternarSol}>
-                      <MdWbSunny size={18} />
-                      <span className="home-avatar-menu-avisos-texto">
-                        Modo sol
-                        <small>Alto contraste para tela no sol</small>
-                      </span>
-                      <span className="home-interruptor" data-ligado={sol} aria-hidden="true" />
-                    </button>
-                    <button
-                      className="home-avatar-menu-sair"
-                      onClick={() => {
-                        setMenuAvatarAberto(false)
-                        setConfirmarSairAberto(true)
-                      }}
-                    >
-                      <MdLogout size={18} /> Sair
-                    </button>
-                  </div>
-                </>
-              )}
             </div>
           </header>
 
@@ -402,23 +308,22 @@ export default function Home() {
             )}
           </div>
 
-          {(ipv4 || ipv6) && (
-            <footer className="home-rodape-ip">
-              {ipv4 && (
-                <span className="home-rodape-ip-item">
-                  <strong>IPv4</strong> {ipv4}
-                </span>
-              )}
-              {ipv6 && (
-                <span className="home-rodape-ip-item">
-                  <strong>IPv6</strong> {ipv6}
-                </span>
-              )}
-            </footer>
-          )}
         </div>
 
         <ModalInstalarIos aberto={modalIosAberto} onFechar={fecharModalIos} />
+        <FolhaConfiguracoes
+          aberto={configuracoesAberta}
+          usuario={tecnico?.username}
+          avisos={avisos}
+          dicaAvisos={dicaAvisos}
+          podeInstalar={podeInstalar}
+          onInstalar={aoClicarInstalarMenu}
+          onSair={() => {
+            setConfiguracoesAberta(false)
+            setConfirmarSairAberto(true)
+          }}
+          onFechar={() => setConfiguracoesAberta(false)}
+        />
         <ModalConfirmarLogout
           aberto={confirmarSairAberto}
           onCancelar={() => setConfirmarSairAberto(false)}

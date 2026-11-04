@@ -1,9 +1,7 @@
-import { useState, type CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MdBuild, MdCable, MdHome, MdLogout, MdWifi } from 'react-icons/md'
-import { useSessao } from '../auth/useSessao'
+import { MdBuild, MdCable, MdHome, MdWifi } from 'react-icons/md'
 import { CORES, comAlpha } from '../utils/cores'
-import ModalConfirmarLogout from './ModalConfirmarLogout'
 import './BottomNav.css'
 
 // Sem "Buscar" de propósito: a busca geral é o campo do topo da Home
@@ -14,16 +12,14 @@ const ITENS = [
   { to: '/conexao', icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
   { to: '/onu', icone: MdCable, cor: CORES.onu, label: 'ONU' },
 ]
-// +1 pelo botão "Sair", que ocupa o mesmo espaço dos itens acima mas não
-// tem indicador/rota própria — a pill precisa saber o total para calcular
-// a largura certa (ver BottomNav.css).
-const TOTAL_SLOTS = ITENS.length + 1
+// Sem "Sair" de propósito: já fica em Configurações (avatar da tela
+// inicial); aqui só repetia. A pill usa o total para calcular a largura
+// (ver BottomNav.css).
+const TOTAL_SLOTS = ITENS.length
 
 /** Barra de navegação fixa no rodapé, sempre visível nas telas autenticadas. */
 export default function BottomNav() {
-  const { sair } = useSessao()
   const location = useLocation()
-  const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
 
   const indiceAtivo = ITENS.findIndex((item) =>
     item.fim ? location.pathname === item.to : location.pathname.startsWith(item.to),
@@ -57,20 +53,7 @@ export default function BottomNav() {
             <span>{item.label}</span>
           </NavLink>
         ))}
-        <button type="button" className="bottom-nav-item" onClick={() => setConfirmarSairAberto(true)}>
-          <MdLogout size={22} />
-          <span>Sair</span>
-        </button>
       </nav>
-
-      <ModalConfirmarLogout
-        aberto={confirmarSairAberto}
-        onCancelar={() => setConfirmarSairAberto(false)}
-        onConfirmar={() => {
-          setConfirmarSairAberto(false)
-          sair()
-        }}
-      />
     </>
   )
 }
