@@ -103,12 +103,15 @@ export default function PullToRefresh({ aoAtualizar, children }: Props) {
 
   return (
     <div ref={containerRef}>
+      {/* Bolinha flutuante (estilo Android): desce por cima do conteúdo,
+          que fica parado — antes o indicador crescia e empurrava a tela. */}
       <div
         className="pull-to-refresh-indicador"
+        aria-hidden={distancia === 0}
         style={{
-          height: distancia,
-          opacity: progresso,
-          transition: arrastando ? 'none' : 'height 0.2s ease, opacity 0.2s ease',
+          transform: `translate(-50%, ${distancia - 48}px)`,
+          opacity: distancia > 0 ? Math.max(progresso, 0.3) : 0,
+          transition: arrastando ? 'none' : 'transform 0.2s ease, opacity 0.2s ease',
         }}
       >
         <MdRefresh

@@ -11,7 +11,7 @@ export function posicaoNaFaixa(rx: number): number {
   return Math.round(Math.min(1, Math.max(0, relativo)) * 1000) / 10
 }
 
-const ROTULO: Record<Exclude<NivelSinal, 'desconhecida'>, string> = {
+export const ROTULO: Record<Exclude<NivelSinal, 'desconhecida'>, string> = {
   boa: 'Bom',
   alerta: 'Limite',
   critica: 'Crítico',
@@ -36,7 +36,8 @@ export default function FaixaSinal({
   corteCritico: number
   /** A partir disto é bom (ex.: -22 na ONU). */
   corteBom: number
-  /** Versão menor (sem a escala), para caber lado a lado na tela da ONU. */
+  /** Versão menor, sem escala e sem selo (quem usa mostra o selo no título),
+   *  para caber lado a lado na tela da ONU sem quebrar linha. */
   compacta?: boolean
 }) {
   if (rx == null || nivel === 'desconhecida') return null
@@ -48,7 +49,7 @@ export default function FaixaSinal({
         <strong className="faixa-sinal-valor">
           {rx.toLocaleString('pt-BR')} <small>dBm</small>
         </strong>
-        <span className={`faixa-sinal-selo faixa-sinal-selo-${nivel}`}>{ROTULO[nivel]}</span>
+        {!compacta && <span className={`faixa-sinal-selo faixa-sinal-selo-${nivel}`}>{ROTULO[nivel]}</span>}
       </div>
       <div
         className="faixa-sinal-barra"

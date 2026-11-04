@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import type { IconType } from 'react-icons'
 import { LuFileSearch } from 'react-icons/lu'
 import {
@@ -19,11 +19,20 @@ import {
   MdWifi,
 } from 'react-icons/md'
 import { ApiError, listarAuditoria } from '../api/client'
+import Abas, { type Aba } from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
 import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import Skeleton from '../components/Skeleton'
-import { agruparPorDia, detalhes, hora, mudancas, type DiaAuditoria } from '../utils/auditoria'
+import {
+  agruparPorDia,
+  datasDoPeriodo,
+  detalhes,
+  hora,
+  mudancas,
+  type DiaAuditoria,
+  type PeriodoAuditoria,
+} from '../utils/auditoria'
 import { CORES } from '../utils/cores'
 import './Auditoria.css'
 
@@ -53,21 +62,48 @@ const POR_ACAO = Object.fromEntries(ACOES.map((a) => [a.valor, a]))
 // Ações que apagam algo: borda vermelha no cartão.
 const GRAVES = new Set(['onu.remover', 'endereco.excluir', 'os.cancelar'])
 
-// Chips do topo. O backend filtra pelo começo do nome da ação, então
-// "endereco." pega criar, editar e excluir de uma vez.
-const FILTROS: { valor: string; rotulo: string }[] = [
-  { valor: '', rotulo: 'Todas' },
-  { valor: 'onu.remover', rotulo: 'Remoções' },
-  { valor: 'onu.reiniciar', rotulo: 'Reinícios' },
-  { valor: 'onu.renomear', rotulo: 'Renomeações' },
-  { valor: 'onu.associar_cliente', rotulo: 'Associações' },
-  { valor: 'cpe.editar_wifi', rotulo: 'Wi-Fi' },
-  { valor: 'cpe.editar_acesso_roteador', rotulo: 'Acesso ao roteador' },
-  { valor: 'endereco.', rotulo: 'Endereços' },
-  { valor: 'cpe.localizacao', rotulo: 'Localização' },
-  { valor: 'telefone.', rotulo: 'Telefones' },
-  { valor: 'os.', rotulo: 'OS' },
+// Tipo de ação numa lista agrupada (antes eram 11 botões em várias
+// linhas). O backend filtra pelo começo do nome da ação, então "onu." pega
+// todas da ONU e "endereco." criar, editar e excluir de uma vez.
+const GRUPOS_ACAO: { grupo: string; opcoes: { valor: string; rotulo: string }[] }[] = [
+  {
+    grupo: 'ONU',
+    opcoes: [
+      { valor: 'onu.', rotulo: 'Tudo da ONU' },
+      { valor: 'onu.remover', rotulo: 'Remoções' },
+      { valor: 'onu.reiniciar', rotulo: 'Reinícios' },
+      { valor: 'onu.renomear', rotulo: 'Renomeações' },
+      { valor: 'onu.associar_cliente', rotulo: 'Associações a cliente' },
+    ],
+  },
+  {
+    grupo: 'Conexão',
+    opcoes: [
+      { valor: 'cpe.', rotulo: 'Tudo da conexão' },
+      { valor: 'cpe.editar_wifi', rotulo: 'Wi-Fi' },
+      { valor: 'cpe.editar_acesso_roteador', rotulo: 'Acesso ao roteador' },
+      { valor: 'cpe.localizacao', rotulo: 'Localização' },
+    ],
+  },
+  {
+    grupo: 'Cliente',
+    opcoes: [
+      { valor: 'endereco.', rotulo: 'Endereços' },
+      { valor: 'telefone.', rotulo: 'Telefones' },
+    ],
+  },
+  { grupo: 'OS', opcoes: [{ valor: 'os.', rotulo: 'Cancelar / reabrir OS' }] },
 ]
+
+const PERIODOS: Aba<PeriodoAuditoria>[] = [
+  { chave: 'tudo', rotulo: 'Tudo' },
+  { chave: 'hoje', rotulo: 'Hoje' },
+  { chave: '7', rotulo: '7 dias' },
+  { chave: '30', rotulo: '30 dias' },
+  { chave: 'periodo', rotulo: 'Período' },
+]
+
+const FILTRO_VAZIO = { tecnico: '', acao: '', de: '', ate: '' }
 
 const PASSO = 100
 
@@ -77,9 +113,9 @@ function plural(n: number): string {
 
 export default function Auditoria() {
   const [tecnico, setTecnico] = useState('')
-  const [de, setDe] = useState('')
-  const [ate, setAte] = useState('')
-  const [filtro, setFiltro] = useState({ tecnico: '', acao: '', de: '', ate: '' })
+  const [periodo, setPeriodo] = useState<PeriodoAuditoria>('tudo')
+  const [escolhido, setEscolhido] = useState({ de: '', ate: '' })
+  const [filtro, setFiltro] = useState(FILTRO_VAZIO)
   const [limite, setLimite] = useState(PASSO)
   const [dias, setDias] = useState<DiaAuditoria[] | null>(null)
   const [mais, setMais] = useState(false)
@@ -110,17 +146,42 @@ export default function Auditoria() {
     }
   }, [filtro, limite, recarga])
 
-  function buscar(e: FormEvent) {
-    e.preventDefault()
+  // Tudo filtra sozinho (sem botão "Filtrar"): período e ação na hora,
+  // técnico depois que para de digitar.
+  function mudarFiltro(parcial: Partial<typeof FILTRO_VAZIO>) {
     setLimite(PASSO)
-    setFiltro((f) => ({ ...f, tecnico: tecnico.trim(), de, ate }))
+    setFiltro((f) => ({ ...f, ...parcial }))
   }
 
-  // O tipo de ação filtra na hora; técnico e datas esperam o "Filtrar".
-  function escolherAcao(acao: string) {
-    setLimite(PASSO)
-    setFiltro((f) => ({ ...f, acao }))
+  useEffect(() => {
+    const valor = tecnico.trim()
+    if (valor === filtro.tecnico) return
+    const temporizador = setTimeout(() => mudarFiltro({ tecnico: valor }), 400)
+    return () => clearTimeout(temporizador)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tecnico])
+
+  function escolherPeriodo(novo: PeriodoAuditoria, datas = escolhido) {
+    setPeriodo(novo)
+    mudarFiltro(datasDoPeriodo(novo, datas))
   }
+
+  function escolherData(campo: 'de' | 'ate', valor: string) {
+    const datas = { ...escolhido, [campo]: valor }
+    setEscolhido(datas)
+    escolherPeriodo('periodo', datas)
+  }
+
+  function limparFiltros() {
+    setTecnico('')
+    setPeriodo('tudo')
+    setEscolhido({ de: '', ate: '' })
+    setLimite(PASSO)
+    setFiltro(FILTRO_VAZIO)
+  }
+
+  const comFiltro = !!(filtro.tecnico || filtro.acao || filtro.de || filtro.ate)
+  const totalEventos = dias?.reduce((soma, dia) => soma + dia.eventos.length, 0) ?? 0
 
   return (
     <PullToRefresh aoAtualizar={async () => setRecarga((atual) => atual + 1)}>
@@ -132,41 +193,58 @@ export default function Auditoria() {
           subtitulo="Quem mexeu no equipamento do cliente, quando e de qual IP."
         />
 
-        <div className="auditoria-chips" role="group" aria-label="Tipo de ação">
-          {FILTROS.map((a) => (
-            <button
-              key={a.valor}
-              type="button"
-              className="auditoria-chip"
-              aria-pressed={filtro.acao === a.valor}
-              onClick={() => escolherAcao(a.valor)}
+        <div className="auditoria-filtros">
+          <Abas abas={PERIODOS} ativa={periodo} onEscolher={(p) => escolherPeriodo(p)} cor={CORES.ferramentas} rotulo="Período" />
+          {periodo === 'periodo' && (
+            <div className="auditoria-datas">
+              <label>
+                De
+                <input className="campo" type="date" value={escolhido.de} onChange={(e) => escolherData('de', e.target.value)} />
+              </label>
+              <label>
+                Até
+                <input className="campo" type="date" value={escolhido.ate} onChange={(e) => escolherData('ate', e.target.value)} />
+              </label>
+            </div>
+          )}
+          <div className="auditoria-campos">
+            <select
+              className="campo"
+              value={filtro.acao}
+              onChange={(e) => mudarFiltro({ acao: e.target.value })}
+              aria-label="Tipo de ação"
             >
-              {a.rotulo}
-            </button>
-          ))}
+              <option value="">Todas as ações</option>
+              {GRUPOS_ACAO.map((g) => (
+                <optgroup key={g.grupo} label={g.grupo}>
+                  {g.opcoes.map((o) => (
+                    <option key={o.valor} value={o.valor}>
+                      {o.rotulo}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <input
+              className="campo"
+              value={tecnico}
+              onChange={(e) => setTecnico(e.target.value)}
+              placeholder="Técnico"
+              aria-label="Técnico"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          </div>
+          <div className="auditoria-resumo">
+            <span>{dias ? plural(totalEventos) : ''}</span>
+            {comFiltro && (
+              <button type="button" className="auditoria-limpar" onClick={limparFiltros}>
+                Limpar filtros
+              </button>
+            )}
+          </div>
         </div>
-
-        <form className="auditoria-filtros" onSubmit={buscar}>
-          {/* Duas colunas: datas (De em cima de Até) e técnico em cima do Filtrar. */}
-          <label className="auditoria-filtro-de">
-            De
-            <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
-          </label>
-          <label className="auditoria-filtro-ate">
-            Até
-            <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
-          </label>
-          <label className="auditoria-filtro-tecnico">
-            Técnico
-            <input value={tecnico} onChange={(e) => setTecnico(e.target.value)} placeholder="Usuário" />
-          </label>
-          <button
-            className="botao botao-secundario auditoria-filtro-botao"
-            style={{ '--botao-cor': CORES.ferramentas } as CSSProperties}
-          >
-            Filtrar
-          </button>
-        </form>
 
         {erro && <p className="auditoria-erro">{erro}</p>}
         {!erro && carregando && !dias && (

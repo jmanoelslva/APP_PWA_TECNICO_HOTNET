@@ -4,60 +4,6 @@
   padding: 24px 20px 48px;
 }
 
-.auditoria-filtros {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas:
-    'de tecnico'
-    'ate botao';
-  gap: 10px;
-  align-items: end;
-  background: var(--cor-superficie);
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: var(--sombra-card);
-  margin-bottom: 16px;
-}
-
-.auditoria-filtros label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--cor-texto-terciario);
-}
-
-.auditoria-filtros input,
-.auditoria-filtros select {
-  height: 42px;
-  padding: 0 10px;
-  border-radius: 10px;
-  border: 1.5px solid var(--cor-borda);
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  font-size: 14px;
-  min-width: 0;
-}
-
-.auditoria-filtro-de {
-  grid-area: de;
-}
-
-.auditoria-filtro-ate {
-  grid-area: ate;
-}
-
-.auditoria-filtro-tecnico {
-  grid-area: tecnico;
-}
-
-.auditoria-filtro-botao {
-  grid-area: botao;
-}
-
-.auditoria-filtros .botao {
-  height: 42px;
-}
 
 .auditoria-erro {
   color: var(--cor-texto-secundario);
@@ -65,30 +11,6 @@
   padding: 24px 0;
 }
 
-.auditoria-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.auditoria-chip {
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1.5px solid var(--cor-borda);
-  background: var(--cor-superficie);
-  color: var(--cor-texto-secundario);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.auditoria-chip[aria-pressed='true'] {
-  border-color: var(--cor-ferramentas);
-  background: color-mix(in srgb, var(--cor-ferramentas) 14%, var(--cor-superficie));
-  color: var(--cor-texto);
-  font-weight: 600;
-}
 
 .auditoria-dia {
   margin-bottom: 18px;
@@ -224,4 +146,56 @@
   font-weight: 600;
   color: var(--cor-texto-secundario);
   overflow-wrap: anywhere;
+}
+
+/* Filtros: período em abas, ação e técnico no campo padrão, tudo aplicado
+   na hora (sem botão "Filtrar"). */
+.auditoria-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.auditoria-filtros .abas {
+  position: static;
+  margin-bottom: 0;
+}
+
+.auditoria-datas,
+.auditoria-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.auditoria-datas label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.auditoria-resumo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.auditoria-limpar {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--cor-primaria);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
 }

@@ -87,21 +87,7 @@
   justify-content: space-between;
 }
 
-.detalhe-cliente-contrato-toggle {
-  min-height: 44px;
-  width: 100%;
-  border: none;
-  background: transparent;
-  padding: 0;
-  color: var(--cor-texto-terciario);
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-}
 
-.detalhe-cliente-contrato-toggle strong {
-  color: var(--cor-texto);
-}
 
 .detalhe-cliente-btn-icone {
   border: none;

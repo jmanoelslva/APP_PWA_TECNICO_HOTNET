@@ -99,10 +99,20 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   faixa colorida à esquerda (na lista de OS ela fica só na atrasada, em
   vermelho); ícones Lucide também nos cabeçalhos, avisos vazios, atalhos
   do cliente e em "Minhas OS de hoje".
-- **Aba Roteador sem recolher:** Wi-Fi, acesso ao roteador e observação
-  ficam sempre abertos.
+- **Nada mais abre e fecha:** aba Roteador (Wi-Fi, acesso ao roteador e
+  observação), contratos do cliente e Cliente/Contrato/Histórico das
+  etapas na OS ficam sempre abertos, sem a seta.
 - **Aba Sinal da ONU mais compacta:** ONU e OLT num cartão só, lado a
-  lado, com valor, selo, barra e TX.
+  lado; o selo Bom/Limite/Crítico fica na linha do título e o valor e a
+  barra não quebram mais linha.
+- **Filtros da Auditoria:** período em abas (Tudo, Hoje, 7 dias, 30 dias,
+  Período — este mostra De/Até), tipo de ação numa lista agrupada (ONU,
+  Conexão, Cliente, OS) no lugar de 11 botões, técnico no campo padrão,
+  tudo aplicado na hora (sem "Filtrar"), com a contagem e "Limpar
+  filtros".
+- **Puxar para atualizar sem arrastar a tela:** uma bolinha com a seta
+  desce por cima do conteúdo e gira enquanto atualiza, como no Android;
+  a tela fica parada.
 - **Ferramentas:** Meu IP no cartão padrão e as ferramentas numa lista
   única com divisórias, textos maiores.
 - **Cliente:** contratos já abrem expandidos; Conexões, Contratos e

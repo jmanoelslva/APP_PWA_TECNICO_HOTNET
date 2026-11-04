@@ -1,5 +1,5 @@
 import type { OnuDto } from '../../api/client'
-import FaixaSinal from '../../components/FaixaSinal'
+import FaixaSinal, { ROTULO } from '../../components/FaixaSinal'
 import { nivelSinalOnu, type NivelSinal } from '../../utils/formatacao'
 import { nivelSinalOlt, TEXTO_SINAL } from './formato'
 
@@ -55,9 +55,16 @@ function ColunaSinal({
 }) {
   return (
     <section className="onu-sinal-coluna">
-      <h3>
-        {titulo} <small>RX</small>
-      </h3>
+      {/* Selo na linha do título: o valor fica sozinho na linha de baixo
+          e não quebra em tela estreita. */}
+      <div className="onu-sinal-coluna-topo">
+        <h3>
+          {titulo} <small>RX</small>
+        </h3>
+        {rx != null && nivel !== 'desconhecida' && (
+          <span className={`faixa-sinal-selo faixa-sinal-selo-${nivel}`}>{ROTULO[nivel]}</span>
+        )}
+      </div>
       {rx != null ? (
         <FaixaSinal compacta rx={rx} nivel={nivel} corteCritico={corteCritico} corteBom={corteBom} />
       ) : (

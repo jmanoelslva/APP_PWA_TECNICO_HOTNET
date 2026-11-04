@@ -136,3 +136,23 @@ export function agruparPorDia(eventos: EventoAuditoria[], agora = new Date()): D
 export function hora(quando: string): string {
   return quando.slice(11, 16)
 }
+
+export type PeriodoAuditoria = 'tudo' | 'hoje' | '7' | '30' | 'periodo'
+
+/**
+ * Datas "AAAA-MM-DD" (inclusivas) de um período rápido da Auditoria. "tudo"
+ * não filtra; "periodo" usa o que o técnico escolheu nos campos De/Até.
+ */
+export function datasDoPeriodo(
+  periodo: PeriodoAuditoria,
+  escolhido: { de: string; ate: string },
+  agora: Date = new Date(),
+): { de: string; ate: string } {
+  if (periodo === 'tudo') return { de: '', ate: '' }
+  if (periodo === 'periodo') return escolhido
+  const hoje = diaLocal(agora)
+  const dias = periodo === 'hoje' ? 0 : Number(periodo) - 1
+  const inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - dias)
+  return { de: diaLocal(inicio), ate: hoje }
+}
+

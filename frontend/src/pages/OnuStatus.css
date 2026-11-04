@@ -204,8 +204,16 @@
   min-width: 0;
 }
 
+.onu-sinal-coluna-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
 .onu-sinal-coluna h3 {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 15px;
   font-weight: 800;
   color: var(--cor-texto);

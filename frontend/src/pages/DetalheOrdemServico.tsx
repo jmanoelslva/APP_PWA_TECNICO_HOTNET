@@ -16,7 +16,6 @@ import {
   MdWifi,
 } from 'react-icons/md'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
-import SecaoRecolhivel from '../components/SecaoRecolhivel'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
 import PullToRefresh from '../components/PullToRefresh'
@@ -790,7 +789,8 @@ function DetalheOrdemServicoConteudo() {
 
             {aba === 'historico' && (
               <>
-                <SecaoRecolhivel abertaInicial className="detalhe-ordem-card" titulo="Cliente" resumo={osAtual.client_complete_name ?? undefined}>
+                <div className="detalhe-ordem-card">
+                  <h2>Cliente</h2>
                   <div className="detalhe-ordem-linha-campo">
                     <span>Nome</span>
                     {osAtual.client_pk ? (
@@ -810,9 +810,10 @@ function DetalheOrdemServicoConteudo() {
                       {/* Ligar/WhatsApp de cada número ficam no cabeçalho da OS. */}
                     </>
                   )}
-                </SecaoRecolhivel>
+                </div>
 
-                <SecaoRecolhivel abertaInicial className="detalhe-ordem-card" titulo="Contrato" resumo={(contrato?.contract_number ?? osAtual.contract_number)?.toString()}>
+                <div className="detalhe-ordem-card">
+                  <h2>Contrato</h2>
                   <div className="detalhe-ordem-linha-campo">
                     <span>Número</span>
                     <strong>{contrato?.contract_number ?? osAtual.contract_number ?? '—'}</strong>
@@ -825,9 +826,10 @@ function DetalheOrdemServicoConteudo() {
                     <span>Status</span>
                     <strong>{contrato?.contract_status != null ? formatarStatusContrato(contrato.contract_status) : '—'}</strong>
                   </div>
-                </SecaoRecolhivel>
+                </div>
 
-                <SecaoRecolhivel abertaInicial className="detalhe-ordem-card" titulo="Histórico das etapas" resumo={`${concluidas.filter(Boolean).length + 1} de ${ETAPAS.length + 1} etapas`}>
+                <div className="detalhe-ordem-card">
+                  <h2>Histórico das etapas</h2>
                   <div className="detalhe-ordem-etapa-item">
                     <div className="detalhe-ordem-etapa-item-texto">
                       <strong>Agendamento</strong>
@@ -876,7 +878,7 @@ function DetalheOrdemServicoConteudo() {
                       )
                     })
                   })()}
-                </SecaoRecolhivel>
+                </div>
               </>
             )}
 

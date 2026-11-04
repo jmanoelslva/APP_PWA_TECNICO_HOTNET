@@ -101,8 +101,7 @@
 }
 
 .faixa-sinal-compacta .faixa-sinal-topo {
-  flex-wrap: wrap;
-  gap: 6px;
+  white-space: nowrap;
 }
 
 .faixa-sinal-compacta .faixa-sinal-valor {
@@ -113,7 +112,8 @@
   font-size: 13px;
 }
 
-.faixa-sinal-compacta .faixa-sinal-selo {
+.faixa-sinal-compacta .faixa-sinal-selo,
+.onu-sinal-coluna .faixa-sinal-selo {
   margin-left: 0;
   padding: 3px 9px;
   font-size: 12px;
