@@ -517,9 +517,13 @@ a:active,
 
 /* --- Toque como app nativo ------------------------------------------------ */
 html {
-  /* Sem o realce azul do navegador ao tocar e sem zoom no toque duplo. */
+  /* Sem o realce do navegador ao tocar e sem zoom (pinça ou toque duplo)
+     na tela, como num app nativo — o iPhone ignora user-scalable=no do
+     viewport, por isso o touch-action também. O mapa da CTO (Leaflet) tem
+     touch-action próprio e faz a pinça por conta dele, então segue com
+     zoom. */
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
 }
 
 /* Botões, abas, rótulos e títulos não selecionam texto ao segurar o dedo

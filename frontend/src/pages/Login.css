@@ -49,9 +49,16 @@
 }
 
 .login-marca-logo {
-  width: 96px;
-  height: 96px;
-  border-radius: 22px;
+  /* O desenho do técnico tem fundo transparente e some sobre a faixa
+     laranja: vai num quadro branco, como um ícone de app. */
+  box-sizing: border-box;
+  width: 104px;
+  height: 104px;
+  padding: 8px;
+  border-radius: 26px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  object-fit: contain;
   margin-bottom: 12px;
 }
 

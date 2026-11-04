@@ -43,13 +43,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - Troca de tela deslizando inteira pela direita (e de volta pela
     esquerda), como no Android.
   - Barra fixa no topo das telas internas (OS, chamado, cliente,
-    Financeiro, busca, Offline, Ferramentas e Auditoria) com a seta de
-    voltar, que volta para a tela de onde se veio.
+    Financeiro, busca e Auditoria) com a seta de voltar, que volta para a
+    tela de onde se veio.
   - Janelas que sobem de baixo fecham ao arrastar para baixo; a de
     confirmar etapa da OS também passou a subir de baixo.
   - Botões afundam de leve ao tocar; sem realce azul do navegador, sem
-    zoom no toque duplo, sem seleção de texto em botões e títulos e sem
-    barra de rolagem.
+    zoom na tela (pinça ou toque duplo — o mapa da CTO continua com zoom),
+    sem seleção de texto em botões e títulos e sem barra de rolagem.
   - Avisos no rodapé, logo acima da barra de baixo, em fundo escuro.
   - Abertura do app na cor da marca.
 
@@ -83,8 +83,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Contraste corrigido:** verde de OS, dourado do Financeiro e vermelho
   de Offline escurecidos para passar no mínimo de leitura (4,5:1) sobre o
   branco, assim como o "Enviado" dos anexos.
-- **Login:** formulário como folha clara sobre a faixa da marca, logo e
-  nome centralizados, campos e botão maiores.
+- **Login:** formulário como folha clara sobre a faixa da marca, logo do
+  técnico num quadro branco e centralizado com o nome, campos e botão
+  maiores.
 - **Início sem atalhos duplicados:** Conexão e ONU saíram da grade, já que
   estão na barra de baixo.
 - **Abas da Conexão reorganizadas:** Resumo, Roteador (Wi-Fi, acesso ao
