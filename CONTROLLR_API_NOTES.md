@@ -793,3 +793,17 @@ trecho de CPF virava busca por número de contrato — não achava nada. Hoje
 `/clientes/busca` faz o mesmo ILIKE (só números e, para CPF/CNPJ
 completo, também com a máscara) e, para números a partir de 4 dígitos,
 busca documento e contrato ao mesmo tempo.
+
+Contrato (`/controllrctl/contract/list`, mesmo dia): o painel busca
+`contract_number` com **igualdade** (oper 5) e o número como **inteiro**,
+mais `contract_status IN [1,2,3,4,5]` (oper 21):
+
+```json
+[{"field":"contract_status","oper":21,"value":[1,2,3,4,5]},{"field":"AND"},
+ {"field":"contract_number","oper":5,"value":550}]
+```
+
+`contract_number` é numérico — zero à esquerda não existe nele. O app
+não aplica o filtro de `contract_status` (o técnico pode precisar achar o
+cliente por um contrato cancelado); o filtro de cliente habilitado vem
+depois, em `/clientes/busca`.
