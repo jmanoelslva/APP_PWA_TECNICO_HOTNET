@@ -285,10 +285,33 @@
   text-decoration: none;
 }
 
-/* Abertas/Atrasadas são links: seta discreta indica que dá para tocar. */
-a.home-numero span::after {
-  content: ' ›';
-  font-weight: 800;
+/* Abertas/Atrasadas são botões: cartão claro sólido, número na cor da
+   marca e seta — o "Concluídas" (só informação) fica translúcido. */
+a.home-numero {
+  position: relative;
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+a.home-numero strong {
+  color: var(--cor-primaria-escura);
+}
+
+:root[data-theme='dark'] a.home-numero strong {
+  color: var(--cor-primaria-clara);
+}
+
+a.home-numero span {
+  opacity: 1;
+  color: var(--cor-texto-secundario);
+}
+
+.home-numero-seta {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  color: var(--cor-texto-secundario);
 }
 
 .home-numero strong {
@@ -308,6 +331,20 @@ a.home-numero span::after {
 :root[data-sol='1'] .home-numero {
   background: var(--cor-fundo);
   border: 1.5px solid var(--cor-borda);
+}
+
+:root[data-sol='1'] a.home-numero {
+  background: var(--cor-superficie);
+  border-color: var(--cor-texto);
+  box-shadow: none;
+}
+
+/* Modo sol: a faixa fica branca — o avatar translúcido com letras brancas
+   sumia. Círculo cheio na cor da marca. */
+:root[data-sol='1'] .home-avatar {
+  background: var(--cor-primaria-escura);
+  border-color: var(--cor-primaria-escura);
+  color: var(--cor-branco-fixo);
 }
 
 /* Quantidade no atalho (ex.: clientes offline agora). */

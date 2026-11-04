@@ -9,9 +9,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
-- **Números do dia clicáveis no Início:** Abertas e Atrasadas abrem a
-  tela de OS já filtrada (Concluídas não tem lista: a tela de OS só traz
+- **Números do dia clicáveis no Início:** Abertas e Atrasadas viram
+  botões (cartão claro, número na cor da marca e seta) que abrem a tela de
+  OS já filtrada; Concluídas segue só como número (a tela de OS só traz
   OS em aberto).
+
+### Corrigido
+
+- **Modo sol:** as iniciais do avatar no Início sumiam (letras brancas
+  sobre a faixa que fica branca); agora o avatar é um círculo cheio na cor
+  da marca.
 
 ### Alterado
 
