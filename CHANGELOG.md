@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.22.0] - 2026-11-04
+
 ### Adicionado
 
 - **Números do dia em destaque e clicáveis no Início:** Abertas,
@@ -18,17 +20,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   Clientes offline ("N offline agora"), Ferramentas e OLTs (se
   instalado). "OS / Suporte" saiu: já está na barra de baixo.
 
-### Corrigido
-
-- **Modo sol:** as iniciais do avatar no Início sumiam (letras brancas
-  sobre a faixa que fica branca); agora o avatar é um círculo cheio na cor
-  da marca.
-
 ### Alterado
 
 - **Filtro "Hoje" da tela de OS:** passa a mostrar o trabalho de hoje —
   as agendadas para hoje e as de dias anteriores ainda em aberto —, a
   mesma conta de "Abertas" no Início.
+
+### Corrigido
+
+- **Modo sol:** as iniciais do avatar no Início sumiam (letras brancas
+  sobre a faixa que fica branca); agora o avatar é um círculo cheio na cor
+  da marca.
 
 ## [1.21.0] - 2026-11-04
 
@@ -797,6 +799,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.22.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.3...v1.20.0
 [1.19.3]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.3
