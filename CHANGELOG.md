@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.19.3] - 2026-11-04
+
+### Alterado
+
+- **Tela da ONU:** saiu o título "Ações que derrubam o cliente" acima de
+  Reiniciar e Remover. A confirmação por deslizar continua.
+
 ## [1.19.2] - 2026-11-04
 
 ### Corrigido
@@ -622,6 +629,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.19.3]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.2...v1.19.3
 [1.19.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.1...v1.19.2
 [1.19.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.0...v1.19.1
 [1.19.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.0
