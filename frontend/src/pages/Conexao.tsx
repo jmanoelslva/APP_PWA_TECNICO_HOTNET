@@ -267,6 +267,8 @@ export default function Conexao() {
 
             {aba === 'resumo' && (
               <>
+                {/* Sinal da ONU primeiro: é o que o técnico confere antes de tudo. */}
+                <CardOnuResumo onu={onuResumo} carregando={carregandoOnuResumo} username={cpe.username} />
                 <CardPppoe cpe={cpe} />
                 <CardSessaoOnline
                   sessao={sessao}
@@ -274,7 +276,6 @@ export default function Conexao() {
                   lidaEm={sessaoLidaEm}
                   onAtualizar={() => cpe.pk != null && carregarSessaoOnline(cpe.pk)}
                 />
-                <CardOnuResumo onu={onuResumo} carregando={carregandoOnuResumo} username={cpe.username} />
               </>
             )}
             {aba === 'roteador' && (

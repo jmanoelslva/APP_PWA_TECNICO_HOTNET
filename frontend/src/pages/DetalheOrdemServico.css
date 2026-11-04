@@ -474,16 +474,16 @@
 .detalhe-ordem-passos li {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  font-size: 11px;
+  gap: 6px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--cor-texto-terciario);
 }
 
 .detalhe-ordem-passos li::before {
   content: '';
-  height: 5px;
-  border-radius: 3px;
+  height: 6px;
+  border-radius: 999px;
   background: var(--cor-borda);
 }
 

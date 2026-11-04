@@ -4,11 +4,13 @@
 
 .home-cabecalho {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  padding: 18px 18px 20px;
-  margin-bottom: 16px;
-  border-radius: 20px;
+  /* De borda a borda (anula o recuo de .home-conteudo), com espaço embaixo
+     para a busca subir por cima da faixa. */
+  margin: -24px -20px 0;
+  padding: calc(28px + env(safe-area-inset-top, 0px)) 20px 48px;
+  border-radius: 0 0 24px 24px;
   /* Faixa escura da identidade (mesma do login), nos dois temas. */
   background: var(--cor-marca-escura);
   color: var(--cor-branco-fixo);
@@ -28,7 +30,8 @@
 
 .home-saudacao {
   display: block;
-  font-size: 22px;
+  margin-top: 4px;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: inherit;
@@ -113,8 +116,11 @@
   padding: 24px 20px 48px;
 }
 
+/* Sobe por cima da faixa escura do cabeçalho. */
 .home-busca {
-  margin-bottom: 16px;
+  position: relative;
+  z-index: 3;
+  margin: -28px 0 16px;
 }
 
 .home-combobox {
@@ -139,9 +145,9 @@
   height: 52px;
   padding: 0 16px 0 42px;
   border-radius: 14px;
-  border: 1.5px solid var(--cor-borda);
+  border: 1px solid var(--cor-borda);
   background: var(--cor-superficie);
-  box-shadow: var(--sombra-card);
+  box-shadow: 0 6px 20px rgba(15, 42, 68, 0.14);
   color: var(--cor-texto);
   font-size: 16px;
 }
@@ -232,9 +238,9 @@
 /* Progresso do dia: OS concluídas (finalizadas ou fechadas) / agendadas. */
 .home-progresso {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-top: 10px;
+  flex-direction: column-reverse;
+  gap: 8px;
+  margin-top: 16px;
 }
 
 .home-progresso-trilho {

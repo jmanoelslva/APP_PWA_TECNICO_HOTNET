@@ -21,7 +21,7 @@ import {
   type CpeDto,
   type OnuDto,
 } from '../api/client'
-import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
+import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento, iniciais } from '../utils/formatacao'
 import { lerRecentes, type ClienteRecente } from '../utils/buscaUnica'
 import { assinaturaNovidades, deveMostrarNovidades, marcarNovidadesVistas } from '../utils/novidades'
 import './Home.css'
@@ -41,13 +41,6 @@ const ITENS_MENU = [
   { to: '/offline', Icone: MdWifiOff, cor: CORES.offline, label: 'Clientes Offline' },
   { to: '/ferramentas', Icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
-
-/** "JM" de "jmanoelslva"; "MS" de "maria.silva" (partes separadas por . _ - ou espaço). */
-function iniciais(usuario: string | undefined): string {
-  const partes = (usuario ?? '').split(/[.\s_-]+/).filter(Boolean)
-  if (partes.length >= 2) return (partes[0][0] + partes[1][0]).toUpperCase()
-  return (partes[0] ?? '?').slice(0, 2).toUpperCase()
-}
 
 // Clientes abertos por último no Início (a lista completa, com "Limpar",
 // fica na busca de clientes).
@@ -187,8 +180,8 @@ export default function Home() {
         <div className="home-conteudo">
           <header className="home-cabecalho">
             <div className="home-header-saudacao">
-              <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
               <span className="home-resumo">{textoResumo(resumoDia)}</span>
+              <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
               {progresso && progresso.total > 0 && (
                 <div className="home-progresso">
                   <div

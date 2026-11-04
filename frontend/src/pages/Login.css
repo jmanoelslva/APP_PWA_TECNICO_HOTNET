@@ -65,9 +65,9 @@
 }
 
 .login-marca-logo {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
   margin-bottom: 12px;
 }
 
@@ -77,13 +77,6 @@
   letter-spacing: -0.02em;
   color: var(--cor-branco-fixo);
   line-height: 1.1;
-}
-
-.login-marca-sub {
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.45;
-  color: #b7c8dc;
 }
 
 .login-lembrar {

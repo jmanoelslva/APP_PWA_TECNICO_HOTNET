@@ -33,9 +33,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Identidade visual nova:** ícone do app com o monograma HN, faixa azul
-  escura no login e no Início, botões em cor sólida e IBM Plex Mono
-  (servida pelo próprio app) em serial, MAC, PPPoE e senha.
+- **Identidade visual nova:** faixa azul escura no login e no Início (de
+  borda a borda, com a busca por cima), botões em cor sólida e IBM Plex
+  Mono (servida pelo próprio app) em serial, MAC, PPPoE e senha. O ícone
+  do app continua o mesmo.
+- **Telas internas:** cabeçalho sem caixa colorida (ícone num selo e
+  título maior), barra de baixo com destaque só atrás do ícone, próxima OS
+  em cartão branco com "Abrir OS" em destaque, menu com avatar e sinal da
+  ONU no topo do Resumo da Conexão.
 - **Contraste corrigido:** verde de OS, dourado do Financeiro e vermelho
   de Offline escurecidos para passar no mínimo de leitura (4,5:1) sobre o
   branco, assim como o "Enviado" dos anexos.

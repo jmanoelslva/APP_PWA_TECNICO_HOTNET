@@ -47,6 +47,25 @@
   color: var(--cor-texto);
 }
 
+.folha-config-perfil {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.folha-config-avatar {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--cor-primaria-escura);
+  color: var(--cor-branco-fixo);
+  font-size: 18px;
+  font-weight: 800;
+}
+
 .folha-config-usuario {
   margin: 2px 0 0;
   font-size: 13px;

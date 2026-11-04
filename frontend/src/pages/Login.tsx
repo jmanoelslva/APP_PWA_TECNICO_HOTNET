@@ -162,9 +162,8 @@ export default function Login() {
       </button>
 
       <div className="login-marca">
-        <img className="login-marca-logo" src="/icons/icon-192.png" alt="" />
+        <img className="login-marca-logo" src="/icons/icon-512.png" alt="" />
         <strong>HOTNET Técnico</strong>
-        <span className="login-marca-sub">Entre com o mesmo usuário e senha do Controllr.</span>
       </div>
 
       <div className="login-card">

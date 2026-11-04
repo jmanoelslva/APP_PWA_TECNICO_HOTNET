@@ -3,18 +3,16 @@
 .cabecalho-tela {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 16px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid transparent;
+  padding: 4px 0;
 }
 
 .cabecalho-tela-icone {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -27,14 +25,16 @@
 
 .cabecalho-tela h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
+  letter-spacing: -0.01em;
   line-height: 1.2;
+  color: var(--cor-texto);
 }
 
 .cabecalho-tela p {
-  margin: 1px 0 0;
-  color: var(--cor-texto-terciario);
-  font-size: 12px;
+  margin: 2px 0 0;
+  color: var(--cor-texto-secundario);
+  font-size: 14px;
   line-height: 1.3;
 }

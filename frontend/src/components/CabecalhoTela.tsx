@@ -1,5 +1,5 @@
 import type { IconType } from 'react-icons'
-import { CORES, comAlpha } from '../utils/cores'
+import { comAlpha } from '../utils/cores'
 import './CabecalhoTela.css'
 
 interface Props {
@@ -9,15 +9,15 @@ interface Props {
   subtitulo: string
 }
 
-/** Cabeçalho padrão das telas internas: ícone colorido + título na mesma cor. */
+/** Cabeçalho padrão das telas internas: ícone num selo na cor da área + título. */
 export default function CabecalhoTela({ icone: Icone, cor, titulo, subtitulo }: Props) {
   return (
-    <header className="cabecalho-tela" style={{ background: comAlpha(cor, 8), borderColor: comAlpha(cor, 20) }}>
-      <span className="cabecalho-tela-icone" style={{ background: cor }}>
-        <Icone size={24} color={CORES.branco} />
+    <header className="cabecalho-tela">
+      <span className="cabecalho-tela-icone" style={{ background: comAlpha(cor, 14), color: cor }}>
+        <Icone size={24} />
       </span>
       <div>
-        <h1 style={{ color: cor }}>{titulo}</h1>
+        <h1>{titulo}</h1>
         <p>{subtitulo}</p>
       </div>
     </header>

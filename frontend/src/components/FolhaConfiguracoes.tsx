@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { MdFormatSize, MdGetApp, MdLogout, MdNewReleases, MdNotificationsActive, MdWbSunny } from 'react-icons/md'
 import { useTema } from '../hooks/useTema'
 import type { EscolhaTema } from '../utils/tema'
+import { iniciais } from '../utils/formatacao'
 import { temNovidades } from './ModalNovidades'
 import type { useAvisos } from '../hooks/useAvisos'
 import './FolhaConfiguracoes.css'
@@ -86,8 +87,15 @@ export default function FolhaConfiguracoes({
         aria-label="Configurações"
         onClick={(evento) => evento.stopPropagation()}
       >
-        <h2>Configurações</h2>
-        {usuario && <p className="folha-config-usuario">Conectado como {usuario}</p>}
+        <div className="folha-config-perfil">
+          <span className="folha-config-avatar" aria-hidden="true">
+            {iniciais(usuario)}
+          </span>
+          <div>
+            <h2>Configurações</h2>
+            {usuario && <p className="folha-config-usuario">Conectado como {usuario}</p>}
+          </div>
+        </div>
 
         <h3 id="folha-config-tema">Aparência</h3>
         {/* Automático segue o tema do celular (claro de dia, escuro à noite). */}

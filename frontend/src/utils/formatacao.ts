@@ -99,6 +99,13 @@ export function detectarTipoBusca(valor: string): { doc?: string; contrato?: num
   return { nome: termo }
 }
 
+/** "JM" de "jmanoelslva"; "MS" de "maria.silva" (partes separadas por . _ - ou espaço). */
+export function iniciais(usuario: string | undefined): string {
+  const partes = (usuario ?? '').split(/[.\s_-]+/).filter(Boolean)
+  if (partes.length >= 2) return (partes[0][0] + partes[1][0]).toUpperCase()
+  return (partes[0] ?? '?').slice(0, 2).toUpperCase()
+}
+
 export type NivelSinal = 'boa' | 'alerta' | 'critica' | 'desconhecida'
 
 /**

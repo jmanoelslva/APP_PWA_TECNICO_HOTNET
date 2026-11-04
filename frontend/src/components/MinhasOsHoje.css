@@ -7,9 +7,9 @@
   align-items: center;
   gap: 8px;
   margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--cor-texto);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
 }
 
 .minhas-os-contagem {
@@ -27,23 +27,22 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 16px;
+  padding: 4px 8px 4px 16px;
   border-radius: 16px;
   background: var(--cor-superficie);
-  box-shadow: var(--sombra-card);
-  font-size: 13px;
-  color: var(--cor-texto-terciario);
+  border: 1px solid var(--cor-borda);
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
 }
 
 .minhas-os-proxima {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 14px 16px;
+  padding: 16px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--cor-suporte) 8%, var(--cor-superficie));
-  border: 1.5px solid color-mix(in srgb, var(--cor-suporte) 35%, transparent);
-  box-shadow: var(--sombra-card);
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
 }
 
 .minhas-os-proxima-topo {
@@ -53,7 +52,7 @@
 }
 
 .minhas-os-rotulo {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -78,13 +77,15 @@
 }
 
 .minhas-os-tipo {
-  font-size: 15px;
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--cor-texto);
 }
 
 .minhas-os-cliente,
 .minhas-os-endereco {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--cor-texto-secundario);
   overflow-wrap: anywhere;
 }
@@ -105,13 +106,13 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 42px;
-  padding: 0 10px;
+  min-height: 48px;
+  padding: 0 12px;
   border-radius: 12px;
-  border: 1.5px solid color-mix(in srgb, var(--cor-suporte) 45%, transparent);
+  border: 1.5px solid var(--cor-borda);
   background: var(--cor-superficie);
-  color: var(--cor-suporte);
-  font-size: 13px;
+  color: var(--cor-texto);
+  font-size: 15px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -121,7 +122,7 @@
   /* Só o ícone: com os outros três botões, o texto não cabe numa linha. */
   --cor-whatsapp: #1fa855;
   flex: 0 0 auto;
-  width: 42px;
+  width: 48px;
   padding: 0;
   border-color: color-mix(in srgb, var(--cor-whatsapp) 45%, transparent);
   color: var(--cor-whatsapp);
@@ -131,7 +132,11 @@
   --cor-whatsapp: #3fd27a;
 }
 
+/* Abrir OS: linha inteira em cima, no alcance do polegar. */
 .minhas-os-acao-principal {
+  order: -1;
+  flex: 1 1 100%;
+  min-height: 52px;
   background: var(--cor-suporte);
   border-color: var(--cor-suporte);
   color: var(--cor-fundo);
@@ -143,7 +148,7 @@
   padding: 0;
   border-radius: 16px;
   background: var(--cor-superficie);
-  box-shadow: var(--sombra-card);
+  border: 1px solid var(--cor-borda);
   overflow: hidden;
 }
 
@@ -156,6 +161,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
+  min-height: 56px;
   padding: 10px 16px;
   border: none;
   background: transparent;
