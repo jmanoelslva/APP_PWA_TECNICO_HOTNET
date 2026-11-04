@@ -1,17 +1,15 @@
 import { useState, type CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MdBuild, MdCable, MdHome, MdLogout, MdSearch, MdWifi } from 'react-icons/md'
+import { MdBuild, MdCable, MdHome, MdLogout, MdWifi } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import ModalConfirmarLogout from './ModalConfirmarLogout'
 import './BottomNav.css'
 
-// "Buscar" é a busca única (BuscaCliente.tsx): cliente por nome/contrato/
-// CPF e atalho direto para ONU (serial) ou conexão (login PPPoE), de
-// qualquer tela, sem voltar à Home.
+// Sem "Buscar" de propósito: a busca geral é o campo do topo da Home
+// (cliente, serial da ONU e PPPoE) — um item aqui só a repetia.
 const ITENS = [
   { to: '/', icone: MdHome, cor: CORES.primaria, label: 'Início', fim: true },
-  { to: '/clientes', icone: MdSearch, cor: CORES.cliente, label: 'Buscar' },
   { to: '/suporte', icone: MdBuild, cor: CORES.suporte, label: 'OS' },
   { to: '/conexao', icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
   { to: '/onu', icone: MdCable, cor: CORES.onu, label: 'ONU' },

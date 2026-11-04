@@ -26,7 +26,15 @@ import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
 import MinhasOsHoje, { type ResumoDoDia } from '../components/MinhasOsHoje'
 import PullToRefresh from '../components/PullToRefresh'
-import { buscarClientes, resumoDoDia, type BuscaClienteResultado } from '../api/client'
+import {
+  buscarClientes,
+  buscarCpe,
+  buscarOnu,
+  resumoDoDia,
+  type BuscaClienteResultado,
+  type CpeDto,
+  type OnuDto,
+} from '../api/client'
 import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import { buscarIpsPublicos } from '../utils/ipPublico'
 import './Home.css'
@@ -96,7 +104,11 @@ export default function Home() {
   // sozinho; Enter no campo ainda leva para tela de busca completa, útil
   // quando há muitos resultados para rolar.
   const [busca, setBusca] = useState('')
+  // Busca geral: cliente + ONU pelo serial (prefixo) + conexão pelo
+  // usuário PPPoE, em paralelo. Texto com espaço é nome: só cliente.
   const [resultadosBusca, setResultadosBusca] = useState<BuscaClienteResultado[]>([])
+  const [onusBusca, setOnusBusca] = useState<OnuDto[]>([])
+  const [conexoesBusca, setConexoesBusca] = useState<CpeDto[]>([])
   const [buscando, setBuscando] = useState(false)
   const [listaAberta, setListaAberta] = useState(false)
 
@@ -134,19 +146,27 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    if (busca.trim().length < 2) {
+    const termo = busca.trim()
+    if (termo.length < 2) {
       setResultadosBusca([])
+      setOnusBusca([])
+      setConexoesBusca([])
       return
     }
     let cancelado = false
     setBuscando(true)
     const temporizador = setTimeout(() => {
-      buscarClientes(detectarTipoBusca(busca))
-        .then((resposta) => {
-          if (!cancelado) setResultadosBusca(resposta.results)
-        })
-        .catch(() => {
-          if (!cancelado) setResultadosBusca([])
+      const semEspaco = !/\s/.test(termo)
+      Promise.allSettled([
+        buscarClientes(detectarTipoBusca(termo)),
+        semEspaco ? buscarOnu({ serial: termo }) : Promise.resolve({ results: [] as OnuDto[] }),
+        semEspaco ? buscarCpe({ username: termo }) : Promise.resolve({ results: [] as CpeDto[] }),
+      ])
+        .then(([clientes, onus, conexoes]) => {
+          if (cancelado) return
+          setResultadosBusca(clientes.status === 'fulfilled' ? clientes.value.results : [])
+          setOnusBusca(onus.status === 'fulfilled' ? onus.value.results : [])
+          setConexoesBusca(conexoes.status === 'fulfilled' ? conexoes.value.results : [])
         })
         .finally(() => {
           if (!cancelado) setBuscando(false)
@@ -283,15 +303,56 @@ export default function Home() {
                 onChange={(e) => setBusca(e.target.value)}
                 onFocus={() => setListaAberta(true)}
                 onBlur={() => setTimeout(() => setListaAberta(false), 150)}
-                placeholder="Cliente: nome, contrato ou CPF/CNPJ"
+                placeholder="Cliente, contrato, CPF, serial da ONU ou PPPoE"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
             </div>
             {listaAberta && busca.trim().length >= 2 && (
               <ul className="home-combobox-lista">
                 {buscando && <li className="home-combobox-vazio">Buscando…</li>}
-                {!buscando && resultadosBusca.length === 0 && (
-                  <li className="home-combobox-vazio">Nenhum cliente encontrado.</li>
+                {!buscando && resultadosBusca.length + onusBusca.length + conexoesBusca.length === 0 && (
+                  <li className="home-combobox-vazio">Nada encontrado.</li>
                 )}
+                {!buscando &&
+                  onusBusca.map((onu) => (
+                    <li key={`onu-${onu.pk}`}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setListaAberta(false)
+                          navigate(`/onu?serial=${encodeURIComponent(onu.sn ?? '')}`, { viewTransition: true })
+                        }}
+                      >
+                        <span className="home-combobox-tipo" style={{ color: CORES.onu }}>
+                          ONU
+                        </span>
+                        <strong>{onu.sn ?? `ONU #${onu.pk}`}</strong>
+                        {onu.client_name && ` — ${onu.client_name}`}
+                      </button>
+                    </li>
+                  ))}
+                {!buscando &&
+                  conexoesBusca.map((cpe) => (
+                    <li key={`cpe-${cpe.pk}`}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setListaAberta(false)
+                          navigate(`/conexao?cpe_pk=${cpe.pk}`, { viewTransition: true })
+                        }}
+                      >
+                        <span className="home-combobox-tipo" style={{ color: CORES.conexao }}>
+                          PPPoE
+                        </span>
+                        <strong>{cpe.username ?? `Conexão #${cpe.pk}`}</strong>
+                        {cpe.client_complete_name && ` — ${cpe.client_complete_name}`}
+                      </button>
+                    </li>
+                  ))}
                 {!buscando &&
                   resultadosBusca.map((resultado) => (
                     <li key={resultado.client_pk}>

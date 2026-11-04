@@ -9,8 +9,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Busca geral:** a tela abre sem abrir o teclado sozinha; o teclado só
-  aparece ao tocar no campo.
+- **Busca geral só na tela inicial:** o item "Buscar" saiu da barra de
+  navegação, porque repetia o campo da tela inicial. Esse campo agora acha
+  também a ONU pelo serial e a conexão pelo usuário PPPoE, além do
+  cliente. Enter continua abrindo a lista completa, que não abre mais o
+  teclado sozinha.
 
 ## [1.19.3] - 2026-11-04
 
