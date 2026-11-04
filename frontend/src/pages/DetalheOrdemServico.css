@@ -198,7 +198,7 @@
 .detalhe-ordem-campo-valor strong {
   flex: 1;
   min-width: 0;
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--fonte-mono);
   font-size: 13px;
 }
 
@@ -348,8 +348,66 @@
   color: var(--cor-texto-secundario);
 }
 
+/* --cor-sucesso (não o "vivo", 2,5:1 sobre branco): texto legível no sol. */
 .detalhe-ordem-anexo-enviado .detalhe-ordem-anexo-situacao {
-  color: var(--cor-sucesso-vivo);
+  color: var(--cor-sucesso);
+}
+
+/* Na fila (sem sinal): aviso, não erro. */
+.detalhe-ordem-anexo-fila .detalhe-ordem-anexo-situacao {
+  color: var(--cor-texto-secundario);
+  font-weight: 700;
+}
+
+.detalhe-ordem-anexo-botoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.detalhe-ordem-anexo-botoes .botao {
+  min-height: 52px;
+}
+
+/* Checklist de saída. */
+.detalhe-ordem-checklist {
+  display: flex;
+  flex-direction: column;
+}
+
+.detalhe-ordem-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  font-size: 15px;
+  color: var(--cor-texto);
+  cursor: pointer;
+}
+
+.detalhe-ordem-checklist label + label {
+  border-top: 1px solid var(--cor-borda-suave);
+}
+
+.detalhe-ordem-checklist input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--cor-suporte);
+}
+
+.detalhe-ordem-checklist small {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+.detalhe-ordem-checklist-contagem {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+  font-variant-numeric: tabular-nums;
 }
 
 .detalhe-ordem-anexo-erro .detalhe-ordem-anexo-situacao {

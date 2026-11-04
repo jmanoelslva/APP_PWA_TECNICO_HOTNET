@@ -7,6 +7,11 @@ export default defineConfig({
   // (usado em StatusBanners.tsx) existir como módulo resolvível — o teste
   // mocka o hook em si (vi.mock), não depende do plugin gerar nada de verdade.
   plugins: [react(), VitePWA({ injectRegister: false })],
+  // Constantes que o vite.config.ts injeta no build.
+  define: {
+    __APP_VERSION__: JSON.stringify('0.0.0-teste'),
+    __NOVIDADES__: 'null',
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

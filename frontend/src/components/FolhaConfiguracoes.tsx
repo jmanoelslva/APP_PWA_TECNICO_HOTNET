@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
-import { MdDarkMode, MdGetApp, MdLogout, MdNotificationsActive, MdWbSunny } from 'react-icons/md'
+import { MdFormatSize, MdGetApp, MdLogout, MdNewReleases, MdNotificationsActive, MdWbSunny } from 'react-icons/md'
 import { useTema } from '../hooks/useTema'
+import type { EscolhaTema } from '../utils/tema'
+import { temNovidades } from './ModalNovidades'
 import type { useAvisos } from '../hooks/useAvisos'
 import './FolhaConfiguracoes.css'
 
@@ -38,6 +40,12 @@ function Interruptor({
   )
 }
 
+const OPCOES_TEMA: { valor: EscolhaTema; rotulo: string }[] = [
+  { valor: 'light', rotulo: 'Claro' },
+  { valor: 'dark', rotulo: 'Escuro' },
+  { valor: 'auto', rotulo: 'Automático' },
+]
+
 /**
  * Configurações do app (abre pelo avatar da tela inicial): aparência,
  * avisos de OS, instalar e sair, com a versão no rodapé. Substitui o menu
@@ -50,6 +58,7 @@ export default function FolhaConfiguracoes({
   dicaAvisos,
   podeInstalar,
   onInstalar,
+  onNovidades,
   onSair,
   onFechar,
 }: {
@@ -59,10 +68,11 @@ export default function FolhaConfiguracoes({
   dicaAvisos: string | null
   podeInstalar: boolean
   onInstalar: () => void
+  onNovidades: () => void
   onSair: () => void
   onFechar: () => void
 }) {
-  const { tema, alternarTema, sol, alternarSol } = useTema()
+  const { escolha, escolherTema, sol, alternarSol, grande, alternarTextoGrande } = useTema()
   if (!aberto) return null
   const avisosLigados = avisos.estado === 'ligado'
   const mostrarAvisos = avisos.estado !== 'indisponivel' && avisos.estado !== 'carregando'
@@ -79,15 +89,36 @@ export default function FolhaConfiguracoes({
         <h2>Configurações</h2>
         {usuario && <p className="folha-config-usuario">Conectado como {usuario}</p>}
 
-        <h3>Aparência</h3>
+        <h3 id="folha-config-tema">Aparência</h3>
+        {/* Automático segue o tema do celular (claro de dia, escuro à noite). */}
+        <div className="folha-config-segmentos" role="radiogroup" aria-labelledby="folha-config-tema">
+          {OPCOES_TEMA.map((opcao) => (
+            <button
+              key={opcao.valor}
+              type="button"
+              role="radio"
+              aria-checked={escolha === opcao.valor}
+              className="folha-config-segmento"
+              onClick={() => escolherTema(opcao.valor)}
+            >
+              {opcao.rotulo}
+            </button>
+          ))}
+        </div>
         <div className="folha-config-grupo">
-          <Interruptor icone={<MdDarkMode size={20} />} titulo="Tema escuro" ligado={tema === 'dark'} onAlternar={alternarTema} />
           <Interruptor
             icone={<MdWbSunny size={20} />}
             titulo="Modo sol"
             dica="Alto contraste para tela no sol"
             ligado={sol}
             onAlternar={alternarSol}
+          />
+          <Interruptor
+            icone={<MdFormatSize size={20} />}
+            titulo="Texto grande"
+            dica="Amplia todo o app"
+            ligado={grande}
+            onAlternar={alternarTextoGrande}
           />
         </div>
 
@@ -110,15 +141,28 @@ export default function FolhaConfiguracoes({
           </>
         )}
 
+        {(podeInstalar || temNovidades()) && (
+          <div className="folha-config-grupo folha-config-acoes">
+            {podeInstalar && (
+              <button type="button" className="folha-config-linha" onClick={onInstalar}>
+                <span className="folha-config-icone">
+                  <MdGetApp size={20} />
+                </span>
+                <span className="folha-config-texto">Instalar app na tela inicial</span>
+              </button>
+            )}
+            {temNovidades() && (
+              <button type="button" className="folha-config-linha" onClick={onNovidades}>
+                <span className="folha-config-icone">
+                  <MdNewReleases size={20} />
+                </span>
+                <span className="folha-config-texto">Novidades desta versão</span>
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="folha-config-grupo folha-config-acoes">
-          {podeInstalar && (
-            <button type="button" className="folha-config-linha" onClick={onInstalar}>
-              <span className="folha-config-icone">
-                <MdGetApp size={20} />
-              </span>
-              <span className="folha-config-texto">Instalar app na tela inicial</span>
-            </button>
-          )}
           <button type="button" className="folha-config-linha folha-config-sair" onClick={onSair}>
             <span className="folha-config-icone">
               <MdLogout size={20} />

@@ -6,10 +6,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 18px 18px 20px;
   margin-bottom: 16px;
   border-radius: 20px;
-  border: 1px solid transparent;
+  /* Faixa escura da identidade (mesma do login), nos dois temas. */
+  background: var(--cor-marca-escura);
+  color: var(--cor-branco-fixo);
+}
+
+/* Modo sol: nada de faixa escura — fundo branco com borda, texto preto. */
+:root[data-sol='1'] .home-cabecalho {
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  box-shadow: var(--sombra-card);
 }
 
 .home-header-saudacao {
@@ -19,16 +28,21 @@
 
 .home-saudacao {
   display: block;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
-  color: var(--cor-texto);
+  letter-spacing: -0.01em;
+  color: inherit;
 }
 
 .home-resumo {
   display: block;
   margin-top: 2px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  color: #b7c8dc;
+}
+
+:root[data-sol='1'] .home-resumo {
   color: var(--cor-texto-secundario);
 }
 
@@ -42,10 +56,10 @@
 }
 
 .home-avatar {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: none;
+  border: 2px solid var(--cor-primaria-clara);
   overflow: hidden;
   background: var(--cor-primaria);
   color: var(--cor-branco-fixo);
@@ -122,14 +136,14 @@
 
 .home-busca-campo input {
   width: 100%;
-  height: 48px;
+  height: 52px;
   padding: 0 16px 0 42px;
   border-radius: 14px;
   border: 1.5px solid var(--cor-borda);
   background: var(--cor-superficie);
   box-shadow: var(--sombra-card);
   color: var(--cor-texto);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .home-busca-campo input:focus {
@@ -188,8 +202,8 @@
 .home-menu-item {
   background: var(--cor-superficie);
   border-radius: 14px;
-  padding: 10px 6px;
-  box-shadow: var(--sombra-card);
+  padding: 14px 6px;
+  border: 1px solid var(--cor-borda);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -208,7 +222,7 @@
 }
 
 .home-menu-label {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.25;
   font-weight: 700;
   color: var(--cor-texto);
@@ -224,25 +238,87 @@
 }
 
 .home-progresso-trilho {
-  height: 6px;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--cor-primaria) 15%, transparent);
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cor-branco-fixo) 16%, transparent);
   overflow: hidden;
 }
 
 .home-progresso-trilho span {
   display: block;
   height: 100%;
-  border-radius: 3px;
-  background: var(--cor-primaria);
+  border-radius: 999px;
+  background: #4ade80;
   transition: width 0.4s ease;
 }
 
 .home-progresso-texto {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-sol='1'] .home-progresso-trilho {
+  background: var(--cor-borda-clara);
+}
+
+:root[data-sol='1'] .home-progresso-trilho span {
+  background: var(--cor-sucesso);
+}
+
+/* Abertos recentemente (mesma lista da busca de clientes, só os 3 últimos). */
+.home-recentes {
+  margin-top: 20px;
+}
+
+.home-recentes-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--cor-texto-secundario);
-  font-variant-numeric: tabular-nums;
+}
+
+.home-recentes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 16px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  overflow: hidden;
+}
+
+.home-recentes li + li {
+  border-top: 1px solid var(--cor-borda-suave);
+}
+
+.home-recentes a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 0 12px 0 16px;
+  text-decoration: none;
+  color: var(--cor-texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.home-recentes a span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-recentes a svg {
+  flex: none;
+  color: var(--cor-texto-terciario);
 }
 
 /* Rótulo do tipo de resultado na busca geral (ONU / PPPoE). */

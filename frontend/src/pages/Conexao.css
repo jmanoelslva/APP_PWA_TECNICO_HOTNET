@@ -71,7 +71,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--fonte-mono);
   font-size: 14px;
   color: var(--cor-texto);
 }
@@ -164,7 +164,7 @@
   background: var(--cor-fundo);
   color: var(--cor-texto);
   font-size: 14px;
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--fonte-mono);
 }
 
 .conexao-input:focus {
@@ -415,8 +415,9 @@
   padding: 4px;
   margin-bottom: 14px;
   border-radius: 14px;
-  background: var(--cor-superficie);
-  box-shadow: var(--sombra-card);
+  /* Trilho opaco (fica grudado no topo ao rolar) com a aba ativa em branco. */
+  background: color-mix(in srgb, var(--cor-texto) 8%, var(--cor-fundo));
+  border: 1px solid var(--cor-borda);
 }
 
 .conexao-aba {
@@ -428,16 +429,16 @@
   border-radius: 10px;
   background: transparent;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--cor-texto-secundario);
   cursor: pointer;
 }
 
 .conexao-aba.ativa {
-  background: color-mix(in srgb, var(--cor-conexao) 14%, var(--cor-superficie));
+  background: var(--cor-superficie);
   color: var(--cor-texto);
-  box-shadow: inset 0 -2px 0 var(--cor-conexao);
+  box-shadow: 0 0 0 1.5px var(--cor-conexao);
 }
 
 .conexao-aba:focus-visible {

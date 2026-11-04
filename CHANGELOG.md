@@ -7,8 +7,42 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Checklist de saída na OS:** sinal da ONU conferido, fotos anexadas,
+  teste de velocidade e equipamentos organizados. Fica salvo no aparelho
+  por OS e, ao finalizar, o que estiver marcado já entra na descrição
+  (com a leitura do sinal), podendo ser editado.
+- **Tirar foto direto na OS:** botão de câmera ao lado do anexo de
+  arquivo. Fotos grandes são reduzidas no aparelho (lado maior 1600 px)
+  antes de subir — envio rápido mesmo com sinal fraco.
+- **Anexos sem sinal vão para a fila:** sem internet, o anexo fica
+  guardado no aparelho e é enviado sozinho quando a conexão voltar. Etapas
+  da OS (iniciar, finalizar) não entram na fila.
+- **Faixa do sinal da ONU:** o RX aparece numa barra vermelha, amarela e
+  verde com o selo Bom, Limite ou Crítico (mesmos limites de antes), na
+  tela da ONU e no Resumo da Conexão.
+- **Abertos recentemente no Início:** os 3 últimos clientes vistos (a
+  lista completa continua na busca de clientes).
+- **Lembrar meu usuário no login:** só o nome de usuário fica no
+  aparelho, nunca a senha; o cursor já abre na senha.
+- **Configurações:** tema Claro, Escuro ou Automático (segue o celular),
+  texto grande para o app inteiro e "Novidades desta versão".
+- **Novidades depois de atualizar:** esta lista aparece uma vez quando o
+  app é atualizado.
+
 ### Alterado
 
+- **Identidade visual nova:** ícone do app com o monograma HN, faixa azul
+  escura no login e no Início, botões em cor sólida e IBM Plex Mono
+  (servida pelo próprio app) em serial, MAC, PPPoE e senha.
+- **Contraste corrigido:** verde de OS, dourado do Financeiro e vermelho
+  de Offline escurecidos para passar no mínimo de leitura (4,5:1) sobre o
+  branco, assim como o "Enviado" dos anexos.
+- **Login:** formulário como folha clara sobre a faixa da marca, campos e
+  botão maiores.
+- **Início sem atalhos duplicados:** Conexão e ONU saíram da grade, já que
+  estão na barra de baixo.
 - **Abas da Conexão reorganizadas:** Resumo, Roteador (Wi-Fi, acesso ao
   roteador e observação, já expandidos), CTO (fibra) e Histórico (IP/MAC,
   última autenticação e histórico de conexão, carregado ao abrir a aba,

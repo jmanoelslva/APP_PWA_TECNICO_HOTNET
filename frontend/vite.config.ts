@@ -8,6 +8,25 @@ const { version } = JSON.parse(
   readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf-8'),
 ) as { version: string }
 
+// "Novidades" (ModalNovidades.tsx): só o trecho do CHANGELOG que interessa
+// vai para o app, não o arquivo inteiro. Enquanto houver itens em "Não
+// lançado" (rodada em teste no servidor), mostra eles; depois do release,
+// a seção da versão atual.
+function secaoChangelog(): { titulo: string; texto: string } | null {
+  let changelog: string
+  try {
+    changelog = readFileSync(fileURLToPath(new URL('../CHANGELOG.md', import.meta.url)), 'utf-8')
+  } catch {
+    return null
+  }
+  const secoes = changelog.split(/^## /m).slice(1)
+  const corpo = (secao: string | undefined) => secao?.slice(secao.indexOf('\n') + 1).trim() ?? ''
+  const naoLancado = corpo(secoes.find((secao) => secao.startsWith('[Não lançado]')))
+  if (naoLancado) return { titulo: 'Novidades desta atualização', texto: naoLancado }
+  const daVersao = corpo(secoes.find((secao) => secao.startsWith(`[${version}]`)))
+  return daVersao ? { titulo: `Novidades da versão ${version}`, texto: daVersao } : null
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   // Versão exibida na tela de login (Login.tsx) — segue o
@@ -15,6 +34,7 @@ export default defineConfig({
   // fonte da verdade é o campo "version" do package.json.
   define: {
     __APP_VERSION__: JSON.stringify(version),
+    __NOVIDADES__: JSON.stringify(secaoChangelog()),
   },
   plugins: [
     react(),

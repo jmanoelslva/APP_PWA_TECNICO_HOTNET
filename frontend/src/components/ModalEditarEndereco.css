@@ -88,7 +88,7 @@
 .modal-editar-endereco-localizacao span {
   font-size: 13px;
   color: var(--cor-texto-secundario);
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--fonte-mono);
 }
 
 .modal-editar-endereco-chip {

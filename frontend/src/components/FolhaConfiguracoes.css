@@ -62,6 +62,41 @@
   color: var(--cor-texto-secundario);
 }
 
+.folha-config-segmentos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+}
+
+.folha-config-segmento {
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+  cursor: pointer;
+}
+
+.folha-config-segmento[aria-checked='true'] {
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-weight: 700;
+  box-shadow: 0 0 0 1.5px var(--cor-primaria);
+}
+
+.folha-config-segmento:focus-visible {
+  outline: 3px solid var(--cor-primaria);
+  outline-offset: 1px;
+}
+
 .folha-config-grupo {
   border: 1px solid var(--cor-borda);
   border-radius: 14px;

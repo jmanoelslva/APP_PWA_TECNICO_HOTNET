@@ -136,7 +136,7 @@
 }
 
 .detalhe-cliente-campo-extra {
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--fonte-mono);
   word-break: break-all;
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MdBuild, MdCable, MdConstruction, MdRouter, MdSearch, MdWifi, MdWifiOff } from 'react-icons/md'
+import { MdBuild, MdChevronRight, MdConstruction, MdHistory, MdRouter, MdSearch, MdWifiOff } from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -8,6 +8,7 @@ import { useColetorOlt } from '../hooks/useColetorOlt'
 import { useAvisos } from '../hooks/useAvisos'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
+import ModalNovidades from '../components/ModalNovidades'
 import FolhaConfiguracoes from '../components/FolhaConfiguracoes'
 import MinhasOsHoje, { type ResumoDoDia } from '../components/MinhasOsHoje'
 import PullToRefresh from '../components/PullToRefresh'
@@ -21,6 +22,8 @@ import {
   type OnuDto,
 } from '../api/client'
 import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
+import { lerRecentes, type ClienteRecente } from '../utils/buscaUnica'
+import { assinaturaNovidades, deveMostrarNovidades, marcarNovidadesVistas } from '../utils/novidades'
 import './Home.css'
 
 function saudacaoPorHorario(nome: string): string {
@@ -31,11 +34,10 @@ function saudacaoPorHorario(nome: string): string {
 
 // "Clientes" saiu daqui de propósito — virou o campo de busca direto no
 // topo da tela (ver <form> abaixo), como primeira opção, em vez de mais
-// um botão que só leva para outra tela para então buscar.
+// um botão que só leva para outra tela para então buscar. Conexão e ONU
+// também saíram: já estão na barra de baixo (sem atalho duplicado).
 const ITENS_MENU = [
   { to: '/suporte', Icone: MdBuild, cor: CORES.suporte, label: 'OS / Suporte' },
-  { to: '/conexao', Icone: MdWifi, cor: CORES.conexao, label: 'Conexão' },
-  { to: '/onu', Icone: MdCable, cor: CORES.onu, label: 'ONU' },
   { to: '/offline', Icone: MdWifiOff, cor: CORES.offline, label: 'Clientes Offline' },
   { to: '/ferramentas', Icone: MdConstruction, cor: CORES.ferramentas, label: 'Ferramentas' },
 ]
@@ -46,6 +48,10 @@ function iniciais(usuario: string | undefined): string {
   if (partes.length >= 2) return (partes[0][0] + partes[1][0]).toUpperCase()
   return (partes[0] ?? '?').slice(0, 2).toUpperCase()
 }
+
+// Clientes abertos por último no Início (a lista completa, com "Limpar",
+// fica na busca de clientes).
+const RECENTES_NO_INICIO = 3
 
 function textoResumo(resumo: ResumoDoDia | null): string {
   const hoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })
@@ -61,6 +67,11 @@ export default function Home() {
   const { podeInstalar, aoClicarInstalar, modalIosAberto, fecharModalIos } = usePwaInstall()
   const [configuracoesAberta, setConfiguracoesAberta] = useState(false)
   const [confirmarSairAberto, setConfirmarSairAberto] = useState(false)
+  const [recentes, setRecentes] = useState<ClienteRecente[]>(() => lerRecentes().slice(0, RECENTES_NO_INICIO))
+  // Novidades: abre sozinho uma vez depois de uma atualização.
+  const [novidadesAbertas, setNovidadesAbertas] = useState(
+    () => !!__NOVIDADES__ && deveMostrarNovidades(assinaturaNovidades(__NOVIDADES__.texto)),
+  )
   const coletorOlt = useColetorOlt()
   // Resumo do dia embaixo da saudação (vem de "Minhas OS de hoje").
   const [resumoDia, setResumoDia] = useState<ResumoDoDia | null>(null)
@@ -143,8 +154,14 @@ export default function Home() {
     }
   }, [busca])
 
+  function fecharNovidades() {
+    setNovidadesAbertas(false)
+    if (__NOVIDADES__) marcarNovidadesVistas(assinaturaNovidades(__NOVIDADES__.texto))
+  }
+
   async function atualizarTela() {
     setRecarga((atual) => atual + 1)
+    setRecentes(lerRecentes().slice(0, RECENTES_NO_INICIO))
     await resumoDoDia(dataParaFormatoServidor(new Date()).slice(0, 10))
       .then((resposta) => setProgresso({ total: resposta.total, concluidas: resposta.concluidas }))
       .catch(() => {})
@@ -168,10 +185,7 @@ export default function Home() {
     <PullToRefresh aoAtualizar={atualizarTela}>
       <div className="home-tela tela-entrada">
         <div className="home-conteudo">
-          <header
-            className="home-cabecalho"
-            style={{ background: comAlpha(CORES.primaria, 8), borderColor: comAlpha(CORES.primaria, 20) }}
-          >
+          <header className="home-cabecalho">
             <div className="home-header-saudacao">
               <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
               <span className="home-resumo">{textoResumo(resumoDia)}</span>
@@ -308,8 +322,26 @@ export default function Home() {
             )}
           </div>
 
+          {recentes.length > 0 && (
+            <section className="home-recentes" aria-labelledby="home-recentes-titulo">
+              <h2 id="home-recentes-titulo" className="home-recentes-titulo">
+                <MdHistory size={18} aria-hidden="true" /> Abertos recentemente
+              </h2>
+              <ul>
+                {recentes.map((cliente) => (
+                  <li key={cliente.pk}>
+                    <Link to={`/clientes/${cliente.pk}`} viewTransition>
+                      <span>{cliente.nome}</span>
+                      <MdChevronRight size={20} aria-hidden="true" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
 
+        <ModalNovidades aberto={novidadesAbertas} onFechar={fecharNovidades} />
         <ModalInstalarIos aberto={modalIosAberto} onFechar={fecharModalIos} />
         <FolhaConfiguracoes
           aberto={configuracoesAberta}
@@ -318,6 +350,10 @@ export default function Home() {
           dicaAvisos={dicaAvisos}
           podeInstalar={podeInstalar}
           onInstalar={aoClicarInstalarMenu}
+          onNovidades={() => {
+            setConfiguracoesAberta(false)
+            setNovidadesAbertas(true)
+          }}
           onSair={() => {
             setConfiguracoesAberta(false)
             setConfirmarSairAberto(true)

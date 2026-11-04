@@ -121,7 +121,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--fonte-mono);
   font-size: 14px;
   color: var(--cor-texto);
 }

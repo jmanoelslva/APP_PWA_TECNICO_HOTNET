@@ -2,8 +2,10 @@ import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { MdCable } from 'react-icons/md'
 import type { OnuDto } from '../../api/client'
+import FaixaSinal from '../../components/FaixaSinal'
 import Skeleton from '../../components/Skeleton'
 import { CORES } from '../../utils/cores'
+import { nivelSinalOnu } from '../../utils/formatacao'
 
 /**
  * Resumo da ONU vinculada ao cliente (se tiver) — buscada pelo usuário
@@ -45,10 +47,14 @@ export default function CardOnuResumo({
         <span>Estado</span>
         <strong>{onu.state ?? '—'}</strong>
       </div>
-      <div className="conexao-linha">
-        <span>Sinal RX</span>
-        <strong>{onu.omddm_rx_power != null ? `${onu.omddm_rx_power} dBm` : '—'}</strong>
-      </div>
+      {onu.omddm_rx_power != null ? (
+        <FaixaSinal rx={onu.omddm_rx_power} nivel={nivelSinalOnu(onu.omddm_rx_power)} corteCritico={-24} corteBom={-22} />
+      ) : (
+        <div className="conexao-linha">
+          <span>Sinal RX</span>
+          <strong>—</strong>
+        </div>
+      )}
       <div className="conexao-linha">
         <span>Modelo</span>
         <strong>{onu.model ?? '—'}</strong>

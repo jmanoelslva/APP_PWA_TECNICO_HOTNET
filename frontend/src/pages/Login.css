@@ -3,65 +3,119 @@
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(160deg, var(--cor-fundo), color-mix(in srgb, var(--cor-primaria) 6%, var(--cor-fundo)));
-  padding: 24px;
+  justify-content: flex-end;
+  /* Faixa escura da marca em cima; o formulário sobe como uma folha clara. */
+  background: var(--cor-marca-escura);
+  overflow: hidden;
+}
+
+/* Arcos do sinal (mesmo traço do ícone HN), só decoração. */
+.login-tela::before {
+  content: '';
+  position: absolute;
+  top: -90px;
+  right: -110px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--cor-sinal) 35%, transparent);
+  box-shadow:
+    0 0 0 42px var(--cor-marca-escura),
+    0 0 0 45px color-mix(in srgb, var(--cor-primaria) 45%, transparent);
+  pointer-events: none;
 }
 
 .login-card {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 380px;
+  max-width: 480px;
   background: var(--cor-superficie);
-  border-radius: 24px;
-  padding: 32px 28px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 28px 28px 0 0;
+  padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
   text-align: center;
 }
 
+/* Tela larga (tablet/computador): a folha vira um cartão centralizado. */
+@media (min-width: 600px) {
+  .login-tela {
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .login-card {
+    border-radius: 24px;
+    padding: 32px 28px;
+  }
+}
+
 .login-marca {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 24px;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 56px 28px 32px;
+  text-align: left;
 }
 
 .login-marca-logo {
-  width: 104px;
-  height: 104px;
-  object-fit: contain;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  margin-bottom: 12px;
 }
 
 .login-marca strong {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: 0.02em;
-  color: var(--cor-texto);
+  letter-spacing: -0.02em;
+  color: var(--cor-branco-fixo);
   line-height: 1.1;
 }
 
 .login-marca-sub {
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #b7c8dc;
+}
+
+.login-lembrar {
+  min-height: 44px;
+  margin-top: 8px;
   font-weight: 600;
   color: var(--cor-texto-secundario);
+  cursor: pointer;
+}
+
+.login-card .login-lembrar input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--cor-primaria);
 }
 
 /* Tema claro/escuro já na tela de login, no canto. */
 .login-tema {
   position: absolute;
-  top: 16px;
+  top: calc(16px + env(safe-area-inset-top, 0px));
   right: 16px;
   z-index: 2;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-superficie);
-  color: var(--cor-texto-secundario);
+  border: 1px solid color-mix(in srgb, var(--cor-branco-fixo) 25%, transparent);
+  background: color-mix(in srgb, var(--cor-branco-fixo) 8%, transparent);
+  color: var(--cor-branco-fixo);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,12 +153,12 @@
 
 .login-card input {
   margin-top: 6px;
-  height: 48px;
+  height: 52px;
   width: 100%;
   border: 1.5px solid var(--cor-borda);
   border-radius: 12px;
   padding: 0 16px;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--cor-texto);
   background: var(--cor-superficie);
 }
@@ -198,14 +252,14 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  height: 52px;
+  height: 56px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   color: var(--cor-branco-fixo);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+  background: var(--cor-primaria-escura);
 }
 
 .login-btn-entrar:disabled {

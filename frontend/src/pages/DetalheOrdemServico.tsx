@@ -9,6 +9,7 @@ import {
   MdEdit,
   MdLocationOn,
   MdPeopleAlt,
+  MdPhotoCamera,
   MdPlayArrow,
   MdVisibility,
   MdVisibilityOff,
@@ -58,6 +59,9 @@ import {
   TEXTO_SINAL_ONU,
 } from '../utils/formatacao'
 import { linkRota, osAtrasada, quandoOs } from '../utils/minhasOs'
+import { comprimirImagem } from '../utils/imagem'
+import { EVENTO_FILA, ehFalhaDeRede, enfileirarAnexo, type DetalheEventoFila } from '../utils/filaAnexos'
+import { ITENS_CHECKLIST, lerChecklist, salvarChecklist, textoChecklist } from '../utils/checklistSaida'
 import './DetalheOrdemServico.css'
 
 interface AnexoEnviado {
@@ -65,7 +69,17 @@ interface AnexoEnviado {
   nome: string
   /** URL local da imagem escolhida (null quando não é imagem). */
   previa: string | null
-  situacao: 'enviando' | 'enviado' | 'erro'
+  /** 'fila': sem sinal, guardado no aparelho até a internet voltar. */
+  situacao: 'enviando' | 'enviado' | 'erro' | 'fila'
+  /** Id na fila de anexos (utils/filaAnexos.ts), quando foi para a fila. */
+  filaId?: number
+}
+
+const TEXTO_SITUACAO_ANEXO: Record<AnexoEnviado['situacao'], string> = {
+  enviando: 'Enviando…',
+  enviado: 'Enviado',
+  erro: 'Falhou',
+  fila: 'Na fila: sai quando o sinal voltar',
 }
 
 // Os 4 estágios de uma OS (não documentado oficialmente): Agendada
@@ -221,8 +235,34 @@ export default function DetalheOrdemServico() {
   const urlsPreviaRef = useRef<string[]>([])
 
   const inputArquivoRef = useRef<HTMLInputElement>(null)
+  const inputCameraRef = useRef<HTMLInputElement>(null)
+  // Checklist de saída desta OS (salvo no aparelho por OS).
+  const [checklist, setChecklist] = useState<string[]>([])
 
   useEffect(() => () => urlsPreviaRef.current.forEach((url) => URL.revokeObjectURL(url)), [])
+
+  useEffect(() => {
+    if (osAtual?.op_pk) setChecklist(lerChecklist(osAtual.op_pk))
+  }, [osAtual?.op_pk])
+
+  // Anexo que estava na fila saiu (ou foi recusado) com a tela aberta.
+  useEffect(() => {
+    function aoMudarFila(evento: Event) {
+      const { id, resultado } = (evento as CustomEvent<DetalheEventoFila>).detail
+      setAnexosEnviados((atuais) =>
+        atuais.map((a) => (a.filaId === id ? { ...a, situacao: resultado === 'enviado' ? 'enviado' : 'erro' } : a)),
+      )
+    }
+    window.addEventListener(EVENTO_FILA, aoMudarFila)
+    return () => window.removeEventListener(EVENTO_FILA, aoMudarFila)
+  }, [])
+
+  function alternarItemChecklist(chave: string) {
+    if (!osAtual?.op_pk) return
+    const novo = checklist.includes(chave) ? checklist.filter((item) => item !== chave) : [...checklist, chave]
+    setChecklist(novo)
+    salvarChecklist(osAtual.op_pk, novo)
+  }
 
   useEffect(() => {
     if (!Number.isFinite(pk)) return
@@ -366,17 +406,36 @@ export default function DetalheOrdemServico() {
   }
 
   async function aoSelecionarArquivo(evento: ChangeEvent<HTMLInputElement>) {
-    const arquivo = evento.target.files?.[0]
+    const original = evento.target.files?.[0]
     evento.target.value = ''
-    if (!arquivo) return
+    if (!original) return
     const id = Date.now()
-    const previa = arquivo.type.startsWith('image/') && !arquivo.type.startsWith('image/svg') ? URL.createObjectURL(arquivo) : null
+    const previa =
+      original.type.startsWith('image/') && !original.type.startsWith('image/svg') ? URL.createObjectURL(original) : null
     if (previa) urlsPreviaRef.current.push(previa)
-    const situacao = (nova: AnexoEnviado['situacao']) =>
-      setAnexosEnviados((atuais) => atuais.map((a) => (a.id === id ? { ...a, situacao: nova } : a)))
-    setAnexosEnviados((atuais) => [{ id, nome: arquivo.name, previa, situacao: 'enviando' }, ...atuais])
+    const situacao = (nova: AnexoEnviado['situacao'], filaId?: number) =>
+      setAnexosEnviados((atuais) => atuais.map((a) => (a.id === id ? { ...a, situacao: nova, filaId } : a)))
+    setAnexosEnviados((atuais) => [{ id, nome: original.name, previa, situacao: 'enviando' }, ...atuais])
     setEnviandoAnexo(true)
+    // Foto grande é reduzida no aparelho antes de subir (utils/imagem.ts).
+    const arquivo = await comprimirImagem(original)
+
+    // Sem sinal: guarda no aparelho e envia quando a internet voltar.
+    async function paraFila() {
+      try {
+        situacao('fila', await enfileirarAnexo(pk, arquivo))
+        toast('Sem sinal: o anexo ficou na fila e é enviado quando a internet voltar.')
+      } catch {
+        situacao('erro')
+        toast('Sem sinal e não foi possível guardar o anexo. Tente de novo.')
+      }
+    }
+
     try {
+      if (!navigator.onLine) {
+        await paraFila()
+        return
+      }
       // O anexo vai para o chamado (ticket) — é o mesmo endpoint/local onde
       // ele aparece na tela de chat do Suporte, mesmo sendo anexado aqui
       // na tela da OS.
@@ -384,6 +443,10 @@ export default function DetalheOrdemServico() {
       situacao('enviado')
       toast('Anexo enviado.', 'sucesso')
     } catch (excecao) {
+      if (ehFalhaDeRede(excecao)) {
+        await paraFila()
+        return
+      }
       situacao('erro')
       toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível enviar o anexo.')
     } finally {
@@ -612,17 +675,64 @@ export default function DetalheOrdemServico() {
               )}
             </div>
 
+            {!encerrada && osAtual.op_pk && (
+              <div className="detalhe-ordem-card">
+                <div className="detalhe-ordem-topo">
+                  <h2>Checklist de saída</h2>
+                  <span className="detalhe-ordem-checklist-contagem">
+                    {checklist.length} de {ITENS_CHECKLIST.length}
+                  </span>
+                </div>
+                <div className="detalhe-ordem-checklist">
+                  {ITENS_CHECKLIST.map((item) => (
+                    <label key={item.chave}>
+                      <input
+                        type="checkbox"
+                        checked={checklist.includes(item.chave)}
+                        onChange={() => alternarItemChecklist(item.chave)}
+                      />
+                      <span>
+                        {item.rotulo}
+                        {item.chave === 'sinal' && onuOs?.omddm_rx_power != null && (
+                          <small> · agora {onuOs.omddm_rx_power.toLocaleString('pt-BR')} dBm</small>
+                        )}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="detalhe-ordem-lido">Ao finalizar, o que estiver marcado já entra na descrição.</p>
+              </div>
+            )}
+
             <div className="detalhe-ordem-card">
               <h2>Anexo</h2>
               <input ref={inputArquivoRef} type="file" style={{ display: 'none' }} onChange={aoSelecionarArquivo} />
-              <button
-                className="botao botao-secundario botao-bloco"
-                style={{ '--botao-cor': CORES.suporte } as CSSProperties}
-                disabled={enviandoAnexo}
-                onClick={() => inputArquivoRef.current?.click()}
-              >
-                <MdAttachFile size={16} /> {enviandoAnexo ? 'Enviando…' : 'Anexar arquivo ao chamado'}
-              </button>
+              <input
+                ref={inputCameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                style={{ display: 'none' }}
+                onChange={aoSelecionarArquivo}
+              />
+              <div className="detalhe-ordem-anexo-botoes">
+                <button
+                  className="botao botao-primario"
+                  style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                  disabled={enviandoAnexo}
+                  onClick={() => inputCameraRef.current?.click()}
+                >
+                  <MdPhotoCamera size={18} /> Tirar foto
+                </button>
+                <button
+                  className="botao botao-secundario"
+                  style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                  disabled={enviandoAnexo}
+                  onClick={() => inputArquivoRef.current?.click()}
+                >
+                  <MdAttachFile size={18} /> {enviandoAnexo ? 'Enviando…' : 'Arquivo'}
+                </button>
+              </div>
               {anexosEnviados.length > 0 && (
                 <ul className="detalhe-ordem-anexos">
                   {anexosEnviados.map((anexo) => (
@@ -635,9 +745,7 @@ export default function DetalheOrdemServico() {
                         </span>
                       )}
                       <span className="detalhe-ordem-anexo-nome">{anexo.nome}</span>
-                      <span className="detalhe-ordem-anexo-situacao">
-                        {anexo.situacao === 'enviando' ? 'Enviando…' : anexo.situacao === 'enviado' ? 'Enviado' : 'Falhou'}
-                      </span>
+                      <span className="detalhe-ordem-anexo-situacao">{TEXTO_SITUACAO_ANEXO[anexo.situacao]}</span>
                     </li>
                   ))}
                 </ul>
@@ -737,7 +845,13 @@ export default function DetalheOrdemServico() {
                   type="button"
                   className="botao botao-primario botao-bloco detalhe-ordem-barra-botao"
                   style={{ '--botao-cor': CORES.suporte } as CSSProperties}
-                  onClick={() => setAcaoConfirmando({ etapa: proximaEtapa.chave, desfazer: false })}
+                  onClick={() => {
+                    // Finalizar: o checklist marcado já entra na descrição (editável).
+                    if (proximaEtapa.chave === 'finalizar' && !observacaoEtapa.trim()) {
+                      setObservacaoEtapa(textoChecklist(checklist, onuOs?.omddm_rx_power))
+                    }
+                    setAcaoConfirmando({ etapa: proximaEtapa.chave, desfazer: false })
+                  }}
                 >
                   <proximaEtapa.Icone size={20} /> {proximaEtapa.rotuloMarcar}
                 </button>

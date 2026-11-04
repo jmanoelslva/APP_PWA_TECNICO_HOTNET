@@ -26,8 +26,29 @@ function ehBloqueio(mensagem: string): boolean {
   return mensagem.startsWith('Muitas tentativas')
 }
 
+// "Lembrar meu usuário": só o nome de usuário fica no aparelho, nunca a senha.
+const CHAVE_USUARIO = 'hotnet-tecnico-usuario-lembrado'
+
+function lerUsuarioLembrado(): string {
+  try {
+    return localStorage.getItem(CHAVE_USUARIO) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function salvarUsuarioLembrado(usuario: string | null) {
+  try {
+    if (usuario) localStorage.setItem(CHAVE_USUARIO, usuario)
+    else localStorage.removeItem(CHAVE_USUARIO)
+  } catch {
+    // sem armazenamento: só não lembra
+  }
+}
+
 export default function Login() {
-  const [usuario, setUsuario] = useState('')
+  const [usuario, setUsuario] = useState(lerUsuarioLembrado)
+  const [lembrar, setLembrar] = useState(true)
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [capsLock, setCapsLock] = useState(false)
@@ -61,6 +82,13 @@ export default function Login() {
       voltouAoInicio.current = true
       window.history.go(-posicao)
     }
+  }, [])
+
+  // Usuário lembrado: o cursor já vai para a senha.
+  useEffect(() => {
+    if (usuario) senhaRef.current?.focus()
+    // Só ao abrir a tela.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -105,6 +133,7 @@ export default function Login() {
     setEditouDepoisDoErro(false)
     const sucesso = await entrar(usuario, senha)
     if (!sucesso) return
+    salvarUsuarioLembrado(lembrar ? usuario.trim() : null)
     // Veio do Coletor de OLTs (/olt/) sem sessão: volta para onde estava.
     // Só aceita caminhos do coletor, para o parâmetro não virar um
     // redirecionamento para qualquer lugar.
@@ -132,12 +161,13 @@ export default function Login() {
         {tema === 'dark' ? <MdLightMode size={20} /> : <MdDarkMode size={20} />}
       </button>
 
+      <div className="login-marca">
+        <img className="login-marca-logo" src="/icons/icon-192.png" alt="" />
+        <strong>HOTNET Técnico</strong>
+        <span className="login-marca-sub">Entre com o mesmo usuário e senha do Controllr.</span>
+      </div>
+
       <div className="login-card">
-        <div className="login-marca">
-          <img className="login-marca-logo" src="/icons/icon-512.png" alt="" />
-          <strong>HOTNET</strong>
-          <span className="login-marca-sub">Acesso do técnico</span>
-        </div>
 
         <form onSubmit={aoEnviar} noValidate>
           <fieldset disabled={carregando} className="login-campos">
@@ -208,6 +238,10 @@ export default function Login() {
                 <MdKeyboardCapslock size={16} /> Caps Lock ligado
               </span>
             )}
+            <label className="login-lembrar">
+              <input type="checkbox" checked={lembrar} onChange={(evento) => setLembrar(evento.target.checked)} />
+              Lembrar meu usuário neste aparelho
+            </label>
           </fieldset>
 
           {erroVisivel && (

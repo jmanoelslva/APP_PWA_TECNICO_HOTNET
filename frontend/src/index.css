@@ -9,12 +9,32 @@
   src: url('./assets/fonts/inter-latin.woff2') format('woff2');
 }
 
+/* IBM Plex Mono (500 e 600, subconjunto latino) para serial, MAC, PPPoE e
+   senha: separa 0/O e l/1/I. Também local e pré-cacheada.
+   Licença: assets/fonts/IBMPlexMono-LICENSE.txt. */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./assets/fonts/plex-mono-500-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url('./assets/fonts/plex-mono-600-latin.woff2') format('woff2');
+}
+
 :root {
   font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   /* Algarismos de largura fixa: datas, IPs e consumo alinham em coluna e
      não "pulam" quando o valor muda. */
   font-variant-numeric: tabular-nums;
   color-scheme: light dark;
+  --fonte-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
 
   /* Marca — paleta azul/operacional, para diferenciar visualmente do
      portal do cliente (laranja/vermelho). */
@@ -22,6 +42,10 @@
   --cor-primaria-escura: #1d5487;
   --cor-primaria-clara: #4f93d1;
   --cor-primaria-gradiente-fim: #1a3a5c;
+  /* Identidade: faixa escura do login/início e o laranja do sinal (arco do
+     monograma HN) — o laranja é só marca, nunca texto pequeno. */
+  --cor-marca-escura: #0f2a44;
+  --cor-sinal: #f97316;
 
   /* Superfícies */
   --cor-fundo: #f5f5f5;
@@ -53,14 +77,14 @@
   --cor-erro: #c62828;
 
   /* Acentos por área do app do técnico */
-  --cor-suporte: #0f8a45;
+  --cor-suporte: #0b7a3b;
   --cor-cliente: #7a4bc4;
   --cor-conexao: #0e7f8c;
   --cor-onu: #a85a17;
   --cor-endereco: #4a5c7a;
   --cor-ferramentas: #5c6bc0;
-  --cor-financeiro: #b8860b;
-  --cor-offline: #d9463c;
+  --cor-financeiro: #8a6408;
+  --cor-offline: #b42318;
   /* Menu "OLTs" (Coletor de OLTs, opcional — ver hooks/useColetorOlt.ts). */
   --cor-olts: #7b5ea7;
 
@@ -153,6 +177,12 @@
 
 :root[data-sol='1'] body {
   font-weight: 500;
+}
+
+/* Texto grande (Configurações → Tamanho do texto): amplia o app inteiro
+   por igual — os tamanhos estão em px, então rem não alcançaria tudo. */
+:root[data-texto='grande'] body {
+  zoom: 1.125;
 }
 
 :root[data-sol='1'] strong,
@@ -316,7 +346,8 @@ a:active,
 .botao-primario {
   border-color: transparent;
   color: var(--cor-branco-fixo);
-  background: linear-gradient(135deg, var(--botao-cor, var(--cor-primaria)), var(--cor-primaria-escura));
+  /* Cor sólida (identidade nova): degradê some no sol e pesa no tema escuro. */
+  background: var(--botao-cor, var(--cor-primaria-escura));
 }
 
 /* Mesma variável --botao-cor do primário (ver acima) — quando a tela não
