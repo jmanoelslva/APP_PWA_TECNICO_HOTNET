@@ -7,16 +7,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
-### Corrigido
-
-- **Rolar a lista da busca da tela inicial para cima** às vezes disparava
-  o "puxar para atualizar". Toque dentro de uma lista com rolagem própria
-  não aciona mais a atualização da tela.
-- **Voltar do Android depois de sair:** na tela de login, o botão voltar
-  passava pelas telas visitadas antes de sair (cada uma voltava para o
-  login), parecendo várias telas invisíveis abertas. Agora o voltar fecha
-  o app. Depois de entrar, o login também sai do histórico: voltar na tela
-  inicial fecha o app em vez de mostrar o login de novo.
+## [1.20.0] - 2026-11-04
 
 ### Alterado
 
@@ -43,6 +34,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   também a ONU pelo serial e a conexão pelo usuário PPPoE, além do
   cliente. Enter continua abrindo a lista completa, que não abre mais o
   teclado sozinha.
+
+### Corrigido
+
+- **Rolar a lista da busca da tela inicial para cima** às vezes disparava
+  o "puxar para atualizar". Toque dentro de uma lista com rolagem própria
+  não aciona mais a atualização da tela.
+- **Voltar do Android depois de sair:** na tela de login, o botão voltar
+  passava pelas telas visitadas antes de sair (cada uma voltava para o
+  login), parecendo várias telas invisíveis abertas. Agora o voltar fecha
+  o app. Depois de entrar, o login também sai do histórico: voltar na tela
+  inicial fecha o app em vez de mostrar o login de novo.
 
 ## [1.19.3] - 2026-11-04
 
@@ -642,6 +644,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.20.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.3...v1.20.0
 [1.19.3]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...v1.19.3
 [1.18.1]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.0...v1.18.1
 [1.18.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.17.0...v1.18.0

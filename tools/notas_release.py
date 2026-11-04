@@ -39,6 +39,7 @@ TITULOS = {
     "1.14.1": "Filtros na OS, WhatsApp em todos os números e certificado",
     # 1.19.0–1.19.2 juntaram na 1.19.3.
     "1.19.3": "Interface para uso em campo e busca geral",
+    "1.20.0": "Conexão em abas, Configurações e telas reorganizadas",
 }
 
 SECOES = {
