@@ -125,31 +125,64 @@
   opacity: 0.6;
 }
 
-/* Filtro de período: quebra linha em vez de cortar */
+/* Período: faixa única de 5 blocos iguais (número + nome), estilo controle
+   segmentado — nunca corta nem quebra linha. */
 .clientes-offline-periodos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
   margin: 4px 0 0;
+  border-radius: 14px;
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
 }
 
 .clientes-offline-periodos button {
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-superficie);
+  --periodo-cor: var(--cor-texto-secundario);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: 4px 2px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
   font: inherit;
-  font-size: 13px;
+  color: var(--cor-texto-terciario);
+  cursor: pointer;
+}
+
+.clientes-offline-periodos button strong {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--periodo-cor);
+  font-variant-numeric: tabular-nums;
+}
+
+.clientes-offline-periodos button span {
+  font-size: 11px;
   font-weight: 600;
-  color: var(--cor-texto-secundario);
+  line-height: 1.1;
   white-space: nowrap;
 }
 
+/* "Hoje" sempre em vermelho: é o que pede ação agora. */
+.clientes-offline-periodos button.periodo-hoje {
+  --periodo-cor: var(--cor-erro);
+}
+
 .clientes-offline-periodos button.ativo {
-  border-color: var(--cor-offline);
-  background: color-mix(in srgb, var(--cor-offline) 12%, var(--cor-superficie));
-  color: var(--cor-offline);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+.clientes-offline-periodos button.ativo span {
+  font-weight: 700;
 }
 
 .clientes-offline-total span {
@@ -247,25 +280,74 @@
   color: var(--cor-erro);
 }
 
+/* Região e CTO filtrada lado a lado, na mesma altura dos outros campos */
+.clientes-offline-filtros-linha {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.clientes-offline-regiao,
 .clientes-offline-filtro-cto {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  min-height: 40px;
-  margin: 0 0 12px;
+  gap: 8px;
+  height: 44px;
   padding: 0 12px;
   border-radius: 12px;
-  border: 1px solid var(--cor-erro);
+  border: 1px solid var(--cor-borda);
   background: var(--cor-superficie);
   font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--cor-erro);
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
 }
 
 .clientes-offline-regiao {
-  width: 100%;
-  margin: 12px 0 4px;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* select sem aparência nativa, ocupando o rótulo inteiro */
+.clientes-offline-regiao select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: var(--cor-texto);
+  appearance: none;
+  -webkit-appearance: none;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.clientes-offline-regiao.ativo {
+  border-color: var(--cor-offline);
+  color: var(--cor-offline);
+}
+
+.clientes-offline-filtro-cto {
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 55%;
+  border-color: var(--cor-erro);
+  background: color-mix(in srgb, var(--cor-erro) 8%, var(--cor-superficie));
+  font-weight: 700;
+  color: var(--cor-erro);
+  cursor: pointer;
+}
+
+.clientes-offline-filtro-cto span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clientes-offline-filtro-cto svg {
+  flex-shrink: 0;
 }
 
 .clientes-offline-grupo {

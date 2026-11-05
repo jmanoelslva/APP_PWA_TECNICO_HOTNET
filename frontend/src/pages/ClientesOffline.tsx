@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { MdSearch } from 'react-icons/md'
-import { LuCable, LuMap, LuNetwork, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifiOff, LuX } from 'react-icons/lu'
+import { LuCable, LuChevronDown, LuMap, LuMapPin, LuNetwork, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifiOff, LuX } from 'react-icons/lu'
 import { ApiError, buscarDetalheCliente, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -170,12 +170,12 @@ export default function ClientesOffline() {
     return mapa
   }, [filtrados])
 
-  const abasPeriodo: { chave: Periodo; rotulo: string }[] = [
-    { chave: 'todos', rotulo: `Todos (${filtrados.length})` },
-    { chave: 'hoje', rotulo: `Hoje (${porGrupo.get('hoje')!.length})` },
-    { chave: 'semana', rotulo: `1 a 7 dias (${porGrupo.get('semana')!.length})` },
-    { chave: 'antigos', rotulo: `+7 dias (${porGrupo.get('antigos')!.length})` },
-    { chave: 'nunca', rotulo: `Nunca (${porGrupo.get('nunca')!.length})` },
+  const abasPeriodo: { chave: Periodo; rotulo: string; quantidade: number }[] = [
+    { chave: 'todos', rotulo: 'Todos', quantidade: filtrados.length },
+    { chave: 'hoje', rotulo: 'Hoje', quantidade: porGrupo.get('hoje')!.length },
+    { chave: 'semana', rotulo: '1–7 dias', quantidade: porGrupo.get('semana')!.length },
+    { chave: 'antigos', rotulo: '+7 dias', quantidade: porGrupo.get('antigos')!.length },
+    { chave: 'nunca', rotulo: 'Nunca', quantidade: porGrupo.get('nunca')!.length },
   ]
   const gruposVisiveis = periodo === 'todos' ? ORDEM_GRUPOS : [periodo]
   const visiveis = gruposVisiveis.reduce((soma, g) => soma + porGrupo.get(g)!.length, 0)
@@ -338,41 +338,46 @@ export default function ClientesOffline() {
               </section>
             )}
 
-            {ctoFiltro && (
-              <button type="button" className="clientes-offline-filtro-cto" onClick={() => setCtoFiltro(null)}>
-                CTO {ctoFiltro.nome} <LuX size={16} aria-label="Tirar o filtro da CTO" />
-              </button>
-            )}
-
-            {/* Botões que quebram linha em tela estreita, sem cortar o texto. */}
+            {/* Período: 5 blocos de mesma largura, número em destaque e nome
+                embaixo — cabe na largura do celular sem cortar nem quebrar. */}
             <div className="clientes-offline-periodos" role="group" aria-label="Tempo offline">
               {abasPeriodo.map((aba) => (
                 <button
                   key={aba.chave}
                   type="button"
                   aria-pressed={periodo === aba.chave}
-                  className={periodo === aba.chave ? 'ativo' : undefined}
+                  className={`periodo-${aba.chave}${periodo === aba.chave ? ' ativo' : ''}`}
                   onClick={() => setPeriodo(aba.chave)}
                 >
-                  {aba.rotulo}
+                  <strong>{aba.quantidade}</strong>
+                  <span>{aba.rotulo}</span>
                 </button>
               ))}
             </div>
 
-            {regioes.length > 1 && (
-              <select
-                className="campo clientes-offline-regiao"
-                value={regiao}
-                onChange={(e) => setRegiao(e.target.value)}
-                aria-label="Região"
-              >
-                <option value="">Todas as regiões</option>
-                {regioes.map(([nome, quantidade]) => (
-                  <option key={nome} value={nome}>
-                    {nome} ({quantidade})
-                  </option>
-                ))}
-              </select>
+            {(regioes.length > 1 || ctoFiltro) && (
+              <div className="clientes-offline-filtros-linha">
+                {regioes.length > 1 && (
+                  <label className={`clientes-offline-regiao${regiao ? ' ativo' : ''}`}>
+                    <LuMapPin size={16} aria-hidden="true" />
+                    <select value={regiao} onChange={(e) => setRegiao(e.target.value)} aria-label="Região">
+                      <option value="">Todas as regiões</option>
+                      {regioes.map(([nome, quantidade]) => (
+                        <option key={nome} value={nome}>
+                          {nome} ({quantidade})
+                        </option>
+                      ))}
+                    </select>
+                    <LuChevronDown size={16} aria-hidden="true" />
+                  </label>
+                )}
+                {ctoFiltro && (
+                  <button type="button" className="clientes-offline-filtro-cto" onClick={() => setCtoFiltro(null)}>
+                    <span>{ctoFiltro.nome}</span>
+                    <LuX size={16} aria-label="Tirar o filtro da CTO" />
+                  </button>
+                )}
+              </div>
             )}
 
             {visiveis === 0 && (
