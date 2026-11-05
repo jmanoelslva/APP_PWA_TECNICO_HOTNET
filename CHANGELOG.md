@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.27.0] - 2026-11-05
+
 ### Adicionado
 
 - **CTO atual do cliente no Mapa de CTOs:** ao buscar um cliente, aparecem a
