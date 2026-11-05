@@ -75,11 +75,81 @@
   display: inline-flex;
 }
 
-.clientes-offline-item-acoes {
-  margin-top: 12px;
+.clientes-offline-ultima {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--cor-texto-secundario);
+}
+
+/* Ações: 5 colunas iguais numa linha só, ícone em cima e rótulo embaixo */
+.clientes-offline-acoes {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.clientes-offline-acoes > a,
+.clientes-offline-acoes > button,
+.clientes-offline-acoes > span {
+  --acao-cor: var(--cor-texto-secundario);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 56px;
+  padding: 6px 2px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--acao-cor) 35%, var(--cor-borda));
+  background: color-mix(in srgb, var(--acao-cor) 8%, var(--cor-superficie));
+  color: var(--acao-cor);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.clientes-offline-acoes > .desabilitada {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.clientes-offline-acoes > button:disabled {
+  opacity: 0.6;
+}
+
+/* Filtro de período: quebra linha em vez de cortar */
+.clientes-offline-periodos {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin: 4px 0 0;
+}
+
+.clientes-offline-periodos button {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+  white-space: nowrap;
+}
+
+.clientes-offline-periodos button.ativo {
+  border-color: var(--cor-offline);
+  background: color-mix(in srgb, var(--cor-offline) 12%, var(--cor-superficie));
+  color: var(--cor-offline);
 }
 
 .clientes-offline-total span {

@@ -27,6 +27,14 @@ export function instanteAutenticacao(data: string | null | undefined): number | 
   return Number.isFinite(instante) ? instante : null
 }
 
+/**
+ * Hora da queda: o último accounting da sessão (cpe_date_acct). Sem ele,
+ * a última autenticação; sem nenhum dos dois, nunca conectou.
+ */
+export function instanteDaQueda(cpe: { date_acct?: string; date_auth?: string }): number | null {
+  return instanteAutenticacao(cpe.date_acct) ?? instanteAutenticacao(cpe.date_auth)
+}
+
 /** Hoje = mesmo dia do calendário; semana = até 7 dias; depois, antigos. */
 export function grupoOffline(instante: number | null, agora: number = Date.now()): GrupoOffline {
   if (instante == null) return 'nunca'

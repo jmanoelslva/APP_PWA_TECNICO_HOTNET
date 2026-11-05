@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { MdSearch } from 'react-icons/md'
-import { LuSearchX, LuWifiOff, LuTriangleAlert, LuX } from 'react-icons/lu'
+import { LuCable, LuMap, LuNetwork, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifiOff, LuX } from 'react-icons/lu'
 import { ApiError, buscarDetalheCliente, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
-import Abas, { type Aba } from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
@@ -11,14 +10,14 @@ import PullToRefresh from '../components/PullToRefresh'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarDataHoraSegundos, linkLigar } from '../utils/formatacao'
+import { formatarDataHora, linkLigar } from '../utils/formatacao'
 import { primeiroTelefone } from '../utils/minhasOs'
 import {
   ORDEM_GRUPOS,
   ROTULO_GRUPO,
   ctosComVariosOffline,
   grupoOffline,
-  instanteAutenticacao,
+  instanteDaQueda,
   regiaoDaCto,
   tempoOffline,
   type GrupoOffline,
@@ -138,7 +137,7 @@ export default function ClientesOffline() {
     const agora = Date.now()
     return cpes
       .map((cpe) => {
-        const instante = instanteAutenticacao(cpe.date_auth)
+        const instante = instanteDaQueda(cpe)
         const dp = cpe.dp_pk != null ? dpsPorPk.get(cpe.dp_pk) : undefined
         return { cpe, instante, grupo: grupoOffline(instante, agora), regiao: regiaoDaCto(cpe.dp_name, dp?.setor) }
       })
@@ -171,12 +170,12 @@ export default function ClientesOffline() {
     return mapa
   }, [filtrados])
 
-  const abasPeriodo: Aba<Periodo>[] = [
-    { chave: 'todos', rotulo: `Todos ${filtrados.length}` },
-    { chave: 'hoje', rotulo: `Hoje ${porGrupo.get('hoje')!.length}` },
-    { chave: 'semana', rotulo: `1–7 dias ${porGrupo.get('semana')!.length}` },
-    { chave: 'antigos', rotulo: `+7 dias ${porGrupo.get('antigos')!.length}` },
-    { chave: 'nunca', rotulo: `Nunca ${porGrupo.get('nunca')!.length}` },
+  const abasPeriodo: { chave: Periodo; rotulo: string }[] = [
+    { chave: 'todos', rotulo: `Todos (${filtrados.length})` },
+    { chave: 'hoje', rotulo: `Hoje (${porGrupo.get('hoje')!.length})` },
+    { chave: 'semana', rotulo: `1 a 7 dias (${porGrupo.get('semana')!.length})` },
+    { chave: 'antigos', rotulo: `+7 dias (${porGrupo.get('antigos')!.length})` },
+    { chave: 'nunca', rotulo: `Nunca (${porGrupo.get('nunca')!.length})` },
   ]
   const gruposVisiveis = periodo === 'todos' ? ORDEM_GRUPOS : [periodo]
   const visiveis = gruposVisiveis.reduce((soma, g) => soma + porGrupo.get(g)!.length, 0)
@@ -197,10 +196,11 @@ export default function ClientesOffline() {
       <li key={cpe.pk} className="clientes-offline-card">
         <div className="clientes-offline-topo">
           <strong>{cpe.client_complete_name ?? cpe.username ?? `CPE #${cpe.pk}`}</strong>
-          <span className="clientes-offline-tempo" title={instante ? formatarDataHoraSegundos(cpe.date_auth) : undefined}>
-            {tempoOffline(instante)}
-          </span>
+          <span className="clientes-offline-tempo">{tempoOffline(instante)}</span>
         </div>
+        {instante != null && (
+          <p className="clientes-offline-ultima">Última conexão: {formatarDataHora(cpe.date_acct || cpe.date_auth)}</p>
+        )}
         {cpe.dp_name ? (
           <div className="clientes-offline-cto">
             <i style={{ background: dp?.cor || '#555555' }} aria-hidden="true" />
@@ -217,45 +217,49 @@ export default function ClientesOffline() {
           {(cpe.contract_number ?? cpe.contract_pk) != null && `Contrato ${cpe.contract_number ?? cpe.contract_pk}`}
           {cpe.username && ` · ${cpe.username}`}
         </p>
-        <div className="clientes-offline-item-acoes" style={{ '--botao-cor': CORES.conexao } as CSSProperties}>
-          <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="botao botao-secundario botao-pequeno" viewTransition>
+        {/* Uma linha só: ícone em cima, rótulo curto embaixo, colunas iguais. */}
+        <div className="clientes-offline-acoes">
+          <Link to={`/conexao?cpe_pk=${cpe.pk}`} style={{ '--acao-cor': CORES.conexao } as CSSProperties} viewTransition>
+            <LuNetwork size={20} aria-hidden="true" />
             Conexão
           </Link>
-          {cpe.username && (
+          {cpe.username ? (
             <Link
               to={`/onu?username=${encodeURIComponent(cpe.username)}`}
-              className="botao botao-secundario botao-pequeno"
-              style={{ '--botao-cor': CORES.onu } as CSSProperties}
+              style={{ '--acao-cor': CORES.onu } as CSSProperties}
               viewTransition
             >
+              <LuCable size={20} aria-hidden="true" />
               ONU
             </Link>
+          ) : (
+            <span className="desabilitada" aria-hidden="true">
+              <LuCable size={20} />
+              ONU
+            </span>
           )}
-          {cpe.client_pk && (
+          {cpe.client_pk ? (
             <>
-              <Link to={`/mapa?cliente=${cpe.client_pk}`} className="botao botao-secundario botao-pequeno" viewTransition>
+              <Link to={`/mapa?cliente=${cpe.client_pk}`} style={{ '--acao-cor': CORES.endereco } as CSSProperties} viewTransition>
+                <LuMap size={20} aria-hidden="true" />
                 Mapa
               </Link>
               <button
                 type="button"
-                className="botao botao-secundario botao-pequeno"
-                style={{ '--botao-cor': CORES.sucesso } as CSSProperties}
+                style={{ '--acao-cor': CORES.sucesso } as CSSProperties}
                 onClick={() => void ligar(cpe)}
                 aria-busy={ligandoPk === cpe.client_pk}
                 disabled={ligandoPk != null}
               >
+                <LuPhone size={20} aria-hidden="true" />
                 Ligar
               </button>
-              <Link
-                to={`/clientes/${cpe.client_pk}`}
-                className="botao botao-secundario botao-pequeno"
-                style={{ '--botao-cor': CORES.cliente } as CSSProperties}
-                viewTransition
-              >
+              <Link to={`/clientes/${cpe.client_pk}`} style={{ '--acao-cor': CORES.cliente } as CSSProperties} viewTransition>
+                <LuUser size={20} aria-hidden="true" />
                 Cliente
               </Link>
             </>
-          )}
+          ) : null}
         </div>
       </li>
     )
@@ -340,7 +344,20 @@ export default function ClientesOffline() {
               </button>
             )}
 
-            <Abas abas={abasPeriodo} ativa={periodo} onEscolher={setPeriodo} cor={CORES.offline} rotulo="Tempo offline" />
+            {/* Botões que quebram linha em tela estreita, sem cortar o texto. */}
+            <div className="clientes-offline-periodos" role="group" aria-label="Tempo offline">
+              {abasPeriodo.map((aba) => (
+                <button
+                  key={aba.chave}
+                  type="button"
+                  aria-pressed={periodo === aba.chave}
+                  className={periodo === aba.chave ? 'ativo' : undefined}
+                  onClick={() => setPeriodo(aba.chave)}
+                >
+                  {aba.rotulo}
+                </button>
+              ))}
+            </div>
 
             {regioes.length > 1 && (
               <select

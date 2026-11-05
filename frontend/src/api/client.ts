@@ -364,6 +364,10 @@ export interface CpeDto {
   mac_last?: string
   // Última autenticação do cliente (cpe_date_auth na API).
   date_auth?: string
+  // Último accounting RADIUS (cpe_date_acct): a última vez que a sessão
+  // reportou — é a hora da queda de um cliente offline, não date_auth
+  // (que só muda quando ele autentica de novo).
+  date_acct?: string
   status?: number
   state?: number
   address?: string

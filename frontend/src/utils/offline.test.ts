@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { ctosComVariosOffline, grupoOffline, instanteAutenticacao, regiaoDaCto, tempoOffline } from './offline'
+import {
+  ctosComVariosOffline,
+  grupoOffline,
+  instanteAutenticacao,
+  instanteDaQueda,
+  regiaoDaCto,
+  tempoOffline,
+} from './offline'
 
 const agora = new Date(2026, 10, 5, 15, 0, 0).getTime()
 
@@ -11,6 +18,18 @@ describe('instanteAutenticacao', () => {
     expect(instanteAutenticacao('')).toBeNull()
     expect(instanteAutenticacao(undefined)).toBeNull()
     expect(instanteAutenticacao('0000-00-00 00:00:00')).toBeNull()
+  })
+})
+
+describe('instanteDaQueda', () => {
+  it('usa o último accounting, não a última autenticação', () => {
+    expect(instanteDaQueda({ date_auth: '2026-10-26 12:52:17', date_acct: '2026-11-05 19:25:56' })).toBe(
+      new Date(2026, 10, 5, 19, 25, 56).getTime(),
+    )
+  })
+  it('sem accounting, cai para a autenticação; sem nada, nunca', () => {
+    expect(instanteDaQueda({ date_auth: '2026-11-01 10:00:00' })).toBe(new Date(2026, 10, 1, 10, 0, 0).getTime())
+    expect(instanteDaQueda({ date_acct: '0000-00-00 00:00:00' })).toBeNull()
   })
 })
 
