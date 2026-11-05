@@ -211,7 +211,7 @@ export default function OnuStatus() {
         await removerOnu(onu.pk, ospo)
         toast('ONU removida do registro.', 'sucesso')
         setOnu(null)
-        setParams({})
+        setParams({}, { replace: true })
       }
       setConfirmandoAcao(null)
     } catch (excecao) {
@@ -239,7 +239,8 @@ export default function OnuStatus() {
       <div className="onu-tela tela-entrada">
         <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
 
-        <BuscaOnu onEscolher={(parametros) => setParams(parametros)} />
+        {/* Escolher troca a busca pelo resultado: "Voltar" sai da aba. */}
+        <BuscaOnu onEscolher={(parametros) => setParams(parametros, { replace: true })} />
 
         {semSelecao && !erro && (
           <EstadoVazio

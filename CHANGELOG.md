@@ -16,6 +16,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **"Voltar" depois de buscar na Conexão e na ONU:** escolher o resultado
+  troca a busca (não empilha); "Voltar" sai da aba em vez de reabrir a busca
+  anterior.
 - **Abas do rodapé no jeito de app nativo:** trocar de aba não empilha telas;
   "Voltar" de qualquer aba leva ao Início e, no Início, sai do app. Tocar na
   aba atual, estando numa tela aberta dela, volta ao começo da aba.

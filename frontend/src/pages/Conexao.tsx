@@ -169,7 +169,7 @@ export default function Conexao() {
 
         {!temParametroInicial && (
           <>
-            <BuscaUsuarioPppoe onEscolher={(parametros) => setParams(parametros)} />
+            <BuscaUsuarioPppoe onEscolher={(parametros) => setParams(parametros, { replace: true })} />
             {!erro && (
               <EstadoVazio
                 icone={LuWifi}
