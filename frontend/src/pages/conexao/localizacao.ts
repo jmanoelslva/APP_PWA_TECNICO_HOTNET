@@ -33,23 +33,30 @@ export function useLocalizacaoAoVivo(): PosicaoAoVivo | null {
         setPosicao(nova)
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 5000 },
+      // maximumAge 0: sempre leitura nova do GPS, nunca uma guardada.
+      { enableHighAccuracy: true, maximumAge: 0 },
     )
     return () => navigator.geolocation.clearWatch(watchId)
   }, [])
   return posicao
 }
 
-// Limiares da atualização ao vivo: andou ao menos 5 m ou a precisão mudou
-// 5 m ou mais (ex.: de ±30 m para ±8 m ao sair de perto de um muro).
-export const MOVIMENTO_MINIMO_M = 5
-export const VARIACAO_PRECISAO_MINIMA_M = 5
+// Limiares da atualização ao vivo. Precisão vem primeiro: qualquer leitura
+// mais precisa (1 m ou mais) é mostrada na hora; movimento de 3 m também.
+// Só o tremor do GPS parado (leituras quase iguais, sem ganho de precisão)
+// é ignorado. Piora da precisão aparece a partir de 5 m, para o círculo
+// não mentir quando o sinal cai.
+export const MOVIMENTO_MINIMO_M = 3
+export const MELHORA_PRECISAO_MINIMA_M = 1
+export const PIORA_PRECISAO_MINIMA_M = 5
 
 export function mudouOSuficiente(anterior: PosicaoAoVivo | null, nova: PosicaoAoVivo): boolean {
   if (!anterior) return true
+  const ganho = anterior.precisaoM - nova.precisaoM
   return (
-    distanciaMetros(anterior.lat, anterior.lng, nova.lat, nova.lng) >= MOVIMENTO_MINIMO_M ||
-    Math.abs(anterior.precisaoM - nova.precisaoM) >= VARIACAO_PRECISAO_MINIMA_M
+    ganho >= MELHORA_PRECISAO_MINIMA_M ||
+    -ganho >= PIORA_PRECISAO_MINIMA_M ||
+    distanciaMetros(anterior.lat, anterior.lng, nova.lat, nova.lng) >= MOVIMENTO_MINIMO_M
   )
 }
 
