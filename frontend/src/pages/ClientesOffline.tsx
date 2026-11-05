@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { MdSearch } from 'react-icons/md'
-import { LuCable, LuChevronDown, LuMap, LuMapPin, LuNetwork, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifiOff, LuX } from 'react-icons/lu'
+import { LuCable, LuMap, LuNetwork, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifiOff, LuX } from 'react-icons/lu'
 import { ApiError, buscarDetalheCliente, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -18,7 +18,6 @@ import {
   ctosComVariosOffline,
   grupoOffline,
   instanteDaQueda,
-  regiaoDaCto,
   tempoOffline,
   type GrupoOffline,
 } from '../utils/offline'
@@ -34,7 +33,6 @@ interface ItemOffline {
   cpe: CpeDto
   instante: number | null
   grupo: GrupoOffline
-  regiao: string
 }
 
 function normalizar(valor: string): string {
@@ -65,10 +63,9 @@ export default function ClientesOffline() {
   const [atualizadoAs, setAtualizadoAs] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
   const [periodo, setPeriodo] = useState<Periodo>('todos')
-  const [regiao, setRegiao] = useState('')
   const [ctoFiltro, setCtoFiltro] = useState<{ pk: number; nome: string } | null>(null)
-  // CTOs do Controllr: setor (região) e cor de cada uma. Complemento — se
-  // falhar, a região sai da sigla do nome da CTO.
+  // CTOs do Controllr: cor de cada uma (bolinha no cartão e no alerta).
+  // Complemento — se falhar, usa a cor padrão.
   const [dpsPorPk, setDpsPorPk] = useState<Map<number, DpDto>>(new Map())
   const [ligandoPk, setLigandoPk] = useState<number | null>(null)
 
@@ -131,38 +128,29 @@ export default function ClientesOffline() {
     }
   }
 
-  // Todos os itens com grupo e região, do que caiu mais recente para o mais
-  // antigo; "nunca conectou" no fim.
+  // Todos os itens com grupo, do que caiu mais recente para o mais antigo;
+  // "nunca conectou" no fim.
   const itens = useMemo<ItemOffline[]>(() => {
     const agora = Date.now()
     return cpes
       .map((cpe) => {
         const instante = instanteDaQueda(cpe)
-        const dp = cpe.dp_pk != null ? dpsPorPk.get(cpe.dp_pk) : undefined
-        return { cpe, instante, grupo: grupoOffline(instante, agora), regiao: regiaoDaCto(cpe.dp_name, dp?.setor) }
+        return { cpe, instante, grupo: grupoOffline(instante, agora) }
       })
       .sort((a, b) => (b.instante ?? -Infinity) - (a.instante ?? -Infinity))
-  }, [cpes, dpsPorPk])
+  }, [cpes])
 
   const ctosVarios = useMemo(() => ctosComVariosOffline(cpes), [cpes])
   const offlinePorCto = useMemo(() => new Map(ctosVarios.map((cto) => [cto.dpPk, cto.quantidade])), [ctosVarios])
-  const regioes = useMemo(() => {
-    const contagem = new Map<string, number>()
-    for (const item of itens) contagem.set(item.regiao, (contagem.get(item.regiao) ?? 0) + 1)
-    return [...contagem.entries()].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR'))
-  }, [itens])
 
   const termoBusca = normalizar(busca.trim())
-  // Busca, região e CTO valem para tudo; o período só escolhe o grupo.
+  // Busca e CTO valem para tudo; o período só escolhe o grupo.
   const filtrados = useMemo(
     () =>
       itens.filter(
-        (item) =>
-          (!termoBusca || bateBusca(item.cpe, termoBusca)) &&
-          (!regiao || item.regiao === regiao) &&
-          (!ctoFiltro || item.cpe.dp_pk === ctoFiltro.pk),
+        (item) => (!termoBusca || bateBusca(item.cpe, termoBusca)) && (!ctoFiltro || item.cpe.dp_pk === ctoFiltro.pk),
       ),
-    [itens, termoBusca, regiao, ctoFiltro],
+    [itens, termoBusca, ctoFiltro],
   )
   const porGrupo = useMemo(() => {
     const mapa = new Map<GrupoOffline, ItemOffline[]>(ORDEM_GRUPOS.map((g) => [g, []]))
@@ -180,11 +168,10 @@ export default function ClientesOffline() {
   const gruposVisiveis = periodo === 'todos' ? ORDEM_GRUPOS : [periodo]
   const visiveis = gruposVisiveis.reduce((soma, g) => soma + porGrupo.get(g)!.length, 0)
   const aindaCarregandoLista = cpes.length < total
-  const filtroAtivo = Boolean(termoBusca || regiao || ctoFiltro || periodo !== 'todos')
+  const filtroAtivo = Boolean(termoBusca || ctoFiltro || periodo !== 'todos')
 
   function limparFiltros() {
     setBusca('')
-    setRegiao('')
     setCtoFiltro(null)
     setPeriodo('todos')
   }
@@ -355,28 +342,12 @@ export default function ClientesOffline() {
               ))}
             </div>
 
-            {(regioes.length > 1 || ctoFiltro) && (
+            {ctoFiltro && (
               <div className="clientes-offline-filtros-linha">
-                {regioes.length > 1 && (
-                  <label className={`clientes-offline-regiao${regiao ? ' ativo' : ''}`}>
-                    <LuMapPin size={16} aria-hidden="true" />
-                    <select value={regiao} onChange={(e) => setRegiao(e.target.value)} aria-label="Região">
-                      <option value="">Todas as regiões</option>
-                      {regioes.map(([nome, quantidade]) => (
-                        <option key={nome} value={nome}>
-                          {nome} ({quantidade})
-                        </option>
-                      ))}
-                    </select>
-                    <LuChevronDown size={16} aria-hidden="true" />
-                  </label>
-                )}
-                {ctoFiltro && (
-                  <button type="button" className="clientes-offline-filtro-cto" onClick={() => setCtoFiltro(null)}>
-                    <span>{ctoFiltro.nome}</span>
-                    <LuX size={16} aria-label="Tirar o filtro da CTO" />
-                  </button>
-                )}
+                <button type="button" className="clientes-offline-filtro-cto" onClick={() => setCtoFiltro(null)}>
+                  <span>{ctoFiltro.nome}</span>
+                  <LuX size={16} aria-label="Tirar o filtro da CTO" />
+                </button>
               </div>
             )}
 

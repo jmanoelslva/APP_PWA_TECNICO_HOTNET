@@ -1,6 +1,6 @@
-// Regras da tela Clientes Offline: quando caiu, em que grupo fica, região
-// da CTO e CTOs com mais de um cliente offline (sinal de problema coletivo:
-// fibra rompida, CTO ou splitter).
+// Regras da tela Clientes Offline: quando caiu, em que grupo fica e CTOs
+// com mais de um cliente offline (sinal de problema coletivo: fibra
+// rompida, CTO ou splitter).
 
 export type GrupoOffline = 'hoje' | 'semana' | 'antigos' | 'nunca'
 
@@ -55,17 +55,6 @@ export function tempoOffline(instante: number | null, agora: number = Date.now()
   if (horas < 24) return `caiu há ${horas} h`
   const dias = Math.floor(horas / 24)
   return `caiu há ${dias} ${dias === 1 ? 'dia' : 'dias'}`
-}
-
-/**
- * Região do cliente: o setor da CTO no Controllr; sem setor, a sigla do
- * nome da CTO ("NRO-CTO-6.8" → "NRO"); sem CTO, "Sem CTO".
- */
-export function regiaoDaCto(dpNome: string | null | undefined, setor: string | null | undefined): string {
-  if (setor) return setor
-  if (!dpNome) return 'Sem CTO'
-  const sigla = dpNome.match(/^([A-Za-z]{2,4})-/)
-  return sigla ? sigla[1].toUpperCase() : 'Outras'
 }
 
 export interface CtoComOffline {

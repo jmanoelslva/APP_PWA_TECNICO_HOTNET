@@ -4,7 +4,6 @@ import {
   grupoOffline,
   instanteAutenticacao,
   instanteDaQueda,
-  regiaoDaCto,
   tempoOffline,
 } from './offline'
 
@@ -54,15 +53,6 @@ describe('tempoOffline', () => {
     expect(tempoOffline(agora - 24 * 3600_000, agora)).toBe('caiu há 1 dia')
     expect(tempoOffline(agora - 12 * 24 * 3600_000, agora)).toBe('caiu há 12 dias')
     expect(tempoOffline(null, agora)).toBe('Nunca conectou')
-  })
-})
-
-describe('regiaoDaCto', () => {
-  it('setor primeiro, depois a sigla do nome', () => {
-    expect(regiaoDaCto('NRO-CTO-6.8', 'FTTH-NRO')).toBe('FTTH-NRO')
-    expect(regiaoDaCto('NRO-CTO-6.8', null)).toBe('NRO')
-    expect(regiaoDaCto('CTO20.6', null)).toBe('Outras')
-    expect(regiaoDaCto(undefined, null)).toBe('Sem CTO')
   })
 })
 

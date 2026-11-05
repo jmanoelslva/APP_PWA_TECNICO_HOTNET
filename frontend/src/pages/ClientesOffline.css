@@ -280,14 +280,13 @@
   color: var(--cor-erro);
 }
 
-/* Região e CTO filtrada lado a lado, na mesma altura dos outros campos */
+/* CTO filtrada (tocada no alerta) */
 .clientes-offline-filtros-linha {
   display: flex;
   gap: 8px;
   margin-top: 8px;
 }
 
-.clientes-offline-regiao,
 .clientes-offline-filtro-cto {
   display: flex;
   align-items: center;
@@ -300,33 +299,6 @@
   font: inherit;
   font-size: 14px;
   color: var(--cor-texto-secundario);
-}
-
-.clientes-offline-regiao {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-}
-
-/* select sem aparência nativa, ocupando o rótulo inteiro */
-.clientes-offline-regiao select {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  font: inherit;
-  color: var(--cor-texto);
-  appearance: none;
-  -webkit-appearance: none;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-.clientes-offline-regiao.ativo {
-  border-color: var(--cor-offline);
-  color: var(--cor-offline);
 }
 
 .clientes-offline-filtro-cto {
