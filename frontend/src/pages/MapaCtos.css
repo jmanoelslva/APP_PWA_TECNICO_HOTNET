@@ -146,3 +146,11 @@
 .mapa-ctos-proximas .mapa-ctos-aviso {
   margin: 0 0 10px;
 }
+
+.mapa-ctos-livres {
+  color: var(--cor-sucesso);
+}
+
+.mapa-ctos-lotada {
+  color: var(--cor-erro);
+}

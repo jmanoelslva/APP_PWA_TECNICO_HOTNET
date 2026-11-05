@@ -289,7 +289,22 @@ export default function MapaCtos() {
                   <span className="mapa-ctos-nome">
                     <strong>{dp.name}</strong>
                     {dp.ativos != null && (
-                      <span>{dp.limite ? `${dp.ativos}/${dp.limite} portas` : `${dp.ativos} ativo(s)`}</span>
+                      <span>
+                        {dp.limite ? (
+                          <>
+                            {dp.ativos}/{dp.limite} portas ·{' '}
+                            {dp.limite - dp.ativos > 0 ? (
+                              <b className="mapa-ctos-livres">
+                                {dp.limite - dp.ativos} {dp.limite - dp.ativos === 1 ? 'livre' : 'livres'}
+                              </b>
+                            ) : (
+                              <b className="mapa-ctos-lotada">Lotada</b>
+                            )}
+                          </>
+                        ) : (
+                          `${dp.ativos} ativo(s)`
+                        )}
+                      </span>
                     )}
                   </span>
                   <span className="mapa-ctos-distancia">{formatarDistancia(distanciaM)}</span>
