@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MdOpenInFull, MdCloseFullscreen, MdOpenInNew, MdMyLocation } from 'react-icons/md'
+import { LuExternalLink, LuLocateFixed, LuMaximize2, LuMinimize2 } from 'react-icons/lu'
 import { ApiError, buscarProjetoRede, type DpDto, type ItemProjetoDto } from '../../api/client'
 import { distanciaMetros, formatarDistancia } from './localizacao'
 
@@ -302,7 +302,7 @@ export default function MapaCto({
           aria-label="Centralizar o mapa na minha localização"
           title="Minha localização"
         >
-          <MdMyLocation size={18} />
+          <LuLocateFixed size={20} />
         </button>
       </div>
       <div className="mapa-cto-rodape">
@@ -320,10 +320,10 @@ export default function MapaCto({
           )}
         </span>
         <button type="button" onClick={() => setAmpliado((valor) => !valor)}>
-          {ampliado ? <MdCloseFullscreen size={14} /> : <MdOpenInFull size={14} />} {ampliado ? 'Reduzir' : 'Ampliar'}
+          {ampliado ? <LuMinimize2 size={16} /> : <LuMaximize2 size={16} />} {ampliado ? 'Reduzir' : 'Ampliar'}
         </button>
         <a href={linkGoogleMaps} target="_blank" rel="noopener noreferrer">
-          <MdOpenInNew size={14} /> Google Maps
+          <LuExternalLink size={16} /> Google Maps
         </a>
       </div>
       {avisoProjeto && <span className="mapa-cto-aviso">{avisoProjeto}</span>}

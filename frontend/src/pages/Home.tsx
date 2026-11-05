@@ -1,8 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MdQrCodeScanner, MdSearch } from 'react-icons/md'
+import { LuCalendarClock, LuChevronRight, LuHammer, LuMap, LuScanQrCode, LuSearch, LuServer, LuWifiOff } from 'react-icons/lu'
 // Atalhos com ícones Lucide, iguais aos da barra de baixo.
-import { LuCalendarClock, LuChevronRight, LuHammer, LuMap, LuServer, LuWifiOff } from 'react-icons/lu'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -224,7 +223,7 @@ export default function Home() {
 
           <form className="home-busca home-combobox" onSubmit={aoBuscar}>
             <div className="home-busca-campo">
-              <MdSearch size={20} className="home-busca-icone" aria-hidden="true" />
+              <LuSearch size={20} className="home-busca-icone" aria-hidden="true" />
               <input
                 enterKeyHint="search"
                 value={busca}
@@ -243,7 +242,7 @@ export default function Home() {
                 aria-label="Ler código de barras ou QR pela câmera"
                 title="Ler código de barras ou QR pela câmera"
               >
-                <MdQrCodeScanner size={22} />
+                <LuScanQrCode size={22} />
               </button>
             </div>
             {listaAberta && busca.trim().length >= 2 && (

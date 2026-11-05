@@ -15,7 +15,7 @@ export default function CardCliente({ cpe, status }: { cpe: CpeDto; status: Stat
         <span>Cliente</span>
         {cpe.client_pk ? (
           <Link to={`/clientes/${cpe.client_pk}`} className="conexao-link" viewTransition>
-            <LuUser size={14} /> {cpe.client_complete_name ?? '—'}
+            <LuUser size={16} /> {cpe.client_complete_name ?? '—'}
           </Link>
         ) : (
           <strong>{cpe.client_complete_name ?? '—'}</strong>

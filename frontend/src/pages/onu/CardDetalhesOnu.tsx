@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
-import { LuUser } from 'react-icons/lu'
-import { MdEdit, MdPersonAdd } from 'react-icons/md'
+import { LuPencil, LuUser, LuUserPlus } from 'react-icons/lu'
 import type { OnuDto } from '../../api/client'
 import { formatarUltimaQueda } from './formato'
 
@@ -24,11 +23,11 @@ export default function CardDetalhesOnu({
         <span>Cliente</span>
         {onu.client_pk ? (
           <Link to={`/clientes/${onu.client_pk}`} className="onu-link" viewTransition>
-            <LuUser size={14} /> {onu.client_name ?? '—'}
+            <LuUser size={16} /> {onu.client_name ?? '—'}
           </Link>
         ) : (
           <button type="button" className="onu-btn-registrar-cliente" onClick={onRegistrarCliente} disabled={ocupado}>
-            <MdPersonAdd size={14} /> Registrar cliente
+            <LuUserPlus size={16} /> Registrar cliente
           </button>
         )}
       </div>
@@ -43,7 +42,7 @@ export default function CardDetalhesOnu({
         <div className="onu-campo-valor">
           <strong>{onu.name ?? '—'}</strong>
           <button type="button" onClick={onRenomear} disabled={ocupado} aria-label="Renomear ONU">
-            <MdEdit size={16} />
+            <LuPencil size={16} />
           </button>
         </div>
       </div>

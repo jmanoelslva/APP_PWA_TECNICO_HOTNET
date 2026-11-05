@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { LuCable, LuMap, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifi, LuWifiOff, LuX } from 'react-icons/lu'
-import { MdSearch } from 'react-icons/md'
+import { LuCable, LuMap, LuPhone, LuSearch, LuSearchX, LuTriangleAlert, LuUser, LuWifi, LuWifiOff, LuX } from 'react-icons/lu'
 import { ApiError, buscarDetalheCliente, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -264,7 +263,7 @@ export default function ClientesOffline() {
 
         {!carregando && (cpes.length > 0 || erro == null) && (
           <div className="clientes-offline-busca">
-            <MdSearch size={18} />
+            <LuSearch size={20} />
             <input
               autoCapitalize="none"
               autoCorrect="off"

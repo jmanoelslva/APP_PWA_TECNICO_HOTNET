@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react'
-import { MdSave, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { LuEye, LuEyeOff, LuSave } from 'react-icons/lu'
 import { ApiError, atualizarWifiCpe, type CpeDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
@@ -94,7 +94,7 @@ export default function CardWifi({
             disabled={semCriptografia}
             aria-label={mostrarSenha ? 'Ocultar senha do Wi-Fi' : 'Mostrar senha do Wi-Fi'}
           >
-            {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+            {mostrarSenha ? <LuEyeOff size={16} /> : <LuEye size={16} />}
           </button>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function CardWifi({
         onClick={salvar}
         disabled={salvando}
       >
-        <MdSave size={14} /> {salvando ? 'Salvando…' : 'Salvar Wi-Fi'}
+        <LuSave size={16} /> {salvando ? 'Salvando…' : 'Salvar Wi-Fi'}
       </button>
     </CartaoConexao>
   )

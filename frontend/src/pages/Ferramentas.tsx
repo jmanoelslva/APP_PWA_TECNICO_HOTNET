@@ -1,19 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { IconType } from 'react-icons'
-import {
-  LuActivity,
-  LuChevronRight,
-  LuExternalLink,
-  LuFileSearch,
-  LuGauge,
-  LuGlobe,
-  LuHammer,
-  LuNetwork,
-  LuPlug,
-  LuRadar,
-  LuZap,
-} from 'react-icons/lu'
+import { LuActivity, LuChevronRight, LuExternalLink, LuFileSearch, LuGauge, LuGlobe, LuHammer, LuNetwork, LuPlug, LuRadar, LuZap } from 'react-icons/lu'
 import { acessoAuditoria, ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
@@ -153,7 +141,7 @@ export default function Ferramentas() {
                 <strong>Auditoria</strong>
                 <span>Quem reiniciou, removeu ou alterou ONU e Wi-Fi, quando e de qual IP</span>
               </span>
-              <LuChevronRight size={18} className="ferramentas-item-seta" />
+              <LuChevronRight size={20} className="ferramentas-item-seta" />
             </Link>
           </li>
         )}
@@ -167,7 +155,7 @@ export default function Ferramentas() {
                 <strong>{ferramenta.nome}</strong>
                 <span>{ferramenta.descricao}</span>
               </span>
-              <LuExternalLink size={18} className="ferramentas-item-seta" />
+              <LuExternalLink size={20} className="ferramentas-item-seta" />
             </a>
           </li>
         ))}

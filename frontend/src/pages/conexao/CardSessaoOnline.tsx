@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { MdRefresh } from 'react-icons/md'
+import { LuRefreshCw } from 'react-icons/lu'
 import Skeleton from '../../components/Skeleton'
 import LidoHa from '../../components/LidoHa'
 import { CORES } from '../../utils/cores'
@@ -28,7 +28,7 @@ export default function CardSessaoOnline({
           onClick={onAtualizar}
           disabled={carregando}
         >
-          <MdRefresh size={14} /> {carregando ? 'Consultando…' : 'Atualizar'}
+          <LuRefreshCw size={16} /> {carregando ? 'Consultando…' : 'Atualizar'}
         </button>
       </div>
       {sessao && (

@@ -1,5 +1,5 @@
 import { FaWhatsapp } from 'react-icons/fa'
-import { MdPhone } from 'react-icons/md'
+import { LuPhone } from 'react-icons/lu'
 import { formatarTelefone, linkLigar, linkWhatsapp, separarTelefones } from '../utils/formatacao'
 import './AcoesContato.css'
 
@@ -24,7 +24,7 @@ export default function AcoesContato({ numero }: { numero: string | null | undef
         return (
           <div key={n} className="acoes-contato-numero">
             <a href={ligar} className="acoes-contato-botao" aria-label={`Ligar${sufixo}`}>
-              <MdPhone size={16} /> Ligar{telefone}
+              <LuPhone size={16} /> Ligar{telefone}
             </a>
             {whatsapp && (
               <a

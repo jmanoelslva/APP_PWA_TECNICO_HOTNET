@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type CSSProperties } from 'react'
-import { MdLocationOn } from 'react-icons/md'
+import { LuMapPin } from 'react-icons/lu'
 import { ApiError, atualizarEndereco, type EnderecoDto } from '../api/client'
 import { useToast } from './Toast/useToast'
 import './ModalEditarEndereco.css'
@@ -138,7 +138,7 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
             disabled={capturandoLocalizacao}
             onClick={capturarLocalizacaoAtual}
           >
-            <MdLocationOn size={14} /> {capturandoLocalizacao ? 'Capturando…' : 'Capturar localização atual'}
+            <LuMapPin size={16} /> {capturandoLocalizacao ? 'Capturando…' : 'Capturar localização atual'}
           </button>
         </div>
 

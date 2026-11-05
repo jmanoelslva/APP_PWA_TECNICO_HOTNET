@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { LuMap, LuX } from 'react-icons/lu'
-import { MdSearch } from 'react-icons/md'
+import { LuMap, LuSearch, LuX } from 'react-icons/lu'
 import {
   ApiError,
   buscarClientes,
@@ -246,7 +245,7 @@ export default function MapaCtos() {
           (o mapa precisa do endereço). */}
       <form className="home-busca home-combobox mapa-ctos-busca" onSubmit={aoBuscar} role="search">
         <div className="home-busca-campo">
-          <MdSearch size={20} className="home-busca-icone" aria-hidden="true" />
+          <LuSearch size={20} className="home-busca-icone" aria-hidden="true" />
           <input
             enterKeyHint="search"
             value={busca}

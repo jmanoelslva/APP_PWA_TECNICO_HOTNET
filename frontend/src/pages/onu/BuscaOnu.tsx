@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
-import { MdQrCodeScanner } from 'react-icons/md'
+import { LuScanQrCode } from 'react-icons/lu'
 import { buscarCpe, buscarOnu, type CpeDto, type OnuDto } from '../../api/client'
 import LeitorCodigoBarras from '../../components/LeitorCodigoBarras'
 import { CORES } from '../../utils/cores'
@@ -105,7 +105,7 @@ export default function BuscaOnu({
             aria-label="Ler código de barras ou QR pela câmera"
             title="Ler código de barras ou QR pela câmera"
           >
-            <MdQrCodeScanner size={20} />
+            <LuScanQrCode size={20} />
           </button>
         </div>
         {listaAberta && busca.trim().length >= 2 && (

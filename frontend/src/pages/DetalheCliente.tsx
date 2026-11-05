@@ -1,7 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { LuCable, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
-import { MdAdd, MdDescription, MdEdit, MdLocationOn } from 'react-icons/md'
+import { LuCable, LuFileText, LuMapPin, LuPencil, LuPlus, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
 import {
   ApiError,
   atualizarTelefone,
@@ -297,7 +296,7 @@ function DetalheClienteConteudo() {
                           style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                           viewTransition
                         >
-                          <LuWifi size={14} /> Conexão
+                          <LuWifi size={16} /> Conexão
                         </Link>
                         <Link
                           to={
@@ -309,7 +308,7 @@ function DetalheClienteConteudo() {
                           style={{ '--botao-cor': CORES.onu } as CSSProperties}
                           viewTransition
                         >
-                          <LuCable size={14} /> ONU
+                          <LuCable size={16} /> ONU
                         </Link>
                       </div>
                     </div>
@@ -364,7 +363,7 @@ function DetalheClienteConteudo() {
                           rel="noreferrer"
                           className="detalhe-cliente-btn-assinar"
                         >
-                          <MdDescription size={18} /> Assinar contrato agora
+                          <LuFileText size={20} /> Assinar contrato agora
                         </a>
                       )}
                       {!contrato.contract_sign_date && !contrato.contract_sign_doc_link && (
@@ -379,7 +378,7 @@ function DetalheClienteConteudo() {
                             className="botao botao-secundario botao-pequeno"
                             style={{ '--botao-cor': CORES.cliente } as CSSProperties}
                           >
-                            <MdDescription size={14} /> Ver contrato assinado
+                            <LuFileText size={16} /> Ver contrato assinado
                           </a>
                         </div>
                       )}
@@ -399,7 +398,7 @@ function DetalheClienteConteudo() {
                       <div className="detalhe-cliente-item-topo">
                         <strong>{tel.phone_identification ?? 'Telefone'}</strong>
                         <button className="detalhe-cliente-btn-icone" onClick={() => setTelefoneEditando(tel)} aria-label="Editar telefone">
-                          <MdEdit size={18} />
+                          <LuPencil size={20} />
                         </button>
                       </div>
                       <p>{tel.phone_number ? formatarTelefone(tel.phone_number) : 'Número não informado'}</p>
@@ -412,7 +411,7 @@ function DetalheClienteConteudo() {
                     style={{ '--botao-cor': CORES.cliente } as CSSProperties}
                     onClick={() => setAdicionandoTelefone(true)}
                   >
-                    <MdAdd size={14} /> Adicionar telefone
+                    <LuPlus size={16} /> Adicionar telefone
                   </button>
                 </section>
 
@@ -424,7 +423,7 @@ function DetalheClienteConteudo() {
                       <div className="detalhe-cliente-item-topo">
                         <strong>{endereco.address_identification ?? 'Endereço'}</strong>
                         <button className="detalhe-cliente-btn-icone" onClick={() => setEnderecoEditando(endereco)} aria-label="Editar endereço">
-                          <MdEdit size={18} />
+                          <LuPencil size={20} />
                         </button>
                       </div>
                       <p>
@@ -445,7 +444,7 @@ function DetalheClienteConteudo() {
                             className="botao botao-secundario botao-pequeno"
                             style={{ '--botao-cor': CORES.endereco } as CSSProperties}
                           >
-                            <MdLocationOn size={14} /> Ver no Google Maps
+                            <LuMapPin size={16} /> Ver no Google Maps
                           </a>
                         </div>
                       )}

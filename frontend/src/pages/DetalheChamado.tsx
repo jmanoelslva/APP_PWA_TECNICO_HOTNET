@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { LuMessageCircle, LuWrench } from 'react-icons/lu'
-import { MdAttachFile, MdClose, MdDescription, MdDownload, MdImage, MdPhotoCamera, MdPictureAsPdf } from 'react-icons/md'
+import { LuCamera, LuDownload, LuFileText, LuFileType, LuImage, LuMessageCircle, LuPaperclip, LuWrench, LuX } from 'react-icons/lu'
 import { comprimirImagem } from '../utils/imagem'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
@@ -207,7 +206,7 @@ function DetalheChamadoConteudo() {
         )}
         {temOs && (
           <Link to={`/os/${pk}`} className="detalhe-chamado-chip-os" viewTransition>
-            <LuWrench size={14} /> Ver Ordem de Serviço
+            <LuWrench size={16} /> Ver Ordem de Serviço
           </Link>
         )}
       </header>
@@ -268,7 +267,7 @@ function DetalheChamadoConteudo() {
                     className={`balao-anexo-documento ${ehPdf(op.arquivo) ? 'balao-anexo-pdf' : ''}`}
                   >
                     <span className="balao-anexo-documento-icone">
-                      {ehPdf(op.arquivo) ? <MdPictureAsPdf size={20} /> : <MdAttachFile size={20} />}
+                      {ehPdf(op.arquivo) ? <LuFileType size={20} /> : <LuPaperclip size={20} />}
                     </span>
                     <span className="balao-anexo-documento-nome">{op.arquivo}</span>
                   </a>
@@ -301,20 +300,20 @@ function DetalheChamadoConteudo() {
               aria-expanded={menuAnexoAberto}
               onClick={() => setMenuAnexoAberto((v) => !v)}
             >
-              <MdAttachFile size={20} />
+              <LuPaperclip size={20} />
             </button>
             {menuAnexoAberto && (
               <>
                 <div className="detalhe-chamado-menu-fundo" onClick={() => setMenuAnexoAberto(false)} />
                 <div className="detalhe-chamado-menu-anexo">
                   <button type="button" onClick={() => inputFotoRef.current?.click()}>
-                    <MdPhotoCamera size={18} /> Tirar foto
+                    <LuCamera size={20} /> Tirar foto
                   </button>
                   <button type="button" onClick={() => inputGaleriaRef.current?.click()}>
-                    <MdImage size={18} /> Galeria
+                    <LuImage size={20} /> Galeria
                   </button>
                   <button type="button" onClick={() => inputArquivoRef.current?.click()}>
-                    <MdDescription size={18} /> Arquivo
+                    <LuFileText size={20} /> Arquivo
                   </button>
                 </div>
               </>
@@ -352,7 +351,7 @@ function DetalheChamadoConteudo() {
               aria-label="Baixar imagem"
               onClick={(e) => e.stopPropagation()}
             >
-              <MdDownload size={20} />
+              <LuDownload size={20} />
             </a>
             <button
               type="button"
@@ -360,7 +359,7 @@ function DetalheChamadoConteudo() {
               aria-label="Fechar"
               onClick={() => setImagemAberta(null)}
             >
-              <MdClose size={20} />
+              <LuX size={20} />
             </button>
           </div>
           <img

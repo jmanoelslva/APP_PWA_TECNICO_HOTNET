@@ -1,31 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import type { IconType } from 'react-icons'
-import { LuFileSearch } from 'react-icons/lu'
-import {
-  MdAddLocationAlt,
-  MdAssignmentTurnedIn,
-  MdAttachMoney,
-  MdArrowForward,
-  MdCancel,
-  MdDeleteOutline,
-  MdEdit,
-  MdEditLocationAlt,
-  MdHub,
-  MdLink,
-  MdLogin,
-  MdLocationOff,
-  MdManageSearch,
-  MdMyLocation,
-  MdNotes,
-  MdPlayArrow,
-  MdPhone,
-  MdReplay,
-  MdRestartAlt,
-  MdRouter,
-  MdSync,
-  MdUndo,
-  MdWifi,
-} from 'react-icons/md'
+import { LuArrowRight, LuBanknote, LuCircleX, LuClipboardCheck, LuFileSearch, LuLink, LuLocateFixed, LuLogIn, LuMapPin, LuMapPinOff, LuMapPinPlus, LuNetwork, LuPencil, LuPhone, LuPlay, LuRefreshCw, LuRotateCcw, LuRotateCw, LuRouter, LuStickyNote, LuTrash2, LuUndo2, LuWifi } from 'react-icons/lu'
 import { ApiError, listarAuditoria } from '../api/client'
 import Abas, { type Aba } from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -52,31 +27,31 @@ import './Auditoria.css'
  */
 
 const ACOES: { valor: string; rotulo: string; icone: IconType; cor: string }[] = [
-  { valor: 'onu.remover', rotulo: 'Removeu ONU', icone: MdDeleteOutline, cor: CORES.erro },
-  { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU', icone: MdRestartAlt, cor: CORES.alerta },
-  { valor: 'onu.renomear', rotulo: 'Renomeou ONU', icone: MdEdit, cor: CORES.primaria },
-  { valor: 'onu.associar_cliente', rotulo: 'Associou ONU a cliente', icone: MdLink, cor: CORES.cliente },
-  { valor: 'onu.atualizar', rotulo: 'Atualizou dados da ONU', icone: MdSync, cor: CORES.onu },
-  { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi', icone: MdWifi, cor: CORES.conexao },
-  { valor: 'cpe.editar_acesso_roteador', rotulo: 'Alterou acesso ao roteador', icone: MdRouter, cor: CORES.ferramentas },
-  { valor: 'cpe.localizacao', rotulo: 'Alterou localização do equipamento', icone: MdMyLocation, cor: CORES.endereco },
-  { valor: 'cpe.editar_cto', rotulo: 'Alterou CTO da conexão', icone: MdHub, cor: CORES.conexao },
-  { valor: 'cpe.editar_observacao', rotulo: 'Alterou observação da conexão', icone: MdNotes, cor: CORES.conexao },
-  { valor: 'endereco.criar', rotulo: 'Criou endereço', icone: MdAddLocationAlt, cor: CORES.endereco },
-  { valor: 'endereco.editar', rotulo: 'Editou endereço', icone: MdEditLocationAlt, cor: CORES.endereco },
-  { valor: 'endereco.excluir', rotulo: 'Excluiu endereço', icone: MdLocationOff, cor: CORES.erro },
-  { valor: 'telefone.criar', rotulo: 'Adicionou telefone', icone: MdPhone, cor: CORES.cliente },
-  { valor: 'telefone.editar', rotulo: 'Editou telefone', icone: MdPhone, cor: CORES.cliente },
-  { valor: 'os.responder', rotulo: 'Respondeu OS', icone: MdAssignmentTurnedIn, cor: CORES.suporte },
-  { valor: 'os.iniciar', rotulo: 'Iniciou OS', icone: MdPlayArrow, cor: CORES.suporte },
-  { valor: 'os.finalizar', rotulo: 'Finalizou OS', icone: MdAssignmentTurnedIn, cor: CORES.sucesso },
-  { valor: 'os.desfazer_resposta', rotulo: 'Desfez resposta da OS', icone: MdUndo, cor: CORES.alerta },
-  { valor: 'os.desfazer_inicio', rotulo: 'Desfez início da OS', icone: MdUndo, cor: CORES.alerta },
-  { valor: 'os.desfazer_finalizacao', rotulo: 'Desfez finalização da OS', icone: MdUndo, cor: CORES.alerta },
-  { valor: 'os.cancelar', rotulo: 'Cancelou OS', icone: MdCancel, cor: CORES.erro },
-  { valor: 'os.reabrir', rotulo: 'Reabriu OS', icone: MdReplay, cor: CORES.suporte },
-  { valor: 'financeiro.liberacao', rotulo: 'Liberou fatura (confiança)', icone: MdAttachMoney, cor: CORES.financeiro },
-  { valor: 'auth.login', rotulo: 'Entrou no app', icone: MdLogin, cor: CORES.textoSecundario },
+  { valor: 'onu.remover', rotulo: 'Removeu ONU', icone: LuTrash2, cor: CORES.erro },
+  { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU', icone: LuRotateCcw, cor: CORES.alerta },
+  { valor: 'onu.renomear', rotulo: 'Renomeou ONU', icone: LuPencil, cor: CORES.primaria },
+  { valor: 'onu.associar_cliente', rotulo: 'Associou ONU a cliente', icone: LuLink, cor: CORES.cliente },
+  { valor: 'onu.atualizar', rotulo: 'Atualizou dados da ONU', icone: LuRefreshCw, cor: CORES.onu },
+  { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi', icone: LuWifi, cor: CORES.conexao },
+  { valor: 'cpe.editar_acesso_roteador', rotulo: 'Alterou acesso ao roteador', icone: LuRouter, cor: CORES.ferramentas },
+  { valor: 'cpe.localizacao', rotulo: 'Alterou localização do equipamento', icone: LuLocateFixed, cor: CORES.endereco },
+  { valor: 'cpe.editar_cto', rotulo: 'Alterou CTO da conexão', icone: LuNetwork, cor: CORES.conexao },
+  { valor: 'cpe.editar_observacao', rotulo: 'Alterou observação da conexão', icone: LuStickyNote, cor: CORES.conexao },
+  { valor: 'endereco.criar', rotulo: 'Criou endereço', icone: LuMapPinPlus, cor: CORES.endereco },
+  { valor: 'endereco.editar', rotulo: 'Editou endereço', icone: LuMapPin, cor: CORES.endereco },
+  { valor: 'endereco.excluir', rotulo: 'Excluiu endereço', icone: LuMapPinOff, cor: CORES.erro },
+  { valor: 'telefone.criar', rotulo: 'Adicionou telefone', icone: LuPhone, cor: CORES.cliente },
+  { valor: 'telefone.editar', rotulo: 'Editou telefone', icone: LuPhone, cor: CORES.cliente },
+  { valor: 'os.responder', rotulo: 'Respondeu OS', icone: LuClipboardCheck, cor: CORES.suporte },
+  { valor: 'os.iniciar', rotulo: 'Iniciou OS', icone: LuPlay, cor: CORES.suporte },
+  { valor: 'os.finalizar', rotulo: 'Finalizou OS', icone: LuClipboardCheck, cor: CORES.sucesso },
+  { valor: 'os.desfazer_resposta', rotulo: 'Desfez resposta da OS', icone: LuUndo2, cor: CORES.alerta },
+  { valor: 'os.desfazer_inicio', rotulo: 'Desfez início da OS', icone: LuUndo2, cor: CORES.alerta },
+  { valor: 'os.desfazer_finalizacao', rotulo: 'Desfez finalização da OS', icone: LuUndo2, cor: CORES.alerta },
+  { valor: 'os.cancelar', rotulo: 'Cancelou OS', icone: LuCircleX, cor: CORES.erro },
+  { valor: 'os.reabrir', rotulo: 'Reabriu OS', icone: LuRotateCw, cor: CORES.suporte },
+  { valor: 'financeiro.liberacao', rotulo: 'Liberou fatura (confiança)', icone: LuBanknote, cor: CORES.financeiro },
+  { valor: 'auth.login', rotulo: 'Entrou no app', icone: LuLogIn, cor: CORES.textoSecundario },
 ]
 const POR_ACAO = Object.fromEntries(ACOES.map((a) => [a.valor, a]))
 // Ações que apagam algo: borda vermelha no cartão.
@@ -301,7 +276,7 @@ export default function Auditoria() {
               <ul className="auditoria-lista">
                 {grupo.eventos.map((ev, i) => {
                   const acao = POR_ACAO[ev.acao]
-                  const Icone = acao?.icone ?? MdManageSearch
+                  const Icone = acao?.icone ?? LuFileSearch
                   const alvo = ev.alvo ?? {}
                   const listaMudancas = mudancas(alvo, ev.acao)
                   const listaDetalhes = detalhes(alvo, ev.acao)
@@ -313,7 +288,7 @@ export default function Auditoria() {
                     >
                       <div className="auditoria-topo">
                         <span className="auditoria-icone" aria-hidden="true">
-                          <Icone size={18} />
+                          <Icone size={20} />
                         </span>
                         <div className="auditoria-titulo">
                           <strong>{acao?.rotulo ?? ev.acao}</strong>
@@ -332,7 +307,7 @@ export default function Auditoria() {
                               {m.antes !== undefined && (
                                 <>
                                   <s className="auditoria-antes">{m.antes}</s>
-                                  <MdArrowForward size={14} aria-label="para" />
+                                  <LuArrowRight size={16} aria-label="para" />
                                 </>
                               )}
                               <strong className="auditoria-depois">{m.depois}</strong>

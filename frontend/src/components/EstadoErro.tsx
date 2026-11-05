@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { MdCloudOff } from 'react-icons/md'
+import { LuCloudOff } from 'react-icons/lu'
 import './EstadoVazio.css'
 
 interface Props {
@@ -14,7 +14,7 @@ export default function EstadoErro({ mensagem, cor, onTentarDeNovo }: Props) {
   return (
     <div className="estado-vazio estado-erro" role="alert">
       <span className="estado-vazio-icone">
-        <MdCloudOff size={32} />
+        <LuCloudOff size={32} />
       </span>
       <p className="estado-vazio-titulo">{mensagem}</p>
       <button

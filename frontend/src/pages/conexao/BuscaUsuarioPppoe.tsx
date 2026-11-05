@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
-import { MdSearch } from 'react-icons/md'
+import { LuSearch } from 'react-icons/lu'
 import { buscarCpe, type CpeDto } from '../../api/client'
 import { CORES } from '../../utils/cores'
 
@@ -77,7 +77,7 @@ export default function BuscaUsuarioPppoe({
           style={{ '--botao-cor': CORES.conexao } as CSSProperties}
           aria-label="Buscar"
         >
-          <MdSearch size={20} />
+          <LuSearch size={20} />
         </button>
       </div>
       {listaAberta && busca.trim().length >= 2 && (

@@ -1,15 +1,6 @@
 import type { ReactNode } from 'react'
 import type { IconType } from 'react-icons'
-import {
-  MdBrightnessAuto,
-  MdDarkMode,
-  MdFormatSize,
-  MdGetApp,
-  MdLightMode,
-  MdLogout,
-  MdNotificationsActive,
-  MdWbSunny,
-} from 'react-icons/md'
+import { LuBellRing, LuDownload, LuLogOut, LuMoon, LuSun, LuSunMedium, LuSunMoon, LuType } from 'react-icons/lu'
 import { useTema } from '../hooks/useTema'
 import type { EscolhaTema } from '../utils/tema'
 import { iniciais } from '../utils/formatacao'
@@ -52,9 +43,9 @@ function Interruptor({
 }
 
 const OPCOES_TEMA: { valor: EscolhaTema; rotulo: string; Icone: IconType }[] = [
-  { valor: 'light', rotulo: 'Claro', Icone: MdLightMode },
-  { valor: 'dark', rotulo: 'Escuro', Icone: MdDarkMode },
-  { valor: 'auto', rotulo: 'Automático', Icone: MdBrightnessAuto },
+  { valor: 'light', rotulo: 'Claro', Icone: LuSun },
+  { valor: 'dark', rotulo: 'Escuro', Icone: LuMoon },
+  { valor: 'auto', rotulo: 'Automático', Icone: LuSunMoon },
 ]
 
 /**
@@ -126,14 +117,14 @@ export default function FolhaConfiguracoes({
         </div>
         <div className="folha-config-grupo">
           <Interruptor
-            icone={<MdWbSunny size={20} />}
+            icone={<LuSunMedium size={20} />}
             titulo="Modo sol"
             dica="Alto contraste para tela no sol"
             ligado={sol}
             onAlternar={alternarSol}
           />
           <Interruptor
-            icone={<MdFormatSize size={20} />}
+            icone={<LuType size={20} />}
             titulo="Texto grande"
             dica="Amplia todo o app"
             ligado={grande}
@@ -146,7 +137,7 @@ export default function FolhaConfiguracoes({
             <h3>Avisos</h3>
             <div className="folha-config-grupo">
               <Interruptor
-                icone={<MdNotificationsActive size={20} />}
+                icone={<LuBellRing size={20} />}
                 titulo="Avisos de OS nova"
                 dica={dicaAvisos}
                 ligado={avisosLigados}
@@ -164,7 +155,7 @@ export default function FolhaConfiguracoes({
           <div className="folha-config-grupo folha-config-acoes">
             <button type="button" className="folha-config-linha" onClick={onInstalar}>
               <span className="folha-config-icone">
-                <MdGetApp size={20} />
+                <LuDownload size={20} />
               </span>
               <span className="folha-config-texto">Instalar app na tela inicial</span>
             </button>
@@ -174,7 +165,7 @@ export default function FolhaConfiguracoes({
         <div className="folha-config-grupo folha-config-acoes">
           <button type="button" className="folha-config-linha folha-config-sair" onClick={onSair}>
             <span className="folha-config-icone">
-              <MdLogout size={20} />
+              <LuLogOut size={20} />
             </span>
             <span className="folha-config-texto">Sair da conta</span>
           </button>

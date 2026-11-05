@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react'
-import { MdSave } from 'react-icons/md'
+import { LuSave } from 'react-icons/lu'
 import { ApiError, atualizarDetalhesCpe, type CpeDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
@@ -48,7 +48,7 @@ export default function CardObservacao({
         onClick={salvar}
         disabled={salvando}
       >
-        <MdSave size={14} /> {salvando ? 'Salvando…' : 'Salvar observação'}
+        <LuSave size={16} /> {salvando ? 'Salvando…' : 'Salvar observação'}
       </button>
     </CartaoConexao>
   )

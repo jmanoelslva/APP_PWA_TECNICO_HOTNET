@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react'
-import { MdExpandMore } from 'react-icons/md'
+import { LuChevronDown } from 'react-icons/lu'
 import { ApiError, buscarHistoricoSessoesCpe, type CpeDto, type SessaoHistoricoDto } from '../../api/client'
 import Skeleton from '../../components/Skeleton'
 import { useToast } from '../../components/Toast/useToast'
@@ -168,7 +168,7 @@ export default function CardRede({ cpe }: { cpe: CpeDto }) {
           onClick={() => carregarHistorico(Math.floor(historico.length / LIMITE_HISTORICO) + 1)}
           disabled={carregandoHistorico}
         >
-          <MdExpandMore size={14} /> {carregandoHistorico ? 'Carregando…' : 'Carregar mais'}
+          <LuChevronDown size={16} /> {carregandoHistorico ? 'Carregando…' : 'Carregar mais'}
         </button>
       )}
     </div>

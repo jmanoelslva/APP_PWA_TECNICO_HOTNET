@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
-import { MdChevronRight } from 'react-icons/md'
+import { LuChevronRight } from 'react-icons/lu'
 import './DeslizarParaConfirmar.css'
 
 // Fração do trilho que o polegar precisa percorrer para valer.
@@ -83,7 +83,7 @@ export default function DeslizarParaConfirmar({
         onPointerCancel={aoSoltar}
         onKeyDown={aoTeclar}
       >
-        <MdChevronRight size={28} />
+        <LuChevronRight size={28} />
       </button>
     </div>
   )

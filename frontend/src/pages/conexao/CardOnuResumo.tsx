@@ -40,7 +40,7 @@ export default function CardOnuResumo({
           style={{ '--botao-cor': CORES.onu } as CSSProperties}
           viewTransition
         >
-          <LuCable size={14} /> Detalhes
+          <LuCable size={16} /> Detalhes
         </Link>
       </div>
       <div className="conexao-linha">

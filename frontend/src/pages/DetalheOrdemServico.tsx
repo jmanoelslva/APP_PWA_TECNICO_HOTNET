@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { LuUser, LuWifi } from 'react-icons/lu'
-import { MdAttachFile, MdChatBubbleOutline, MdCheckCircle, MdContentCopy, MdDirections, MdEdit, MdLocationOn, MdPhotoCamera, MdPlayArrow, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { LuCamera, LuCircleCheck, LuCopy, LuEye, LuEyeOff, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuUser, LuWifi } from 'react-icons/lu'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
@@ -92,7 +91,7 @@ interface ConfigEtapa {
   rotuloDesfazer: string
   opType: number
   campoData: 'op_date_answer' | 'op_date_start' | 'op_date_finish'
-  Icone: typeof MdVisibility
+  Icone: typeof LuEye
   marcar: typeof responderOrdemServico
   desfazer: typeof desfazerRespostaOrdemServico
 }
@@ -105,7 +104,7 @@ const ETAPAS: ConfigEtapa[] = [
     rotuloDesfazer: 'Desfazer resposta',
     opType: 3,
     campoData: 'op_date_answer',
-    Icone: MdVisibility,
+    Icone: LuEye,
     marcar: responderOrdemServico,
     desfazer: desfazerRespostaOrdemServico,
   },
@@ -116,7 +115,7 @@ const ETAPAS: ConfigEtapa[] = [
     rotuloDesfazer: 'Desfazer início',
     opType: 4,
     campoData: 'op_date_start',
-    Icone: MdPlayArrow,
+    Icone: LuPlay,
     marcar: iniciarOrdemServico,
     desfazer: desfazerInicioOrdemServico,
   },
@@ -127,7 +126,7 @@ const ETAPAS: ConfigEtapa[] = [
     rotuloDesfazer: 'Desfazer finalização',
     opType: 5,
     campoData: 'op_date_finish',
-    Icone: MdCheckCircle,
+    Icone: LuCircleCheck,
     marcar: finalizarOrdemServico,
     desfazer: desfazerFinalizacaoOrdemServico,
   },
@@ -501,7 +500,7 @@ function DetalheOrdemServicoConteudo() {
           <div className="detalhe-ordem-card">
             <p className="detalhe-ordem-vazio">Nenhuma OS encontrada para este chamado.</p>
             <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
-              <MdChatBubbleOutline size={14} /> Ver chamado
+              <LuMessageCircle size={16} /> Ver chamado
             </Link>
           </div>
         )}
@@ -550,12 +549,12 @@ function DetalheOrdemServicoConteudo() {
               <div className="detalhe-ordem-contato">
                 {rota && (
                   <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
-                    <MdDirections size={22} /> Rota
+                    <LuNavigation size={22} /> Rota
                   </a>
                 )}
                 <AcoesContato numero={telefone} />
                 <Link to={`/suporte/${pk}`} className="acoes-contato-botao" viewTransition>
-                  <MdChatBubbleOutline size={22} /> Chamado
+                  <LuMessageCircle size={22} /> Chamado
                 </Link>
               </div>
             </div>
@@ -591,7 +590,7 @@ function DetalheOrdemServicoConteudo() {
                         onClick={() => setEnderecoEditando(endereco)}
                         aria-label="Editar endereço"
                       >
-                        <MdEdit size={16} />
+                        <LuPencil size={16} />
                       </button>
                     )}
                   </div>
@@ -615,12 +614,12 @@ function DetalheOrdemServicoConteudo() {
                           rel="noreferrer"
                           className="detalhe-ordem-chip"
                         >
-                          <MdLocationOn size={14} /> Ver no Google Maps
+                          <LuMapPin size={16} /> Ver no Google Maps
                         </a>
                       )}
                       {rota && (
                         <a href={rota} target="_blank" rel="noreferrer" className="detalhe-ordem-chip">
-                          <MdDirections size={14} /> Rota até o cliente
+                          <LuNavigation size={16} /> Rota até o cliente
                         </a>
                       )}
                     </div>
@@ -638,7 +637,7 @@ function DetalheOrdemServicoConteudo() {
                     <div className="detalhe-ordem-campo-valor">
                       <strong>{cpe?.username ?? '—'}</strong>
                       <button onClick={() => copiar(cpe?.username, 'Usuário')} aria-label="Copiar usuário">
-                        <MdContentCopy size={16} />
+                        <LuCopy size={16} />
                       </button>
                     </div>
                   </div>
@@ -647,10 +646,10 @@ function DetalheOrdemServicoConteudo() {
                     <div className="detalhe-ordem-campo-valor">
                       <strong>{mostrarSenha ? cpe?.password ?? '—' : '••••••••'}</strong>
                       <button onClick={() => setMostrarSenha((v) => !v)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
-                        {mostrarSenha ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+                        {mostrarSenha ? <LuEyeOff size={16} /> : <LuEye size={16} />}
                       </button>
                       <button onClick={() => copiar(cpe?.password, 'Senha')} aria-label="Copiar senha">
-                        <MdContentCopy size={16} />
+                        <LuCopy size={16} />
                       </button>
                     </div>
                   </div>
@@ -691,7 +690,7 @@ function DetalheOrdemServicoConteudo() {
                   )}
                   {cpe?.pk && (
                     <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip" viewTransition>
-                      <LuWifi size={14} /> Ver conexão completa
+                      <LuWifi size={16} /> Ver conexão completa
                     </Link>
                   )}
                 </div>
@@ -747,7 +746,7 @@ function DetalheOrdemServicoConteudo() {
                       disabled={enviandoAnexo}
                       onClick={() => inputCameraRef.current?.click()}
                     >
-                      <MdPhotoCamera size={18} /> Tirar foto
+                      <LuCamera size={20} /> Tirar foto
                     </button>
                     <button aria-busy={enviandoAnexo}
                       className="botao botao-secundario"
@@ -755,7 +754,7 @@ function DetalheOrdemServicoConteudo() {
                       disabled={enviandoAnexo}
                       onClick={() => inputArquivoRef.current?.click()}
                     >
-                      <MdAttachFile size={18} /> {enviandoAnexo ? 'Enviando…' : 'Arquivo'}
+                      <LuPaperclip size={20} /> {enviandoAnexo ? 'Enviando…' : 'Arquivo'}
                     </button>
                   </div>
                   {anexosEnviados.length > 0 && (
@@ -766,7 +765,7 @@ function DetalheOrdemServicoConteudo() {
                             <img src={anexo.previa} alt={anexo.nome} className="detalhe-ordem-anexo-previa" />
                           ) : (
                             <span className="detalhe-ordem-anexo-icone">
-                              <MdAttachFile size={22} />
+                              <LuPaperclip size={22} />
                             </span>
                           )}
                           <span className="detalhe-ordem-anexo-nome">{anexo.nome}</span>
@@ -787,7 +786,7 @@ function DetalheOrdemServicoConteudo() {
                     <span>Nome</span>
                     {osAtual.client_pk ? (
                       <Link to={`/clientes/${osAtual.client_pk}`} className="detalhe-ordem-link" viewTransition>
-                        <LuUser size={14} /> {osAtual.client_complete_name ?? '—'}
+                        <LuUser size={16} /> {osAtual.client_complete_name ?? '—'}
                       </Link>
                     ) : (
                       <strong>{osAtual.client_complete_name ?? '—'}</strong>
@@ -863,7 +862,7 @@ function DetalheOrdemServicoConteudo() {
                               disabled={situacao === 'bloqueada'}
                               onClick={() => setAcaoConfirmando({ etapa: etapa.chave, desfazer: true })}
                             >
-                              <etapa.Icone size={14} /> Desfazer
+                              <etapa.Icone size={16} /> Desfazer
                             </button>
                           )}
                         </div>

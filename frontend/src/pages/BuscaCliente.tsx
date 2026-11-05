@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { LuCable, LuUsers, LuWifi } from 'react-icons/lu'
-import { MdHistory } from 'react-icons/md'
+import { LuCable, LuHistory, LuUsers, LuWifi } from 'react-icons/lu'
 import {
   ApiError,
   buscarClientes,
@@ -143,7 +142,7 @@ export default function BuscaCliente() {
         <section className="busca-cliente-recentes">
           <div className="busca-cliente-recentes-topo">
             <h2>
-              <MdHistory size={16} /> Abertos por último
+              <LuHistory size={16} /> Abertos por último
             </h2>
             <button
               type="button"

@@ -1,7 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { MdDeleteForever, MdPowerSettingsNew, MdRefresh } from 'react-icons/md'
-import { LuCable } from 'react-icons/lu'
+import { LuCable, LuPower, LuRefreshCw, LuTrash2 } from 'react-icons/lu'
 import { ApiError, atualizarInfoOnu, buscarOnu, reiniciarOnu, removerOnu, renomearOnu, type OnuDto } from '../api/client'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -281,7 +280,7 @@ export default function OnuStatus() {
                   onClick={atualizarAgora}
                   disabled={atualizando}
                 >
-                  <MdRefresh size={18} className={atualizando ? 'onu-girando' : ''} />{' '}
+                  <LuRefreshCw size={20} className={atualizando ? 'onu-girando' : ''} />{' '}
                   {atualizando ? 'Reconectando OLT… (~1 min)' : 'Atualizar agora'}
                 </button>
               </>
@@ -306,7 +305,7 @@ export default function OnuStatus() {
                     onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('reiniciar'))}
                     disabled={executandoAcao || atualizandoAntesDaAcao}
                   >
-                    <MdPowerSettingsNew size={16} /> Reiniciar ONU
+                    <LuPower size={16} /> Reiniciar ONU
                   </button>
                   <button
                     type="button"
@@ -314,7 +313,7 @@ export default function OnuStatus() {
                     onClick={() => abrirDepoisDeReler(() => setConfirmandoAcao('remover'))}
                     disabled={executandoAcao || atualizandoAntesDaAcao}
                   >
-                    <MdDeleteForever size={16} /> Remover ONU
+                    <LuTrash2 size={16} /> Remover ONU
                   </button>
                 </div>
               </>

@@ -1,17 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  MdAccountCircle,
-  MdDarkMode,
-  MdErrorOutline,
-  MdGetApp,
-  MdKeyboardCapslock,
-  MdLightMode,
-  MdLock,
-  MdTimer,
-  MdVisibility,
-  MdVisibilityOff,
-} from 'react-icons/md'
+import { LuArrowBigUp, LuCircleAlert, LuCircleUser, LuDownload, LuEye, LuEyeOff, LuLock, LuMoon, LuSun, LuTimer } from 'react-icons/lu'
 import { useSessao } from '../auth/useSessao'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -158,7 +147,7 @@ export default function Login() {
         aria-label={tema === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}
         title={tema === 'dark' ? 'Tema claro' : 'Tema escuro'}
       >
-        {tema === 'dark' ? <MdLightMode size={20} /> : <MdDarkMode size={20} />}
+        {tema === 'dark' ? <LuSun size={20} /> : <LuMoon size={20} />}
       </button>
 
       <div className="login-marca">
@@ -171,7 +160,7 @@ export default function Login() {
         <form onSubmit={aoEnviar} noValidate>
           <fieldset disabled={carregando} className="login-campos">
             <label htmlFor="usuario">
-              <MdAccountCircle className="login-label-icone" /> Usuário
+              <LuCircleUser className="login-label-icone" /> Usuário
             </label>
             <input
               ref={usuarioRef}
@@ -197,7 +186,7 @@ export default function Login() {
             )}
 
             <label htmlFor="senha">
-              <MdLock className="login-label-icone" /> Senha
+              <LuLock className="login-label-icone" /> Senha
             </label>
             <div className="login-campo-senha">
               <input
@@ -224,7 +213,7 @@ export default function Login() {
                 onClick={() => setMostrarSenha((v) => !v)}
                 aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
               >
-                {mostrarSenha ? <MdVisibilityOff size={20} /> : <MdVisibility size={20} />}
+                {mostrarSenha ? <LuEyeOff size={20} /> : <LuEye size={20} />}
               </button>
             </div>
             {vazios.has('senha') && (
@@ -234,7 +223,7 @@ export default function Login() {
             )}
             {capsLock && (
               <span className="login-capslock" role="status">
-                <MdKeyboardCapslock size={16} /> Caps Lock ligado
+                <LuArrowBigUp size={16} /> Caps Lock ligado
               </span>
             )}
             <label className="login-lembrar">
@@ -245,7 +234,7 @@ export default function Login() {
 
           {erroVisivel && (
             <div className={`login-mensagem${ehBloqueio(erroVisivel) ? ' login-mensagem-espera' : ''}`} role="alert">
-              {ehBloqueio(erroVisivel) ? <MdTimer size={20} /> : <MdErrorOutline size={20} />}
+              {ehBloqueio(erroVisivel) ? <LuTimer size={20} /> : <LuCircleAlert size={20} />}
               <span>{erroVisivel}</span>
             </div>
           )}
@@ -258,7 +247,7 @@ export default function Login() {
 
         {podeInstalar && (
           <button type="button" className="login-btn-instalar" onClick={aoClicarInstalar}>
-            <MdGetApp size={18} /> Instalar app
+            <LuDownload size={20} /> Instalar app
           </button>
         )}
 

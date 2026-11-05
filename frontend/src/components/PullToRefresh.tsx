@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { MdRefresh } from 'react-icons/md'
+import { LuRefreshCw } from 'react-icons/lu'
 import './PullToRefresh.css'
 
 const LIMITE_ACIONAR_PX = 64
@@ -114,7 +114,7 @@ export default function PullToRefresh({ aoAtualizar, children }: Props) {
           transition: arrastando ? 'none' : 'transform 0.2s ease, opacity 0.2s ease',
         }}
       >
-        <MdRefresh
+        <LuRefreshCw
           size={22}
           className={atualizando ? 'pull-to-refresh-girando' : ''}
           style={atualizando ? undefined : { transform: `rotate(${progresso * 180}deg)` }}

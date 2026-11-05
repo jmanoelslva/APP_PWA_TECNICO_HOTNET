@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MdClose, MdQrCodeScanner } from 'react-icons/md'
+import { LuScanQrCode, LuX } from 'react-icons/lu'
 import './LeitorCodigoBarras.css'
 import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
@@ -83,10 +83,10 @@ export default function LeitorCodigoBarras({ onDetectado, onFechar }: Props) {
     <div className="leitor-codigo-fundo">
       <div className="leitor-codigo-topo">
         <span>
-          <MdQrCodeScanner size={18} /> Ler código de barras/QR
+          <LuScanQrCode size={20} /> Ler código de barras/QR
         </span>
         <button type="button" className="leitor-codigo-fechar" onClick={onFechar} aria-label="Fechar leitor">
-          <MdClose size={22} />
+          <LuX size={22} />
         </button>
       </div>
 

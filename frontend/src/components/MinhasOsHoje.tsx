@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
-import { MdDirections, MdOpenInNew, MdPhone } from 'react-icons/md'
-import { LuWrench } from 'react-icons/lu'
+import { LuExternalLink, LuNavigation, LuPhone, LuWrench } from 'react-icons/lu'
 import { buscarDetalheCliente, listarOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
 import {
   enderecoCurto,
@@ -121,7 +120,7 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
 
       {!proxima && (
         <div className="minhas-os-vazio">
-          <LuWrench size={18} />
+          <LuWrench size={20} />
           <span className="minhas-os-vazio-texto">
             Nenhuma OS sua para hoje.
             {futura?.op_date_sched && (
@@ -158,12 +157,12 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
           <div className="minhas-os-acoes">
             {rota && (
               <a href={rota} target="_blank" rel="noreferrer" className="minhas-os-acao">
-                <MdDirections size={18} /> Rota
+                <LuNavigation size={20} /> Rota
               </a>
             )}
             {telefone && (
               <a href={linkLigar(telefone) ?? `tel:${telefone}`} className="minhas-os-acao">
-                <MdPhone size={18} /> Ligar
+                <LuPhone size={20} /> Ligar
               </a>
             )}
             {whatsapp && (
@@ -175,11 +174,11 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
                 aria-label="WhatsApp"
                 title="WhatsApp"
               >
-                <FaWhatsapp size={18} />
+                <FaWhatsapp size={20} />
               </a>
             )}
             <button type="button" className="minhas-os-acao minhas-os-acao-principal" onClick={() => abrir(proxima.os)}>
-              <MdOpenInNew size={18} /> Abrir OS
+              <LuExternalLink size={20} /> Abrir OS
             </button>
           </div>
         </div>

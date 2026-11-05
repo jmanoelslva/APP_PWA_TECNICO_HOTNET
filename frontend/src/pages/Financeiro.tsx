@@ -1,7 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { MdNoteAdd } from 'react-icons/md'
-import { LuReceipt, LuWallet } from 'react-icons/lu'
+import { LuFilePlus, LuReceipt, LuWallet } from 'react-icons/lu'
 import { ApiError, criarObservacaoFatura, listarFaturas, type FaturaDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -135,7 +134,7 @@ export default function Financeiro() {
                         className="fatura-chip-botao"
                         onClick={() => setFaturaObservando(fatura)}
                       >
-                        <MdNoteAdd size={14} /> Adicionar observação
+                        <LuFilePlus size={16} /> Adicionar observação
                       </button>
                     </div>
                   )}

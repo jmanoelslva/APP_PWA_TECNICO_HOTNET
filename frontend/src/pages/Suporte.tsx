@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { MdClose, MdDirections, MdSearch } from 'react-icons/md'
-import { LuSearchX, LuWrench } from 'react-icons/lu'
+import { LuNavigation, LuSearch, LuSearchX, LuWrench, LuX } from 'react-icons/lu'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
 import Abas from '../components/Abas'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -150,7 +149,7 @@ export default function Suporte() {
         {!carregando && !erro && ordens.length > 0 && (
           <div className="suporte-filtros">
             <div className="suporte-busca">
-              <MdSearch size={20} className="suporte-busca-icone" aria-hidden="true" />
+              <LuSearch size={20} className="suporte-busca-icone" aria-hidden="true" />
               <input
                 enterKeyHint="search"
                 type="search"
@@ -206,7 +205,7 @@ export default function Suporte() {
               <span>{comFiltro ? `${filtradas.length} de ${ordens.length} OS` : `${ordens.length} OS`}</span>
               {comFiltro && filtradas.length > 0 && (
                 <button type="button" className="suporte-limpar" onClick={() => setFiltro(FILTRO_VAZIO)}>
-                  <MdClose size={16} /> Limpar filtros
+                  <LuX size={16} /> Limpar filtros
                 </button>
               )}
             </div>
@@ -261,7 +260,7 @@ export default function Suporte() {
                           aria-label="Rota até o cliente"
                           onClick={(evento) => evento.stopPropagation()}
                         >
-                          <MdDirections size={22} />
+                          <LuNavigation size={22} />
                         </a>
                       )}
                     </li>
