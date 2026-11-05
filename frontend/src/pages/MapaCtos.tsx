@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { LuMap, LuX } from 'react-icons/lu'
 import { MdSearch } from 'react-icons/md'
 import {
@@ -196,6 +196,21 @@ export default function MapaCtos() {
         .sort((a, b) => a.distanciaM - b.distanciaM)
         .slice(0, QTD_MAIS_PROXIMAS)
     : []
+  // Traçado do endereço do cliente até as CTOs já gravadas nas conexões dele.
+  const ligacoes = useMemo(
+    () =>
+      enderecoCliente && ctosCliente
+        ? ctosCliente.flatMap((cto) => {
+            const dp = comCoordenada.find((item) => item.pk === cto.dpPk)
+            if (!dp) return []
+            const rotulo = `${cto.dpNome}${cto.porta != null ? ` · porta ${cto.porta}` : ''}`
+            return [{ lat: dp.lat, lng: dp.lng, rotulo }]
+          })
+        : [],
+    // comCoordenada deriva de dps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [enderecoCliente, ctosCliente, dps],
+  )
   // Centro: a CTO tocada; senão, o cliente buscado; senão, o técnico; sem
   // GPS, a primeira CTO.
   const centro = selecionada
@@ -307,6 +322,7 @@ export default function MapaCtos() {
             minhaLocalizacao={aoVivo}
             precisaoM={aoVivo?.precisaoM ?? null}
             cliente={enderecoCliente}
+            ligacoes={ligacoes}
             onSelecionar={(dp) => setSelecionadaPk(dp.pk)}
             onSemLocalizacao={() => toast('Aguardando a localização do GPS. Verifique se a permissão está liberada.')}
           />

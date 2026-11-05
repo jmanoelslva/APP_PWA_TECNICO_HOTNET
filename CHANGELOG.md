@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Traçado do cliente até a CTO no Mapa de CTOs:** depois de buscar um
+  cliente, uma linha tracejada liga o endereço dele à CTO gravada na conexão,
+  com o nome, a porta e a distância em linha reta; o mapa enquadra os dois
+  pontos.
+
 ## [1.27.0] - 2026-11-05
 
 ### Adicionado

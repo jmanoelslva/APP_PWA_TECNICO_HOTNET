@@ -311,6 +311,28 @@
   margin-left: 4px;
 }
 
+/* Traçado cliente → CTO: tracejado branco, igual à linha do mapa */
+.mapa-cto-legenda i.mapa-cto-legenda-ligacao {
+  width: 14px;
+  height: 0;
+  border-radius: 0;
+  border-top: 2px dashed var(--cor-texto-terciario);
+}
+
+.leaflet-tooltip.mapa-cto-ligacao {
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  box-shadow: none;
+}
+
+.leaflet-tooltip.mapa-cto-ligacao::before {
+  display: none;
+}
+
 .mapa-cto-aviso {
   display: block;
   margin-top: 4px;
