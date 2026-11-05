@@ -183,6 +183,10 @@ export default function CardCto({
         <span>CTO</span>
         <div className="conexao-campo-valor">
           <input
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="search"
             className="conexao-input"
             type="text"
             value={dpBusca}

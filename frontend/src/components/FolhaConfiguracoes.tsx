@@ -15,6 +15,7 @@ import type { EscolhaTema } from '../utils/tema'
 import { iniciais } from '../utils/formatacao'
 import type { useAvisos } from '../hooks/useAvisos'
 import './FolhaConfiguracoes.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 function Interruptor({
   icone,
@@ -81,6 +82,8 @@ export default function FolhaConfiguracoes({
   onFechar: () => void
 }) {
   const { escolha, escolherTema, sol, alternarSol, grande, alternarTextoGrande } = useTema()
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(aberto, onFechar)
   if (!aberto) return null
   const avisosLigados = avisos.estado === 'ligado'
   const mostrarAvisos = avisos.estado !== 'indisponivel' && avisos.estado !== 'carregando'

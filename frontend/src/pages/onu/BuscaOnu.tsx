@@ -82,6 +82,10 @@ export default function BuscaOnu({
         <label htmlFor="onu-busca-input">Serial da ONU ou usuário PPPoE</label>
         <div className="onu-busca-campo">
           <input
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="search"
             id="onu-busca-input"
             type="text"
             placeholder="Serial ou usuário PPPoE"

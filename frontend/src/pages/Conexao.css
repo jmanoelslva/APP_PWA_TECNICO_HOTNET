@@ -201,8 +201,10 @@
   cursor: pointer;
 }
 
-.conexao-combobox-lista li button:hover {
-  background: var(--cor-fundo);
+@media (hover: hover) {
+  .conexao-combobox-lista li button:hover {
+    background: var(--cor-fundo);
+  }
 }
 
 .conexao-combobox-distancia {

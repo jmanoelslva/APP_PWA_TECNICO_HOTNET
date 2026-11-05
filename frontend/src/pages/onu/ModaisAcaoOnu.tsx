@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import { CORES } from '../../utils/cores'
 import DeslizarParaConfirmar from '../../components/DeslizarParaConfirmar'
+import { useFecharComVoltar } from '../../hooks/useFecharComVoltar'
 
 /** Confirmação por deslizar de reiniciar/remover — os dois derrubam o cliente na hora. */
 export function ModalConfirmarAcao({
@@ -14,6 +15,10 @@ export function ModalConfirmarAcao({
   onConfirmar: () => void
   onCancelar: () => void
 }) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, () => {
+    if (!executando) onCancelar()
+  })
   return (
     <div className="onu-modal-fundo" onClick={() => !executando && onCancelar()}>
       <div className="onu-modal" onClick={(e) => e.stopPropagation()}>
@@ -53,6 +58,10 @@ export function ModalRenomear({
   onSalvar: (nome: string) => void
   onCancelar: () => void
 }) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, () => {
+    if (!salvando) onCancelar()
+  })
   const [novoNome, setNovoNome] = useState(nomeAtual)
   return (
     <div className="onu-modal-fundo" onClick={() => !salvando && onCancelar()}>

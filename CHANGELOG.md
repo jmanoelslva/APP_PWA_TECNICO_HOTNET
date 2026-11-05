@@ -7,6 +7,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- **Teclado nos campos, como em app nativo:** buscas com a tecla "Buscar";
+  PPPoE, serial, CTO, login e senhas de roteador e Wi-Fi sem maiúscula nem
+  correção automática; telefone com teclado de telefone e CEP com teclado
+  numérico.
+
+### Corrigido
+
+- **"Voltar" do celular com janela aberta:** fecha a janela (confirmação de
+  etapa, Configurações, câmera, leitor de código, edição de telefone e
+  endereço, ações da ONU etc.) em vez de sair da tela por baixo dela.
+- **Tela de trás rolando com janela aberta:** com modal, folha ou câmera na
+  frente, a tela de trás fica parada.
+- **Realce preso em itens de lista:** o destaque de "passar o mouse" só vale
+  em aparelho com mouse; no toque, não fica marcado depois de tocar.
+
 ## [1.23.2] - 2026-11-05
 
 ### Alterado

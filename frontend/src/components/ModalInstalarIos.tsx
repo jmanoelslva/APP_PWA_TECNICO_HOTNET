@@ -1,5 +1,6 @@
 import { MdAddBox, MdIosShare } from 'react-icons/md'
 import './ModalInstalarIos.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 interface Props {
   aberto: boolean
@@ -8,6 +9,8 @@ interface Props {
 
 /** Passo a passo manual de instalação para o iOS — Safari nunca dispara beforeinstallprompt. */
 export default function ModalInstalarIos({ aberto, onFechar }: Props) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(aberto, onFechar)
   if (!aberto) return null
 
   return (

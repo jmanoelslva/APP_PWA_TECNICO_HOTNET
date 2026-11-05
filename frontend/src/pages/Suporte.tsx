@@ -152,6 +152,7 @@ export default function Suporte() {
             <div className="suporte-busca">
               <MdSearch size={20} className="suporte-busca-icone" aria-hidden="true" />
               <input
+                enterKeyHint="search"
                 type="search"
                 value={filtro.busca}
                 onChange={(e) => mudar({ busca: e.target.value })}

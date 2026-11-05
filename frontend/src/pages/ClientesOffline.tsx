@@ -103,6 +103,10 @@ export default function ClientesOffline() {
           <div className="clientes-offline-busca">
             <MdSearch size={18} />
             <input
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="search"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Nome, usuário, contrato ou CTO"

@@ -56,12 +56,15 @@ export default function CardAcessoRoteador({
     <CartaoConexao titulo="Acesso ao roteador (admin)">
       <div className="conexao-campo">
         <span>Usuário</span>
-        <input className="conexao-input" value={acessoLogin} onChange={(e) => setAcessoLogin(e.target.value)} placeholder="Não informado" />
+        <input autoCapitalize="none" autoCorrect="off" spellCheck={false} className="conexao-input" value={acessoLogin} onChange={(e) => setAcessoLogin(e.target.value)} placeholder="Não informado" />
       </div>
       <div className="conexao-campo">
         <span>Senha</span>
         <div className="conexao-campo-valor">
           <input
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             className="conexao-input"
             type={mostrarSenha ? 'text' : 'password'}
             value={acessoSenha}

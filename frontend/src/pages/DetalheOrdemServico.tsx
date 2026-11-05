@@ -62,6 +62,7 @@ import { comprimirImagem } from '../utils/imagem'
 import { EVENTO_FILA, ehFalhaDeRede, enfileirarAnexo, type DetalheEventoFila } from '../utils/filaAnexos'
 import { ITENS_CHECKLIST, lerChecklist, salvarChecklist, textoChecklist } from '../utils/checklistSaida'
 import './DetalheOrdemServico.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 interface AnexoEnviado {
   id: number
@@ -240,6 +241,11 @@ function DetalheOrdemServicoConteudo() {
   const [acaoConfirmando, setAcaoConfirmando] = useState<{ etapa: Etapa; desfazer: boolean } | null>(null)
   const [observacaoEtapa, setObservacaoEtapa] = useState('')
   const [executandoEtapa, setExecutandoEtapa] = useState(false)
+  // "Voltar" do celular fecha a confirmação de etapa.
+  useFecharComVoltar(acaoConfirmando !== null, () => {
+    setAcaoConfirmando(null)
+    setObservacaoEtapa('')
+  })
   const [enviandoAnexo, setEnviandoAnexo] = useState(false)
   // Anexos enviados nesta tela, com a prévia da imagem já na hora (do próprio
   // arquivo escolhido, sem esperar o Controllr).

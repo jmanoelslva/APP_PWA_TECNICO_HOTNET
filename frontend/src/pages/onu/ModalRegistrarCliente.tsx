@@ -9,6 +9,7 @@ import {
 } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
+import { useFecharComVoltar } from '../../hooks/useFecharComVoltar'
 
 /**
  * Associa uma ONU sem cliente a um cliente: busca pelo nome, escolhe qual
@@ -23,6 +24,8 @@ export default function ModalRegistrarCliente({
   onFechar: () => void
   onAssociado: (clientPk: number, clientNome: string | undefined) => void
 }) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, onFechar)
   const [busca, setBusca] = useState('')
   const [resultados, setResultados] = useState<BuscaClienteResultado[]>([])
   const [buscando, setBuscando] = useState(false)
@@ -127,6 +130,7 @@ export default function ModalRegistrarCliente({
               vincular a esta ONU.
             </p>
             <input
+              enterKeyHint="search"
               type="text"
               className="onu-modal-input"
               placeholder="Nome do cliente"

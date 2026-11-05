@@ -216,8 +216,10 @@
   cursor: pointer;
 }
 
-.home-combobox-lista li button:hover {
-  background: var(--cor-fundo);
+@media (hover: hover) {
+  .home-combobox-lista li button:hover {
+    background: var(--cor-fundo);
+  }
 }
 
 .home-combobox-vazio {

@@ -256,6 +256,24 @@ img {
   -webkit-user-drag: none;
 }
 
+/* Janela aberta (modal, folha, câmera): a tela de trás não rola junto,
+   como num app nativo. */
+html:has(
+    .camera-foto,
+    .leitor-codigo-fundo,
+    .folha-config-fundo,
+    .modal-confirmar-logout-fundo,
+    .modal-editar-endereco-fundo,
+    .modal-instalar-ios-fundo,
+    .chamado-imagem-modal-fundo,
+    .detalhe-cliente-modal-fundo,
+    .detalhe-ordem-modal-fundo,
+    .financeiro-modal-fundo,
+    .onu-modal-fundo
+  ) {
+  overflow: hidden;
+}
+
 /* Campos de entrada de dados: seleção liberada. */
 input,
 textarea,

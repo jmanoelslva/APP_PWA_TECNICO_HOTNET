@@ -59,6 +59,10 @@ export default function BuscaUsuarioPppoe({
       <label htmlFor="conexao-usuario-input">Usuário PPPoE</label>
       <div className="conexao-busca-campo">
         <input
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="search"
           id="conexao-usuario-input"
           type="text"
           placeholder="Usuário PPPoE"

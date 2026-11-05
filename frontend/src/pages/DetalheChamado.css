@@ -329,6 +329,8 @@
   gap: 8px;
 }
 
-.detalhe-chamado-menu-anexo button:hover {
-  background: var(--cor-fundo);
+@media (hover: hover) {
+  .detalhe-chamado-menu-anexo button:hover {
+    background: var(--cor-fundo);
+  }
 }

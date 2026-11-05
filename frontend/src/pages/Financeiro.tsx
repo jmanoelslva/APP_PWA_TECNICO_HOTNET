@@ -12,6 +12,7 @@ import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { formatarData, formatarMoeda } from '../utils/formatacao'
 import './Financeiro.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 type StatusFatura = 'paga' | 'atrasada' | 'aberta'
 
@@ -176,6 +177,8 @@ function ModalObservacao({
   onFechar: () => void
   onSalvo: () => void
 }) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, onFechar)
   const [tipo, setTipo] = useState<'data' | 'periodo'>('data')
   const [data, setData] = useState('')
   const [dias, setDias] = useState('7')

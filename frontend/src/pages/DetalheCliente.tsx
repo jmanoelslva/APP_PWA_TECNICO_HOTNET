@@ -46,6 +46,7 @@ import {
   TEXTO_SINAL_ONU,
 } from '../utils/formatacao'
 import './DetalheCliente.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 // Resumo de conexão + ONU de um CPE, carregado à parte (endpoints
 // diferentes de /clientes/{pk}) para já mostrar aqui na tela do cliente
@@ -518,6 +519,8 @@ function ModalEditarTelefone({
   onFechar: () => void
   onSalvo: (telefone: TelefoneDto) => void
 }) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, onFechar)
   const [numero, setNumero] = useState(telefone.phone_number ?? '')
   const [salvando, setSalvando] = useState(false)
   const { toast } = useToast()
@@ -545,7 +548,7 @@ function ModalEditarTelefone({
         <h2>Editar telefone{telefone.phone_identification ? ` — ${telefone.phone_identification}` : ''}</h2>
 
         <label>Número</label>
-        <input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
+        <input type="tel" inputMode="tel" autoComplete="off" value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
 
         <div className="detalhe-cliente-modal-acoes">
           <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
@@ -572,6 +575,8 @@ function ModalAdicionarTelefone({
   onFechar: () => void
   onSalvo: () => void
 }) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, onFechar)
   const [identificacao, setIdentificacao] = useState('')
   const [numero, setNumero] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -602,7 +607,7 @@ function ModalAdicionarTelefone({
         <input value={identificacao} onChange={(e) => setIdentificacao(e.target.value)} placeholder="Ex: Celular, WhatsApp" />
 
         <label>Número</label>
-        <input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
+        <input type="tel" inputMode="tel" autoComplete="off" value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 11912345678" />
 
         <div className="detalhe-cliente-modal-acoes">
           <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>

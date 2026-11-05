@@ -226,6 +226,7 @@ export default function Home() {
             <div className="home-busca-campo">
               <MdSearch size={20} className="home-busca-icone" aria-hidden="true" />
               <input
+                enterKeyHint="search"
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 onFocus={() => setListaAberta(true)}

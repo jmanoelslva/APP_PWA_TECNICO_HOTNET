@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MdClose, MdQrCodeScanner } from 'react-icons/md'
 import './LeitorCodigoBarras.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 interface Props {
   onDetectado: (valor: string) => void
@@ -22,6 +23,8 @@ const INTERVALO_LEITURA_MS = 300
  * serial manualmente no campo de busca.
  */
 export default function LeitorCodigoBarras({ onDetectado, onFechar }: Props) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, onFechar)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [erro, setErro] = useState<string | null>(null)

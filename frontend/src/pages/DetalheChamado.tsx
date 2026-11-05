@@ -9,6 +9,7 @@ import { detalheTicket, listarMensagensTicket, listarOrdensServico, type Operaca
 import { formatarDataHora } from '../utils/formatacao'
 import { CORES } from '../utils/cores'
 import './DetalheChamado.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 const INTERVALO_ATUALIZACAO_MS = 10_000
 
@@ -65,6 +66,7 @@ function DetalheChamadoConteudo() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [imagemAberta, setImagemAberta] = useState<string | null>(null)
+  useFecharComVoltar(imagemAberta !== null, () => setImagemAberta(null))
   // Anexos que o navegador não conseguiu mostrar (ex.: foto HEIC do iPhone no
   // Android, ou o servidor mandou como download): viram link para baixar.
   const [semVisualizacao, setSemVisualizacao] = useState<Set<string>>(() => new Set())

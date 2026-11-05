@@ -1,4 +1,5 @@
 import './ModalConfirmarLogout.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 interface Props {
   aberto: boolean
@@ -8,6 +9,8 @@ interface Props {
 
 /** Confirmação antes de sair de verdade — evita deslogar sem querer num toque acidental. */
 export default function ModalConfirmarLogout({ aberto, onCancelar, onConfirmar }: Props) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(aberto, onCancelar)
   if (!aberto) return null
 
   return (

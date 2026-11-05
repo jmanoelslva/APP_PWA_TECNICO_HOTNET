@@ -82,8 +82,10 @@
   cursor: pointer;
 }
 
-.onu-combobox-lista li button:hover {
-  background: var(--cor-fundo);
+@media (hover: hover) {
+  .onu-combobox-lista li button:hover {
+    background: var(--cor-fundo);
+  }
 }
 
 .onu-combobox-vazio {
@@ -366,8 +368,10 @@
   cursor: pointer;
 }
 
-.onu-modal-lista li button:hover {
-  background: var(--cor-fundo);
+@media (hover: hover) {
+  .onu-modal-lista li button:hover {
+    background: var(--cor-fundo);
+  }
 }
 
 .onu-modal-acoes {

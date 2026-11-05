@@ -3,6 +3,7 @@ import { MdLocationOn } from 'react-icons/md'
 import { ApiError, atualizarEndereco, type EnderecoDto } from '../api/client'
 import { useToast } from './Toast/useToast'
 import './ModalEditarEndereco.css'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
 interface Props {
   endereco: EnderecoDto
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, onSalvo }: Props) {
+  // "Voltar" do celular fecha a janela.
+  useFecharComVoltar(true, onFechar)
   const [form, setForm] = useState<EnderecoDto>(endereco)
   const [salvando, setSalvando] = useState(false)
   const [capturandoLocalizacao, setCapturandoLocalizacao] = useState(false)
@@ -101,7 +104,7 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
           </div>
           <div>
             <label>CEP</label>
-            <input {...campo('address_zipcode')} />
+            <input inputMode="numeric" {...campo('address_zipcode')} />
           </div>
         </div>
 

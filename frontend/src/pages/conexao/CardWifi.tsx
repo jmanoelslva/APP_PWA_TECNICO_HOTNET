@@ -79,6 +79,9 @@ export default function CardWifi({
         <span>Senha do Wi-Fi</span>
         <div className="conexao-campo-valor">
           <input
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             className="conexao-input"
             type={mostrarSenha ? 'text' : 'password'}
             value={semCriptografia ? '' : wifiSenha}
