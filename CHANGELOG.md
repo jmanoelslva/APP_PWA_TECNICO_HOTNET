@@ -17,8 +17,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - **Atalhos do Início:** a descrição (ex.: "Nenhuma agendada para os
   próximos dias") quebra linha em vez de ser cortada com "…".
-- **Botão Enviar do chamado:** cor sólida, como os demais botões do app
-  (sem degradê).
+- **Botões sem degradê:** Enviar do chamado, Buscar cliente, botão verde do
+  cliente e o da tela de erro passam a ter cor sólida, como os demais
+  botões do app.
 
 ## [1.23.3] - 2026-11-05
 
