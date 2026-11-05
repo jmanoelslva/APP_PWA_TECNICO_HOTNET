@@ -121,7 +121,8 @@
   background: #2e9e44;
 }
 
-.mapa-ctos-cliente button {
+/* Só o X de fechar (filho direto), não o botão da CTO dentro do texto. */
+.mapa-ctos-cliente > button {
   flex: none;
   display: inline-flex;
   align-items: center;
