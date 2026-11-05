@@ -68,22 +68,43 @@ export default function MapaCtos() {
   const [enderecos, setEnderecos] = useState<EnderecoNoMapa[] | null>(null)
   const [enderecoCliente, setEnderecoCliente] = useState<EnderecoNoMapa | null>(null)
 
-  async function aoBuscar(evento: FormEvent) {
-    evento.preventDefault()
+  // Ao vivo, como a busca do Início: 2 letras, 350 ms parado e consulta.
+  useEffect(() => {
     const termo = busca.trim()
-    if (!termo) return
-    setBuscando(true)
-    setResultados(null)
-    setEnderecos(null)
-    try {
-      const resposta = await buscarClientes(detectarTipoBusca(termo))
-      if (resposta.results.length === 1) await escolherCliente(resposta.results[0])
-      else setResultados(resposta.results)
-    } catch (excecao) {
-      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível buscar o cliente.')
-    } finally {
+    if (termo.length < 2) {
+      setResultados(null)
       setBuscando(false)
+      return
     }
+    let cancelado = false
+    setBuscando(true)
+    const temporizador = setTimeout(() => {
+      buscarClientes(detectarTipoBusca(termo))
+        .then((resposta) => {
+          if (cancelado) return
+          setEnderecos(null)
+          setResultados(resposta.results)
+        })
+        .catch((excecao) => {
+          if (!cancelado) toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível buscar o cliente.')
+        })
+        .finally(() => {
+          if (!cancelado) setBuscando(false)
+        })
+    }, 350)
+    return () => {
+      cancelado = true
+      clearTimeout(temporizador)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busca])
+
+  function aoBuscar(evento: FormEvent) {
+    evento.preventDefault()
+    // A busca já roda sozinha; Enter só fecha o teclado (e, com um único
+    // cliente encontrado, já o escolhe).
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    if (resultados?.length === 1) void escolherCliente(resultados[0])
   }
 
   async function escolherCliente(resultado: BuscaClienteResultado) {
