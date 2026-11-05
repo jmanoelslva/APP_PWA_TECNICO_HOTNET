@@ -68,10 +68,13 @@
 }
 
 /* Etapa da OS em aberto: tons claros com texto da mesma cor, para o
-   vermelho de "Atrasada" continuar sendo o que chama atenção. */
-.badge-agendada,
-.badge-respondida,
-.badge-iniciada {
+   vermelho de "Atrasada" continuar sendo o que chama atenção. Seletor duplo:
+   DetalheChamado.css também define .ticket-status-badge (texto branco) e,
+   carregado depois ao abrir um chamado, deixava o texto branco sobre o tom
+   claro (etiqueta apagada). */
+.ticket-status-badge.badge-agendada,
+.ticket-status-badge.badge-respondida,
+.ticket-status-badge.badge-iniciada {
   color: var(--cor-selo);
   background: color-mix(in srgb, var(--cor-selo) 14%, transparent);
 }

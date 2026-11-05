@@ -19,10 +19,12 @@ export default function AcoesContato({ numero }: { numero: string | null | undef
         const whatsapp = linkWhatsapp(n)
         if (!ligar) return null
         const sufixo = varios ? ` ${formatarTelefone(n)}` : ''
+        // Número à parte para a tela da OS poder mostrá-lo embaixo do rótulo.
+        const telefone = varios ? <small className="acoes-contato-telefone">{sufixo}</small> : null
         return (
           <div key={n} className="acoes-contato-numero">
             <a href={ligar} className="acoes-contato-botao" aria-label={`Ligar${sufixo}`}>
-              <MdPhone size={16} /> Ligar{sufixo}
+              <MdPhone size={16} /> Ligar{telefone}
             </a>
             {whatsapp && (
               <a

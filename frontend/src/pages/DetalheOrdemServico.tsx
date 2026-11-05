@@ -553,19 +553,18 @@ function DetalheOrdemServicoConteudo() {
                   ))}
                 </ol>
               )}
-              {(rota || telefone) && (
-                <div className="detalhe-ordem-contato">
-                  {rota && (
-                    <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
-                      <MdDirections size={16} /> Rota
-                    </a>
-                  )}
-                  <AcoesContato numero={telefone} />
-                </div>
-              )}
-              <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
-                <MdChatBubbleOutline size={14} /> Ver chamado
-              </Link>
+              {/* Ações do topo em grade: mesmo tamanho, ícone sobre o rótulo. */}
+              <div className="detalhe-ordem-contato">
+                {rota && (
+                  <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
+                    <MdDirections size={22} /> Rota
+                  </a>
+                )}
+                <AcoesContato numero={telefone} />
+                <Link to={`/suporte/${pk}`} className="acoes-contato-botao" viewTransition>
+                  <MdChatBubbleOutline size={22} /> Chamado
+                </Link>
+              </div>
             </div>
 
             <Abas abas={ABAS} ativa={aba} onEscolher={setAba} cor={CORES.suporte} rotulo="Partes da OS" />

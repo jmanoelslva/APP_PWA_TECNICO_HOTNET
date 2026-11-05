@@ -7,6 +7,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- **Botões do topo da OS:** Rota, Ligar, WhatsApp e Chamado numa grade de
+  colunas iguais, com o ícone sobre o rótulo ("Ver chamado" passa a ser o botão
+  "Chamado"). Com mais de um telefone, o número aparece embaixo de "Ligar".
+
+### Corrigido
+
+- **Etiquetas de etapa apagadas em OS / Suporte:** depois de abrir um chamado,
+  Agendada, Respondida e Em andamento ficavam com texto branco sobre o tom
+  claro; agora mantêm a cor.
+
 ## [1.23.1] - 2026-11-05
 
 ### Alterado

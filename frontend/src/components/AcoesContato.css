@@ -36,3 +36,8 @@
 :root[data-theme='dark'] .acoes-contato-whatsapp {
   --cor-whatsapp: #3fd27a;
 }
+
+/* Número ao lado do rótulo (vários telefones); a tela da OS o põe embaixo. */
+.acoes-contato-telefone {
+  font-size: inherit;
+}

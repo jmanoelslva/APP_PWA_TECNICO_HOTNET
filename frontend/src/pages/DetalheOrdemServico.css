@@ -515,15 +515,49 @@
   background: repeating-linear-gradient(90deg, var(--cor-suporte) 0 6px, transparent 6px 9px);
 }
 
+/* Rota, Ligar, WhatsApp e Chamado em grade de colunas iguais (uma linha no
+   celular). Os botões de AcoesContato entram direto na grade (display:
+   contents); com mais de um telefone, os excedentes passam à linha seguinte. */
 .detalhe-ordem-contato {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
   gap: 8px;
 }
 
-.detalhe-ordem-contato .acoes-contato {
-  margin-top: 0;
+.detalhe-ordem-contato .acoes-contato,
+.detalhe-ordem-contato .acoes-contato-numero {
+  display: contents;
+}
+
+.detalhe-ordem-contato .acoes-contato-botao {
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 8px 4px;
+  border-width: 1px;
+  border-radius: 12px;
+  background: color-mix(in srgb, currentColor 7%, var(--cor-superficie));
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+}
+
+.detalhe-ordem-contato .acoes-contato-botao svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+
+.detalhe-ordem-contato .acoes-contato-telefone {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.detalhe-ordem-contato .acoes-contato-botao:active {
+  transform: scale(0.97);
 }
 
 .detalhe-ordem-rota {
