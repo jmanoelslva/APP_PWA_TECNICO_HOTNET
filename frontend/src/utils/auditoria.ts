@@ -46,6 +46,9 @@ function senha(rotulo: string, alterada: unknown): Mudanca | null {
 // nas outras ações são só o "onde" (detalhes).
 const ASSOCIACAO = 'onu.associar_cliente'
 
+// Nas etapas da OS o texto é a descrição do atendimento; em cancelar/reabrir e desfazer, o motivo.
+const ETAPAS_OS = new Set(['os.responder', 'os.iniciar', 'os.finalizar'])
+
 // Ações gravadas com a lista pronta (endereço, telefone, localização):
 // [{ rotulo, antes?, depois }] montada pelo backend.
 function lista(alvo: Alvo): Mudanca[] {
@@ -87,7 +90,10 @@ export function detalhes(alvo: Alvo, acao?: string): Detalhe[] {
   if (tem(alvo.endereco)) itens.push({ rotulo: 'Endereço', valor: texto(alvo.endereco) })
   if (tem(alvo.telefone)) itens.push({ rotulo: 'Telefone', valor: texto(alvo.telefone) })
   if (tem(alvo.ticket_pk)) itens.push({ rotulo: 'Chamado', valor: `#${alvo.ticket_pk}` })
-  if (tem(alvo.motivo)) itens.push({ rotulo: 'Motivo', valor: texto(alvo.motivo) })
+  if (tem(alvo.motivo)) itens.push({ rotulo: ETAPAS_OS.has(acao ?? '') ? 'Descrição' : 'Motivo', valor: texto(alvo.motivo) })
+  if (tem(alvo.fatura)) itens.push({ rotulo: 'Fatura', valor: `#${alvo.fatura}` })
+  if (tem(alvo.liberacao)) itens.push({ rotulo: 'Liberação', valor: texto(alvo.liberacao) })
+  if (tem(alvo.observacao)) itens.push({ rotulo: 'Observação', valor: texto(alvo.observacao) })
   if (tem(alvo.cliente)) itens.push({ rotulo: 'Cliente', valor: texto(alvo.cliente) })
   if (tem(alvo.pppoe)) itens.push({ rotulo: 'PPPoE', valor: texto(alvo.pppoe) })
   // Registros antigos de Wi-Fi/roteador só têm o número interno da conexão.

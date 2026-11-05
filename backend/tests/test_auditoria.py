@@ -180,6 +180,87 @@ def test_registro_antigo_completado_pela_onu(pasta, monkeypatch):
     assert evs[1]["alvo"]["olt_nome"] == "OLT-FLX" and "onu_id" not in evs[1]["alvo"]
 
 
+def test_cto_e_observacao_da_conexao_entram_na_auditoria(pasta, monkeypatch):
+    from app.brbyteapi.controllr import AsyncControllr
+    from app.deps import get_current_session
+    from app.main import app
+
+    linhas = iter([
+        {"cpe_pk": 9, "dp_name": "CTO-01", "cpe_dp_port": 3, "cpe_obs": "",
+         "client_complete_name": "Maria da Silva", "cpe_username": "maria.silva"},
+        {"cpe_pk": 9, "dp_name": "CTO-07", "cpe_dp_port": 5, "cpe_obs": ""},
+        {"cpe_pk": 9, "cpe_obs": "poste 12", "client_complete_name": "Maria da Silva", "cpe_username": "maria.silva"},
+        {"cpe_pk": 9, "cpe_obs": ""},
+    ])
+
+    async def falso_post(self, caminho, body):
+        assert caminho == "/aaa_ctl/cpe/list"
+        return SimpleNamespace(success=True, results=[next(linhas)])
+
+    async def falso_update(self, body):
+        return SimpleNamespace(success=True, results=[])
+
+    monkeypatch.setattr(AsyncControllr, "call_api_post", falso_post)
+    monkeypatch.setattr(AsyncControllr, "cpe_update", falso_update)
+    app.dependency_overrides[get_current_session] = lambda: sessao("joao")
+    try:
+        c = TestClient(app)
+        assert c.put("/cpe/9/detalhes", json={"dp_pk": 70, "cpe_dp_port": 5}).status_code == 200
+        assert c.put("/cpe/9/detalhes", json={"cpe_obs": ""}).status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+
+    obs, cto = audit.consultar()[0]
+    assert cto["tecnico"] == "joao" and cto["acao"] == "cpe.editar_cto"
+    assert cto["alvo"] == {"cpe_pk": 9, "cliente": "Maria da Silva", "pppoe": "maria.silva", "alteracoes": [
+        {"rotulo": "CTO", "antes": "CTO-01", "depois": "CTO-07"},
+        {"rotulo": "Porta da CTO", "antes": 3, "depois": 5},
+    ]}
+    assert obs["acao"] == "cpe.editar_observacao"
+    assert obs["alvo"]["alteracoes"] == [{"rotulo": "Observação", "antes": "poste 12", "depois": "(vazia)"}]
+
+
+def test_etapas_da_os_liberacao_e_login_entram_na_auditoria(pasta, monkeypatch):
+    from app.brbyteapi.controllr import AsyncControllr
+    from app.deps import get_current_session
+    from app.main import app
+    from app.routers import auth
+
+    async def falso_post(self, caminho, body):
+        if caminho == "/controllrctl/client/list":
+            return SimpleNamespace(success=True, results=[{"client_pk": 5, "client_complete_name": "Maria da Silva"}])
+        return SimpleNamespace(success=True, results=[])
+
+    async def falsa_obs(self, body):
+        return SimpleNamespace(success=True, status=200, results=[])
+
+    async def falso_login(url, usuario, senha):
+        return SimpleNamespace(success=True, cookie_header="BRBOSCookie=x")
+
+    monkeypatch.setattr(AsyncControllr, "call_api_post", falso_post)
+    monkeypatch.setattr(AsyncControllr, "observation_create", falsa_obs)
+    monkeypatch.setattr(auth.ControllrLogin, "login", falso_login)
+    monkeypatch.setattr(limite_login, "_falhas", {})
+    c = TestClient(app)
+    assert c.post("/auth/login", json={"username": "maria", "password": "x"}).status_code == 200
+    app.dependency_overrides[get_current_session] = lambda: sessao("joao")
+    try:
+        assert c.post("/os/7/finalizar", json={"op_os_pk": 70, "op_desc": "Troca de conector"}).status_code == 200
+        assert c.post("/os/7/desfazer-finalizacao", json={"op_os_pk": 70, "op_desc": "Finalizei errado"}).status_code == 200
+        assert c.post("/financeiro/observacoes", json={
+            "client_pk": 5, "contract_pk": 6, "invoice_pk": 99, "obs_text": "Promessa de pagamento", "obs_period_dias": 3,
+        }).status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+
+    lib, desfez, fim, entrou = audit.consultar()[0]
+    assert (entrou["tecnico"], entrou["acao"], entrou["alvo"]) == ("maria", "auth.login", {})
+    assert fim["acao"] == "os.finalizar" and fim["alvo"] == {"ticket_pk": 7, "op_os_pk": 70, "motivo": "Troca de conector"}
+    assert desfez["acao"] == "os.desfazer_finalizacao"
+    assert lib["acao"] == "financeiro.liberacao" and lib["alvo"] == {
+        "client_pk": 5, "cliente": "Maria da Silva", "fatura": 99, "liberacao": "3 dia(s)", "observacao": "Promessa de pagamento"}
+
+
 def test_wifi_e_acesso_gravam_antes_e_depois_sem_senha(pasta, monkeypatch):
     from app.brbyteapi.controllr import AsyncControllr
     from app.deps import get_current_session

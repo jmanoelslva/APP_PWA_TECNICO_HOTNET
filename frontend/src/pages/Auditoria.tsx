@@ -3,19 +3,27 @@ import type { IconType } from 'react-icons'
 import { LuFileSearch } from 'react-icons/lu'
 import {
   MdAddLocationAlt,
+  MdAssignmentTurnedIn,
+  MdAttachMoney,
   MdArrowForward,
   MdCancel,
   MdDeleteOutline,
   MdEdit,
   MdEditLocationAlt,
+  MdHub,
   MdLink,
+  MdLogin,
   MdLocationOff,
   MdManageSearch,
   MdMyLocation,
+  MdNotes,
+  MdPlayArrow,
   MdPhone,
   MdReplay,
   MdRestartAlt,
   MdRouter,
+  MdSync,
+  MdUndo,
   MdWifi,
 } from 'react-icons/md'
 import { ApiError, listarAuditoria } from '../api/client'
@@ -38,7 +46,8 @@ import './Auditoria.css'
 
 /**
  * Quem fez o quê, de qual IP: ações que mexem no cadastro e no equipamento
- * do cliente (ONU, Wi-Fi, acesso ao roteador, endereço, telefone, OS). Só
+ * do cliente (ONU, Wi-Fi, acesso ao roteador, CTO, endereço, telefone, OS,
+ * liberação financeira) e as entradas no app. Só
  * para os usuários liberados em AUDITORIA_USUARIOS no servidor.
  */
 
@@ -47,16 +56,27 @@ const ACOES: { valor: string; rotulo: string; icone: IconType; cor: string }[] =
   { valor: 'onu.reiniciar', rotulo: 'Reiniciou ONU', icone: MdRestartAlt, cor: CORES.alerta },
   { valor: 'onu.renomear', rotulo: 'Renomeou ONU', icone: MdEdit, cor: CORES.primaria },
   { valor: 'onu.associar_cliente', rotulo: 'Associou ONU a cliente', icone: MdLink, cor: CORES.cliente },
+  { valor: 'onu.atualizar', rotulo: 'Atualizou dados da ONU', icone: MdSync, cor: CORES.onu },
   { valor: 'cpe.editar_wifi', rotulo: 'Alterou Wi-Fi', icone: MdWifi, cor: CORES.conexao },
   { valor: 'cpe.editar_acesso_roteador', rotulo: 'Alterou acesso ao roteador', icone: MdRouter, cor: CORES.ferramentas },
   { valor: 'cpe.localizacao', rotulo: 'Alterou localização do equipamento', icone: MdMyLocation, cor: CORES.endereco },
+  { valor: 'cpe.editar_cto', rotulo: 'Alterou CTO da conexão', icone: MdHub, cor: CORES.conexao },
+  { valor: 'cpe.editar_observacao', rotulo: 'Alterou observação da conexão', icone: MdNotes, cor: CORES.conexao },
   { valor: 'endereco.criar', rotulo: 'Criou endereço', icone: MdAddLocationAlt, cor: CORES.endereco },
   { valor: 'endereco.editar', rotulo: 'Editou endereço', icone: MdEditLocationAlt, cor: CORES.endereco },
   { valor: 'endereco.excluir', rotulo: 'Excluiu endereço', icone: MdLocationOff, cor: CORES.erro },
   { valor: 'telefone.criar', rotulo: 'Adicionou telefone', icone: MdPhone, cor: CORES.cliente },
   { valor: 'telefone.editar', rotulo: 'Editou telefone', icone: MdPhone, cor: CORES.cliente },
+  { valor: 'os.responder', rotulo: 'Respondeu OS', icone: MdAssignmentTurnedIn, cor: CORES.suporte },
+  { valor: 'os.iniciar', rotulo: 'Iniciou OS', icone: MdPlayArrow, cor: CORES.suporte },
+  { valor: 'os.finalizar', rotulo: 'Finalizou OS', icone: MdAssignmentTurnedIn, cor: CORES.sucesso },
+  { valor: 'os.desfazer_resposta', rotulo: 'Desfez resposta da OS', icone: MdUndo, cor: CORES.alerta },
+  { valor: 'os.desfazer_inicio', rotulo: 'Desfez início da OS', icone: MdUndo, cor: CORES.alerta },
+  { valor: 'os.desfazer_finalizacao', rotulo: 'Desfez finalização da OS', icone: MdUndo, cor: CORES.alerta },
   { valor: 'os.cancelar', rotulo: 'Cancelou OS', icone: MdCancel, cor: CORES.erro },
   { valor: 'os.reabrir', rotulo: 'Reabriu OS', icone: MdReplay, cor: CORES.suporte },
+  { valor: 'financeiro.liberacao', rotulo: 'Liberou fatura (confiança)', icone: MdAttachMoney, cor: CORES.financeiro },
+  { valor: 'auth.login', rotulo: 'Entrou no app', icone: MdLogin, cor: CORES.textoSecundario },
 ]
 const POR_ACAO = Object.fromEntries(ACOES.map((a) => [a.valor, a]))
 // Ações que apagam algo: borda vermelha no cartão.
@@ -74,6 +94,7 @@ const GRUPOS_ACAO: { grupo: string; opcoes: { valor: string; rotulo: string }[] 
       { valor: 'onu.reiniciar', rotulo: 'Reinícios' },
       { valor: 'onu.renomear', rotulo: 'Renomeações' },
       { valor: 'onu.associar_cliente', rotulo: 'Associações a cliente' },
+      { valor: 'onu.atualizar', rotulo: 'Atualizações' },
     ],
   },
   {
@@ -83,6 +104,8 @@ const GRUPOS_ACAO: { grupo: string; opcoes: { valor: string; rotulo: string }[] 
       { valor: 'cpe.editar_wifi', rotulo: 'Wi-Fi' },
       { valor: 'cpe.editar_acesso_roteador', rotulo: 'Acesso ao roteador' },
       { valor: 'cpe.localizacao', rotulo: 'Localização' },
+      { valor: 'cpe.editar_cto', rotulo: 'CTO e porta' },
+      { valor: 'cpe.editar_observacao', rotulo: 'Observação' },
     ],
   },
   {
@@ -90,9 +113,22 @@ const GRUPOS_ACAO: { grupo: string; opcoes: { valor: string; rotulo: string }[] 
     opcoes: [
       { valor: 'endereco.', rotulo: 'Endereços' },
       { valor: 'telefone.', rotulo: 'Telefones' },
+      { valor: 'financeiro.', rotulo: 'Liberações financeiras' },
     ],
   },
-  { grupo: 'OS', opcoes: [{ valor: 'os.', rotulo: 'Cancelar / reabrir OS' }] },
+  {
+    grupo: 'OS',
+    opcoes: [
+      { valor: 'os.', rotulo: 'Tudo da OS' },
+      { valor: 'os.responder', rotulo: 'Respostas' },
+      { valor: 'os.iniciar', rotulo: 'Inícios' },
+      { valor: 'os.finalizar', rotulo: 'Finalizações' },
+      { valor: 'os.desfazer', rotulo: 'Etapas desfeitas' },
+      { valor: 'os.cancelar', rotulo: 'Cancelamentos' },
+      { valor: 'os.reabrir', rotulo: 'Reaberturas' },
+    ],
+  },
+  { grupo: 'Acesso', opcoes: [{ valor: 'auth.login', rotulo: 'Entradas no app' }] },
 ]
 
 const PERIODOS: Aba<PeriodoAuditoria>[] = [

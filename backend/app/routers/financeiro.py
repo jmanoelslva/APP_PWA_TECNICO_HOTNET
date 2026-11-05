@@ -25,9 +25,11 @@ Nomes de campo não documentados na doc oficial:
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from .. import contexto_auditoria as contexto
+from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 from ..where import OPER_EQ, OPER_IS, corpo as montar_corpo, where_and
@@ -69,7 +71,9 @@ class ObservacaoPayload(BaseModel):
 
 
 @router.post("/observacoes")
-async def criar_observacao(payload: ObservacaoPayload, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
+async def criar_observacao(
+    payload: ObservacaoPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
+) -> dict[str, Any]:
     if payload.obs_release_date:
         campos_liberacao: dict[str, Any] = {"obs_release_type": 0, "obs_date_end": payload.obs_release_date}
     elif payload.obs_period_dias:
@@ -92,4 +96,15 @@ async def criar_observacao(payload: ObservacaoPayload, ctx: AuthContext = Depend
         raise HTTPException(status_code=403, detail="Técnico sem liberação de ACL para o módulo financeiro.")
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível registrar a observação.", resposta))
+    liberacao = (f"até {payload.obs_release_date}" if payload.obs_release_date
+                 else f"{payload.obs_period_dias} dia(s)")
+    registrar_auditoria(request, ctx.session, "financeiro.liberacao", {
+        k: v for k, v in {
+            "client_pk": payload.client_pk,
+            "cliente": await contexto.nome_cliente(ctx, payload.client_pk),
+            "fatura": payload.invoice_pk,
+            "liberacao": liberacao,
+            "observacao": payload.obs_text.strip()[:300],
+        }.items() if v not in (None, "")
+    })
     return {"success": True, "results": resposta.results}

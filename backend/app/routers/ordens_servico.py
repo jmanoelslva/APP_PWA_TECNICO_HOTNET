@@ -238,34 +238,37 @@ def _alvo_os(ticket_pk: int, payload: AcaoOSPayload) -> dict[str, Any]:
 # (diferente de close/cancel/reopen).
 @router.post("/{ticket_pk}/responder")
 async def responder_ordem_servico(
-    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: AcaoOSPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_answer", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível marcar a OS como respondida.", resposta))
+    registrar_auditoria(request, ctx.session, "os.responder", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}
 
 
 @router.post("/{ticket_pk}/iniciar")
 async def iniciar_ordem_servico(
-    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: AcaoOSPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_start", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível iniciar a OS.", resposta))
+    registrar_auditoria(request, ctx.session, "os.iniciar", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}
 
 
 @router.post("/{ticket_pk}/finalizar")
 async def finalizar_ordem_servico(
-    ticket_pk: int, payload: AcaoOSPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: AcaoOSPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc or "")
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_finish", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível finalizar a OS.", resposta))
+    registrar_auditoria(request, ctx.session, "os.finalizar", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}
 
 
@@ -284,34 +287,37 @@ class DesfazerEtapaPayload(BaseModel):
 # calcular o estágio de cada etapa a partir desses eventos.
 @router.post("/{ticket_pk}/desfazer-resposta")
 async def desfazer_resposta_ordem_servico(
-    ticket_pk: int, payload: DesfazerEtapaPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: DesfazerEtapaPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc)
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/undo_answer", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível desfazer a resposta da OS.", resposta))
+    registrar_auditoria(request, ctx.session, "os.desfazer_resposta", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}
 
 
 @router.post("/{ticket_pk}/desfazer-inicio")
 async def desfazer_inicio_ordem_servico(
-    ticket_pk: int, payload: DesfazerEtapaPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: DesfazerEtapaPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc)
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/undo_start", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível desfazer o início da OS.", resposta))
+    registrar_auditoria(request, ctx.session, "os.desfazer_inicio", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}
 
 
 @router.post("/{ticket_pk}/desfazer-finalizacao")
 async def desfazer_finalizacao_ordem_servico(
-    ticket_pk: int, payload: DesfazerEtapaPayload, ctx: AuthContext = Depends(get_auth_context)
+    ticket_pk: int, payload: DesfazerEtapaPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     corpo_req = corpo(None, op_os_pk=payload.op_os_pk, op_desc=payload.op_desc)
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/undo_finish", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível desfazer a finalização da OS.", resposta))
+    registrar_auditoria(request, ctx.session, "os.desfazer_finalizacao", _alvo_os(ticket_pk, payload))
     return {"success": True, "results": resposta.results}
 
 

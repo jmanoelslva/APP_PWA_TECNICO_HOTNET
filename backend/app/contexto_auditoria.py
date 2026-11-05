@@ -51,6 +51,11 @@ async def telefone(ctx: AuthContext, phone_pk: int) -> dict[str, Any] | None:
     return await _linha(ctx, "/controllrctl/phone/list", "client_phone.phone_pk", "phone_pk", phone_pk)
 
 
+async def cpe(ctx: AuthContext, cpe_pk: int) -> dict[str, Any] | None:
+    """Conexão com CTO (dp_name), porta, observação, cliente e PPPoE."""
+    return await _linha(ctx, "/aaa_ctl/cpe/list", "cpe_pk", "cpe_pk", cpe_pk, limit=20)
+
+
 # ------------------------------------------------------------------ texto
 
 

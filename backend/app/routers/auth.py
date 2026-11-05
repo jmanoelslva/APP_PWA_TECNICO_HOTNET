@@ -4,7 +4,7 @@ from fastapi import APIRouter, Cookie, Depends, Request, Response
 from pydantic import BaseModel
 
 from .. import limite_login
-from ..audit import obter_ip_origem
+from ..audit import obter_ip_origem, registrar_auditoria
 from ..brbyteapi.controllr.login import ControllrLogin
 from ..config import CONTROLLR_URL, LOGIN_BLOQUEIO_MINUTOS, COOKIE_SEGURO, SESSION_COOKIE_MAX_AGE_SECONDS, SESSION_COOKIE_NAME
 from ..deps import AuthContext, encerrar_sessao_controllr, get_auth_context
@@ -56,6 +56,7 @@ async def login(payload: LoginRequest, request: Request, response: Response) -> 
         username=payload.username,
         controllr_cookie=resultado_login.cookie_header,
     )
+    registrar_auditoria(request, sessao, "auth.login")
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
         value=sessao.session_id,

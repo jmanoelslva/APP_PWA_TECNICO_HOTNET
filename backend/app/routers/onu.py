@@ -88,6 +88,7 @@ async def buscar_onu(
 @router.post("/{onu_pk}/atualizar")
 async def atualizar_info_onu(
     onu_pk: int,
+    request: Request,
     olt_pk: int = Query(...),
     onu_serial: str = Query(...),
     slot_id: int = Query(...),
@@ -109,6 +110,9 @@ async def atualizar_info_onu(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar a ONU.", resposta))
+    # O nome da OLT a tela de auditoria completa pelo onu_pk (routers/auditoria.py).
+    registrar_auditoria(request, ctx.session, "onu.atualizar",
+                        _alvo_onu(onu_pk, olt_pk, port_id, onu_id, None, onu_serial))
 
     await asyncio.sleep(ESPERA_APOS_ATUALIZAR_ONU_S)
     return {"success": True, "results": resposta.results}

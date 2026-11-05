@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
+from .. import contexto_auditoria as contexto
 from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
@@ -153,6 +154,20 @@ def _alvo_cpe(cpe_pk: int, contexto: ContextoAuditoriaCpe | None, **depois: Any)
     return {k: v for k, v in alvo.items() if v not in (None, "")}
 
 
+CAMPOS_CTO = {"dp_name": "CTO", "cpe_dp_port": "Porta da CTO", "cpe_obs": "Observação"}
+
+
+def _alteracoes_cpe(antes: dict[str, Any] | None, enviado: dict[str, Any]) -> list[dict[str, Any]]:
+    """Antes → depois de CTO, porta e observação. Observação apagada aparece
+    como "(vazia)". Sem o "antes" (Controllr não respondeu), só o novo valor."""
+    depois = {k: v for k, v in enviado.items() if v is not None}
+    if antes:
+        lista = contexto.alteracoes(antes, depois, CAMPOS_CTO)
+    else:
+        lista = [{"rotulo": CAMPOS_CTO[k], "depois": v} for k, v in depois.items()]
+    return [{**item, "depois": item["depois"] if item["depois"] != "" else "(vazia)"} for item in lista]
+
+
 class WifiCpePayload(BaseModel):
     wifi_encryption_type: int | None = None
     wifi_encryption_password: str | None = None
@@ -199,12 +214,32 @@ async def atualizar_detalhes_cpe(
     cpe_pk: int, payload: CpeDetalhesPayload, request: Request, ctx: AuthContext = Depends(get_auth_context)
 ) -> dict[str, Any]:
     campos: dict[str, Any] = {"cpe_pk": cpe_pk, **payload.model_dump(exclude_none=True, exclude={"auditoria"})}
+    muda_cto = payload.dp_pk is not None or payload.cpe_dp_port is not None
+    muda_obs = payload.cpe_obs is not None
+    # CTO e observação: o "antes" vem do Controllr (a tela não manda contexto).
+    antes = await contexto.cpe(ctx, cpe_pk) if muda_cto or muda_obs else None
     resposta = await ctx.controllr.cpe_update(urlencode(campos))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o CPE.", resposta))
-    # Só grava auditoria quando a credencial de acesso ao roteador muda —
-    # editar CTO/observação não é uma ação sensível o bastante pra entrar
-    # no mesmo log (senão fica ruído demais pra achar o que importa).
+    if muda_cto or muda_obs:
+        # Relê para ter o nome da CTO nova; sem resposta, fica o que foi enviado.
+        depois = await contexto.cpe(ctx, cpe_pk) or {}
+        enviado = {
+            "dp_name": depois.get("dp_name") or payload.dp_pk,
+            "cpe_dp_port": payload.cpe_dp_port,
+            "cpe_obs": payload.cpe_obs,
+        }
+        if payload.dp_pk is None:
+            enviado.pop("dp_name")
+        base = antes or depois
+        registrar_auditoria(request, ctx.session, "cpe.editar_cto" if muda_cto else "cpe.editar_observacao", {
+            k: v for k, v in {
+                "cpe_pk": cpe_pk,
+                "cliente": base.get("client_complete_name") or (payload.auditoria.cliente if payload.auditoria else None),
+                "pppoe": base.get("cpe_username") or (payload.auditoria.pppoe if payload.auditoria else None),
+                "alteracoes": _alteracoes_cpe(antes, enviado),
+            }.items() if v not in (None, "", [])
+        })
     if payload.cpe_access_login is not None or payload.cpe_access_password is not None or payload.cpe_access_port is not None:
         registrar_auditoria(
             request,

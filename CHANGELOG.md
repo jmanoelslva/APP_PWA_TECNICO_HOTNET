@@ -7,6 +7,24 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.25.0] - 2026-11-05
+
+### Adicionado
+
+- **Auditoria de CTO e observação da conexão:** trocar CTO ou porta da CTO e
+  editar a observação da conexão passam a aparecer na Auditoria, com quem
+  fez, o IP e o antes → depois (CTO pelo nome), além do cliente e do PPPoE.
+- **Auditoria das etapas da OS:** responder, iniciar e finalizar a OS, e
+  desfazer cada uma dessas etapas, entram na Auditoria com o chamado e a
+  descrição ou o motivo.
+- **Auditoria da liberação financeira:** a observação de liberação de
+  fatura registra cliente, fatura, prazo (data ou dias) e o texto.
+- **Auditoria de Atualizar ONU e de entrada no app:** atualizar os dados da
+  ONU (que reconecta a OLT) e cada login com sucesso, com o IP de origem.
+- **Filtros da Auditoria:** novas opções para CTO e porta, Observação,
+  Atualizações da ONU, Liberações financeiras, cada etapa da OS, Etapas
+  desfeitas e Entradas no app.
+
 ## [1.24.0] - 2026-11-05
 
 ### Adicionado
@@ -872,6 +890,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.25.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.24.0...v1.25.0
 [1.24.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.23.3...v1.24.0
 [1.23.3]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.23.2...v1.23.3
 [1.23.2]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.23.1...v1.23.2
