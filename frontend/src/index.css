@@ -250,6 +250,12 @@ body {
   -webkit-touch-callout: none;
 }
 
+/* Link e imagem não "descolam" ao segurar e arrastar. */
+a,
+img {
+  -webkit-user-drag: none;
+}
+
 /* Campos de entrada de dados: seleção liberada. */
 input,
 textarea,

@@ -15,6 +15,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Menu do navegador ao segurar o dedo:** em botões e links (OS, Rota etc.)
+  o menu "Abrir em nova guia/Copiar link" não aparece mais; só nos campos de
+  entrada de dados.
 - **Etiquetas de etapa apagadas em OS / Suporte:** depois de abrir um chamado,
   Agendada, Respondida e Em andamento ficavam com texto branco sobre o tom
   claro; agora mantêm a cor.

@@ -8,6 +8,7 @@ import { iniciarTema } from './utils/tema.ts'
 import { iniciarFilaAnexos } from './utils/filaAnexos.ts'
 import { iniciarArrastarFolhas } from './utils/arrastarFolhas.ts'
 import { iniciarAtualizacaoApp } from './utils/atualizacaoApp.ts'
+import { iniciarSemMenuContexto } from './utils/menuContexto.ts'
 import './index.css'
 import App from './App.tsx'
 
@@ -19,6 +20,8 @@ iniciarFilaAnexos()
 iniciarArrastarFolhas()
 // Versão nova sem fechar e abrir o app (ver utils/atualizacaoApp.ts).
 iniciarAtualizacaoApp()
+// Segurar o dedo em botão ou link não abre o menu do navegador.
+iniciarSemMenuContexto()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
