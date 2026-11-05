@@ -9,8 +9,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
-- **Mensagem no chamado:** com o chamado aberto, o técnico volta a poder
-  escrever e enviar mensagem de texto pela tela do Suporte.
+- **Mensagem e anexo no chamado:** com o chamado aberto, o técnico volta a
+  poder enviar mensagem de texto e anexo (tirar foto, galeria ou arquivo)
+  pela tela do Suporte; foto grande é reduzida antes de subir.
 
 ### Corrigido
 
