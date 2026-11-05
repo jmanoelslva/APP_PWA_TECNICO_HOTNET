@@ -84,6 +84,67 @@
   color: var(--cor-texto-terciario);
 }
 
+.mapa-ctos-busca {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mapa-ctos-busca .campo {
+  flex: 1;
+  min-width: 0;
+}
+
+.mapa-ctos-busca .botao {
+  flex: none;
+  width: 48px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mapa-ctos-opcoes {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapa-ctos-cliente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 6px 8px 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  background: var(--cor-superficie);
+}
+
+.mapa-ctos-cliente i {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #2e9e44;
+}
+
+.mapa-ctos-cliente button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  color: var(--cor-texto-secundario);
+  cursor: pointer;
+}
+
 .mapa-ctos-distancia {
   flex: none;
   font-family: var(--fonte-mono);

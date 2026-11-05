@@ -1,10 +1,19 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
-import { LuMap } from 'react-icons/lu'
-import { ApiError, listarDps, type DpDto } from '../api/client'
+import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
+import { LuMap, LuSearch, LuX } from 'react-icons/lu'
+import {
+  ApiError,
+  buscarClientes,
+  buscarDetalheCliente,
+  listarDps,
+  type BuscaClienteResultado,
+  type DpDto,
+  type EnderecoDto,
+} from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Spinner from '../components/Spinner'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
+import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import { distanciaMetros, formatarDistancia, useLocalizacaoAoVivo } from './conexao/localizacao'
 import './Conexao.css'
 import './MapaCtos.css'
@@ -14,11 +23,32 @@ const MapaCto = lazy(() => import('./conexao/MapaCto'))
 
 const QTD_MAIS_PROXIMAS = 5
 
+interface EnderecoNoMapa {
+  lat: number
+  lng: number
+  nomeCliente: string
+  descricao: string
+}
+
+function coordenadaDoEndereco(endereco: EnderecoDto): { lat: number; lng: number } | null {
+  const lat = Number(endereco.address_latitude)
+  const lng = Number(endereco.address_longitude)
+  return endereco.address_latitude && endereco.address_longitude && Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng)
+    ? { lat, lng }
+    : null
+}
+
+function descreverEndereco(endereco: EnderecoDto): string {
+  const rua = [endereco.address, endereco.address_number].filter(Boolean).join(', ')
+  return [rua, endereco.address_neighborhood].filter(Boolean).join(' — ') || 'Endereço sem descrição'
+}
+
 /**
  * Mapa com as CTOs do Controllr e a posição do técnico ao vivo, sem
  * precisar abrir uma conexão — para ver a CTO mais próxima do cliente
- * antes do atendimento. Só consulta: escolher a CTO de um cliente continua
- * no bloco CTO da Conexão.
+ * antes do atendimento. Com um cliente buscado, as distâncias passam a ser
+ * a partir do endereço dele (coordenada cadastrada no Controllr). Só
+ * consulta: escolher a CTO de um cliente continua no bloco CTO da Conexão.
  */
 export default function MapaCtos() {
   const { toast } = useToast()
@@ -31,6 +61,68 @@ export default function MapaCtos() {
   const [primeiraPosicao, setPrimeiraPosicao] = useState<{ lat: number; lng: number } | null>(null)
   if (aoVivo && !primeiraPosicao) setPrimeiraPosicao({ lat: aoVivo.lat, lng: aoVivo.lng })
 
+  // Busca de cliente: resultados → endereços com coordenada → um escolhido.
+  const [busca, setBusca] = useState('')
+  const [buscando, setBuscando] = useState(false)
+  const [resultados, setResultados] = useState<BuscaClienteResultado[] | null>(null)
+  const [enderecos, setEnderecos] = useState<EnderecoNoMapa[] | null>(null)
+  const [enderecoCliente, setEnderecoCliente] = useState<EnderecoNoMapa | null>(null)
+
+  async function aoBuscar(evento: FormEvent) {
+    evento.preventDefault()
+    const termo = busca.trim()
+    if (!termo) return
+    setBuscando(true)
+    setResultados(null)
+    setEnderecos(null)
+    try {
+      const resposta = await buscarClientes(detectarTipoBusca(termo))
+      if (resposta.results.length === 1) await escolherCliente(resposta.results[0])
+      else setResultados(resposta.results)
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível buscar o cliente.')
+    } finally {
+      setBuscando(false)
+    }
+  }
+
+  async function escolherCliente(resultado: BuscaClienteResultado) {
+    setBuscando(true)
+    setResultados(null)
+    try {
+      const detalhe = await buscarDetalheCliente(resultado.client_pk)
+      const nome = detalhe.cliente.client_complete_name ?? resultado.cliente.client_complete_name ?? 'Cliente'
+      // Endereço principal primeiro.
+      const comCoordenada = [...detalhe.enderecos]
+        .sort((a, b) => (b.address_default ?? 0) - (a.address_default ?? 0))
+        .flatMap((endereco) => {
+          const ponto = coordenadaDoEndereco(endereco)
+          return ponto ? [{ ...ponto, nomeCliente: nome, descricao: descreverEndereco(endereco) }] : []
+        })
+      if (comCoordenada.length === 0) toast(`${nome}: nenhum endereço com coordenada cadastrada.`)
+      else if (comCoordenada.length === 1) escolherEndereco(comCoordenada[0])
+      else setEnderecos(comCoordenada)
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar o cliente.')
+    } finally {
+      setBuscando(false)
+    }
+  }
+
+  function escolherEndereco(endereco: EnderecoNoMapa) {
+    setEnderecos(null)
+    setEnderecoCliente(endereco)
+    setSelecionadaPk(null)
+  }
+
+  function limparCliente() {
+    setEnderecoCliente(null)
+    setResultados(null)
+    setEnderecos(null)
+    setBusca('')
+    setSelecionadaPk(null)
+  }
+
   useEffect(() => {
     listarDps()
       .then((resposta) => setDps(resposta.results))
@@ -41,20 +133,93 @@ export default function MapaCtos() {
     (dp): dp is DpDto & { lat: number; lng: number } => dp.lat != null && dp.lng != null,
   )
   const selecionada = comCoordenada.find((dp) => dp.pk === selecionadaPk) ?? null
-  const maisProximas = aoVivo
+  // Referência das distâncias: o endereço do cliente buscado; senão, o técnico.
+  const referencia = enderecoCliente ?? aoVivo
+  const maisProximas = referencia
     ? comCoordenada
-        .map((dp) => ({ dp, distanciaM: distanciaMetros(aoVivo.lat, aoVivo.lng, dp.lat, dp.lng) }))
+        .map((dp) => ({ dp, distanciaM: distanciaMetros(referencia.lat, referencia.lng, dp.lat, dp.lng) }))
         .sort((a, b) => a.distanciaM - b.distanciaM)
         .slice(0, QTD_MAIS_PROXIMAS)
     : []
-  // Centro: a CTO tocada; senão, o técnico; sem GPS, a primeira CTO.
+  // Centro: a CTO tocada; senão, o cliente buscado; senão, o técnico; sem
+  // GPS, a primeira CTO.
   const centro = selecionada
     ? { lat: selecionada.lat, lng: selecionada.lng }
-    : (primeiraPosicao ?? (comCoordenada[0] ? { lat: comCoordenada[0].lat, lng: comCoordenada[0].lng } : null))
+    : enderecoCliente
+      ? { lat: enderecoCliente.lat, lng: enderecoCliente.lng }
+      : (primeiraPosicao ?? (comCoordenada[0] ? { lat: comCoordenada[0].lat, lng: comCoordenada[0].lng } : null))
 
   return (
     <div className="mapa-ctos-tela tela-entrada">
-      <CabecalhoTela icone={LuMap} cor={CORES.conexao} titulo="Mapa de CTOs" subtitulo="CTOs perto de você." />
+      <CabecalhoTela icone={LuMap} cor={CORES.conexao} titulo="Mapa de CTOs" subtitulo="CTOs perto de você ou do cliente." />
+
+      <form className="mapa-ctos-busca" onSubmit={aoBuscar} role="search">
+        <input
+          className="campo"
+          type="search"
+          enterKeyHint="search"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Cliente: nome, CPF/CNPJ ou contrato"
+          aria-label="Buscar cliente"
+        />
+        <button
+          type="submit"
+          className="botao botao-primario"
+          disabled={buscando || !busca.trim()}
+          aria-busy={buscando}
+          aria-label="Buscar cliente"
+        >
+          <LuSearch size={20} />
+        </button>
+      </form>
+
+      {resultados && (
+        <ul className="mapa-ctos-opcoes">
+          {resultados.length === 0 && <li className="mapa-ctos-aviso">Nenhum cliente encontrado.</li>}
+          {resultados.map((resultado) => (
+            <li key={resultado.client_pk}>
+              <button type="button" className="mapa-ctos-item" onClick={() => escolherCliente(resultado)}>
+                <span className="mapa-ctos-nome">
+                  <strong>{resultado.cliente.client_complete_name ?? 'Cliente'}</strong>
+                  {resultado.cliente.client_doc1 && <span>{formatarDocumento(resultado.cliente.client_doc1)}</span>}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {enderecos && (
+        <ul className="mapa-ctos-opcoes">
+          <li className="mapa-ctos-aviso">Escolha o endereço:</li>
+          {enderecos.map((endereco) => (
+            <li key={`${endereco.lat},${endereco.lng},${endereco.descricao}`}>
+              <button type="button" className="mapa-ctos-item" onClick={() => escolherEndereco(endereco)}>
+                <span className="mapa-ctos-nome">
+                  <strong>{endereco.descricao}</strong>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {enderecoCliente && (
+        <div className="mapa-ctos-cliente">
+          <i aria-hidden="true" />
+          <span className="mapa-ctos-nome">
+            <strong>{enderecoCliente.nomeCliente}</strong>
+            <span>{enderecoCliente.descricao}</span>
+          </span>
+          <button type="button" onClick={limparCliente} aria-label="Voltar para a minha localização">
+            <LuX size={20} />
+          </button>
+        </div>
+      )}
 
       {erro && <p className="mapa-ctos-aviso">{erro}</p>}
       {!erro && !dps && <Spinner />}
@@ -68,7 +233,7 @@ export default function MapaCtos() {
             selecionadaPk={selecionadaPk}
             minhaLocalizacao={aoVivo}
             precisaoM={aoVivo?.precisaoM ?? null}
-            cliente={null}
+            cliente={enderecoCliente}
             onSelecionar={(dp) => setSelecionadaPk(dp.pk)}
             onSemLocalizacao={() => toast('Aguardando a localização do GPS. Verifique se a permissão está liberada.')}
           />
@@ -77,9 +242,9 @@ export default function MapaCtos() {
 
       {dps && (
         <section className="mapa-ctos-proximas">
-          <h2>Mais próximas</h2>
-          {!aoVivo && <p className="mapa-ctos-aviso">Aguardando sua localização…</p>}
-          {aoVivo && (
+          <h2>{enderecoCliente ? 'Mais próximas do cliente' : 'Mais próximas de você'}</h2>
+          {!referencia && <p className="mapa-ctos-aviso">Aguardando sua localização…</p>}
+          {!enderecoCliente && aoVivo && (
             <p className="mapa-ctos-precisao">Precisão do GPS: ±{Math.round(aoVivo.precisaoM)} m</p>
           )}
           <ul>
