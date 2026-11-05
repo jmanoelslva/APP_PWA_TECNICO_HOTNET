@@ -275,7 +275,7 @@ export default function MapaCtos() {
           <h2>{enderecoCliente ? 'Mais próximas do cliente' : 'Mais próximas de você'}</h2>
           {!referencia && <p className="mapa-ctos-aviso">Aguardando sua localização…</p>}
           {!enderecoCliente && aoVivo && (
-            <p className="mapa-ctos-precisao">Precisão do GPS: ±{Math.round(aoVivo.precisaoM)} m</p>
+            <p className="mapa-ctos-aviso mapa-ctos-precisao">Precisão do GPS: ±{Math.round(aoVivo.precisaoM)} m</p>
           )}
           <ul>
             {maisProximas.map(({ dp, distanciaM }) => (

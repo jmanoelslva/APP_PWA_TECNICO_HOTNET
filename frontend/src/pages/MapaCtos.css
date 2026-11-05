@@ -20,11 +20,11 @@
 }
 
 .mapa-ctos-proximas {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .mapa-ctos-proximas h2 {
-  margin: 0;
+  margin: 0 0 10px;
   font-size: 15px;
   color: var(--cor-texto);
 }
@@ -35,7 +35,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .mapa-ctos-item {
@@ -140,4 +140,9 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--cor-texto-secundario);
+}
+
+/* Abaixo do título: o espaço já vem do margin do h2. */
+.mapa-ctos-proximas .mapa-ctos-aviso {
+  margin: 0 0 10px;
 }
