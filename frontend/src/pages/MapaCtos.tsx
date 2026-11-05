@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { LuMap, LuX } from 'react-icons/lu'
 import { MdSearch } from 'react-icons/md'
 import {
@@ -177,6 +178,16 @@ export default function MapaCtos() {
     setBusca('')
     setSelecionadaPk(null)
   }
+
+  // Vindo de outra tela (ex.: Clientes Offline → Mapa): ?cliente=<client_pk>
+  // abre já com o cliente escolhido e o traçado até a CTO dele.
+  const [params] = useSearchParams()
+  const clienteDaUrl = Number(params.get('cliente'))
+  useEffect(() => {
+    if (!Number.isInteger(clienteDaUrl) || clienteDaUrl <= 0) return
+    void escolherCliente({ client_pk: clienteDaUrl, cliente: {}, cpes: [] } as BuscaClienteResultado)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clienteDaUrl])
 
   useEffect(() => {
     listarDps()

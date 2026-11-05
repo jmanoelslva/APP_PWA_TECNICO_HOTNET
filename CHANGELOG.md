@@ -13,6 +13,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   cliente, uma linha tracejada liga o endereço dele à CTO gravada na conexão,
   com o nome, a porta e a distância em linha reta; o mapa enquadra os dois
   pontos.
+- **Clientes Offline como diagnóstico:**
+  - bloco "CTOs com mais de um offline" (provável fibra, CTO ou splitter), que filtra a lista ao tocar;
+  - lista do que caiu mais recente para o mais antigo, em grupos (Caiu hoje, De 1 a 7 dias, Mais de 7 dias, Nunca conectou), com "caiu há X";
+  - filtros de período e de região (setor da CTO);
+  - CTO em destaque no cartão, com a cor, a porta e o selo "N nesta CTO";
+  - ações Conexão, ONU, Mapa (abre o Mapa de CTOs com o cliente e o traçado), Ligar e Cliente;
+  - "Atualizado às" e carga de 200 por vez (servidor aceita até 500).
 
 ### Alterado
 

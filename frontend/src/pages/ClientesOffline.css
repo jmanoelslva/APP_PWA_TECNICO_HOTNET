@@ -77,6 +77,150 @@
 
 .clientes-offline-item-acoes {
   margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.clientes-offline-total span {
+  font-weight: 500;
+  color: var(--cor-texto-terciario);
+}
+
+/* Tempo offline no canto do cartão */
+.clientes-offline-tempo {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-offline);
+}
+
+/* CTO em destaque: bolinha na cor da CTO, nome, porta e selo */
+.clientes-offline-cto {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.clientes-offline-cto i,
+.clientes-offline-alerta i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.clientes-offline-sem-cto {
+  font-weight: 500;
+  color: var(--cor-texto-terciario);
+}
+
+.clientes-offline-selo {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--cor-erro);
+  background: color-mix(in srgb, var(--cor-erro) 12%, transparent);
+}
+
+/* CTOs com mais de um offline */
+.clientes-offline-alerta {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--cor-erro) 8%, var(--cor-superficie));
+  border: 1px solid color-mix(in srgb, var(--cor-erro) 30%, transparent);
+}
+
+.clientes-offline-alerta h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--cor-erro);
+}
+
+.clientes-offline-alerta ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.clientes-offline-alerta button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.clientes-offline-alerta b {
+  color: var(--cor-erro);
+}
+
+.clientes-offline-filtro-cto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  margin: 0 0 12px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cor-erro);
+  background: var(--cor-superficie);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-erro);
+}
+
+.clientes-offline-regiao {
+  width: 100%;
+  margin: 12px 0 4px;
+}
+
+.clientes-offline-grupo {
+  margin-top: 20px;
+}
+
+.clientes-offline-grupo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
+}
+
+.clientes-offline-grupo-titulo span {
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cor-borda);
+  color: var(--cor-texto-secundario);
+}
+
+.clientes-offline-grupo-titulo.grupo-hoje {
+  color: var(--cor-erro);
 }
 
 .clientes-offline-erro-mais {
