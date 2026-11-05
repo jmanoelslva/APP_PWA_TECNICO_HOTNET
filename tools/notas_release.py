@@ -44,6 +44,7 @@ TITULOS = {
     "1.22.0": "Números do dia clicáveis e atalhos do Início com informação",
     "1.23.0": "Aviso acima do botão de etapa da OS",
     "1.23.1": "Seleção de texto só nos campos de entrada",
+    "1.23.2": "Botões da OS em grade, etiquetas visíveis e sem menu ao segurar",
 }
 
 SECOES = {
