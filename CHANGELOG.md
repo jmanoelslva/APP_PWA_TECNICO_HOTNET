@@ -7,6 +7,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **CTO atual do cliente no Mapa de CTOs:** ao buscar um cliente, aparecem a
+  CTO e a porta já gravadas na conexão dele (com o PPPoE, se tiver mais de
+  uma); tocar mostra a CTO no mapa, e ela ganha o selo "Atual" na lista.
+
 ## [1.26.0] - 2026-11-05
 
 ### Adicionado

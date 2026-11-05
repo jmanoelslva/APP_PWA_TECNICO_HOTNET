@@ -4,6 +4,7 @@ import { MdSearch } from 'react-icons/md'
 import {
   ApiError,
   buscarClientes,
+  buscarCpe,
   buscarDetalheCliente,
   listarDps,
   type BuscaClienteResultado,
@@ -30,6 +31,14 @@ interface EnderecoNoMapa {
   lng: number
   nomeCliente: string
   descricao: string
+}
+
+// CTO já gravada numa conexão do cliente (Conexão → bloco CTO).
+interface CtoDoCliente {
+  dpPk: number
+  dpNome: string
+  porta: number | null
+  pppoe: string | null
 }
 
 function coordenadaDoEndereco(endereco: EnderecoDto): { lat: number; lng: number } | null {
@@ -70,6 +79,7 @@ export default function MapaCtos() {
   const [resultados, setResultados] = useState<BuscaClienteResultado[] | null>(null)
   const [enderecos, setEnderecos] = useState<EnderecoNoMapa[] | null>(null)
   const [enderecoCliente, setEnderecoCliente] = useState<EnderecoNoMapa | null>(null)
+  const [ctosCliente, setCtosCliente] = useState<CtoDoCliente[] | null>(null)
 
   // Ao vivo, como a busca do Início: 2 letras, 350 ms parado e consulta.
   useEffect(() => {
@@ -115,6 +125,24 @@ export default function MapaCtos() {
 
   async function escolherCliente(resultado: BuscaClienteResultado) {
     setBuscando(true)
+    // null: ainda lendo (ou falhou) — não mostra "sem CTO" à toa.
+    setCtosCliente(null)
+    // CTO e porta já gravadas nas conexões do cliente — complemento: se
+    // falhar, o mapa segue só com o endereço.
+    buscarCpe({ client_pk: resultado.client_pk })
+      .then((resposta) =>
+        setCtosCliente(
+          resposta.results
+            .filter((cpe) => cpe.dp_pk != null)
+            .map((cpe) => ({
+              dpPk: cpe.dp_pk as number,
+              dpNome: cpe.dp_name || `CTO #${cpe.dp_pk}`,
+              porta: cpe.dp_port ?? null,
+              pppoe: cpe.username ?? null,
+            })),
+        ),
+      )
+      .catch(() => {})
     try {
       const detalhe = await buscarDetalheCliente(resultado.client_pk)
       const nome = detalhe.cliente.client_complete_name ?? resultado.cliente.client_complete_name ?? 'Cliente'
@@ -143,6 +171,7 @@ export default function MapaCtos() {
 
   function limparCliente() {
     setEnderecoCliente(null)
+    setCtosCliente(null)
     setResultados(null)
     setEnderecos(null)
     setBusca('')
@@ -244,6 +273,20 @@ export default function MapaCtos() {
           <span className="mapa-ctos-nome">
             <strong>{enderecoCliente.nomeCliente}</strong>
             <span>{enderecoCliente.descricao}</span>
+            {ctosCliente?.map((cto) => (
+              <button
+                key={`${cto.pppoe}-${cto.dpPk}`}
+                type="button"
+                className="mapa-ctos-cto-atual"
+                onClick={() => setSelecionadaPk(cto.dpPk)}
+                aria-label={`Mostrar a CTO ${cto.dpNome} no mapa`}
+              >
+                CTO {cto.dpNome}
+                {cto.porta != null && ` · porta ${cto.porta}`}
+                {ctosCliente.length > 1 && cto.pppoe && ` (${cto.pppoe})`}
+              </button>
+            ))}
+            {ctosCliente?.length === 0 && <span>Sem CTO gravada na conexão</span>}
           </span>
           <button type="button" onClick={limparCliente} aria-label="Voltar para a minha localização">
             <LuX size={20} />
@@ -287,7 +330,10 @@ export default function MapaCtos() {
                 >
                   <i style={{ background: dp.cor || '#555555' }} aria-hidden="true" />
                   <span className="mapa-ctos-nome">
-                    <strong>{dp.name}</strong>
+                    <strong>
+                      {dp.name}
+                      {ctosCliente?.some((cto) => cto.dpPk === dp.pk) && <em className="mapa-ctos-selo">Atual</em>}
+                    </strong>
                     {dp.ativos != null && (
                       <span>
                         {dp.limite ? (
