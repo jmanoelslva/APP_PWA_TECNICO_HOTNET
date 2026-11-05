@@ -554,6 +554,13 @@
   font-size: 15px;
 }
 
+/* Com a barra de ação no rodapé, o toast sobe acima dela (10 + 52 + 10
+   de altura + 1 de borda) para não cobrir o botão. "html" garante que vence
+   a regra de index.css. */
+html body:has(.detalhe-ordem-barra-acao) {
+  --altura-toast-base: calc(var(--altura-nav) + 73px);
+}
+
 /* Sinal da ONU no card Conexão — mesmas faixas de nivelSinalOnu. */
 .detalhe-ordem-sinal {
   padding: 2px 8px;
