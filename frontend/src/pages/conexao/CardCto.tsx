@@ -71,6 +71,18 @@ export default function CardCto({
     dpSelecionada?.lat != null && dpSelecionada.lng != null
       ? { lat: dpSelecionada.lat, lng: dpSelecionada.lng }
       : (minhaLocalizacao ?? cliente ?? primeiraPosicao)
+  // Traçado do endereço do cliente até a CTO escolhida no campo (a gravada
+  // ou a que o técnico acabou de tocar), com a porta digitada.
+  const ligacoes =
+    cliente && dpSelecionada?.lat != null && dpSelecionada.lng != null
+      ? [
+          {
+            lat: dpSelecionada.lat,
+            lng: dpSelecionada.lng,
+            rotulo: `${dpSelecionada.name}${dpPorta.trim() ? ` · porta ${dpPorta.trim()}` : ''}`,
+          },
+        ]
+      : []
 
   const dpsFiltradas = (
     dpBusca.trim() ? dps.filter((dp) => dp.name.toLowerCase().includes(dpBusca.trim().toLowerCase())) : dps
@@ -263,6 +275,7 @@ export default function CardCto({
             minhaLocalizacao={posicaoTecnico}
             precisaoM={precisaoTecnicoM}
             cliente={cliente}
+            ligacoes={ligacoes}
             onSelecionar={(dp) => {
               setDpPk(String(dp.pk))
               setDpBusca(dp.name)

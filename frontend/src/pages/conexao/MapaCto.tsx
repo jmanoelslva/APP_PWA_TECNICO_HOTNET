@@ -248,14 +248,15 @@ export default function MapaCto({
   }, [minhaLocalizacao?.lat, minhaLocalizacao?.lng, precisaoM])
 
   // Cliente com CTO longe: enquadra o traçado inteiro uma vez por cliente/CTO
-  // (não a cada leitura do GPS).
+  // (não a cada leitura do GPS, nem ao digitar a porta, que só muda o rótulo).
+  const chaveEnquadrar = cliente ? `${cliente.lat},${cliente.lng}|${ligacoes.map((l) => `${l.lat},${l.lng}`).join(';')}` : ''
   useEffect(() => {
     const mapa = mapaRef.current
     if (!mapa || !cliente || ligacoes.length === 0) return
     const limites = L.latLngBounds([[cliente.lat, cliente.lng], ...ligacoes.map((l): [number, number] => [l.lat, l.lng])])
     mapa.fitBounds(limites, { padding: [40, 40], maxZoom: 19 })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chaveLigacoes])
+  }, [chaveEnquadrar])
 
   function irParaMinhaLocalizacao() {
     if (!minhaLocalizacao) {

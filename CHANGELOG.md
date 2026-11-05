@@ -12,7 +12,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Traçado do cliente até a CTO no Mapa de CTOs:** depois de buscar um
   cliente, uma linha tracejada liga o endereço dele à CTO gravada na conexão,
   com o nome, a porta e a distância em linha reta; o mapa enquadra os dois
-  pontos.
+  pontos. O mesmo traçado aparece no bloco CTO da Conexão, até a CTO
+  escolhida no campo.
 - **Clientes Offline como diagnóstico:**
   - bloco "CTOs com mais de um offline" (provável fibra, CTO ou splitter), que filtra a lista ao tocar;
   - lista do que caiu mais recente para o mais antigo, em grupos (Caiu hoje, De 1 a 7 dias, Mais de 7 dias, Nunca conectou), com "caiu há X" e a última conexão com data e hora — a queda é o último accounting da sessão, não a última autenticação;
