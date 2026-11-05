@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.23.0] - 2026-11-05
+
 ### Corrigido
 
 - **Aviso cobrindo o botão de etapa:** com a barra de ação no rodapé da OS, o
@@ -804,6 +806,7 @@ aplicativo.
 - Link de Contrato na tela de ONU.
 
 [não lançado]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.18.1...HEAD
+[1.23.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.22.0...v1.23.0
 [1.22.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/jmanoelslva/APP_PWA_TECNICO_HOTNET/compare/v1.19.3...v1.20.0

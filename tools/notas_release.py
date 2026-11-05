@@ -42,6 +42,7 @@ TITULOS = {
     "1.20.0": "Conexão em abas, Configurações e telas reorganizadas",
     "1.21.0": "Cores da HOTNET, jeito de app nativo, checklist de saída e busca corrigida",
     "1.22.0": "Números do dia clicáveis e atalhos do Início com informação",
+    "1.23.0": "Aviso acima do botão de etapa da OS",
 }
 
 SECOES = {
