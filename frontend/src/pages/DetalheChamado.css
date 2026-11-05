@@ -280,7 +280,8 @@
   color: var(--cor-branco-fixo);
   font-weight: 700;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--cor-suporte), var(--cor-primaria-escura));
+  /* Cor sólida, igual a .botao-primario (index.css) com a cor do Suporte. */
+  background: var(--cor-suporte);
   flex-shrink: 0;
 }
 
