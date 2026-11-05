@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MdContentCopy, MdVisibility, MdVisibilityOff, MdWifi } from 'react-icons/md'
+import { LuWifi } from 'react-icons/lu'
+import { MdContentCopy, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 import type { OnuDto } from '../../api/client'
 import { useCopiar } from '../../hooks/useCopiar'
 
@@ -28,7 +29,7 @@ export default function CardsCredenciais({ onu }: { onu: OnuDto }) {
                 aria-label="Ver conexão deste usuário"
                 viewTransition
               >
-                <MdWifi size={16} />
+                <LuWifi size={16} />
               </Link>
               <button onClick={() => copiar(onu.wancfg_pppoe_username, 'Usuário')} aria-label="Copiar usuário">
                 <MdContentCopy size={16} />

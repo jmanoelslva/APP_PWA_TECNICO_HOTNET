@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MdCable, MdContentCopy, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { LuCable } from 'react-icons/lu'
+import { MdContentCopy, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 import type { CpeDto } from '../../api/client'
 import { useCopiar } from '../../hooks/useCopiar'
 
@@ -18,7 +19,7 @@ export default function CardPppoe({ cpe }: { cpe: CpeDto }) {
           <strong>{cpe.username ?? '—'}</strong>
           {cpe.username && (
             <Link to={`/onu?username=${encodeURIComponent(cpe.username)}`} className="conexao-btn-link" aria-label="Ver ONU deste usuário" viewTransition>
-              <MdCable size={16} />
+              <LuCable size={16} />
             </Link>
           )}
           <button onClick={() => copiar(cpe.username, 'Usuário')} aria-label="Copiar usuário">

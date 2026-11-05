@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { LuCable, LuMap, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifi, LuWifiOff, LuX } from 'react-icons/lu'
 import { MdSearch } from 'react-icons/md'
-import { LuCable, LuMap, LuNetwork, LuPhone, LuSearchX, LuTriangleAlert, LuUser, LuWifiOff, LuX } from 'react-icons/lu'
 import { ApiError, buscarDetalheCliente, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
@@ -207,7 +207,7 @@ export default function ClientesOffline() {
         {/* Uma linha só: ícone em cima, rótulo curto embaixo, colunas iguais. */}
         <div className="clientes-offline-acoes">
           <Link to={`/conexao?cpe_pk=${cpe.pk}`} style={{ '--acao-cor': CORES.conexao } as CSSProperties} viewTransition>
-            <LuNetwork size={20} aria-hidden="true" />
+            <LuWifi size={20} aria-hidden="true" />
             Conexão
           </Link>
           {cpe.username ? (

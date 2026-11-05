@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { MdCable } from 'react-icons/md'
+import { LuCable } from 'react-icons/lu'
 import type { OnuDto } from '../../api/client'
 import FaixaSinal from '../../components/FaixaSinal'
 import Skeleton from '../../components/Skeleton'
@@ -40,7 +40,7 @@ export default function CardOnuResumo({
           style={{ '--botao-cor': CORES.onu } as CSSProperties}
           viewTransition
         >
-          <MdCable size={14} /> Detalhes
+          <LuCable size={14} /> Detalhes
         </Link>
       </div>
       <div className="conexao-linha">

@@ -1,14 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { LuReceipt, LuUser, LuWrench } from 'react-icons/lu'
-import {
-  MdAdd,
-  MdCable,
-  MdDescription,
-  MdEdit,
-  MdLocationOn,
-  MdWifi,
-} from 'react-icons/md'
+import { LuCable, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
+import { MdAdd, MdDescription, MdEdit, MdLocationOn } from 'react-icons/md'
 import {
   ApiError,
   atualizarTelefone,
@@ -304,7 +297,7 @@ function DetalheClienteConteudo() {
                           style={{ '--botao-cor': CORES.conexao } as CSSProperties}
                           viewTransition
                         >
-                          <MdWifi size={14} /> Conexão
+                          <LuWifi size={14} /> Conexão
                         </Link>
                         <Link
                           to={
@@ -316,7 +309,7 @@ function DetalheClienteConteudo() {
                           style={{ '--botao-cor': CORES.onu } as CSSProperties}
                           viewTransition
                         >
-                          <MdCable size={14} /> ONU
+                          <LuCable size={14} /> ONU
                         </Link>
                       </div>
                     </div>

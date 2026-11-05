@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MdPeopleAlt } from 'react-icons/md'
+import { LuUser } from 'react-icons/lu'
 import type { CpeDto } from '../../api/client'
 import SeloStatusCliente from '../../components/SeloStatusCliente'
 import type { StatusCliente } from '../../utils/statusCliente'
@@ -15,7 +15,7 @@ export default function CardCliente({ cpe, status }: { cpe: CpeDto; status: Stat
         <span>Cliente</span>
         {cpe.client_pk ? (
           <Link to={`/clientes/${cpe.client_pk}`} className="conexao-link" viewTransition>
-            <MdPeopleAlt size={14} /> {cpe.client_complete_name ?? '—'}
+            <LuUser size={14} /> {cpe.client_complete_name ?? '—'}
           </Link>
         ) : (
           <strong>{cpe.client_complete_name ?? '—'}</strong>

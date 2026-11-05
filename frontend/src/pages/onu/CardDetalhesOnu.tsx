@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { MdEdit, MdPeopleAlt, MdPersonAdd } from 'react-icons/md'
+import { LuUser } from 'react-icons/lu'
+import { MdEdit, MdPersonAdd } from 'react-icons/md'
 import type { OnuDto } from '../../api/client'
 import { formatarUltimaQueda } from './formato'
 
@@ -23,7 +24,7 @@ export default function CardDetalhesOnu({
         <span>Cliente</span>
         {onu.client_pk ? (
           <Link to={`/clientes/${onu.client_pk}`} className="onu-link" viewTransition>
-            <MdPeopleAlt size={14} /> {onu.client_name ?? '—'}
+            <LuUser size={14} /> {onu.client_name ?? '—'}
           </Link>
         ) : (
           <button type="button" className="onu-btn-registrar-cliente" onClick={onRegistrarCliente} disabled={ocupado}>

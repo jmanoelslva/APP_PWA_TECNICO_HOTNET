@@ -1,17 +1,8 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import {
-  MdAttachFile,
-  MdBuild,
-  MdClose,
-  MdDescription,
-  MdDownload,
-  MdImage,
-  MdPhotoCamera,
-  MdPictureAsPdf,
-} from 'react-icons/md'
+import { LuMessageCircle, LuWrench } from 'react-icons/lu'
+import { MdAttachFile, MdClose, MdDescription, MdDownload, MdImage, MdPhotoCamera, MdPictureAsPdf } from 'react-icons/md'
 import { comprimirImagem } from '../utils/imagem'
-import { LuMessageCircle } from 'react-icons/lu'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
 import Skeleton from '../components/Skeleton'
@@ -216,7 +207,7 @@ function DetalheChamadoConteudo() {
         )}
         {temOs && (
           <Link to={`/os/${pk}`} className="detalhe-chamado-chip-os" viewTransition>
-            <MdBuild size={14} /> Ver Ordem de Serviço
+            <LuWrench size={14} /> Ver Ordem de Serviço
           </Link>
         )}
       </header>

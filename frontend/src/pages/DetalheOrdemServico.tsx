@@ -1,20 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import {
-  MdAttachFile,
-  MdCheckCircle,
-  MdChatBubbleOutline,
-  MdContentCopy,
-  MdDirections,
-  MdEdit,
-  MdLocationOn,
-  MdPeopleAlt,
-  MdPhotoCamera,
-  MdPlayArrow,
-  MdVisibility,
-  MdVisibilityOff,
-  MdWifi,
-} from 'react-icons/md'
+import { LuUser, LuWifi } from 'react-icons/lu'
+import { MdAttachFile, MdChatBubbleOutline, MdCheckCircle, MdContentCopy, MdDirections, MdEdit, MdLocationOn, MdPhotoCamera, MdPlayArrow, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
@@ -704,7 +691,7 @@ function DetalheOrdemServicoConteudo() {
                   )}
                   {cpe?.pk && (
                     <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip" viewTransition>
-                      <MdWifi size={14} /> Ver conexão completa
+                      <LuWifi size={14} /> Ver conexão completa
                     </Link>
                   )}
                 </div>
@@ -800,7 +787,7 @@ function DetalheOrdemServicoConteudo() {
                     <span>Nome</span>
                     {osAtual.client_pk ? (
                       <Link to={`/clientes/${osAtual.client_pk}`} className="detalhe-ordem-link" viewTransition>
-                        <MdPeopleAlt size={14} /> {osAtual.client_complete_name ?? '—'}
+                        <LuUser size={14} /> {osAtual.client_complete_name ?? '—'}
                       </Link>
                     ) : (
                       <strong>{osAtual.client_complete_name ?? '—'}</strong>

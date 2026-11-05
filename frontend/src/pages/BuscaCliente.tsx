@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MdCable, MdHistory, MdPeopleAlt, MdWifi } from 'react-icons/md'
-import { LuUsers } from 'react-icons/lu'
+import { LuCable, LuUsers, LuWifi } from 'react-icons/lu'
+import { MdHistory } from 'react-icons/md'
 import {
   ApiError,
   buscarClientes,
@@ -175,7 +175,7 @@ export default function BuscaCliente() {
       {!carregando && resultados.onus.length > 0 && (
         <section className="busca-cliente-grupo">
           <h2>
-            <MdCable size={16} /> ONU
+            <LuCable size={16} /> ONU
           </h2>
           <ul className="busca-cliente-lista">
             {resultados.onus.map((onu) => (
@@ -197,7 +197,7 @@ export default function BuscaCliente() {
       {!carregando && resultados.conexoes.length > 0 && (
         <section className="busca-cliente-grupo">
           <h2>
-            <MdWifi size={16} /> Conexão (PPPoE)
+            <LuWifi size={16} /> Conexão (PPPoE)
           </h2>
           <ul className="busca-cliente-lista">
             {resultados.conexoes.map((cpe) => (
@@ -215,7 +215,7 @@ export default function BuscaCliente() {
       {!carregando && resultados.clientes.length > 0 && (
         <section className="busca-cliente-grupo">
           <h2>
-            <MdPeopleAlt size={16} /> Clientes
+            <LuUsers size={16} /> Clientes
           </h2>
           <ul className="busca-cliente-lista">
             {resultados.clientes.map((resultado) => (
