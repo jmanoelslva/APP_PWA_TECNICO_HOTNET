@@ -31,6 +31,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Localização mais precisa:** sempre leitura nova do GPS (sem posição
   guardada); qualquer melhora de 1 m na precisão aparece na hora, assim
   como movimentos a partir de 3 m.
+- **Visual padronizado no app todo:**
+  - só ícones Lucide, em três tamanhos, com o mesmo ícone por área em todas as telas: Conexão (Wi-Fi), ONU (cabo), OS (chave), Cliente (pessoa);
+  - mesma grade de ações (ícone em cima, nome embaixo) no topo da OS, nas conexões do cliente e em Clientes Offline, com "Mapa" na OS e no cliente;
+  - mesmo botão de ícone (ver ONU/conexão, editar), com área de toque de 48 px;
+  - datas no formato "há 3 h · 05/11/2026 19:25";
+  - filtro segmentado (contagem e nome) em Clientes Offline, lista de OS (com "Atrasadas" em vermelho) e Auditoria;
+  - "Atualizado há X" em Clientes Offline, OS, Financeiro e Auditoria;
+  - Mapa de CTOs e Auditoria com as telas padrão de carregamento e de erro (com "Tentar de novo").
+- **Conexão › Rede:** "Última conexão" (último accounting, a hora da queda quando offline) e "Última autenticação".
+- **Cliente:** conexão sem sessão mostra quando caiu.
+- **Início:** o atalho de Clientes Offline mostra também quantas CTOs têm mais de um offline.
+- **ONU:** a CTO abre o Mapa de CTOs com o cliente e o traçado.
 
 ## [1.27.0] - 2026-11-05
 

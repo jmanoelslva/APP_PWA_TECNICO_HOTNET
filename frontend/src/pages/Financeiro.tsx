@@ -5,6 +5,7 @@ import { ApiError, criarObservacaoFatura, listarFaturas, type FaturaDto } from '
 import CabecalhoTela from '../components/CabecalhoTela'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
+import LidoHa from '../components/LidoHa'
 import PullToRefresh from '../components/PullToRefresh'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
@@ -36,6 +37,7 @@ export default function Financeiro() {
   const [faturas, setFaturas] = useState<FaturaDto[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  const [atualizadoEm, setAtualizadoEm] = useState<number | null>(null)
   // 403 do Controllr = técnico sem liberação de ACL para o financeiro —
   // estado de permissão, não um erro para tentar de novo (ver
   // backend/app/routers/financeiro.py).
@@ -55,6 +57,7 @@ export default function Financeiro() {
     try {
       const resposta = await listarFaturas(clientPk)
       setFaturas(resposta.results)
+      setAtualizadoEm(Date.now())
     } catch (excecao) {
       if (excecao instanceof ApiError && excecao.status === 403) {
         setNaoPermitido(true)
@@ -104,6 +107,12 @@ export default function Financeiro() {
 
         {!carregando && !naoPermitido && !erro && faturas.length === 0 && (
           <EstadoVazio icone={LuReceipt} titulo="Nenhuma fatura encontrada" />
+        )}
+
+        {!carregando && !naoPermitido && !erro && faturas.length > 0 && (
+          <p className="lista-atualizada">
+            <LidoHa momento={atualizadoEm} prefixo="Atualizado" />
+          </p>
         )}
 
         {!carregando && !naoPermitido && !erro && faturas.length > 0 && (

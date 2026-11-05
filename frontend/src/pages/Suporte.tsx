@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { LuNavigation, LuSearch, LuSearchX, LuWrench, LuX } from 'react-icons/lu'
 import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
-import Abas from '../components/Abas'
+import FiltroSegmentado from '../components/FiltroSegmentado'
+import LidoHa from '../components/LidoHa'
 import CabecalhoTela from '../components/CabecalhoTela'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
@@ -69,6 +70,7 @@ export default function Suporte() {
   const [filtro, setFiltro] = useState<FiltroOs>(() => filtroDoEndereco ?? lerFiltro())
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  const [atualizadoEm, setAtualizadoEm] = useState<number | null>(null)
 
   useEffect(() => {
     carregar()
@@ -98,6 +100,15 @@ export default function Suporte() {
   const filtradas = useMemo(() => filtrarOs(ordens, filtro), [ordens, filtro])
   const grupos = useMemo(() => agruparPorDia(filtradas), [filtradas])
   const comFiltro = filtroAtivo(filtro)
+  // Quantas OS cada opção de "Quando" mostraria com os outros filtros atuais.
+  const contagemQuando = useMemo(
+    () =>
+      Object.fromEntries(OPCOES_QUANDO.map((o) => [o.valor, filtrarOs(ordens, { ...filtro, quando: o.valor }).length])) as Record<
+        FiltroQuando,
+        number
+      >,
+    [ordens, filtro],
+  )
 
   function mudar(parcial: Partial<FiltroOs>) {
     setFiltro((atual) => ({ ...atual, ...parcial }))
@@ -109,6 +120,7 @@ export default function Suporte() {
     try {
       const resposta = await listarOrdensServico({ minhas: false, abertas: true, start: 0, limit: TAMANHO_PAGINA })
       setOrdens(resposta.results)
+      setAtualizadoEm(Date.now())
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar as OS.')
     } finally {
@@ -163,10 +175,14 @@ export default function Suporte() {
               />
             </div>
 
-            {/* Mesmo componente de abas das outras telas (antes eram 4
-                botões cada um de uma cor). */}
-            <Abas
-              abas={OPCOES_QUANDO.map((opcao) => ({ chave: opcao.valor, rotulo: opcao.rotulo }))}
+            {/* Filtro padrão do app: contagem em destaque e nome embaixo. */}
+            <FiltroSegmentado
+              opcoes={OPCOES_QUANDO.map((opcao) => ({
+                chave: opcao.valor,
+                rotulo: opcao.rotulo,
+                quantidade: contagemQuando[opcao.valor],
+                alerta: opcao.valor === 'atrasadas',
+              }))}
               ativa={filtro.quando}
               onEscolher={(quando) => mudar({ quando })}
               cor={CORES.suporte}
@@ -202,7 +218,15 @@ export default function Suporte() {
             </div>
 
             <div className="suporte-resumo">
-              <span>{comFiltro ? `${filtradas.length} de ${ordens.length} OS` : `${ordens.length} OS`}</span>
+              <span>
+                {comFiltro ? `${filtradas.length} de ${ordens.length} OS` : `${ordens.length} OS`}
+                {atualizadoEm != null && (
+                  <>
+                    {' · '}
+                    <LidoHa momento={atualizadoEm} prefixo="Atualizado" />
+                  </>
+                )}
+              </span>
               {comFiltro && filtradas.length > 0 && (
                 <button type="button" className="suporte-limpar" onClick={() => setFiltro(FILTRO_VAZIO)}>
                   <LuX size={16} /> Limpar filtros

@@ -696,3 +696,10 @@ h3,
 .botao-icone-fantasma {
   background: transparent;
 }
+
+/* "Atualizado há X" das listas que se atualizam puxando para baixo. */
+.lista-atualizada {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}

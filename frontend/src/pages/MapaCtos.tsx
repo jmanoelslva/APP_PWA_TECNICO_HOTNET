@@ -12,7 +12,8 @@ import {
   type EnderecoDto,
 } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
-import Spinner from '../components/Spinner'
+import EstadoErro from '../components/EstadoErro'
+import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
@@ -188,10 +189,15 @@ export default function MapaCtos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteDaUrl])
 
-  useEffect(() => {
+  function carregarCtos() {
+    setErro(null)
     listarDps()
       .then((resposta) => setDps(resposta.results))
       .catch((excecao) => setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar as CTOs.'))
+  }
+
+  useEffect(() => {
+    carregarCtos()
   }, [])
 
   // Mesma lista (mesma referência) enquanto as CTOs não mudam — uma lista
@@ -327,12 +333,12 @@ export default function MapaCtos() {
         </div>
       )}
 
-      {erro && <p className="mapa-ctos-aviso">{erro}</p>}
-      {!erro && !dps && <Spinner />}
+      {erro && <EstadoErro mensagem={erro} cor={CORES.conexao} onTentarDeNovo={carregarCtos} />}
+      {!erro && !dps && <Skeleton height={260} className="mapa-ctos-carregando" />}
       {dps && !centro && <p className="mapa-ctos-aviso">Nenhuma CTO cadastrada tem coordenada.</p>}
 
       {dps && centro && (
-        <Suspense fallback={<Spinner />}>
+        <Suspense fallback={<Skeleton height={260} className="mapa-ctos-carregando" />}>
           <MapaCto
             centro={centro}
             dps={comCoordenada}

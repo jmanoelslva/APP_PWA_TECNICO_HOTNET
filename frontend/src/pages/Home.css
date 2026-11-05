@@ -413,3 +413,9 @@
   flex: none;
   color: var(--cor-texto-terciario);
 }
+
+/* CTOs com mais de um offline: provável problema coletivo. */
+.home-atalho-alerta {
+  color: var(--cor-erro);
+  font-weight: 700;
+}

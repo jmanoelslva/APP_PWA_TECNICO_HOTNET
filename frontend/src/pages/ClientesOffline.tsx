@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { LuCable, LuMap, LuPhone, LuSearch, LuSearchX, LuTriangleAlert, LuUser, LuWifi, LuWifiOff, LuX } from 'react-icons/lu'
-import { ApiError, buscarDetalheCliente, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
+import { ApiError, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
+import LidoHa from '../components/LidoHa'
+import FiltroSegmentado, { type OpcaoSegmentada } from '../components/FiltroSegmentado'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
 import PullToRefresh from '../components/PullToRefresh'
 import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
-import { formatarDataHora, linkLigar } from '../utils/formatacao'
-import { primeiroTelefone } from '../utils/minhasOs'
+import { linkLigarDoCliente } from '../utils/contato'
+import { formatarDataHora } from '../utils/formatacao'
 import {
   ORDEM_GRUPOS,
   ROTULO_GRUPO,
@@ -48,10 +50,6 @@ function bateBusca(cpe: CpeDto, termo: string): boolean {
   return alvo.some((v) => v.includes(termo))
 }
 
-function horaAgora(): string {
-  return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-}
-
 export default function ClientesOffline() {
   const { toast } = useToast()
   const [cpes, setCpes] = useState<CpeDto[]>([])
@@ -59,7 +57,7 @@ export default function ClientesOffline() {
   const [carregandoMais, setCarregandoMais] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
-  const [atualizadoAs, setAtualizadoAs] = useState<string | null>(null)
+  const [atualizadoEm, setAtualizadoEm] = useState<number | null>(null)
   const [busca, setBusca] = useState('')
   const [periodo, setPeriodo] = useState<Periodo>('todos')
   const [ctoFiltro, setCtoFiltro] = useState<{ pk: number; nome: string } | null>(null)
@@ -89,7 +87,7 @@ export default function ClientesOffline() {
       const resposta = await listarCpeOffline({ start: 0, limit: TAMANHO_PAGINA })
       setCpes(resposta.results)
       setTotal(resposta.total)
-      setAtualizadoAs(horaAgora())
+      setAtualizadoEm(Date.now())
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar os clientes offline.')
     } finally {
@@ -116,8 +114,7 @@ export default function ClientesOffline() {
     if (!cpe.client_pk || ligandoPk != null) return
     setLigandoPk(cpe.client_pk)
     try {
-      const detalhe = await buscarDetalheCliente(cpe.client_pk)
-      const link = linkLigar(primeiroTelefone(detalhe.telefones, detalhe.cliente.client_phones))
+      const link = await linkLigarDoCliente(cpe.client_pk)
       if (link) window.location.href = link
       else toast('Cliente sem telefone cadastrado.')
     } catch (excecao) {
@@ -157,9 +154,9 @@ export default function ClientesOffline() {
     return mapa
   }, [filtrados])
 
-  const abasPeriodo: { chave: Periodo; rotulo: string; quantidade: number }[] = [
+  const abasPeriodo: OpcaoSegmentada<Periodo>[] = [
     { chave: 'todos', rotulo: 'Todos', quantidade: filtrados.length },
-    { chave: 'hoje', rotulo: 'Hoje', quantidade: porGrupo.get('hoje')!.length },
+    { chave: 'hoje', rotulo: 'Hoje', quantidade: porGrupo.get('hoje')!.length, alerta: true },
     { chave: 'semana', rotulo: '1–7 dias', quantidade: porGrupo.get('semana')!.length },
     { chave: 'antigos', rotulo: '+7 dias', quantidade: porGrupo.get('antigos')!.length },
     { chave: 'nunca', rotulo: 'Nunca', quantidade: porGrupo.get('nunca')!.length },
@@ -301,7 +298,12 @@ export default function ClientesOffline() {
           <>
             <p className="clientes-offline-total">
               {total} cliente(s) offline
-              {atualizadoAs && <span> · Atualizado às {atualizadoAs}</span>}
+              {atualizadoEm != null && (
+                <span>
+                  {' · '}
+                  <LidoHa momento={atualizadoEm} prefixo="Atualizado" />
+                </span>
+              )}
               {aindaCarregandoLista && <span> · carregando mais…</span>}
             </p>
 
@@ -326,22 +328,7 @@ export default function ClientesOffline() {
               </section>
             )}
 
-            {/* Período: 5 blocos de mesma largura, número em destaque e nome
-                embaixo — cabe na largura do celular sem cortar nem quebrar. */}
-            <div className="clientes-offline-periodos" role="group" aria-label="Tempo offline">
-              {abasPeriodo.map((aba) => (
-                <button
-                  key={aba.chave}
-                  type="button"
-                  aria-pressed={periodo === aba.chave}
-                  className={`periodo-${aba.chave}${periodo === aba.chave ? ' ativo' : ''}`}
-                  onClick={() => setPeriodo(aba.chave)}
-                >
-                  <strong>{aba.quantidade}</strong>
-                  <span>{aba.rotulo}</span>
-                </button>
-              ))}
-            </div>
+            <FiltroSegmentado opcoes={abasPeriodo} ativa={periodo} onEscolher={setPeriodo} rotulo="Tempo offline" />
 
             {ctoFiltro && (
               <div className="clientes-offline-filtros-linha">

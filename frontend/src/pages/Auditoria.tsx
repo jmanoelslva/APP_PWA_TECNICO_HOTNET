@@ -2,7 +2,9 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import type { IconType } from 'react-icons'
 import { LuArrowRight, LuBanknote, LuCircleX, LuClipboardCheck, LuFileSearch, LuLink, LuLocateFixed, LuLogIn, LuMapPin, LuMapPinOff, LuMapPinPlus, LuNetwork, LuPencil, LuPhone, LuPlay, LuRefreshCw, LuRotateCcw, LuRotateCw, LuRouter, LuStickyNote, LuTrash2, LuUndo2, LuWifi } from 'react-icons/lu'
 import { ApiError, listarAuditoria } from '../api/client'
-import Abas, { type Aba } from '../components/Abas'
+import EstadoErro from '../components/EstadoErro'
+import LidoHa from '../components/LidoHa'
+import FiltroSegmentado, { type OpcaoSegmentada } from '../components/FiltroSegmentado'
 import CabecalhoTela from '../components/CabecalhoTela'
 import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
@@ -106,7 +108,7 @@ const GRUPOS_ACAO: { grupo: string; opcoes: { valor: string; rotulo: string }[] 
   { grupo: 'Acesso', opcoes: [{ valor: 'auth.login', rotulo: 'Entradas no app' }] },
 ]
 
-const PERIODOS: Aba<PeriodoAuditoria>[] = [
+const PERIODOS: OpcaoSegmentada<PeriodoAuditoria>[] = [
   { chave: 'tudo', rotulo: 'Tudo' },
   { chave: 'hoje', rotulo: 'Hoje' },
   { chave: '7', rotulo: '7 dias' },
@@ -133,6 +135,7 @@ export default function Auditoria() {
   const [erro, setErro] = useState<string | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [recarga, setRecarga] = useState(0)
+  const [atualizadoEm, setAtualizadoEm] = useState<number | null>(null)
 
   useEffect(() => {
     let cancelado = false
@@ -149,6 +152,7 @@ export default function Auditoria() {
         setDias(agruparPorDia(r.eventos))
         setMais(r.mais)
         setErro(null)
+        setAtualizadoEm(Date.now())
       })
       .catch((e) => !cancelado && setErro(e instanceof ApiError ? e.message : 'Não foi possível carregar a auditoria.'))
       .finally(() => !cancelado && setCarregando(false))
@@ -205,7 +209,7 @@ export default function Auditoria() {
         />
 
         <div className="auditoria-filtros">
-          <Abas abas={PERIODOS} ativa={periodo} onEscolher={(p) => escolherPeriodo(p)} cor={CORES.ferramentas} rotulo="Período" />
+          <FiltroSegmentado opcoes={PERIODOS} ativa={periodo} onEscolher={(p) => escolherPeriodo(p)} cor={CORES.ferramentas} rotulo="Período" />
           {periodo === 'periodo' && (
             <div className="auditoria-datas">
               <label>
@@ -257,7 +261,12 @@ export default function Auditoria() {
           </div>
         </div>
 
-        {erro && <p className="auditoria-erro">{erro}</p>}
+        {!erro && dias && dias.length > 0 && (
+          <p className="lista-atualizada">
+            <LidoHa momento={atualizadoEm} prefixo="Atualizado" />
+          </p>
+        )}
+        {erro && <EstadoErro mensagem={erro} cor={CORES.ferramentas} onTentarDeNovo={() => setRecarga((n) => n + 1)} />}
         {!erro && carregando && !dias && (
           <div className="auditoria-item">
             <Skeleton width="60%" height={14} />

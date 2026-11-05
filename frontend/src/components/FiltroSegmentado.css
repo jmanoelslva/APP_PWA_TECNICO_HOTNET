@@ -1,0 +1,61 @@
+.filtro-segmentado {
+  display: grid;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+}
+
+.filtro-segmentado button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: 4px 2px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  color: var(--cor-texto-terciario);
+  cursor: pointer;
+}
+
+.filtro-segmentado button strong {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--cor-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+.filtro-segmentado button span {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Só o nome (sem contagem): letra um pouco maior. */
+.filtro-segmentado button span:only-child {
+  font-size: 13px;
+}
+
+.filtro-segmentado button.alerta strong {
+  color: var(--cor-erro);
+}
+
+.filtro-segmentado button.ativo {
+  background: var(--cor-superficie);
+  color: var(--segmento-cor, var(--cor-texto));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+.filtro-segmentado button.ativo span {
+  font-weight: 700;
+}

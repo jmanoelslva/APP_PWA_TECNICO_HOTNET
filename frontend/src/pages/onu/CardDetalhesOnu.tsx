@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { LuPencil, LuUser, LuUserPlus } from 'react-icons/lu'
+import { LuMap, LuPencil, LuUser, LuUserPlus } from 'react-icons/lu'
 import type { OnuDto } from '../../api/client'
 import { formatarUltimaQueda } from './formato'
 
@@ -94,7 +94,14 @@ export default function CardDetalhesOnu({
       </div>
       <div className="onu-linha">
         <span>Splitter (DP)</span>
-        <strong>{onu.dp_name ?? '—'}</strong>
+        {onu.dp_name && onu.client_pk ? (
+          // Abre o Mapa de CTOs com o cliente e o traçado até esta CTO.
+          <Link to={`/mapa?cliente=${onu.client_pk}`} className="onu-link" viewTransition>
+            <LuMap size={16} /> {onu.dp_name}
+          </Link>
+        ) : (
+          <strong>{onu.dp_name ?? '—'}</strong>
+        )}
       </div>
       <div className="onu-linha">
         <span>Porta da CTO</span>
