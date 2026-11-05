@@ -9,12 +9,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Seleção de texto:** segurar o dedo sobre o texto não seleciona mais em
-  nenhuma tela, como num app nativo; só os campos de entrada de dados
-  (busca, formulários, observações) continuam selecionáveis.
-
-### Alterado
-
 - **Seleção de texto:** em todo o app, o texto não seleciona ao segurar; só os
   campos de entrada de dados (busca, descrição, login etc.) continuam
   selecionáveis.
