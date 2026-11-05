@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MdQrCodeScanner, MdSearch } from 'react-icons/md'
 // Atalhos com ícones Lucide, iguais aos da barra de baixo.
-import { LuCalendarClock, LuChevronRight, LuHammer, LuServer, LuWifiOff } from 'react-icons/lu'
+import { LuCalendarClock, LuChevronRight, LuHammer, LuMap, LuServer, LuWifiOff } from 'react-icons/lu'
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
 import { usePwaInstall } from '../hooks/usePwaInstall'
@@ -346,6 +346,16 @@ export default function Home() {
                     </>
                   )}
                 </span>
+              </span>
+              <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
+            </Link>
+            <Link to="/mapa" className="home-atalho" viewTransition>
+              <span className="home-atalho-icone" style={{ background: comAlpha(CORES.conexao, 14), color: CORES.conexao }}>
+                <LuMap size={22} />
+              </span>
+              <span className="home-atalho-texto">
+                <strong>Mapa de CTOs</strong>
+                <span>CTOs mais próximas de você</span>
               </span>
               <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
             </Link>

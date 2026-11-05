@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Mapa de CTOs:** novo atalho no Início abre o mapa com todas as CTOs e a
+  sua localização ao vivo, com a lista das 5 CTOs mais próximas (distância e
+  ocupação). Tocar numa CTO a destaca no mapa. Serve para conferir a CTO
+  mais próxima do cliente sem abrir a Conexão.
+
 ## [1.25.0] - 2026-11-05
 
 ### Adicionado

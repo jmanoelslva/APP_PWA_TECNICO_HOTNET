@@ -1,0 +1,93 @@
+.mapa-ctos-tela {
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.mapa-ctos-tela .mapa-cto-mapa {
+  height: 50vh;
+}
+
+.mapa-ctos-tela .mapa-cto-mapa-ampliado {
+  height: 75vh;
+}
+
+.mapa-ctos-aviso,
+.mapa-ctos-precisao {
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--cor-texto-terciario);
+}
+
+.mapa-ctos-proximas {
+  margin-top: 16px;
+}
+
+.mapa-ctos-proximas h2 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--cor-texto);
+}
+
+.mapa-ctos-proximas ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapa-ctos-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mapa-ctos-item.ativo {
+  border-color: var(--cor-conexao);
+  box-shadow: 0 0 0 1px var(--cor-conexao);
+}
+
+.mapa-ctos-item i {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid #000000;
+}
+
+.mapa-ctos-nome {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.mapa-ctos-nome strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.mapa-ctos-nome span {
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
+.mapa-ctos-distancia {
+  flex: none;
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}

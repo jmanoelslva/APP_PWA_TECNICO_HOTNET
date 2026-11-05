@@ -19,6 +19,7 @@ const Auditoria = lazy(() => import('./pages/Auditoria'))
 const Ferramentas = lazy(() => import('./pages/Ferramentas'))
 const Financeiro = lazy(() => import('./pages/Financeiro'))
 const Home = lazy(() => import('./pages/Home'))
+const MapaCtos = lazy(() => import('./pages/MapaCtos'))
 const Login = lazy(() => import('./pages/Login'))
 const OnuStatus = lazy(() => import('./pages/OnuStatus'))
 const Suporte = lazy(() => import('./pages/Suporte'))
@@ -133,6 +134,14 @@ function App() {
             element={
               <RotaProtegida>
                 <Auditoria />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/mapa"
+            element={
+              <RotaProtegida>
+                <MapaCtos />
               </RotaProtegida>
             }
           />

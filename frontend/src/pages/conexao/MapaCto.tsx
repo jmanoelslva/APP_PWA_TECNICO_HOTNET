@@ -227,7 +227,12 @@ export default function MapaCto({
       </div>
       <div className="mapa-cto-rodape">
         <span className="mapa-cto-legenda">
-          <i style={{ background: '#1a73e8' }} /> Você <i style={{ background: '#2e9e44' }} /> Cliente
+          <i style={{ background: '#1a73e8' }} /> Você
+          {cliente && (
+            <>
+              <i style={{ background: '#2e9e44' }} /> Cliente
+            </>
+          )}
         </span>
         <button type="button" onClick={() => setAmpliado((valor) => !valor)}>
           {ampliado ? <MdCloseFullscreen size={14} /> : <MdOpenInFull size={14} />} {ampliado ? 'Reduzir' : 'Ampliar'}
