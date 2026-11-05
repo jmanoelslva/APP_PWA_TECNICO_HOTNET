@@ -168,6 +168,11 @@ export default function MapaCto({
     if (cliente) {
       for (const ligacao of ligacoes) {
         const metros = distanciaMetros(cliente.lat, cliente.lng, ligacao.lat, ligacao.lng)
+        // Rótulo ao lado da linha, nunca em cima dela: linha mais deitada →
+        // rótulo acima; mais em pé → à direita.
+        const dx = Math.abs(ligacao.lng - cliente.lng) * Math.cos((cliente.lat * Math.PI) / 180)
+        const dy = Math.abs(ligacao.lat - cliente.lat)
+        const deitada = dx >= dy
         L.polyline(
           [
             [cliente.lat, cliente.lng],
@@ -177,7 +182,8 @@ export default function MapaCto({
         )
           .bindTooltip(texto(`${ligacao.rotulo} · ${formatarDistancia(metros)}`), {
             permanent: true,
-            direction: 'center',
+            direction: deitada ? 'top' : 'right',
+            offset: deitada ? [0, -6] : [8, 0],
             className: 'mapa-cto-ligacao',
           })
           .addTo(camadas.posicoes)
