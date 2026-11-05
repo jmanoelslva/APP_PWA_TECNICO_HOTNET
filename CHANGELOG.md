@@ -16,6 +16,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Abas do rodapé no jeito de app nativo:** trocar de aba não empilha telas;
+  "Voltar" de qualquer aba leva ao Início e, no Início, sai do app. Tocar na
+  aba atual, estando numa tela aberta dela, volta ao começo da aba.
 - **"Voltar" do celular com janela aberta:** fecha a janela (confirmação de
   etapa, Configurações, câmera, leitor de código, edição de telefone e
   endereço, ações da ONU etc.) em vez de sair da tela por baixo dela.
