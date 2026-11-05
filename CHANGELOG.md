@@ -7,13 +7,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.26.0] - 2026-11-05
+
 ### Adicionado
 
 - **Mapa de CTOs:** novo atalho no Início abre o mapa com todas as CTOs e a
-  sua localização ao vivo, com a lista das 5 CTOs mais próximas (distância e
-  ocupação). Tocar numa CTO a destaca no mapa. Buscando um cliente (nome,
-  CPF/CNPJ ou contrato), as distâncias passam a ser a partir do endereço
-  dele, para conferir a CTO mais próxima antes de ir ao local.
+  sua localização ao vivo, com a lista das 5 CTOs mais próximas, a distância
+  e a ocupação (ex.: 13/16 portas · 3 livres, ou Lotada). Tocar numa CTO a
+  destaca no mapa.
+- **CTO mais próxima do cliente:** a busca do Mapa de CTOs (igual à do
+  Início) leva ao endereço do cliente e passa a medir as distâncias a partir
+  dele, para conferir a CTO antes de ir ao local.
+
+### Alterado
+
+- **Próximas OS:** sem OS agendadas, o atalho mostra só "Nenhuma agendada".
 
 ## [1.25.0] - 2026-11-05
 
