@@ -7,6 +7,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- **Seleção de texto:** em todo o app, o texto não seleciona ao segurar; só os
+  campos de entrada de dados (busca, descrição, login etc.) continuam
+  selecionáveis.
+
 ## [1.23.0] - 2026-11-05
 
 ### Corrigido
