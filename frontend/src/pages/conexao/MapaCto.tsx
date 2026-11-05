@@ -75,6 +75,8 @@ export default function MapaCto({
   const divRef = useRef<HTMLDivElement>(null)
   const mapaRef = useRef<L.Map | null>(null)
   const camadasRef = useRef<{ projeto: L.LayerGroup; ctos: L.LayerGroup; posicoes: L.LayerGroup } | null>(null)
+  const vocePontoRef = useRef<L.CircleMarker | null>(null)
+  const voceCirculoRef = useRef<L.Circle | null>(null)
   const onSelecionarRef = useRef(onSelecionar)
   const ultimoCentroProjetoRef = useRef<Ponto | null>(null)
   const [ampliado, setAmpliado] = useState(false)
@@ -107,6 +109,8 @@ export default function MapaCto({
       mapa.remove()
       mapaRef.current = null
       camadasRef.current = null
+      vocePontoRef.current = null
+      voceCirculoRef.current = null
       ultimoCentroProjetoRef.current = null
     }
   }, [])
@@ -149,7 +153,14 @@ export default function MapaCto({
     selecionada?.bringToFront()
   }, [dps, selecionadaPk])
 
-  // Técnico e endereço do cliente
+  // Chave por valor (não por referência): o pai recria o objeto do cliente e
+  // a lista de ligações a cada render, e isso não pode redesenhar o mapa.
+  const chaveLigacoes = cliente
+    ? `${cliente.lat},${cliente.lng}|${ligacoes.map((l) => `${l.lat},${l.lng},${l.rotulo}`).join(';')}`
+    : ''
+
+  // Endereço do cliente e traçado até as CTOs dele: só redesenha quando o
+  // cliente ou as CTOs mudam — nunca a cada leitura do GPS.
   useEffect(() => {
     const camadas = camadasRef.current
     if (!camadas) return
@@ -181,19 +192,44 @@ export default function MapaCto({
         .bindTooltip('Endereço do cliente', { direction: 'top', offset: [0, -8] })
         .addTo(camadas.posicoes)
     }
-    if (minhaLocalizacao) {
-      // Círculo de incerteza do GPS, como no Google Maps.
-      if (precisaoM != null) {
-        L.circle([minhaLocalizacao.lat, minhaLocalizacao.lng], {
-          radius: precisaoM,
-          color: '#1a73e8',
-          weight: 1,
-          fillColor: '#1a73e8',
-          fillOpacity: 0.12,
-          interactive: false,
-        }).addTo(camadas.posicoes)
-      }
-      L.circleMarker([minhaLocalizacao.lat, minhaLocalizacao.lng], {
+    // "Você" continua por cima do cliente.
+    vocePontoRef.current?.bringToFront()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaveLigacoes])
+
+  // Técnico: os marcadores são criados uma vez e depois só mudam de lugar
+  // (setLatLng/setRadius) — recriar a cada leitura do GPS engasga o zoom.
+  useEffect(() => {
+    const mapa = mapaRef.current
+    if (!mapa) return
+    if (!minhaLocalizacao) {
+      vocePontoRef.current?.remove()
+      voceCirculoRef.current?.remove()
+      vocePontoRef.current = null
+      voceCirculoRef.current = null
+      return
+    }
+    const posicao: [number, number] = [minhaLocalizacao.lat, minhaLocalizacao.lng]
+    // Círculo de incerteza do GPS, como no Google Maps.
+    if (precisaoM == null) {
+      voceCirculoRef.current?.remove()
+      voceCirculoRef.current = null
+    } else if (voceCirculoRef.current) {
+      voceCirculoRef.current.setLatLng(posicao).setRadius(precisaoM)
+    } else {
+      voceCirculoRef.current = L.circle(posicao, {
+        radius: precisaoM,
+        color: '#1a73e8',
+        weight: 1,
+        fillColor: '#1a73e8',
+        fillOpacity: 0.12,
+        interactive: false,
+      }).addTo(mapa)
+    }
+    if (vocePontoRef.current) {
+      vocePontoRef.current.setLatLng(posicao)
+    } else {
+      vocePontoRef.current = L.circleMarker(posicao, {
         radius: 7,
         color: '#ffffff',
         weight: 2,
@@ -201,13 +237,12 @@ export default function MapaCto({
         fillOpacity: 1,
       })
         .bindTooltip('Você', { direction: 'top', offset: [0, -8] })
-        .addTo(camadas.posicoes)
+        .addTo(mapa)
     }
-  }, [cliente, ligacoes, minhaLocalizacao, precisaoM])
+  }, [minhaLocalizacao?.lat, minhaLocalizacao?.lng, precisaoM])
 
   // Cliente com CTO longe: enquadra o traçado inteiro uma vez por cliente/CTO
   // (não a cada leitura do GPS).
-  const chaveLigacoes = cliente ? `${cliente.lat},${cliente.lng}|${ligacoes.map((l) => `${l.lat},${l.lng}`).join(';')}` : ''
   useEffect(() => {
     const mapa = mapaRef.current
     if (!mapa || !cliente || ligacoes.length === 0) return

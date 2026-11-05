@@ -14,6 +14,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   com o nome, a porta e a distância em linha reta; o mapa enquadra os dois
   pontos.
 
+### Alterado
+
+- **Mapa mais fluido no zoom e ao arrastar:** as CTOs não são mais
+  redesenhadas a cada leitura do GPS, o "Você" e o círculo de precisão só
+  mudam de lugar, e a posição ao vivo só atualiza a tela quando o técnico
+  anda 5 m ou a precisão muda 5 m ou mais (Mapa de CTOs e bloco CTO da
+  Conexão).
+
 ## [1.27.0] - 2026-11-05
 
 ### Adicionado

@@ -1,6 +1,6 @@
 // Localização do técnico para sugerir a CTO mais próxima (CardCto.tsx).
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export interface PosicaoAoVivo {
   lat: number
@@ -16,21 +16,41 @@ export interface PosicaoAoVivo {
  */
 export function useLocalizacaoAoVivo(): PosicaoAoVivo | null {
   const [posicao, setPosicao] = useState<PosicaoAoVivo | null>(null)
+  const ultimaRef = useRef<PosicaoAoVivo | null>(null)
   useEffect(() => {
     if (!navigator.geolocation) return
     const watchId = navigator.geolocation.watchPosition(
-      (leitura) =>
-        setPosicao({
+      (leitura) => {
+        const nova = {
           lat: leitura.coords.latitude,
           lng: leitura.coords.longitude,
           precisaoM: leitura.coords.accuracy,
-        }),
+        }
+        // Parado, o GPS manda leituras quase iguais a cada segundo; cada uma
+        // re-renderizava a tela e o mapa à toa. Só atualiza quando muda de fato.
+        if (!mudouOSuficiente(ultimaRef.current, nova)) return
+        ultimaRef.current = nova
+        setPosicao(nova)
+      },
       () => {},
       { enableHighAccuracy: true, maximumAge: 5000 },
     )
     return () => navigator.geolocation.clearWatch(watchId)
   }, [])
   return posicao
+}
+
+// Limiares da atualização ao vivo: andou ao menos 5 m ou a precisão mudou
+// 5 m ou mais (ex.: de ±30 m para ±8 m ao sair de perto de um muro).
+export const MOVIMENTO_MINIMO_M = 5
+export const VARIACAO_PRECISAO_MINIMA_M = 5
+
+export function mudouOSuficiente(anterior: PosicaoAoVivo | null, nova: PosicaoAoVivo): boolean {
+  if (!anterior) return true
+  return (
+    distanciaMetros(anterior.lat, anterior.lng, nova.lat, nova.lng) >= MOVIMENTO_MINIMO_M ||
+    Math.abs(anterior.precisaoM - nova.precisaoM) >= VARIACAO_PRECISAO_MINIMA_M
+  )
 }
 
 // Fórmula de Haversine — distância em linha reta (metros) entre a
