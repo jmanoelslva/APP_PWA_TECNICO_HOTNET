@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
-import { LuMap, LuSearch, LuX } from 'react-icons/lu'
+import { LuMap, LuX } from 'react-icons/lu'
+import { MdSearch } from 'react-icons/md'
 import {
   ApiError,
   buscarClientes,
@@ -16,6 +17,7 @@ import { CORES } from '../utils/cores'
 import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import { distanciaMetros, formatarDistancia, useLocalizacaoAoVivo } from './conexao/localizacao'
 import './Conexao.css'
+import './Home.css'
 import './MapaCtos.css'
 
 // Leaflet só é baixado quando a tela abre.
@@ -64,6 +66,7 @@ export default function MapaCtos() {
   // Busca de cliente: resultados → endereços com coordenada → um escolhido.
   const [busca, setBusca] = useState('')
   const [buscando, setBuscando] = useState(false)
+  const [listaAberta, setListaAberta] = useState(false)
   const [resultados, setResultados] = useState<BuscaClienteResultado[] | null>(null)
   const [enderecos, setEnderecos] = useState<EnderecoNoMapa[] | null>(null)
   const [enderecoCliente, setEnderecoCliente] = useState<EnderecoNoMapa | null>(null)
@@ -104,12 +107,14 @@ export default function MapaCtos() {
     // A busca já roda sozinha; Enter só fecha o teclado (e, com um único
     // cliente encontrado, já o escolhe).
     ;(document.activeElement as HTMLElement | null)?.blur()
-    if (resultados?.length === 1) void escolherCliente(resultados[0])
+    if (resultados?.length === 1) {
+      setListaAberta(false)
+      void escolherCliente(resultados[0])
+    }
   }
 
   async function escolherCliente(resultado: BuscaClienteResultado) {
     setBuscando(true)
-    setResultados(null)
     try {
       const detalhe = await buscarDetalheCliente(resultado.client_pk)
       const nome = detalhe.cliente.client_complete_name ?? resultado.cliente.client_complete_name ?? 'Cliente'
@@ -172,47 +177,51 @@ export default function MapaCtos() {
 
   return (
     <div className="mapa-ctos-tela tela-entrada">
-      <CabecalhoTela icone={LuMap} cor={CORES.conexao} titulo="Mapa de CTOs" subtitulo="CTOs perto de você ou do cliente." />
+      <CabecalhoTela icone={LuMap} cor={CORES.conexao} titulo="Mapa de CTOs" />
 
-      <form className="mapa-ctos-busca" onSubmit={aoBuscar} role="search">
-        <input
-          className="campo"
-          type="search"
-          enterKeyHint="search"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          placeholder="Cliente: nome, CPF/CNPJ ou contrato"
-          aria-label="Buscar cliente"
-        />
-        <button
-          type="submit"
-          className="botao botao-primario"
-          disabled={buscando || !busca.trim()}
-          aria-busy={buscando}
-          aria-label="Buscar cliente"
-        >
-          <LuSearch size={20} />
-        </button>
+      {/* Mesmo campo e lista suspensa da busca do Início, só com clientes
+          (o mapa precisa do endereço). */}
+      <form className="home-busca home-combobox mapa-ctos-busca" onSubmit={aoBuscar} role="search">
+        <div className="home-busca-campo">
+          <MdSearch size={20} className="home-busca-icone" aria-hidden="true" />
+          <input
+            enterKeyHint="search"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            onFocus={() => setListaAberta(true)}
+            onBlur={() => setTimeout(() => setListaAberta(false), 150)}
+            placeholder="Cliente, CPF ou contrato"
+            aria-label="Buscar cliente"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+        </div>
+        {listaAberta && busca.trim().length >= 2 && (
+          <ul className="home-combobox-lista">
+            {(buscando || !resultados) && <li className="home-combobox-vazio">Buscando…</li>}
+            {!buscando && resultados?.length === 0 && <li className="home-combobox-vazio">Nada encontrado.</li>}
+            {!buscando &&
+              resultados?.map((resultado) => (
+                <li key={resultado.client_pk}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setListaAberta(false)
+                      void escolherCliente(resultado)
+                    }}
+                  >
+                    <strong>
+                      {resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}
+                    </strong>
+                    {resultado.cliente.client_doc1 && ` — ${formatarDocumento(resultado.cliente.client_doc1)}`}
+                  </button>
+                </li>
+              ))}
+          </ul>
+        )}
       </form>
-
-      {resultados && (
-        <ul className="mapa-ctos-opcoes">
-          {resultados.length === 0 && <li className="mapa-ctos-aviso">Nenhum cliente encontrado.</li>}
-          {resultados.map((resultado) => (
-            <li key={resultado.client_pk}>
-              <button type="button" className="mapa-ctos-item" onClick={() => escolherCliente(resultado)}>
-                <span className="mapa-ctos-nome">
-                  <strong>{resultado.cliente.client_complete_name ?? 'Cliente'}</strong>
-                  {resultado.cliente.client_doc1 && <span>{formatarDocumento(resultado.cliente.client_doc1)}</span>}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
 
       {enderecos && (
         <ul className="mapa-ctos-opcoes">

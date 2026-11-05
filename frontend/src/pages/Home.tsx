@@ -325,7 +325,7 @@ export default function Home() {
                   {resumoDia == null
                     ? 'Agendadas para os próximos dias'
                     : resumoDia.proximas === 0
-                      ? 'Nenhuma agendada para os próximos dias'
+                      ? 'Nenhuma agendada'
                       : `${plural(resumoDia.proximas, 'agendada', 'agendadas')} para os próximos dias`}
                 </span>
               </span>
@@ -355,7 +355,7 @@ export default function Home() {
               </span>
               <span className="home-atalho-texto">
                 <strong>Mapa de CTOs</strong>
-                <span>CTOs mais próximas de você</span>
+                <span>Perto de você ou do cliente</span>
               </span>
               <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
             </Link>

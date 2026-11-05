@@ -6,7 +6,7 @@ interface Props {
   icone: IconType
   cor: string
   titulo: string
-  subtitulo: string
+  subtitulo?: string
 }
 
 /** Cabeçalho padrão das telas internas: ícone num selo na cor da área + título. */
@@ -18,7 +18,7 @@ export default function CabecalhoTela({ icone: Icone, cor, titulo, subtitulo }: 
       </span>
       <div>
         <h1>{titulo}</h1>
-        <p>{subtitulo}</p>
+        {subtitulo && <p>{subtitulo}</p>}
       </div>
     </header>
   )
