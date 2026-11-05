@@ -5,7 +5,16 @@ import { LuMessageCircle } from 'react-icons/lu'
 import EstadoVazio from '../components/EstadoVazio'
 import EstadoErro from '../components/EstadoErro'
 import Skeleton from '../components/Skeleton'
-import { detalheTicket, listarMensagensTicket, listarOrdensServico, type OperacaoDto, type TicketDto } from '../api/client'
+import { useToast } from '../components/Toast/useToast'
+import {
+  ApiError,
+  criarMensagemTicket,
+  detalheTicket,
+  listarMensagensTicket,
+  listarOrdensServico,
+  type OperacaoDto,
+  type TicketDto,
+} from '../api/client'
 import { formatarDataHora } from '../utils/formatacao'
 import { CORES } from '../utils/cores'
 import './DetalheChamado.css'
@@ -45,17 +54,18 @@ function converterOperacao(dto: OperacaoDto): Mensagem | null {
 
 /**
  * Chamado (ticket) e Ordem de Serviço são dois recursos/endpoints
- * diferentes no Controllr. O envio de mensagem foi removido de
- * propósito: tudo que o técnico precisa registrar sobre o atendimento é
- * feito pela descrição dos botões de Responder/Iniciar/Finalizar na tela
- * da OS (/os/:ticketPk) — esta tela é só um histórico de leitura
- * (mensagens do escritório/cliente e os próprios eventos da OS, que
- * usam a mesma tabela e aparecem juntos nesta lista).
+ * diferentes no Controllr. Esta tela mostra o histórico (mensagens do
+ * escritório/cliente e os eventos da OS, que usam a mesma tabela) e,
+ * com o chamado aberto, permite enviar mensagem de texto. Anexos seguem
+ * pela tela da OS.
  */
 function DetalheChamadoConteudo() {
   const { ticketPk } = useParams<{ ticketPk: string }>()
   const pk = Number(ticketPk)
   const location = useLocation()
+  const { toast } = useToast()
+  const [texto, setTexto] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
   const estadoNavegacao = location.state as { chamado?: TicketDto } | null
   const [ticket, setTicket] = useState<TicketDto | null>(estadoNavegacao?.chamado ?? null)
@@ -131,6 +141,22 @@ function DetalheChamadoConteudo() {
       if (mostrarCarregando) setErro('Não foi possível carregar o histórico deste chamado.')
     } finally {
       if (mostrarCarregando) setCarregando(false)
+    }
+  }
+
+  async function aoEnviarMensagem() {
+    const valor = texto.trim()
+    if (enviando || !valor) return
+    setEnviando(true)
+    try {
+      await criarMensagemTicket(pk, valor)
+      setTexto('')
+      await carregar(false)
+      setTimeout(() => fimDaListaRef.current?.scrollIntoView({ block: 'end' }), 0)
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível enviar a mensagem.')
+    } finally {
+      setEnviando(false)
     }
   }
 
@@ -228,6 +254,36 @@ function DetalheChamadoConteudo() {
           ))}
         <div ref={fimDaListaRef} />
       </div>
+
+      {ticket && !fechado && (
+        <form
+          className="detalhe-chamado-envio"
+          onSubmit={(e) => {
+            e.preventDefault()
+            aoEnviarMensagem()
+          }}
+        >
+          <input
+            type="text"
+            className="detalhe-chamado-input-mensagem"
+            placeholder="Escreva uma mensagem"
+            aria-label="Mensagem"
+            enterKeyHint="send"
+            autoCapitalize="sentences"
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            disabled={enviando}
+          />
+          <button
+            type="submit"
+            className="detalhe-chamado-btn-enviar"
+            disabled={enviando || !texto.trim()}
+            aria-busy={enviando}
+          >
+            Enviar
+          </button>
+        </form>
+      )}
 
       {imagemAberta && (
         <div className="chamado-imagem-modal-fundo" onClick={() => setImagemAberta(null)}>

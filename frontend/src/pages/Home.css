@@ -399,9 +399,8 @@
 .home-atalho-texto > span {
   font-size: 13px;
   color: var(--cor-texto-secundario);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Quebra linha em vez de cortar com "…" em celular estreito. */
+  overflow-wrap: anywhere;
 }
 
 .home-atalho-destaque {

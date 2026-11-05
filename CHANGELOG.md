@@ -7,6 +7,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Mensagem no chamado:** com o chamado aberto, o técnico volta a poder
+  escrever e enviar mensagem de texto pela tela do Suporte.
+
+### Corrigido
+
+- **Atalhos do Início:** a descrição (ex.: "Nenhuma agendada para os
+  próximos dias") quebra linha em vez de ser cortada com "…".
+
 ## [1.23.3] - 2026-11-05
 
 ### Alterado
