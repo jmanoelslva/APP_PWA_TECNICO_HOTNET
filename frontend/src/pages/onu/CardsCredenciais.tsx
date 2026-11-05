@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { LuCopy, LuEye, LuEyeOff, LuWifi } from 'react-icons/lu'
 import type { OnuDto } from '../../api/client'
 import { useCopiar } from '../../hooks/useCopiar'
+import { CORES } from '../../utils/cores'
 
 /**
  * PPPoE e Wi-Fi configurados na própria ONU. A senha PPPoE aparece de
@@ -24,7 +25,8 @@ export default function CardsCredenciais({ onu }: { onu: OnuDto }) {
               <strong>{onu.wancfg_pppoe_username}</strong>
               <Link
                 to={`/conexao?username=${encodeURIComponent(onu.wancfg_pppoe_username)}`}
-                className="onu-btn-link"
+                className="botao-icone"
+                style={{ '--botao-icone-cor': CORES.conexao } as CSSProperties}
                 aria-label="Ver conexão deste usuário"
                 viewTransition
               >

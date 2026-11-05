@@ -4,7 +4,7 @@ import { ApiError, buscarHistoricoSessoesCpe, type CpeDto, type SessaoHistoricoD
 import Skeleton from '../../components/Skeleton'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
-import { formatarDataHoraSegundos } from '../../utils/formatacao'
+import { formatarDataHoraSegundos, quandoFoi } from '../../utils/formatacao'
 import { calcularPeriodo, OPCOES_PERIODO, type PeriodoPreset } from '../../utils/periodos'
 import { formatarBytes, formatarDuracaoSegundos, rotuloEncerramento } from './sessao'
 
@@ -77,9 +77,15 @@ export default function CardRede({ cpe }: { cpe: CpeDto }) {
         <span>MAC</span>
         <strong>{cpe.mac ?? cpe.mac_last ?? '—'}</strong>
       </div>
+      {/* Última conexão = último accounting da sessão (é a hora da queda
+          quando o cliente está offline); autenticação só muda ao reconectar. */}
+      <div className="conexao-linha">
+        <span>Última conexão</span>
+        <strong>{quandoFoi(cpe.date_acct) || '—'}</strong>
+      </div>
       <div className="conexao-linha">
         <span>Última autenticação</span>
-        <strong>{cpe.date_auth ? formatarDataHoraSegundos(cpe.date_auth) : '—'}</strong>
+        <strong>{quandoFoi(cpe.date_auth) || '—'}</strong>
       </div>
 
       <h3 className="conexao-historico-titulo">Histórico de conexão</h3>

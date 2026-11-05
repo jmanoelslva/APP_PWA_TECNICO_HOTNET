@@ -31,6 +31,39 @@ export function formatarDataHoraSegundos(data: string | null | undefined): strin
   return data
 }
 
+/**
+ * "YYYY-MM-DD HH:mm:ss" do Controllr (horário local) → instante em ms.
+ * Vazio, data zerada ("0000-00-00…") ou inválida → null.
+ */
+export function instanteDoServidor(data: string | null | undefined): number | null {
+  if (!data) return null
+  const m = data.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/)
+  if (!m || m[1] === '0000') return null
+  const instante = new Date(+m[1], +m[2] - 1, +m[3], +(m[4] ?? 0), +(m[5] ?? 0), +(m[6] ?? 0)).getTime()
+  return Number.isFinite(instante) ? instante : null
+}
+
+/** "agora", "há 5 min", "há 3 h", "há 1 dia", "há 12 dias". */
+export function tempoRelativo(instante: number, agora: number = Date.now()): string {
+  const minutos = Math.max(0, Math.floor((agora - instante) / 60_000))
+  if (minutos < 1) return 'agora'
+  if (minutos < 60) return `há ${minutos} min`
+  const horas = Math.floor(minutos / 60)
+  if (horas < 24) return `há ${horas} h`
+  const dias = Math.floor(horas / 24)
+  return `há ${dias} ${dias === 1 ? 'dia' : 'dias'}`
+}
+
+/**
+ * Padrão do app para "quando aconteceu": relativo e absoluto juntos —
+ * "há 3 h · 05/11/2026 19:25". Data vazia/zerada → "".
+ */
+export function quandoFoi(data: string | null | undefined, agora: number = Date.now()): string {
+  const instante = instanteDoServidor(data)
+  if (instante == null) return ''
+  return `${tempoRelativo(instante, agora)} · ${formatarDataHora(data)}`
+}
+
 /** "YYYY-MM-DD HH:mm:ss", mesmo formato usado pelo Controllr (ver where.py::corpo no backend). */
 export function dataParaFormatoServidor(data: Date): string {
   const par = (n: number) => String(n).padStart(2, '0')

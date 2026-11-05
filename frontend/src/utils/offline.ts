@@ -2,6 +2,8 @@
 // com mais de um cliente offline (sinal de problema coletivo: fibra
 // rompida, CTO ou splitter).
 
+import { instanteDoServidor, tempoRelativo } from './formatacao'
+
 export type GrupoOffline = 'hoje' | 'semana' | 'antigos' | 'nunca'
 
 export const ROTULO_GRUPO: Record<GrupoOffline, string> = {
@@ -15,17 +17,8 @@ export const ORDEM_GRUPOS: GrupoOffline[] = ['hoje', 'semana', 'antigos', 'nunca
 
 const DIA_MS = 24 * 3600_000
 
-/**
- * "YYYY-MM-DD HH:mm:ss" do Controllr (horário local) → instante em ms.
- * Vazio, data zerada ("0000-00-00…") ou inválida → null (nunca autenticou).
- */
-export function instanteAutenticacao(data: string | null | undefined): number | null {
-  if (!data) return null
-  const m = data.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/)
-  if (!m || m[1] === '0000') return null
-  const instante = new Date(+m[1], +m[2] - 1, +m[3], +(m[4] ?? 0), +(m[5] ?? 0), +(m[6] ?? 0)).getTime()
-  return Number.isFinite(instante) ? instante : null
-}
+/** Instante de uma data do Controllr (ver instanteDoServidor). */
+export const instanteAutenticacao = instanteDoServidor
 
 /**
  * Hora da queda: o último accounting da sessão (cpe_date_acct). Sem ele,
@@ -45,16 +38,10 @@ export function grupoOffline(instante: number | null, agora: number = Date.now()
   return 'antigos'
 }
 
-/** "caiu há 5 min", "caiu há 3 h", "caiu há 12 dias". */
+/** "caiu há 5 min", "caiu há 3 h", "caiu há 12 dias" (mesmo relativo do app todo). */
 export function tempoOffline(instante: number | null, agora: number = Date.now()): string {
   if (instante == null) return 'Nunca conectou'
-  const minutos = Math.max(0, Math.floor((agora - instante) / 60_000))
-  if (minutos < 1) return 'caiu agora'
-  if (minutos < 60) return `caiu há ${minutos} min`
-  const horas = Math.floor(minutos / 60)
-  if (horas < 24) return `caiu há ${horas} h`
-  const dias = Math.floor(horas / 24)
-  return `caiu há ${dias} ${dias === 1 ? 'dia' : 'dias'}`
+  return `caiu ${tempoRelativo(instante, agora)}`
 }
 
 export interface CtoComOffline {

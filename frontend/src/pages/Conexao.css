@@ -385,20 +385,6 @@
   text-align: right;
 }
 
-.conexao-btn-link {
-  border: none;
-  background: var(--cor-fundo);
-  color: var(--cor-conexao);
-  border-radius: 8px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  text-decoration: none;
-}
-
 .conexao-selo-status {
   margin-bottom: 8px;
 }

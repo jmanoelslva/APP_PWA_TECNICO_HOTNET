@@ -172,20 +172,6 @@
   text-decoration: none;
 }
 
-.onu-btn-link {
-  border: none;
-  background: var(--cor-fundo);
-  color: var(--cor-onu);
-  border-radius: 8px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  text-decoration: none;
-}
-
 .onu-sinal-colunas {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

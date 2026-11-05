@@ -204,13 +204,14 @@ export default function ClientesOffline() {
           {cpe.username && ` · ${cpe.username}`}
         </p>
         {/* Uma linha só: ícone em cima, rótulo curto embaixo, colunas iguais. */}
-        <div className="clientes-offline-acoes">
-          <Link to={`/conexao?cpe_pk=${cpe.pk}`} style={{ '--acao-cor': CORES.conexao } as CSSProperties} viewTransition>
+        <div className="grade-acoes">
+          <Link className="grade-acao" to={`/conexao?cpe_pk=${cpe.pk}`} style={{ '--acao-cor': CORES.conexao } as CSSProperties} viewTransition>
             <LuWifi size={20} aria-hidden="true" />
             Conexão
           </Link>
           {cpe.username ? (
             <Link
+              className="grade-acao"
               to={`/onu?username=${encodeURIComponent(cpe.username)}`}
               style={{ '--acao-cor': CORES.onu } as CSSProperties}
               viewTransition
@@ -219,19 +220,20 @@ export default function ClientesOffline() {
               ONU
             </Link>
           ) : (
-            <span className="desabilitada" aria-hidden="true">
+            <span className="grade-acao desabilitada" aria-hidden="true">
               <LuCable size={20} />
               ONU
             </span>
           )}
           {cpe.client_pk ? (
             <>
-              <Link to={`/mapa?cliente=${cpe.client_pk}`} style={{ '--acao-cor': CORES.endereco } as CSSProperties} viewTransition>
+              <Link className="grade-acao" to={`/mapa?cliente=${cpe.client_pk}`} style={{ '--acao-cor': CORES.endereco } as CSSProperties} viewTransition>
                 <LuMap size={20} aria-hidden="true" />
                 Mapa
               </Link>
               <button
                 type="button"
+                className="grade-acao"
                 style={{ '--acao-cor': CORES.sucesso } as CSSProperties}
                 onClick={() => void ligar(cpe)}
                 aria-busy={ligandoPk === cpe.client_pk}
@@ -240,7 +242,7 @@ export default function ClientesOffline() {
                 <LuPhone size={20} aria-hidden="true" />
                 Ligar
               </button>
-              <Link to={`/clientes/${cpe.client_pk}`} style={{ '--acao-cor': CORES.cliente } as CSSProperties} viewTransition>
+              <Link className="grade-acao" to={`/clientes/${cpe.client_pk}`} style={{ '--acao-cor': CORES.cliente } as CSSProperties} viewTransition>
                 <LuUser size={20} aria-hidden="true" />
                 Cliente
               </Link>

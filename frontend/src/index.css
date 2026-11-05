@@ -486,10 +486,8 @@ select.campo {
    a linha, mas a área de toque vai a 48 px — dá para acertar de luva. */
 .conexao-campo-valor button,
 .onu-campo-valor button,
-.conexao-btn-link,
-.onu-btn-link,
+.botao-icone,
 .detalhe-ordem-campo-valor button,
-.detalhe-cliente-btn-icone,
 .mapa-cto-localizar,
 .detalhe-chamado-btn-anexar {
   position: relative;
@@ -497,10 +495,8 @@ select.campo {
 
 .conexao-campo-valor button::after,
 .onu-campo-valor button::after,
-.conexao-btn-link::after,
-.onu-btn-link::after,
+.botao-icone::after,
 .detalhe-ordem-campo-valor button::after,
-.detalhe-cliente-btn-icone::after,
 .mapa-cto-localizar::after,
 .detalhe-chamado-btn-anexar::after {
   content: '';
@@ -611,4 +607,92 @@ h3,
   html::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* ---------------------------------------------------------------------
+   Grade de ações (OS, Cliente, Clientes Offline): uma linha só, colunas
+   iguais, ícone em cima e rótulo embaixo. Os botões de AcoesContato
+   (Ligar/WhatsApp) entram na mesma grade.
+   --------------------------------------------------------------------- */
+.grade-acoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 6px;
+}
+
+.grade-acoes .acoes-contato,
+.grade-acoes .acoes-contato-numero {
+  display: contents;
+}
+
+.grade-acao,
+.grade-acoes .acoes-contato-botao {
+  --acao-cor: var(--cor-texto-secundario);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 60px;
+  margin: 0;
+  padding: 6px 2px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, currentColor 35%, var(--cor-borda));
+  background: color-mix(in srgb, currentColor 7%, var(--cor-superficie));
+  color: var(--acao-cor);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.grade-acoes .acoes-contato-botao {
+  color: var(--cor-suporte);
+}
+
+.grade-acoes .acoes-contato-whatsapp {
+  color: var(--cor-whatsapp);
+}
+
+.grade-acao svg,
+.grade-acoes .acoes-contato-botao svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+
+.grade-acao:disabled,
+.grade-acao.desabilitada {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------------
+   Botão só de ícone (ver ONU/conexão, editar): 32px de visual; a área de
+   toque de 48px vem da regra comum dos botões de ícone. Cor em
+   --botao-icone-cor.
+   --------------------------------------------------------------------- */
+.botao-icone {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: var(--cor-fundo);
+  color: var(--botao-icone-cor, var(--cor-texto-secundario));
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao-icone-fantasma {
+  background: transparent;
 }

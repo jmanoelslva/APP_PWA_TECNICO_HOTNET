@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { LuCamera, LuCircleCheck, LuCopy, LuEye, LuEyeOff, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuUser, LuWifi } from 'react-icons/lu'
+import { LuCamera, LuCircleCheck, LuCopy, LuEye, LuEyeOff, LuMap, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuUser, LuWifi } from 'react-icons/lu'
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
@@ -546,7 +546,7 @@ function DetalheOrdemServicoConteudo() {
                 </ol>
               )}
               {/* Ações do topo em grade: mesmo tamanho, ícone sobre o rótulo. */}
-              <div className="detalhe-ordem-contato">
+              <div className="detalhe-ordem-contato grade-acoes">
                 {rota && (
                   <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
                     <LuNavigation size={22} /> Rota
@@ -556,6 +556,16 @@ function DetalheOrdemServicoConteudo() {
                 <Link to={`/suporte/${pk}`} className="acoes-contato-botao" viewTransition>
                   <LuMessageCircle size={22} /> Chamado
                 </Link>
+                {osAtual.client_pk && (
+                  <Link
+                    to={`/mapa?cliente=${osAtual.client_pk}`}
+                    className="grade-acao"
+                    style={{ '--acao-cor': CORES.endereco } as CSSProperties}
+                    viewTransition
+                  >
+                    <LuMap size={22} /> Mapa
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -586,7 +596,7 @@ function DetalheOrdemServicoConteudo() {
                     {endereco?.address_pk && (
                       <button
                         type="button"
-                        className="detalhe-ordem-btn-icone"
+                        className="botao-icone botao-icone-fantasma"
                         onClick={() => setEnderecoEditando(endereco)}
                         aria-label="Editar endereço"
                       >

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { LuCable, LuCopy, LuEye, LuEyeOff } from 'react-icons/lu'
 import type { CpeDto } from '../../api/client'
 import { useCopiar } from '../../hooks/useCopiar'
+import { CORES } from '../../utils/cores'
 
 /** Login PPPoE do cliente (usuário e senha de internet). */
 export default function CardPppoe({ cpe }: { cpe: CpeDto }) {
@@ -17,7 +18,7 @@ export default function CardPppoe({ cpe }: { cpe: CpeDto }) {
         <div className="conexao-campo-valor">
           <strong>{cpe.username ?? '—'}</strong>
           {cpe.username && (
-            <Link to={`/onu?username=${encodeURIComponent(cpe.username)}`} className="conexao-btn-link" aria-label="Ver ONU deste usuário" viewTransition>
+            <Link to={`/onu?username=${encodeURIComponent(cpe.username)}`} className="botao-icone" style={{ '--botao-icone-cor': CORES.onu } as CSSProperties} aria-label="Ver ONU deste usuário" viewTransition>
               <LuCable size={16} />
             </Link>
           )}
