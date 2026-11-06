@@ -194,7 +194,7 @@
   margin: 4px 0 0;
   padding: 4px;
   list-style: none;
-  max-height: 260px;
+  max-height: 55vh;
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--cor-superficie);
@@ -204,16 +204,23 @@
 }
 
 .home-combobox-lista li button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
+  min-height: 56px;
   text-align: left;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: none;
   background: transparent;
   color: var(--cor-texto);
-  font-size: 13px;
+  font-size: 15px;
   border-radius: 8px;
   cursor: pointer;
+}
+
+.home-combobox-lista li button svg {
+  flex-shrink: 0;
 }
 
 @media (hover: hover) {
@@ -223,8 +230,8 @@
 }
 
 .home-combobox-vazio {
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 12px;
+  font-size: 14px;
   color: var(--cor-texto-terciario);
 }
 
@@ -340,14 +347,6 @@
 }
 
 
-/* Rótulo do tipo de resultado na busca geral (ONU / PPPoE). */
-.home-combobox-tipo {
-  display: inline-block;
-  margin-right: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
 
 /* Atalhos em lista (como Ferramentas e Configurações): ícone, nome, uma
    informação útil e seta — fica igual com 3 ou 4 itens. */

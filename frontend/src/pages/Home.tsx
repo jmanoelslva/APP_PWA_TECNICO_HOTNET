@@ -1,6 +1,18 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { LuCalendarClock, LuChevronRight, LuHammer, LuMap, LuScanQrCode, LuSearch, LuServer, LuWifiOff } from 'react-icons/lu'
+import {
+  LuCable,
+  LuCalendarClock,
+  LuChevronRight,
+  LuHammer,
+  LuMap,
+  LuScanQrCode,
+  LuSearch,
+  LuServer,
+  LuUser,
+  LuWifi,
+  LuWifiOff,
+} from 'react-icons/lu'
 // Atalhos com ícones Lucide, iguais aos da barra de baixo.
 import { useSessao } from '../auth/useSessao'
 import { CORES, comAlpha } from '../utils/cores'
@@ -275,11 +287,19 @@ export default function Home() {
                           navigate(`/onu?serial=${encodeURIComponent(onu.sn ?? '')}`, { viewTransition: true })
                         }}
                       >
-                        <span className="home-combobox-tipo" style={{ color: CORES.onu }}>
-                          ONU
+                        <LuCable size={20} style={{ color: CORES.onu }} aria-label="ONU" />
+                        <span className="item-duas-linhas">
+                          <strong>{onu.sn ?? `ONU #${onu.pk}`}</strong>
+                          <small>
+                            {[
+                              onu.client_name || 'Sem cliente',
+                              onu.olt_name,
+                              [onu.slot, onu.pon, onu.id].every((v) => v != null) && `${onu.slot}/${onu.pon}:${onu.id}`,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </small>
                         </span>
-                        <strong>{onu.sn ?? `ONU #${onu.pk}`}</strong>
-                        {onu.client_name && ` — ${onu.client_name}`}
                       </button>
                     </li>
                   ))}
@@ -294,11 +314,19 @@ export default function Home() {
                           navigate(`/conexao?cpe_pk=${cpe.pk}`, { viewTransition: true })
                         }}
                       >
-                        <span className="home-combobox-tipo" style={{ color: CORES.conexao }}>
-                          PPPoE
+                        <LuWifi size={20} style={{ color: CORES.conexao }} aria-label="PPPoE" />
+                        <span className="item-duas-linhas">
+                          <strong>{cpe.username ?? `Conexão #${cpe.pk}`}</strong>
+                          <small>
+                            {[
+                              cpe.client_complete_name,
+                              cpe.contract_number != null && `Contrato ${cpe.contract_number}`,
+                              cpe.dp_name && `CTO ${cpe.dp_name}`,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </small>
                         </span>
-                        <strong>{cpe.username ?? `Conexão #${cpe.pk}`}</strong>
-                        {cpe.client_complete_name && ` — ${cpe.client_complete_name}`}
                       </button>
                     </li>
                   ))}
@@ -313,10 +341,22 @@ export default function Home() {
                           navigate(`/clientes/${resultado.client_pk}`, { viewTransition: true })
                         }}
                       >
-                        <strong>
-                          {resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}
-                        </strong>
-                        {resultado.cliente.client_doc1 && ` — ${formatarDocumento(resultado.cliente.client_doc1)}`}
+                        <LuUser size={20} style={{ color: CORES.cliente }} aria-label="Cliente" />
+                        <span className="item-duas-linhas">
+                          <strong>
+                            {resultado.cliente.client_complete_name ??
+                              resultado.cliente.client_name ??
+                              `Cliente #${resultado.client_pk}`}
+                          </strong>
+                          <small>
+                            {[
+                              resultado.cliente.client_doc1 && formatarDocumento(resultado.cliente.client_doc1),
+                              resultado.cpes.length === 1 ? '1 conexão' : `${resultado.cpes.length} conexões`,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </small>
+                        </span>
                       </button>
                     </li>
                   ))}
