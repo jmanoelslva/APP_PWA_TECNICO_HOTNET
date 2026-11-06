@@ -12,6 +12,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Conexão › CTO:** as portas viraram uma grade fixa com todas as posições da CTO (até 16 não empurram mais o mapa). Porta ocupada fica preenchida, com ponto verde se a conexão está online; tocar nela mostra quem está ali. A da própria conexão fica na cor da Conexão e porta com duas conexões, em vermelho.
 - **Quem ocupa a porta:** a conexão habilitada, com contrato ativado, bloqueado ou cancelado. O Controllr recusa gravar a mesma porta para outra conexão, e o detalhe mostra a situação do contrato. Porta de conexão desabilitada (contrato desativado) conta como livre e aparece com borda tracejada; ao tocar, mostra o antigo ocupante e avisa se ele ainda estiver online.
 - **Salvar CTO:** o erro "duplicate" do Controllr virou uma mensagem dizendo que a porta já está em uso.
+- **Porta ocupada:** o detalhe tem o botão "Abrir conexão de …", que leva à aba CTO do ocupante. Para usar a porta de um contrato cancelado, basta mudar ou apagar a porta dele por lá e salvar.
 
 ## [1.30.2] - 2026-11-06
 

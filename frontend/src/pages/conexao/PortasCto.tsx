@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { LuArrowRight } from 'react-icons/lu'
+import { Link } from 'react-router-dom'
 import { buscarCpe, type CpeDto } from '../../api/client'
 import { gradeDePortas, ocupanteDaPorta, portasDaCto, type CasaPorta } from '../../utils/portasCto'
 
@@ -155,6 +157,17 @@ function DetalhePorta({ casa, cpePk }: { casa: CasaPorta | undefined; cpePk: num
               .filter(Boolean)
               .join(' · ')}
           </small>
+          {o.cpePk !== cpePk && (
+            // Para usar a porta, muda-se a do ocupante (ex.: contrato
+            // cancelado) na própria conexão dele, como edição normal.
+            <Link
+              to={`/conexao?cpe_pk=${o.cpePk}&aba=cto`}
+              className="botao botao-secundario botao-pequeno botao-largo portas-cto-abrir"
+              viewTransition
+            >
+              Abrir conexão de {o.usuario} <LuArrowRight size={16} />
+            </Link>
+          )}
         </span>
       ))}
     </div>

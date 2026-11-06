@@ -519,6 +519,10 @@
   color: var(--cor-texto);
 }
 
+.portas-cto-abrir {
+  margin-top: 6px;
+}
+
 .portas-cto-aviso {
   margin: 8px 0;
   padding: 10px 12px;
