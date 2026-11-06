@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.30.2] - 2026-11-06
+
 ### Corrigido
 
 - **Editar endereço › Localização:** arrastar ou fazer pinça no mapa movia a tela inteira (o gesto de fechar a janela arrastando); agora mexe só no mapa.
