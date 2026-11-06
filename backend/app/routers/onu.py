@@ -51,6 +51,19 @@ def _corpo_busca_wizard(search_term: str, search_value: str, sort: str) -> str:
     return urlencode(campos)
 
 
+def pppoe_igual(onu: Any, username: str) -> bool:
+    """A busca do Controllr por PPPoE é por trecho: "silva@x" também
+    traz "mariasilva@x" (visto ao vivo em 06/11, ONU de outro cliente
+    no "Pronto para fechar"). Só vale o PPPoE exato, sem diferenciar
+    maiúsculas — da ONU ou, na falta dele, da conexão ligada a ela."""
+    alvo = username.strip().lower()
+    for campo in ("wancfg_pppoe_username", "cpe_username"):
+        valor = getattr(onu, campo, None)
+        if isinstance(valor, str) and valor.strip():
+            return valor.strip().lower() == alvo
+    return False
+
+
 @router.get("/busca")
 async def buscar_onu(
     serial: str | None = Query(default=None, description="Serial da ONU, impresso no equipamento"),
@@ -81,6 +94,8 @@ async def buscar_onu(
     resultados = resposta.results
     if cpe_pk is not None:
         resultados = [onu for onu in resultados if onu.cpe_pk == cpe_pk]
+    if username and not serial:
+        resultados = [onu for onu in resultados if pppoe_igual(onu, username)]
 
     return {"success": True, "results": [onu.model_dump(mode="json") for onu in resultados]}
 
