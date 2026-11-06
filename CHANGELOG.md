@@ -47,8 +47,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   cifradas no servidor e voltam depois da atualização; o usuário de
   consulta dos avisos de OS também deixa de sair e entrar no Controllr a
   cada atualização.
-- **Mapa de CTOs com os clientes offline:** anel vermelho nas CTOs com
-  cliente offline, quantidade no rótulo e selo na lista de mais próximas.
 
 ### Segurança
 

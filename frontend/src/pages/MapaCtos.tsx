@@ -6,7 +6,6 @@ import {
   buscarClientes,
   buscarCpe,
   buscarDetalheCliente,
-  listarCpeOffline,
   listarDps,
   type BuscaClienteResultado,
   type DpDto,
@@ -66,9 +65,6 @@ function descreverEndereco(endereco: EnderecoDto): string {
 export default function MapaCtos() {
   const { toast } = useToast()
   const [dps, setDps] = useState<DpDto[] | null>(null)
-  // Clientes offline agora, por CTO (dp_pk): anel vermelho no mapa e contagem
-  // na lista. Complemento — se falhar, o mapa segue sem essa camada.
-  const [offlinePorCto, setOfflinePorCto] = useState<Map<number, number>>(new Map())
   const [erro, setErro] = useState<string | null>(null)
   const [selecionadaPk, setSelecionadaPk] = useState<number | null>(null)
   const aoVivo = useLocalizacaoAoVivo()
@@ -194,15 +190,6 @@ export default function MapaCtos() {
   }, [clienteDaUrl])
 
   function carregarCtos() {
-    listarCpeOffline({ start: 0, limit: 500 })
-      .then((resposta) => {
-        const contagem = new Map<number, number>()
-        for (const cpe of resposta.results) {
-          if (cpe.dp_pk != null) contagem.set(cpe.dp_pk, (contagem.get(cpe.dp_pk) ?? 0) + 1)
-        }
-        setOfflinePorCto(contagem)
-      })
-      .catch(() => {})
     setErro(null)
     listarDps()
       .then((resposta) => setDps(resposta.results))
@@ -360,7 +347,6 @@ export default function MapaCtos() {
             precisaoM={aoVivo?.precisaoM ?? null}
             cliente={enderecoCliente}
             ligacoes={ligacoes}
-            offlinePorCto={offlinePorCto}
             onSelecionar={(dp) => setSelecionadaPk(dp.pk)}
             onSemLocalizacao={() => toast('Aguardando a localização do GPS. Verifique se a permissão está liberada.')}
           />
@@ -387,9 +373,6 @@ export default function MapaCtos() {
                     <strong>
                       {dp.name}
                       {ctosCliente?.some((cto) => cto.dpPk === dp.pk) && <em className="mapa-ctos-selo">Atual</em>}
-                      {(offlinePorCto.get(dp.pk) ?? 0) > 0 && (
-                        <em className="mapa-ctos-selo mapa-ctos-selo-offline">{offlinePorCto.get(dp.pk)} offline</em>
-                      )}
                     </strong>
                     {dp.ativos != null && (
                       <span>

@@ -17,8 +17,6 @@ export interface Ligacao extends Ponto {
 
 const COR_LIGACAO = '#ffffff'
 const SEM_LIGACOES: Ligacao[] = []
-const SEM_OFFLINE = new Map<number, number>()
-const COR_OFFLINE = '#d92d20'
 
 // Mesmas imagens do "Mapa - Informações" do painel do Controllr (Leaflet +
 // satélite com ruas do Google, sem chave) — o técnico vê o mesmo mapa nos
@@ -59,7 +57,6 @@ export default function MapaCto({
   precisaoM,
   cliente,
   ligacoes = SEM_LIGACOES,
-  offlinePorCto = SEM_OFFLINE,
   onSelecionar,
   onSemLocalizacao,
 }: {
@@ -71,8 +68,6 @@ export default function MapaCto({
   cliente: Ponto | null
   // Traçado (linha reta tracejada) do endereço do cliente até as CTOs dele.
   ligacoes?: Ligacao[]
-  // Clientes offline por CTO (dp_pk): anel vermelho e contagem no rótulo.
-  offlinePorCto?: Map<number, number>
   onSelecionar: (dp: DpDto) => void
   // Botão "minha localização" tocado antes de o GPS responder.
   onSemLocalizacao: () => void
@@ -138,17 +133,15 @@ export default function MapaCto({
     for (const dp of dps) {
       if (dp.lat == null || dp.lng == null) continue
       const eSelecionada = dp.pk === selecionadaPk
-      const offline = offlinePorCto.get(dp.pk) ?? 0
       const marcador = L.circleMarker([dp.lat, dp.lng], {
         renderer,
         radius: eSelecionada ? 10 : 7,
-        // Anel vermelho = CTO com cliente offline (a escolhida fica branca).
-        color: eSelecionada ? '#ffffff' : offline > 0 ? COR_OFFLINE : '#000000',
-        weight: eSelecionada || offline > 0 ? 3 : 1,
+        color: eSelecionada ? '#ffffff' : '#000000',
+        weight: eSelecionada ? 3 : 1,
         fillColor: dp.cor || COR_PADRAO_CTO,
         fillOpacity: 0.95,
       })
-      marcador.bindTooltip(texto(`${dp.name}${ocupacao(dp)}${offline > 0 ? ` · ${offline} offline` : ''}`), {
+      marcador.bindTooltip(texto(`${dp.name}${ocupacao(dp)}`), {
         permanent: eSelecionada,
         direction: 'top',
         offset: [0, -8],
@@ -158,7 +151,7 @@ export default function MapaCto({
       if (eSelecionada) selecionada = marcador
     }
     selecionada?.bringToFront()
-  }, [dps, selecionadaPk, offlinePorCto])
+  }, [dps, selecionadaPk])
 
   // Chave por valor (não por referência): o pai recria o objeto do cliente e
   // a lista de ligações a cada render, e isso não pode redesenhar o mapa.
@@ -325,11 +318,6 @@ export default function MapaCto({
           {cliente && ligacoes.length > 0 && (
             <span>
               <i className="mapa-cto-legenda-ligacao" /> Até a CTO
-            </span>
-          )}
-          {offlinePorCto.size > 0 && (
-            <span>
-              <i className="mapa-cto-legenda-offline" /> CTO com offline
             </span>
           )}
         </div>

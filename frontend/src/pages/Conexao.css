@@ -338,15 +338,6 @@
 }
 
 /* Traçado cliente → CTO: tracejado branco, igual à linha do mapa */
-/* Anel vermelho = CTO com cliente offline (igual ao marcador do mapa) */
-.mapa-cto-legenda i.mapa-cto-legenda-offline {
-  /* Igual ao marcador do mapa: bolinha preenchida com anel vermelho, no
-     mesmo tamanho das outras (o anel fica por fora, sem crescer a caixa). */
-  background: var(--cor-texto-terciario);
-  box-shadow: 0 0 0 2px #d92d20;
-  margin: 0 2px;
-}
-
 .mapa-cto-legenda i.mapa-cto-legenda-ligacao {
   width: 14px;
   height: 0;
