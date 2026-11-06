@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.30.1] - 2026-11-06
+
 ### Alterado
 
 - **OS › Antes de finalizar** (antes "Pronto para fechar"): novo nome do quadro. Cada atalho abre a tela já no item: CTO → Conexão › CTO, Conexão → Conexão › Resumo, Sinal → ONU › Sinal, ONU → ONU › Equipamento (registrar cliente).
