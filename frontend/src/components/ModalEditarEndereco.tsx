@@ -1,5 +1,10 @@
 import { useState, type ChangeEvent, type CSSProperties } from 'react'
-import { LuMapPin } from 'react-icons/lu'
+import { LuExternalLink, LuLocateFixed, LuMapPin } from 'react-icons/lu'
+import {
+  formatarDistancia,
+  obterMelhorLocalizacao,
+  PRECISAO_MAXIMA_ACEITAVEL_M,
+} from '../pages/conexao/localizacao'
 import { ApiError, atualizarEndereco, type EnderecoDto } from '../api/client'
 import { useToast } from './Toast/useToast'
 import './ModalEditarEndereco.css'
@@ -24,27 +29,36 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
   const [capturandoLocalizacao, setCapturandoLocalizacao] = useState(false)
   const { toast } = useToast()
 
-  function capturarLocalizacaoAtual() {
+  // Precisão (em metros) da última captura feita nesta janela; null quando
+  // a coordenada exibida veio do cadastro.
+  const [precisaoM, setPrecisaoM] = useState<number | null>(null)
+
+  // O técnico está na casa do cliente: a posição dele é a do endereço.
+  // Usa a amostragem de alguns segundos (melhor leitura da janela) em vez de
+  // uma leitura única, para gravar a coordenada mais precisa possível.
+  async function capturarLocalizacaoAtual() {
     if (!navigator.geolocation) {
       toast('Este navegador não suporta captura de localização.')
       return
     }
     setCapturandoLocalizacao(true)
-    navigator.geolocation.getCurrentPosition(
-      (posicao) => {
-        setForm((atual) => ({
-          ...atual,
-          address_latitude: String(posicao.coords.latitude),
-          address_longitude: String(posicao.coords.longitude),
-        }))
-        setCapturandoLocalizacao(false)
-      },
-      () => {
-        setCapturandoLocalizacao(false)
-        toast('Não foi possível obter a localização. Verifique a permissão do navegador.')
-      },
-    )
+    try {
+      const posicao = await obterMelhorLocalizacao()
+      setForm((atual) => ({
+        ...atual,
+        address_latitude: posicao.coords.latitude.toFixed(7),
+        address_longitude: posicao.coords.longitude.toFixed(7),
+      }))
+      setPrecisaoM(posicao.coords.accuracy)
+    } catch {
+      toast('Não foi possível obter a localização. Verifique a permissão do navegador.')
+    } finally {
+      setCapturandoLocalizacao(false)
+    }
   }
+
+  const temCoordenada = Boolean(form.address_latitude && form.address_longitude)
+  const precisaoRuim = precisaoM !== null && precisaoM > PRECISAO_MAXIMA_ACEITAVEL_M
 
   async function salvar() {
     if (!endereco.address_pk) return
@@ -125,20 +139,62 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
         <label>Complemento</label>
         <input {...campo('address_completation')} />
 
-        <label>Localização</label>
-        <div className="modal-editar-endereco-localizacao">
-          <span>
-            {form.address_latitude && form.address_longitude
-              ? `${form.address_latitude}, ${form.address_longitude}`
-              : 'Ainda não capturada'}
-          </span>
+        <label>Localização no mapa</label>
+        <div className={`modal-editar-endereco-localizacao${temCoordenada ? ' com-coordenada' : ''}`}>
+          <div className="modal-editar-endereco-localizacao-topo">
+            <span className="modal-editar-endereco-localizacao-icone">
+              <LuMapPin size={20} />
+            </span>
+            <div className="modal-editar-endereco-localizacao-texto">
+              <strong>
+                {capturandoLocalizacao
+                  ? 'Obtendo sua posição…'
+                  : temCoordenada
+                    ? precisaoM !== null
+                      ? 'Posição capturada'
+                      : 'Posição cadastrada'
+                    : 'Sem posição cadastrada'}
+              </strong>
+              <span className="modal-editar-endereco-coordenada">
+                {capturandoLocalizacao
+                  ? 'Aguarde alguns segundos parado.'
+                  : temCoordenada
+                    ? `${form.address_latitude}, ${form.address_longitude}`
+                    : 'Na casa do cliente, use o botão abaixo.'}
+              </span>
+            </div>
+            {temCoordenada && !capturandoLocalizacao && (
+              <a
+                className="botao-icone botao-icone-fantasma"
+                href={`https://www.google.com/maps/search/?api=1&query=${form.address_latitude},${form.address_longitude}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Conferir no Google Maps"
+              >
+                <LuExternalLink size={20} />
+              </a>
+            )}
+          </div>
+          {precisaoM !== null && !capturandoLocalizacao && (
+            <p className={`modal-editar-endereco-precisao${precisaoRuim ? ' ruim' : ''}`}>
+              Precisão de ±{formatarDistancia(precisaoM)}
+              {precisaoRuim && ' — baixa. Vá para perto da porta ou de área aberta e capture de novo.'}
+            </p>
+          )}
           <button
             type="button"
-            className="modal-editar-endereco-chip"
+            className="botao botao-secundario modal-editar-endereco-capturar"
+            style={estiloBotaoPrimario}
+            aria-busy={capturandoLocalizacao}
             disabled={capturandoLocalizacao}
             onClick={capturarLocalizacaoAtual}
           >
-            <LuMapPin size={16} /> {capturandoLocalizacao ? 'Capturando…' : 'Capturar localização atual'}
+            <LuLocateFixed size={20} />
+            {capturandoLocalizacao
+              ? 'Capturando…'
+              : temCoordenada
+                ? 'Atualizar com minha posição'
+                : 'Usar minha posição atual'}
           </button>
         </div>
 

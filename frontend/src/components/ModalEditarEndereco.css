@@ -79,36 +79,77 @@
 .modal-editar-endereco-localizacao {
   margin-top: 6px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px dashed var(--cor-borda);
+  border-radius: 12px;
+  background: var(--cor-fundo);
 }
 
-.modal-editar-endereco-localizacao span {
+.modal-editar-endereco-localizacao.com-coordenada {
+  border-style: solid;
+}
+
+.modal-editar-endereco-localizacao-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-editar-endereco-localizacao-icone {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--cor-superficie);
+  color: var(--cor-texto-secundario);
+}
+
+.com-coordenada .modal-editar-endereco-localizacao-icone {
+  color: var(--cor-primaria, #c94300);
+}
+
+.modal-editar-endereco-localizacao-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal-editar-endereco-localizacao-texto strong {
+  font-size: 15px;
+  color: var(--cor-texto);
+}
+
+.modal-editar-endereco-coordenada {
   font-size: 13px;
   color: var(--cor-texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.com-coordenada .modal-editar-endereco-coordenada {
   font-family: var(--fonte-mono);
 }
 
-.modal-editar-endereco-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-fundo);
+.modal-editar-endereco-precisao {
+  margin: 0;
+  font-size: 13px;
   color: var(--cor-texto-secundario);
-  font-size: 12px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
 }
 
-.modal-editar-endereco-chip:disabled {
-  opacity: 0.6;
-  cursor: default;
+.modal-editar-endereco-precisao.ruim {
+  color: #b42318;
+  font-weight: 600;
+}
+
+.modal-editar-endereco-capturar {
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
 }
 
 .modal-editar-endereco-acoes {
