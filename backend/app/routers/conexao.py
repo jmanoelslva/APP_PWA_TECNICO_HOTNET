@@ -208,6 +208,15 @@ async def atualizar_wifi_cpe(
     return {"success": True, "results": resposta.results}
 
 
+def _acesso_sem_mudanca(payload: "CpeDetalhesPayload") -> bool:
+    """Login, porta e senha iguais ao que a tela tinha: salvar de novo não
+    vira registro. Sem o contexto da tela, não dá para saber: registra."""
+    a = payload.auditoria
+    if a is None or a.senha_acesso_alterada is not False:
+        return False
+    return (payload.cpe_access_login or "") == (a.login_anterior or "") and payload.cpe_access_port == a.porta_anterior
+
+
 class CpeDetalhesPayload(BaseModel):
     # Campos de /aaa_ctl/cpe/update. None aqui significa "não mexe nesse
     # campo" — para limpar um valor (ex: observação), o front manda
@@ -244,15 +253,22 @@ async def atualizar_detalhes_cpe(
         if payload.dp_pk is None:
             enviado.pop("dp_name")
         base = antes or depois
-        registrar_auditoria(request, ctx.session, "cpe.editar_cto" if muda_cto else "cpe.editar_observacao", {
-            k: v for k, v in {
-                "cpe_pk": cpe_pk,
-                "cliente": base.get("client_complete_name") or (payload.auditoria.cliente if payload.auditoria else None),
-                "pppoe": base.get("cpe_username") or (payload.auditoria.pppoe if payload.auditoria else None),
-                "alteracoes": _alteracoes_cpe(antes, enviado),
-            }.items() if v not in (None, "", [])
-        })
-    if payload.cpe_access_login is not None or payload.cpe_access_password is not None or payload.cpe_access_port is not None:
+        lista = _alteracoes_cpe(antes, enviado)
+        # Salvar de novo sem mudar nada (visto ao vivo em 06/11: "Salvar CTO"
+        # tocado duas vezes) não é alteração: sem registro. Sem o "antes" não
+        # dá para saber, então registra.
+        if lista or not antes:
+            registrar_auditoria(request, ctx.session, "cpe.editar_cto" if muda_cto else "cpe.editar_observacao", {
+                k: v for k, v in {
+                    "cpe_pk": cpe_pk,
+                    "cliente": base.get("client_complete_name") or (payload.auditoria.cliente if payload.auditoria else None),
+                    "pppoe": base.get("cpe_username") or (payload.auditoria.pppoe if payload.auditoria else None),
+                    "alteracoes": lista,
+                }.items() if v not in (None, "", [])
+            })
+    if (
+        payload.cpe_access_login is not None or payload.cpe_access_password is not None or payload.cpe_access_port is not None
+    ) and not _acesso_sem_mudanca(payload):
         registrar_auditoria(
             request,
             ctx.session,

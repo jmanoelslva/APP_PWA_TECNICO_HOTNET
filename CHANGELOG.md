@@ -25,6 +25,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Auditoria:** salvar de novo a CTO, a observação ou o acesso ao roteador sem mudar nada não gera mais um segundo registro (visto em 06/11: "Salvar CTO" tocado duas vezes). Troca só da senha de acesso continua registrada como "Senha de acesso: alterada".
 - **Editar endereço:** campos ficavam comprimidos quando o formulário passava da altura da tela; agora a janela rola.
 
 ## [1.29.0] - 2026-11-06
