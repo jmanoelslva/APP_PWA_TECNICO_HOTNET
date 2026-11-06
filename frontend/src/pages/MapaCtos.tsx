@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { LuMap, LuSearch, LuX } from 'react-icons/lu'
+import { LuMap, LuSearch, LuUser, LuX } from 'react-icons/lu'
 import {
   ApiError,
   buscarClientes,
@@ -276,14 +276,21 @@ export default function MapaCtos() {
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
+                      // Fecha o teclado: o campo segue com foco (onMouseDown acima).
+                      ;(document.activeElement as HTMLElement | null)?.blur()
                       setListaAberta(false)
                       void escolherCliente(resultado)
                     }}
                   >
-                    <strong>
-                      {resultado.cliente.client_complete_name ?? resultado.cliente.client_name ?? `Cliente #${resultado.client_pk}`}
-                    </strong>
-                    {resultado.cliente.client_doc1 && ` — ${formatarDocumento(resultado.cliente.client_doc1)}`}
+                    <LuUser size={20} style={{ color: CORES.cliente }} aria-hidden />
+                    <span className="item-duas-linhas">
+                      <strong>
+                        {resultado.cliente.client_complete_name ??
+                          resultado.cliente.client_name ??
+                          `Cliente #${resultado.client_pk}`}
+                      </strong>
+                      {resultado.cliente.client_doc1 && <small>{formatarDocumento(resultado.cliente.client_doc1)}</small>}
+                    </span>
                   </button>
                 </li>
               ))}

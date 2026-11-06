@@ -75,6 +75,9 @@ export default function BuscaOnu({
   // Selecionar um item de serial já é a própria ONU; um item de usuário
   // busca a ONU pelo usuário exato dele.
   function selecionar(resultado: ResultadoCombo) {
+    // Tira o foco do campo: o toque no item não o tira (onMouseDown com
+    // preventDefault) e o teclado continuaria aberto.
+    ;(document.activeElement as HTMLElement | null)?.blur()
     setListaAberta(false)
     setBusca('')
     if (resultado.tipo === 'serial' && resultado.item.sn) onEscolher({ serial: resultado.item.sn })

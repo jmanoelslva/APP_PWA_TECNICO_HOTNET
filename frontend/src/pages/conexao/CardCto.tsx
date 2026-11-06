@@ -235,6 +235,7 @@ export default function CardCto({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
+                    ;(document.activeElement as HTMLElement | null)?.blur()
                     setDpPk(String(dp.pk))
                     setDpBusca(dp.name)
                     setDpListaAberta(false)
