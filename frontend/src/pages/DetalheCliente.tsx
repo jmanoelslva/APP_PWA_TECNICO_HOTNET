@@ -18,6 +18,7 @@ import {
 } from '../api/client'
 import AcoesContato from '../components/AcoesContato'
 import LidoHa from '../components/LidoHa'
+import SeloQuedas from '../components/SeloQuedas'
 import SeloStatusCliente from '../components/SeloStatusCliente'
 import { statusDoCliente } from '../utils/statusCliente'
 import { registrarRecente } from '../utils/buscaUnica'
@@ -244,6 +245,7 @@ function DetalheClienteConteudo() {
                       {(cpe.contract_number ?? cpe.contract_pk) != null && <p>Contrato: {cpe.contract_number ?? cpe.contract_pk}</p>}
 
                       {resumo?.carregando && <p className="detalhe-cliente-resumo-carregando">Consultando conexão e ONU…</p>}
+                      {cpe.cpe_pk != null && <SeloQuedas cpePk={cpe.cpe_pk} />}
 
                       {resumo && !resumo.carregando && (
                         <p className="detalhe-cliente-lido">

@@ -722,3 +722,37 @@ h3,
   font-size: 13px;
   color: var(--cor-texto-secundario);
 }
+
+/* Selo de quedas recentes (SeloQuedas): cliente e OS. */
+.selo-quedas {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--cor-texto);
+}
+
+.selo-quedas svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.selo-quedas.atencao {
+  background: color-mix(in srgb, var(--cor-atencao) 14%, transparent);
+}
+
+.selo-quedas.atencao svg {
+  color: var(--cor-atencao);
+}
+
+.selo-quedas.critico {
+  background: color-mix(in srgb, var(--cor-erro) 12%, transparent);
+}
+
+.selo-quedas.critico svg {
+  color: var(--cor-erro);
+}

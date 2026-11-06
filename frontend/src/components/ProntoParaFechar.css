@@ -1,0 +1,94 @@
+.pronto-fechar {
+  background: var(--cor-superficie);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--sombra-card);
+  margin-bottom: 16px;
+}
+
+.pronto-fechar-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.pronto-fechar-topo h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cor-texto-secundario);
+}
+
+.pronto-fechar-topo span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+}
+
+.pronto-fechar-topo span.completo {
+  color: var(--cor-sucesso);
+}
+
+.pronto-fechar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pronto-fechar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 6px 0;
+  font-size: 15px;
+}
+
+.pronto-fechar-item + .pronto-fechar-item {
+  border-top: 1px solid var(--cor-borda-suave);
+}
+
+.pronto-fechar-item .item-duas-linhas {
+  flex: 1;
+}
+
+.pronto-fechar-icone {
+  display: grid;
+  flex-shrink: 0;
+}
+
+.pronto-fechar-item.ok .pronto-fechar-icone {
+  color: var(--cor-sucesso);
+}
+
+.pronto-fechar-item.atencao .pronto-fechar-icone {
+  color: var(--cor-atencao);
+}
+
+.pronto-fechar-item.pendente .pronto-fechar-icone {
+  color: var(--cor-erro);
+}
+
+.pronto-fechar-item.verificando .pronto-fechar-icone {
+  color: var(--cor-texto-terciario);
+}
+
+/* Atalho para corrigir o item (link ou botão). */
+.pronto-fechar-acao {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--cor-texto);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}

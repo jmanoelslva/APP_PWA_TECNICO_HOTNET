@@ -12,6 +12,8 @@ import {
   useLocalizacaoAoVivo,
 } from './localizacao'
 
+import PortasCto from './PortasCto'
+
 // Leaflet só é baixado quando o bloco CTO aparece.
 const MapaCto = lazy(() => import('./MapaCto'))
 
@@ -267,6 +269,13 @@ export default function CardCto({
           placeholder="Não informado"
         />
       </div>
+      <PortasCto
+        dpPk={dpSelecionada?.pk ?? null}
+        limite={dpSelecionada?.limite}
+        porta={dpPorta}
+        cpePk={cpe.pk}
+        onEscolherPorta={setDpPorta}
+      />
       {centroMapa ? (
         <Suspense fallback={<div className="mapa-cto-mapa mapa-cto-carregando" />}>
           <MapaCto

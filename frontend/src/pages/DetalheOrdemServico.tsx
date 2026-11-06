@@ -4,6 +4,9 @@ import { LuCamera, LuCircleCheck, LuCopy, LuEye, LuEyeOff, LuMap, LuMapPin, LuMe
 import ModalEditarEndereco from '../components/ModalEditarEndereco'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
+import SeloQuedas from '../components/SeloQuedas'
+import ProntoParaFechar from '../components/ProntoParaFechar'
+import { verificarFechamento, type ItemFechamento } from '../utils/fechamentoOs'
 import PullToRefresh from '../components/PullToRefresh'
 import AcoesContato from '../components/AcoesContato'
 import Skeleton from '../components/Skeleton'
@@ -13,6 +16,7 @@ import { CORES } from '../utils/cores'
 import {
   ApiError,
   buscarCpe,
+  buscarSessaoOnlineCpe,
   buscarDetalheCliente,
   buscarOnu,
   desfazerFinalizacaoOrdemServico,
@@ -216,6 +220,8 @@ function DetalheOrdemServicoConteudo() {
   const [cpe, setCpe] = useState<CpeDto | null>(null)
   // Sinal da ONU desta conexão (mostrado no card Conexão).
   const [onuOs, setOnuOs] = useState<OnuDto | null>(null)
+  // Sessão PPPoE aberta agora (quadro "Pronto para fechar"); null = consultando.
+  const [cpeOnline, setCpeOnline] = useState<boolean | null>(null)
   const [carregandoOnu, setCarregandoOnu] = useState(false)
   const [onuLidaEm, setOnuLidaEm] = useState<number | null>(null)
   const [eventos, setEventos] = useState<OperacaoDto[]>([])
@@ -308,6 +314,12 @@ function DetalheOrdemServicoConteudo() {
           .then((resposta) => {
             const cpeDaOs = resposta.results[0] ?? null
             setCpe(cpeDaOs)
+            setCpeOnline(null)
+            if (cpeDaOs?.pk) {
+              buscarSessaoOnlineCpe(cpeDaOs.pk)
+                .then((sessao) => setCpeOnline(sessao.results.length > 0))
+                .catch(() => setCpeOnline(false))
+            }
             if (!cpeDaOs?.username) return
             setCarregandoOnu(true)
             buscarOnu({ username: cpeDaOs.username })
@@ -334,6 +346,36 @@ function DetalheOrdemServicoConteudo() {
     listarMensagensTicket(pk)
       .then((resposta) => setEventos(resposta.results))
       .catch(() => {})
+  }
+
+  // Atalho de cada item pendente do "Pronto para fechar" para a tela que corrige.
+  function acaoFechamento(item: ItemFechamento) {
+    if (item.chave === 'endereco') {
+      if (!endereco) return null
+      return (
+        <button type="button" className="pronto-fechar-acao" onClick={() => setEnderecoEditando(endereco)}>
+          Editar
+        </button>
+      )
+    }
+    if (item.chave === 'onu' || item.chave === 'sinal') {
+      const destino = onuOs?.sn
+        ? `/onu?serial=${encodeURIComponent(onuOs.sn)}`
+        : cpe?.username
+          ? `/onu?username=${encodeURIComponent(cpe.username)}`
+          : '/onu'
+      return (
+        <Link to={destino} className="pronto-fechar-acao" viewTransition>
+          ONU
+        </Link>
+      )
+    }
+    if (!cpe?.pk) return null
+    return (
+      <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="pronto-fechar-acao" viewTransition>
+        Conexão
+      </Link>
+    )
   }
 
   async function copiar(valor: string | undefined, rotulo: string) {
@@ -642,6 +684,7 @@ function DetalheOrdemServicoConteudo() {
               <>
                 <div className="detalhe-ordem-card">
                   <h2>Conexão</h2>
+                  {cpe?.pk && <SeloQuedas cpePk={cpe.pk} />}
                   <div className="detalhe-ordem-linha-campo">
                     <span>Usuário</span>
                     <div className="detalhe-ordem-campo-valor">
@@ -709,6 +752,19 @@ function DetalheOrdemServicoConteudo() {
 
             {aba === 'checklist' && (
               <>
+                {!encerrada && (
+                  <ProntoParaFechar
+                    itens={verificarFechamento({
+                      cpe,
+                      onu: onuOs,
+                      carregandoOnu,
+                      online: cpe ? cpeOnline : false,
+                      clientPk: osAtual.client_pk,
+                      endereco,
+                    })}
+                    acao={(item: ItemFechamento) => acaoFechamento(item)}
+                  />
+                )}
                 {!encerrada && osAtual.op_pk && (
                   <div className="detalhe-ordem-card">
                     <div className="detalhe-ordem-topo">

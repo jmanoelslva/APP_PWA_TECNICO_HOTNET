@@ -7,6 +7,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Pronto para fechar (OS › Checklist):** confere ONU registrada para o cliente, sinal da ONU e da OLT na faixa, PPPoE conectado, CTO e porta gravadas e coordenada do endereço; o que falta vem com atalho para a ONU, a Conexão ou a edição do endereço.
+- **Portas da CTO (Conexão › CTO):** portas livres para tocar e preencher, ocupadas com PPPoE, cliente e online/offline, aviso quando a porta digitada já é de outra conexão e quando há porta repetida ou conexão sem porta. Contrato cancelado ou desativado não ocupa porta.
+- **Quedas recentes:** no cliente e na OS, selo "Caiu N vezes em 7 dias" (a partir de 3), com quantas foram por perda de link (fibra ou energia).
+
 ### Alterado
 
 - **Registrar cliente na ONU:** busca por nome, CPF/CNPJ, contrato ou login PPPoE; atalho com o PPPoE já configurado na ONU; achado pelo PPPoE ou com uma só conexão, vai direto para a confirmação; mostra serial, OLT e posição da ONU, passos (Cliente, Conexão, Confirmar), contrato e CTO de cada conexão, resumo antes de associar e aviso quando o PPPoE escolhido difere do configurado na ONU; campos e itens com toque de 48px.

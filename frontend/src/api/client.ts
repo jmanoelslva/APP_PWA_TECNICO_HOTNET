@@ -385,6 +385,11 @@ export interface CpeDto {
   dp_pk?: number
   dp_port?: number
   obs?: string
+  // Situação do contrato (seção 6 das notas: 0 desativado, 1 ativado,
+  // 2 alertado, 3 pendente, 4 bloqueado, 5 cancelado) e sessões RADIUS
+  // abertas agora (cpe_sessions).
+  contract_status?: number
+  sessions?: number
   // Criptografia do Wi-Fi do próprio CPE/roteador (cpe_wifi_encryption_type/
   // password na API, apidoc.brbyte.com/#post-/aaa_ctl/cpe/update). Sem
   // enum documentado para o "type" (a doc só diz que é number) — o valor
@@ -399,7 +404,7 @@ export interface BuscaCpeResponse {
 }
 
 export function buscarCpe(
-  filtro: { client_pk?: number; contract_pk?: number; cpe_pk?: number; username?: string },
+  filtro: { client_pk?: number; contract_pk?: number; cpe_pk?: number; username?: string; dp_pk?: number },
 ): Promise<BuscaCpeResponse> {
   return get<BuscaCpeResponse>('cpe/busca', filtro)
 }
@@ -437,6 +442,8 @@ export interface SessaoHistoricoDto {
 export interface HistoricoSessoesResponse {
   success: boolean
   results: SessaoHistoricoDto[]
+  // Sessões no período inteiro, não só nesta página.
+  total?: number
 }
 
 export function buscarHistoricoSessoesCpe(

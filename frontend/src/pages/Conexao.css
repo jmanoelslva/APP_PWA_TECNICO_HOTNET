@@ -423,3 +423,92 @@
   color: var(--cor-texto-secundario);
 }
 
+
+/* Portas da CTO (PortasCto): livres para tocar, ocupadas com o PPPoE. */
+.portas-cto {
+  margin: 4px 0 12px;
+}
+
+.portas-cto-titulo {
+  display: block;
+  margin: 10px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+}
+
+.portas-cto-livres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.portas-cto-livres button {
+  min-width: 48px;
+  height: 48px;
+  padding: 0 10px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 12px;
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-family: var(--fonte-mono);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.portas-cto-livres button.escolhida {
+  border-color: var(--cor-conexao);
+  background: color-mix(in srgb, var(--cor-conexao) 14%, var(--cor-superficie));
+}
+
+.portas-cto-ocupadas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.portas-cto-ocupadas li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 4px 0;
+  font-size: 15px;
+}
+
+.portas-cto-ocupadas li + li {
+  border-top: 1px solid var(--cor-borda-suave);
+}
+
+.portas-cto-numero {
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: center;
+  font-family: var(--fonte-mono);
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+}
+
+.portas-cto-ocupadas li.propria .portas-cto-numero {
+  color: var(--cor-conexao);
+}
+
+.portas-cto-ocupadas li.repetida .portas-cto-numero {
+  color: var(--cor-erro);
+}
+
+.portas-cto-aviso {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cor-erro) 12%, transparent);
+  font-size: 14px;
+  color: var(--cor-texto);
+}
+
+.portas-cto-nota {
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}

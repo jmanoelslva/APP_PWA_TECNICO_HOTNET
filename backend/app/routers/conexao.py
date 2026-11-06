@@ -47,10 +47,11 @@ async def buscar_cpe(
     contract_pk: int | None = Query(default=None),
     cpe_pk: int | None = Query(default=None),
     username: str | None = Query(default=None, description="Usuário PPPoE do CPE — mesma busca que sai da tela do cliente"),
+    dp_pk: int | None = Query(default=None, description="CTO — conexões cadastradas nela (portas ocupadas)"),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
-    if not client_pk and not contract_pk and not cpe_pk and not username:
-        raise HTTPException(status_code=400, detail="Informe client_pk, contract_pk, cpe_pk ou username.")
+    if not client_pk and not contract_pk and not cpe_pk and not username and not dp_pk:
+        raise HTTPException(status_code=400, detail="Informe client_pk, contract_pk, cpe_pk, username ou dp_pk.")
 
     # "aaa_cpe.client_pk"/"aaa_cpe.contract_pk" — nome real da tabela é
     # "aaa_cpe", não "cpe". "contract_pk"/"client_pk" sem prefixo são
@@ -61,6 +62,13 @@ async def buscar_cpe(
     if cpe_pk:
         where = where_eq("cpe_pk", cpe_pk)
         resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
+    elif dp_pk:
+        # "aaa_cpe.dp_pk": "dp_pk" sem prefixo é ambíguo (erro 42702, a
+        # tabela da CTO entra no join) — confirmado ao vivo em 06/11.
+        where = where_eq("aaa_cpe.dp_pk", dp_pk)
+        resposta = await ctx.controllr.cpe_list(
+            corpo(where, limit=200, sort="cpe_dp_port", dir="ASC"), model_return=True, model_extended=True
+        )
     elif contract_pk:
         where = where_eq("aaa_cpe.contract_pk", contract_pk)
         resposta = await ctx.controllr.cpe_list(corpo(where, limit=20), model_return=True, model_extended=True)
@@ -135,7 +143,9 @@ async def historico_sessoes_cpe(
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível consultar o histórico de conexão.", resposta))
-    return {"success": True, "results": resposta.results}
+    # total = sessões no período inteiro (não só nesta página) — confirmado
+    # ao vivo em 06/11 com limit=1.
+    return {"success": True, "results": resposta.results, "total": resposta.total}
 
 
 class ContextoAuditoriaCpe(BaseModel):
