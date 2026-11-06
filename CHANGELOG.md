@@ -7,30 +7,29 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.30.0] - 2026-11-06
+
 ### Adicionado
 
 - **Editar endereço:** miniatura do mapa (satélite) com o ponto do endereço e o círculo de precisão da captura, para conferir antes de salvar.
-- **Editar endereço:** CEP com máscara; ao completar os 8 dígitos, preenche logradouro, bairro, cidade, UF e o código do município pelo ViaCEP (consultado pelo servidor, rota `/ferramentas/cep/{cep}`). A UF continua livre para digitar, em maiúsculas.
-- **Cliente › Contato › Endereços:** endereço sem coordenada mostra "Marcar local", que abre a edição direto na aba Localização.
+- **Editar endereço:** CEP com máscara; ao completar os 8 dígitos, preenche logradouro, bairro, cidade, UF e o código do município pelo ViaCEP (consultado pelo servidor). A UF continua livre para digitar, em maiúsculas.
 - **Editar endereço:** fechar com alterações (Cancelar, toque fora, arrastar ou Voltar do celular) pede confirmação para descartar.
+- **Endereço sem coordenada (cliente e OS):** botão "Marcar local", que abre a edição direto na aba Localização; também no "Pronto para fechar" da OS.
 
 ### Alterado
 
-- **Auditoria › Acesso ao roteador e Wi-Fi:** as senhas de acesso e do Wi-Fi passam a ser gravadas e exibidas (anterior → nova). Registros antigos continuam só com "alterada". Salvar o Wi-Fi de novo sem mudar nada não gera registro.
-- **Cliente › Contato › Endereços:** botão "Editar" com texto no lugar do lápis no canto, lado a lado com "Ver no mapa" (ou "Marcar local"), dividindo a largura do cartão. O lápis fica só em itens pequenos.
-- **Padrão de ações em cartões grandes (cliente, OS, conexão):** "Editar" com texto no lugar do lápis, e botões dividindo a largura do cartão (classe global `.acoes-cartao`). Telefone: Ligar / WhatsApp / Editar na mesma linha. Endereço da OS: Editar / Ver no mapa (ou Marcar local) / Rota. Botões sozinhos (Salvar Wi-Fi, Salvar acesso, Salvar observação, Salvar CTO, Carregar mais, Adicionar telefone) em largura cheia (`.botao-largo`). Ficam com ícone onde o espaço é restrito: Renomear ONU (linha de campo), copiar/mostrar senha, e botões de cabeçalho (Atualizar sessão, Detalhes da ONU, Limpar recentes).
-- **OS › Pronto para fechar:** endereço sem coordenada abre "Marcar local" direto na aba Localização.
-- **Editar endereço:** tela cheia em duas abas, Endereço e Localização, cada uma cabendo na tela sem rolar; na Localização o mapa ocupa o espaço livre. Salvar e Cancelar fixos no rodapé; UF em campo estreito ao lado da cidade.
-
-- **Editar endereço › Localização no mapa:** bloco redesenhado com estado da posição, coordenada, atalho para conferir no Google Maps e botão de 48px "Usar minha posição atual". A captura passa a amostrar o GPS por alguns segundos e grava a leitura mais precisa, mostrando a precisão obtida e avisando quando ela passa de 30 m. A captura termina assim que a precisão chega a 5 m (limite de 10 s) e mostra a precisão melhorando enquanto busca.
+- **Editar endereço:** tela cheia em duas abas, Endereço e Localização, cada uma cabendo na tela sem rolar; o mapa ocupa o espaço livre. Salvar e Cancelar fixos no rodapé; UF em campo estreito ao lado da cidade.
+- **Editar endereço › Localização:** usa a posição do técnico (na casa do cliente) amostrando o GPS por alguns segundos; termina assim que a precisão chega a 5 m (limite de 10 s), mostra a precisão melhorando durante a busca e avisa quando ela passa de 30 m.
+- **Ações em cartões grandes:** "Editar" com texto no lugar do lápis, com os botões dividindo a largura do cartão. Telefone: Ligar / WhatsApp / Editar. Endereço do cliente e da OS: Editar / Ver no mapa (ou Marcar local). O lápis fica só onde o espaço é restrito (Renomear ONU).
+- **Botões sozinhos em largura cheia:** Salvar Wi-Fi, Salvar acesso, Salvar observação, Salvar CTO, Carregar mais, Adicionar telefone e Ver contrato assinado.
+- **Auditoria:** as senhas de acesso ao roteador e do Wi-Fi passam a ser gravadas e exibidas (anterior → nova). Registros antigos continuam só com "alterada".
 
 ### Corrigido
 
-- **OS:** botões do topo (Rota, Ligar, WhatsApp, Chamado, Mapa) voltam a caber cada um na sua coluna; "Rota" saiu do cartão de endereço, onde duplicava a do topo.
-- **Cliente:** botões do endereço no mesmo tamanho dos da OS; "Ver contrato assinado" em largura cheia.
+- **Auditoria:** salvar de novo a CTO, a observação, o acesso ao roteador ou o Wi-Fi sem mudar nada não gera mais um segundo registro.
+- **OS:** "Rota" só na grade do topo (não se repete no cartão de endereço).
+- **Editar endereço:** campos não ficam mais comprimidos.
 - **Ferramentas:** texto em registro formal ("para").
-- **Auditoria:** salvar de novo a CTO, a observação ou o acesso ao roteador sem mudar nada não gera mais um segundo registro (visto em 06/11: "Salvar CTO" tocado duas vezes). Troca só da senha de acesso continua registrada como "Senha de acesso: alterada".
-- **Editar endereço:** campos ficavam comprimidos quando o formulário passava da altura da tela; agora a janela rola.
 
 ## [1.29.0] - 2026-11-06
 

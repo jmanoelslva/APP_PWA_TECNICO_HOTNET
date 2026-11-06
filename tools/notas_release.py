@@ -51,6 +51,7 @@ TITULOS = {
     "1.27.0": "CTO e porta do cliente no Mapa de CTOs",
     "1.28.0": "Clientes Offline como diagnóstico, traçado até a CTO e app padronizado",
     "1.29.0": "OS pronta para fechar, portas da CTO, quedas recentes e buscas maiores",
+    "1.30.0": "Endereço em tela cheia com mapa e CEP, botões padronizados e senhas na auditoria",
     "1.24.0": "Mensagem e anexo no chamado, atalhos sem texto cortado e botões sem degradê",
 }
 
