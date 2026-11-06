@@ -11,10 +11,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - **Editar endereço:** miniatura do mapa (satélite) com o ponto do endereço e o círculo de precisão da captura, para conferir antes de salvar.
 - **Editar endereço:** CEP com máscara; ao completar os 8 dígitos, preenche logradouro, bairro, cidade, UF e o código do município pelo ViaCEP (consultado pelo servidor, rota `/ferramentas/cep/{cep}`). A UF continua livre para digitar, em maiúsculas.
+- **Cliente › Contato › Endereços:** endereço sem coordenada mostra "Marcar localização", que abre a edição direto na aba Localização.
 - **Editar endereço:** fechar com alterações (Cancelar, toque fora, arrastar ou Voltar do celular) pede confirmação para descartar.
 
 ### Alterado
 
+- **Cliente › Contato › Endereços:** o cartão inteiro abre a edição (seta à direita), no lugar do lápis no canto.
 - **Editar endereço:** tela cheia em duas abas, Endereço e Localização, cada uma cabendo na tela sem rolar; na Localização o mapa ocupa o espaço livre. Salvar e Cancelar fixos no rodapé; UF em campo estreito ao lado da cidade.
 
 - **Editar endereço › Localização no mapa:** bloco redesenhado com estado da posição, coordenada, atalho para conferir no Google Maps e botão de 48px "Usar minha posição atual". A captura passa a amostrar o GPS por alguns segundos e grava a leitura mais precisa, mostrando a precisão obtida e avisando quando ela passa de 30 m. A captura termina assim que a precisão chega a 5 m (limite de 10 s) e mostra a precisão melhorando enquanto busca.

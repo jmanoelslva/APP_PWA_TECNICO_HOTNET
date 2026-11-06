@@ -81,6 +81,51 @@
   color: var(--cor-texto-secundario);
 }
 
+/* Endereço: o cartão todo é o botão de editar (área de toque grande). */
+.detalhe-cliente-endereco {
+  padding: 0;
+  overflow: hidden;
+}
+
+.detalhe-cliente-endereco-abrir {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.detalhe-cliente-endereco-abrir:active {
+  background: var(--cor-fundo);
+}
+
+.detalhe-cliente-endereco-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--cor-texto-secundario);
+}
+
+.detalhe-cliente-endereco-seta {
+  flex: none;
+  color: var(--cor-texto-secundario);
+}
+
+.detalhe-cliente-endereco .detalhe-cliente-item-acoes {
+  padding: 0 16px 16px;
+}
+
 .detalhe-cliente-item-topo {
   display: flex;
   align-items: center;

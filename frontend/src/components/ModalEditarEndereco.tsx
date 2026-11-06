@@ -21,12 +21,14 @@ interface Props {
   // sua própria cor de identidade; sem isso o botão ficaria sempre com a
   // cor do cliente, mesmo aberto a partir da tela da OS.
   corDestaque?: string
+  // Aba aberta ao entrar (ex.: "Marcar localização" abre direto na Localização).
+  abaInicial?: AbaEndereco
   onFechar: () => void
   onSalvo: (endereco: EnderecoDto) => void
 }
 
 // Tela cheia em duas partes: cada uma cabe na tela do celular sem rolar.
-type AbaEndereco = 'endereco' | 'localizacao'
+export type AbaEndereco = 'endereco' | 'localizacao'
 const ABAS: Aba<AbaEndereco>[] = [
   { chave: 'endereco', rotulo: 'Endereço' },
   { chave: 'localizacao', rotulo: 'Localização' },
@@ -55,9 +57,9 @@ const CAMPOS_EDITAVEIS: (keyof EnderecoDto)[] = [
   'address_siafi',
 ]
 
-export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, onSalvo }: Props) {
+export default function ModalEditarEndereco({ endereco, corDestaque, abaInicial = 'endereco', onFechar, onSalvo }: Props) {
   const [form, setForm] = useState<EnderecoDto>(endereco)
-  const [aba, setAba] = useState<AbaEndereco>('endereco')
+  const [aba, setAba] = useState<AbaEndereco>(abaInicial)
   const [confirmandoDescarte, setConfirmandoDescarte] = useState(false)
   const [buscandoCep, setBuscandoCep] = useState(false)
   const ultimoCepConsultadoRef = useRef(soDigitos(endereco.address_zipcode))
