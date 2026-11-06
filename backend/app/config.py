@@ -45,10 +45,10 @@ AUDITORIA_USUARIOS = {
     u.strip().lower() for u in os.environ.get("AUDITORIA_USUARIOS", "").split(",") if u.strip()
 }
 
-# Tentativas de login erradas antes de bloquear por LOGIN_BLOQUEIO_MINUTOS:
-# por IP e por usuário (protege as senhas do Controllr de tentativa e erro).
-LOGIN_TENTATIVAS_IP = int(os.environ.get("LOGIN_TENTATIVAS_IP", "5"))
-LOGIN_TENTATIVAS_USUARIO = int(os.environ.get("LOGIN_TENTATIVAS_USUARIO", "10"))
+# Tentativas de login erradas antes de bloquear por LOGIN_BLOQUEIO_MINUTOS
+# (ver limite_login.py): por IP + usuário juntos e, mais alto, por IP.
+LOGIN_TENTATIVAS_PAR = int(os.environ.get("LOGIN_TENTATIVAS_PAR", "5"))
+LOGIN_TENTATIVAS_IP = int(os.environ.get("LOGIN_TENTATIVAS_IP", "20"))
 LOGIN_BLOQUEIO_MINUTOS = int(os.environ.get("LOGIN_BLOQUEIO_MINUTOS", "15"))
 
 # Origens permitidas em dev (Vite) — em produção o frontend é servido

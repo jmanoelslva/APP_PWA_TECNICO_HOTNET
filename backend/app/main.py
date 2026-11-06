@@ -3,7 +3,7 @@ import contextlib
 import logging
 from collections.abc import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import vigia_os
@@ -82,5 +82,14 @@ app.include_router(telefones.router)
 
 
 @app.get("/health")
-async def health() -> dict[str, bool | str]:
-    return {"ok": True, "version": APP_VERSION}
+async def health(request: Request) -> dict[str, bool | str]:
+    """
+    Vivo ou não. A versão só vai para quem chama de dentro do servidor
+    (curl 127.0.0.1, conferência de deploy); pelo proxy público, que sempre
+    manda X-Real-IP/X-Forwarded-For, sai só {"ok": true}.
+    """
+    resposta: dict[str, bool | str] = {"ok": True}
+    de_dentro = request.client is not None and request.client.host in ("127.0.0.1", "::1")
+    if de_dentro and not (request.headers.get("x-real-ip") or request.headers.get("x-forwarded-for")):
+        resposta["version"] = APP_VERSION
+    return resposta

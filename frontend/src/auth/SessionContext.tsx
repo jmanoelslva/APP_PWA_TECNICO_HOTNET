@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { aoExpirarSessao, buscarTecnicoAtual, login as apiLogin, logout as apiLogout } from '../api/client'
 import { useToast } from '../components/Toast/useToast'
+import { limparRecentes } from '../utils/buscaUnica'
 import { SessionContext, type TecnicoLogado } from './session-context'
 
 /**
@@ -61,6 +62,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       await apiLogout()
     } finally {
+      // Nomes de clientes buscados não ficam no celular depois de sair.
+      limparRecentes()
       setLogado(false)
       setTecnico(null)
     }

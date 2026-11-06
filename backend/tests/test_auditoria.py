@@ -69,18 +69,21 @@ def test_retencao(pasta, monkeypatch):
 
 def test_limite_login(monkeypatch):
     monkeypatch.setattr(limite_login, "_falhas", {})
-    monkeypatch.setattr(limite_login, "LOGIN_TENTATIVAS_IP", 3)
-    monkeypatch.setattr(limite_login, "LOGIN_TENTATIVAS_USUARIO", 5)
+    monkeypatch.setattr(limite_login, "LOGIN_TENTATIVAS_PAR", 3)
+    monkeypatch.setattr(limite_login, "LOGIN_TENTATIVAS_IP", 5)
     for _ in range(3):
         assert not limite_login.bloqueado("1.1.1.1", "joao")
-        limite_login.falhou("1.1.1.1", "joao")
-    assert limite_login.bloqueado("1.1.1.1", "outro")       # IP bloqueado
-    assert not limite_login.bloqueado("2.2.2.2", "joao")     # usuário ainda não
-    limite_login.falhou("2.2.2.2", "JOAO")
-    limite_login.falhou("3.3.3.3", "joao")
-    assert limite_login.bloqueado("4.4.4.4", "joao")         # 5 erros do usuário, de IPs diferentes
-    limite_login.acertou("4.4.4.4", "joao")
-    assert not limite_login.bloqueado("4.4.4.4", "joao")
+        limite_login.falhou("1.1.1.1", "JOAO")
+    assert limite_login.bloqueado("1.1.1.1", "joao")         # par IP + usuário bloqueado
+    assert not limite_login.bloqueado("2.2.2.2", "joao")     # o dono, de outro IP, continua entrando
+    assert not limite_login.bloqueado("1.1.1.1", "maria")    # outro usuário no mesmo IP ainda pode
+    limite_login.falhou("1.1.1.1", "maria")
+    limite_login.falhou("1.1.1.1", "pedro")
+    assert limite_login.bloqueado("1.1.1.1", "ana")          # 5 erros no IP: bloqueia o IP todo
+    limite_login.acertou("1.1.1.1", "ana")
+    assert limite_login.bloqueado("1.1.1.1", "ana")          # login certo não zera o contador do IP
+    limite_login.acertou("2.2.2.2", "joao")
+    assert not limite_login.bloqueado("2.2.2.2", "joao")
 
 
 def test_login_bloqueado_nem_chama_o_controllr(monkeypatch):
@@ -96,12 +99,12 @@ def test_login_bloqueado_nem_chama_o_controllr(monkeypatch):
 
     monkeypatch.setattr(auth.ControllrLogin, "login", falso_login)
     c = TestClient(app)
-    for _ in range(limite_login.LOGIN_TENTATIVAS_IP):
+    for _ in range(limite_login.LOGIN_TENTATIVAS_PAR):
         r = c.post("/auth/login", json={"username": "joao", "password": "x"}, headers={"X-Real-IP": "9.9.9.9"})
         assert r.json()["message"] == "Usuário ou senha incorretos."
     r = c.post("/auth/login", json={"username": "joao", "password": "x"}, headers={"X-Real-IP": "9.9.9.9"})
     assert "Muitas tentativas" in r.json()["message"] and not r.json()["success"]
-    assert len(chamadas) == limite_login.LOGIN_TENTATIVAS_IP
+    assert len(chamadas) == limite_login.LOGIN_TENTATIVAS_PAR
 
 
 def test_rota_so_para_usuarios_liberados(pasta, monkeypatch):

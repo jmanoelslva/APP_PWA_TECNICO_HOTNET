@@ -374,7 +374,7 @@ User=$SERVICE_USER
 Group=$SERVICE_USER
 WorkingDirectory=$INSTALL_DIR/backend
 EnvironmentFile=$ENV_FILE
-ExecStart=$INSTALL_DIR/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port $BACKEND_PORT
+ExecStart=$INSTALL_DIR/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port $BACKEND_PORT --no-server-header
 Restart=on-failure
 RestartSec=3
 
