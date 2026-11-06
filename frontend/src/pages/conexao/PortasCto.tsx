@@ -175,8 +175,14 @@ function DetalhePorta({
     }
     setLiberando(true)
     try {
-      await atualizarDetalhesCpe(ocupante.cpePk, { cpe_dp_port: 0 })
-      toast(`Porta ${ocupante.porta} liberada (limpa em ${ocupante.usuario}).`, 'sucesso')
+      // 0 limpa CTO e porta no Controllr; relê para confirmar a CTO.
+      await atualizarDetalhesCpe(ocupante.cpePk, { dp_pk: 0, cpe_dp_port: 0 })
+      const relida = (await buscarCpe({ cpe_pk: ocupante.cpePk }).catch(() => null))?.results[0]
+      if (relida?.dp_pk) {
+        toast(`Porta ${ocupante.porta} liberada, mas a CTO continua gravada em ${ocupante.usuario}.`)
+      } else {
+        toast(`CTO e porta ${ocupante.porta} liberadas (limpas em ${ocupante.usuario}).`, 'sucesso')
+      }
       setConfirmando(null)
       onLiberada(ocupante.porta)
     } catch (excecao) {
@@ -217,7 +223,7 @@ function DetalhePorta({
           </small>
           {o.cpePk !== cpePk && o.contrato != null && CONTRATO_LIBERAVEL.has(o.contrato) && (
             // Contrato cancelado/desativado ainda com CPE habilitado prende a
-            // porta: grava porta 0 nele (limpa) para usá-la nesta conexão.
+            // porta: grava CTO e porta 0 nele (limpa) para usá-la nesta conexão.
             <button
               type="button"
               aria-busy={liberando}
@@ -228,7 +234,7 @@ function DetalhePorta({
               {liberando
                 ? 'Liberando…'
                 : confirmando === o.cpePk
-                  ? `Confirmar: limpar a porta de ${o.usuario}`
+                  ? `Confirmar: limpar CTO e porta de ${o.usuario}`
                   : `Liberar porta ${casa.porta}`}
             </button>
           )}
