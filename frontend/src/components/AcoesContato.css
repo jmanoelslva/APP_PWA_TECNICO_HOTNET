@@ -11,6 +11,21 @@
   gap: 8px;
 }
 
+/* Botões dividem a largura do cartão (quebram linha se não couberem). */
+.acoes-contato-numero > * {
+  flex: 1 1 0;
+  min-width: max-content;
+  justify-content: center;
+}
+
+/* "Editar" do telefone, no mesmo formato de Ligar/WhatsApp. */
+.acoes-contato-editar {
+  border-color: color-mix(in srgb, var(--cor-cliente) 45%, transparent);
+  color: var(--cor-cliente);
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .acoes-contato-botao {
   display: inline-flex;
   align-items: center;

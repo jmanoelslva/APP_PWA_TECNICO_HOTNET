@@ -99,7 +99,7 @@ export default function CardWifi({
         </div>
       </div>
       <button aria-busy={salvando}
-        className="botao botao-secundario botao-pequeno"
+        className="botao botao-secundario botao-pequeno botao-largo"
         style={{ '--botao-cor': CORES.conexao } as CSSProperties}
         onClick={salvar}
         disabled={salvando}

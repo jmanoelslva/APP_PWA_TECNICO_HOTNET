@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { LuPhone } from 'react-icons/lu'
 import { formatarTelefone, linkLigar, linkWhatsapp, separarTelefones } from '../utils/formatacao'
@@ -8,13 +9,20 @@ import './AcoesContato.css'
  * um número ("79999887766 / 7932221100"): cada número ganha os seus botões,
  * com o número escrito para saber qual é qual.
  */
-export default function AcoesContato({ numero }: { numero: string | null | undefined }) {
+export default function AcoesContato({
+  numero,
+  extra,
+}: {
+  numero: string | null | undefined
+  // Ação a mais na mesma linha (ex.: "Editar" do telefone), depois do último número.
+  extra?: ReactNode
+}) {
   const numeros = separarTelefones(numero)
   const varios = numeros.length > 1
-  if (numeros.length === 0) return null
+  if (numeros.length === 0) return extra ? <div className="acoes-contato"><div className="acoes-contato-numero">{extra}</div></div> : null
   return (
     <div className="acoes-contato">
-      {numeros.map((n) => {
+      {numeros.map((n, indice) => {
         const ligar = linkLigar(n)
         const whatsapp = linkWhatsapp(n)
         if (!ligar) return null
@@ -37,6 +45,7 @@ export default function AcoesContato({ numero }: { numero: string | null | undef
                 <FaWhatsapp size={16} /> WhatsApp
               </a>
             )}
+            {indice === numeros.length - 1 && extra}
           </div>
         )
       })}

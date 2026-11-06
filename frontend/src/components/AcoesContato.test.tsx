@@ -21,4 +21,17 @@ describe('AcoesContato', () => {
     const { container } = render(<AcoesContato numero="-" />)
     expect(container.innerHTML).toBe('')
   })
+
+  it('extra (Editar) vai na linha do último número, uma vez só', () => {
+    render(<AcoesContato numero="7932221100 / 79999887766" extra={<button>Editar</button>} />)
+    const editar = screen.getAllByRole('button', { name: 'Editar' })
+    expect(editar).toHaveLength(1)
+    expect(editar[0].parentElement?.querySelector('a[aria-label="WhatsApp (79) 99988-7766"]')).not.toBeNull()
+  })
+
+  it('sem número, mas com extra: mostra só o extra', () => {
+    render(<AcoesContato numero="" extra={<button>Editar</button>} />)
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeTruthy()
+    expect(screen.queryByRole('link')).toBeNull()
+  })
 })

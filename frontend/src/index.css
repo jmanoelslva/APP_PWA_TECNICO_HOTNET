@@ -368,6 +368,31 @@ a:active,
   font-size: 14px;
 }
 
+/* Ações no pé de um cartão grande (Editar, mapa, rota…): dividem a largura
+   em partes iguais e quebram linha quando não cabem. Ícone sem texto (lápis)
+   só em itens pequenos ou linhas de campo. */
+.acoes-cartao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.acoes-cartao > * {
+  flex: 1 1 0;
+  min-width: max-content;
+  justify-content: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Botão sozinho no pé de um cartão ou seção: largura cheia, em vez de
+   um botão pequeno solto no canto. */
+.botao-largo {
+  width: 100%;
+  justify-content: center;
+}
+
 /* Botão carregando (aria-busy="true"): rodinha no lugar do ícone e sem
    novo toque enquanto a ação não termina. */
 .botao[aria-busy='true'] {

@@ -417,19 +417,21 @@ function DetalheClienteConteudo() {
                   {telefones.length === 0 && <p className="detalhe-cliente-vazio">Nenhum telefone cadastrado.</p>}
                   {telefones.map((tel) => (
                     <div key={tel.phone_pk} className="detalhe-cliente-item">
-                      <div className="detalhe-cliente-item-topo">
-                        <strong>{tel.phone_identification ?? 'Telefone'}</strong>
-                        <button className="botao-icone botao-icone-fantasma" onClick={() => setTelefoneEditando(tel)} aria-label="Editar telefone">
-                          <LuPencil size={20} />
-                        </button>
-                      </div>
+                      <strong>{tel.phone_identification ?? 'Telefone'}</strong>
                       <p>{tel.phone_number ? formatarTelefone(tel.phone_number) : 'Número não informado'}</p>
-                      <AcoesContato numero={tel.phone_number} />
+                      <AcoesContato
+                        numero={tel.phone_number}
+                        extra={
+                          <button type="button" className="acoes-contato-botao acoes-contato-editar" onClick={() => setTelefoneEditando(tel)}>
+                            <LuPencil size={16} /> Editar
+                          </button>
+                        }
+                      />
                     </div>
                   ))}
                   <button
                     type="button"
-                    className="botao botao-secundario botao-pequeno"
+                    className="botao botao-secundario botao-pequeno botao-largo"
                     style={{ '--botao-cor': CORES.cliente } as CSSProperties}
                     onClick={() => setAdicionandoTelefone(true)}
                   >
@@ -452,9 +454,8 @@ function DetalheClienteConteudo() {
                         <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
                       )}
                       {endereco.address_zipcode && <p>CEP: {formatarCep(endereco.address_zipcode)}</p>}
-                      {/* Cartão grande: "Editar" com texto, lado a lado com a ação do mapa
-                          (lápis só em itens pequenos, como telefones). */}
-                      <div className="detalhe-cliente-acoes-par">
+                      {/* Cartão grande: "Editar" com texto, lado a lado com a ação do mapa. */}
+                      <div className="acoes-cartao">
                         <button
                           type="button"
                           className="botao botao-secundario"

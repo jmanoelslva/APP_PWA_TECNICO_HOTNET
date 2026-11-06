@@ -17,6 +17,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Alterado
 
 - **Cliente › Contato › Endereços:** botão "Editar" com texto no lugar do lápis no canto, lado a lado com "Ver no mapa" (ou "Marcar local"), dividindo a largura do cartão. O lápis fica só em itens pequenos.
+- **Padrão de ações em cartões grandes (cliente, OS, conexão):** "Editar" com texto no lugar do lápis, e botões dividindo a largura do cartão (classe global `.acoes-cartao`). Telefone: Ligar / WhatsApp / Editar na mesma linha. Endereço da OS: Editar / Ver no mapa (ou Marcar local) / Rota. Botões sozinhos (Salvar Wi-Fi, Salvar acesso, Salvar observação, Salvar CTO, Carregar mais, Adicionar telefone) em largura cheia (`.botao-largo`). Ficam com ícone onde o espaço é restrito: Renomear ONU (linha de campo), copiar/mostrar senha, e botões de cabeçalho (Atualizar sessão, Detalhes da ONU, Limpar recentes).
+- **OS › Pronto para fechar:** endereço sem coordenada abre "Marcar local" direto na aba Localização.
 - **Editar endereço:** tela cheia em duas abas, Endereço e Localização, cada uma cabendo na tela sem rolar; na Localização o mapa ocupa o espaço livre. Salvar e Cancelar fixos no rodapé; UF em campo estreito ao lado da cidade.
 
 - **Editar endereço › Localização no mapa:** bloco redesenhado com estado da posição, coordenada, atalho para conferir no Google Maps e botão de 48px "Usar minha posição atual". A captura passa a amostrar o GPS por alguns segundos e grava a leitura mais precisa, mostrando a precisão obtida e avisando quando ela passa de 30 m. A captura termina assim que a precisão chega a 5 m (limite de 10 s) e mostra a precisão melhorando enquanto busca.

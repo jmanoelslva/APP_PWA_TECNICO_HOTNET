@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { LuCamera, LuCircleCheck, LuCopy, LuEye, LuEyeOff, LuMap, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuUser, LuWifi } from 'react-icons/lu'
-import ModalEditarEndereco from '../components/ModalEditarEndereco'
+import { LuCamera, LuCircleCheck, LuCopy, LuEye, LuEyeOff, LuLocateFixed, LuMap, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuUser, LuWifi } from 'react-icons/lu'
+import ModalEditarEndereco, { type AbaEndereco } from '../components/ModalEditarEndereco'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
 import SeloQuedas from '../components/SeloQuedas'
@@ -217,6 +217,12 @@ function DetalheOrdemServicoConteudo() {
   const [telefone, setTelefone] = useState<string | null>(null)
   const [endereco, setEndereco] = useState<EnderecoDto | null>(null)
   const [enderecoEditando, setEnderecoEditando] = useState<EnderecoDto | null>(null)
+  const [abaEnderecoInicial, setAbaEnderecoInicial] = useState<AbaEndereco>('endereco')
+
+  function abrirEndereco(endereco: EnderecoDto, aba: AbaEndereco) {
+    setAbaEnderecoInicial(aba)
+    setEnderecoEditando(endereco)
+  }
   const [cpe, setCpe] = useState<CpeDto | null>(null)
   // Sinal da ONU desta conexão (mostrado no card Conexão).
   const [onuOs, setOnuOs] = useState<OnuDto | null>(null)
@@ -353,8 +359,8 @@ function DetalheOrdemServicoConteudo() {
     if (item.chave === 'endereco') {
       if (!endereco) return null
       return (
-        <button type="button" className="pronto-fechar-acao" onClick={() => setEnderecoEditando(endereco)}>
-          Editar
+        <button type="button" className="pronto-fechar-acao" onClick={() => abrirEndereco(endereco, 'localizacao')}>
+          Marcar local
         </button>
       )
     }
@@ -633,19 +639,7 @@ function DetalheOrdemServicoConteudo() {
                 )}
 
                 <div className="detalhe-ordem-card">
-                  <div className="detalhe-ordem-topo">
-                    <h2>Endereço</h2>
-                    {endereco?.address_pk && (
-                      <button
-                        type="button"
-                        className="botao-icone botao-icone-fantasma"
-                        onClick={() => setEnderecoEditando(endereco)}
-                        aria-label="Editar endereço"
-                      >
-                        <LuPencil size={16} />
-                      </button>
-                    )}
-                  </div>
+                  <h2>Endereço</h2>
                   <p className="detalhe-ordem-linha">{enderecoResumo(endereco ?? osAtual)}</p>
                   {(endereco?.address_province ?? osAtual.address_province) || (endereco?.address_state ?? osAtual.address_state) ? (
                     <p className="detalhe-ordem-linha">
@@ -657,21 +651,50 @@ function DetalheOrdemServicoConteudo() {
                   {(endereco?.address_zipcode ?? osAtual.address_zipcode) && (
                     <p className="detalhe-ordem-linha">CEP: {formatarCep(endereco?.address_zipcode ?? osAtual.address_zipcode)}</p>
                   )}
-                  {((endereco?.address_latitude && endereco?.address_longitude) || rota) && (
-                    <div className="detalhe-ordem-links">
-                      {endereco?.address_latitude && endereco?.address_longitude && (
+                  {/* Cartão grande: ações com texto dividindo a largura (Editar, mapa, rota). */}
+                  {(endereco?.address_pk || rota) && (
+                    <div className="acoes-cartao">
+                      {endereco?.address_pk && (
+                        <button
+                          type="button"
+                          className="botao botao-secundario botao-pequeno"
+                          style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                          onClick={() => abrirEndereco(endereco, 'endereco')}
+                        >
+                          <LuPencil size={16} /> Editar
+                        </button>
+                      )}
+                      {endereco?.address_latitude && endereco?.address_longitude ? (
                         <a
                           href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="detalhe-ordem-chip"
+                          className="botao botao-secundario botao-pequeno"
+                          style={{ '--botao-cor': CORES.endereco } as CSSProperties}
                         >
-                          <LuMapPin size={16} /> Ver no Google Maps
+                          <LuMapPin size={16} /> Ver no mapa
                         </a>
+                      ) : (
+                        endereco?.address_pk && (
+                          <button
+                            type="button"
+                            className="botao botao-secundario botao-pequeno"
+                            style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                            onClick={() => abrirEndereco(endereco, 'localizacao')}
+                          >
+                            <LuLocateFixed size={16} /> Marcar local
+                          </button>
+                        )
                       )}
                       {rota && (
-                        <a href={rota} target="_blank" rel="noreferrer" className="detalhe-ordem-chip">
-                          <LuNavigation size={16} /> Rota até o cliente
+                        <a
+                          href={rota}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="botao botao-secundario botao-pequeno"
+                          style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                        >
+                          <LuNavigation size={16} /> Rota
                         </a>
                       )}
                     </div>
@@ -1014,6 +1037,7 @@ function DetalheOrdemServicoConteudo() {
           <ModalEditarEndereco
             endereco={enderecoEditando}
             corDestaque={CORES.suporte}
+            abaInicial={abaEnderecoInicial}
             onFechar={() => setEnderecoEditando(null)}
             onSalvo={(atualizado) => {
               setEndereco(atualizado)

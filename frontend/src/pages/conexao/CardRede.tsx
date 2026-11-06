@@ -169,7 +169,7 @@ export default function CardRede({ cpe }: { cpe: CpeDto }) {
       ))}
       {temMaisHistorico && (
         <button
-          className="botao botao-secundario botao-pequeno"
+          className="botao botao-secundario botao-pequeno botao-largo"
           style={{ '--botao-cor': CORES.conexao } as CSSProperties}
           onClick={() => carregarHistorico(Math.floor(historico.length / LIMITE_HISTORICO) + 1)}
           disabled={carregandoHistorico}

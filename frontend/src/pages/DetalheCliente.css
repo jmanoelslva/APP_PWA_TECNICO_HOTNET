@@ -81,22 +81,6 @@
   color: var(--cor-texto-secundario);
 }
 
-/* Par de ações de um cartão grande (Editar + mapa): dividem a largura,
-   em vez de um botão pequeno solto no canto. */
-.detalhe-cliente-acoes-par {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.detalhe-cliente-acoes-par .botao {
-  min-height: 48px;
-  justify-content: center;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
 .detalhe-cliente-item-topo {
   display: flex;
   align-items: center;
