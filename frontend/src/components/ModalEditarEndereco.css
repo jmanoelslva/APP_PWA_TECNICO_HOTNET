@@ -23,6 +23,13 @@
   animation: modal-editar-endereco-subir 0.2s ease;
 }
 
+/* Coluna flex com rolagem: sem isto, os campos encolhem para caber em
+   88vh em vez de a janela rolar. */
+.modal-editar-endereco > *,
+.modal-editar-endereco-linha > div > * {
+  flex-shrink: 0;
+}
+
 .modal-editar-endereco::before {
   content: '';
   display: block;
@@ -74,6 +81,7 @@
 
 .modal-editar-endereco-linha > div {
   flex: 1;
+  min-width: 0;
 }
 
 .modal-editar-endereco-localizacao {

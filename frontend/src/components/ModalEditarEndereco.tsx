@@ -4,6 +4,7 @@ import {
   formatarDistancia,
   obterMelhorLocalizacao,
   PRECISAO_MAXIMA_ACEITAVEL_M,
+  PRECISAO_SUFICIENTE_M,
 } from '../pages/conexao/localizacao'
 import { ApiError, atualizarEndereco, type EnderecoDto } from '../api/client'
 import { useToast } from './Toast/useToast'
@@ -32,6 +33,8 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
   // Precisão (em metros) da última captura feita nesta janela; null quando
   // a coordenada exibida veio do cadastro.
   const [precisaoM, setPrecisaoM] = useState<number | null>(null)
+  // Melhor precisão até agora, enquanto a captura ainda está em andamento.
+  const [precisaoParcialM, setPrecisaoParcialM] = useState<number | null>(null)
 
   // O técnico está na casa do cliente: a posição dele é a do endereço.
   // Usa a amostragem de alguns segundos (melhor leitura da janela) em vez de
@@ -42,8 +45,12 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
       return
     }
     setCapturandoLocalizacao(true)
+    setPrecisaoParcialM(null)
     try {
-      const posicao = await obterMelhorLocalizacao()
+      const posicao = await obterMelhorLocalizacao({
+        pararComPrecisaoM: PRECISAO_SUFICIENTE_M,
+        aoMelhorar: (parcial) => setPrecisaoParcialM(parcial.coords.accuracy),
+      })
       setForm((atual) => ({
         ...atual,
         address_latitude: posicao.coords.latitude.toFixed(7),
@@ -157,7 +164,9 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
               </strong>
               <span className="modal-editar-endereco-coordenada">
                 {capturandoLocalizacao
-                  ? 'Aguarde alguns segundos parado.'
+                  ? precisaoParcialM !== null
+                    ? `Precisão atual ±${formatarDistancia(precisaoParcialM)} — aguarde parado.`
+                    : 'Aguarde alguns segundos parado.'
                   : temCoordenada
                     ? `${form.address_latitude}, ${form.address_longitude}`
                     : 'Na casa do cliente, use o botão abaixo.'}

@@ -9,7 +9,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Editar endereço › Localização no mapa:** bloco redesenhado com estado da posição, coordenada, atalho para conferir no Google Maps e botão de 48px "Usar minha posição atual". A captura passa a amostrar o GPS por alguns segundos e grava a leitura mais precisa, mostrando a precisão obtida e avisando quando ela passa de 30 m.
+- **Editar endereço › Localização no mapa:** bloco redesenhado com estado da posição, coordenada, atalho para conferir no Google Maps e botão de 48px "Usar minha posição atual". A captura passa a amostrar o GPS por alguns segundos e grava a leitura mais precisa, mostrando a precisão obtida e avisando quando ela passa de 30 m. A captura termina assim que a precisão chega a 5 m (limite de 10 s) e mostra a precisão melhorando enquanto busca.
+
+### Corrigido
+
+- **Editar endereço:** campos ficavam comprimidos quando o formulário passava da altura da tela; agora a janela rola.
 
 ## [1.29.0] - 2026-11-06
 

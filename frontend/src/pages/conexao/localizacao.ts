@@ -93,10 +93,32 @@ export const MARGEM_COORDENADA_CTO_M = 5
 // só vê "não foi possível obter localização" e precisa tentar de novo.
 const JANELA_AMOSTRAGEM_LOCALIZACAO_MS = 10000
 
-export function obterMelhorLocalizacao(): Promise<GeolocationPosition> {
+// Abaixo disso o GPS do celular quase não melhora: esperar o resto da janela
+// só atrasa o técnico.
+export const PRECISAO_SUFICIENTE_M = 5
+
+export interface OpcoesMelhorLocalizacao {
+  // Encerra antes da janela quando a melhor leitura chega a esta precisão.
+  pararComPrecisaoM?: number
+  // Chamado a cada leitura que melhora a precisão (para exibir ao vivo).
+  aoMelhorar?: (posicao: GeolocationPosition) => void
+}
+
+export function obterMelhorLocalizacao(opcoes: OpcoesMelhorLocalizacao = {}): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
     let melhor: GeolocationPosition | null = null
     let ultimoErro: GeolocationPositionError | null = null
+    let encerrado = false
+    let temporizador: ReturnType<typeof setTimeout> | undefined
+
+    function encerrar() {
+      if (encerrado) return
+      encerrado = true
+      clearTimeout(temporizador)
+      navigator.geolocation.clearWatch(watchId)
+      if (melhor) resolve(melhor)
+      else reject(ultimoErro ?? new Error('Não foi possível obter a localização.'))
+    }
 
     // Sem "timeout" aqui (fica Infinity por padrão): quem decide quando
     // parar de esperar é só o setTimeout externo abaixo — evita que o
@@ -105,7 +127,12 @@ export function obterMelhorLocalizacao(): Promise<GeolocationPosition> {
     // chegaria logo em seguida.
     const watchId = navigator.geolocation.watchPosition(
       (posicao) => {
-        if (!melhor || posicao.coords.accuracy < melhor.coords.accuracy) melhor = posicao
+        if (encerrado) return
+        if (!melhor || posicao.coords.accuracy < melhor.coords.accuracy) {
+          melhor = posicao
+          opcoes.aoMelhorar?.(posicao)
+          if (opcoes.pararComPrecisaoM !== undefined && posicao.coords.accuracy <= opcoes.pararComPrecisaoM) encerrar()
+        }
       },
       (erro) => {
         ultimoErro = erro
@@ -113,10 +140,6 @@ export function obterMelhorLocalizacao(): Promise<GeolocationPosition> {
       { enableHighAccuracy: true, maximumAge: 0 },
     )
 
-    setTimeout(() => {
-      navigator.geolocation.clearWatch(watchId)
-      if (melhor) resolve(melhor)
-      else reject(ultimoErro ?? new Error('Não foi possível obter a localização.'))
-    }, JANELA_AMOSTRAGEM_LOCALIZACAO_MS)
+    temporizador = setTimeout(encerrar, JANELA_AMOSTRAGEM_LOCALIZACAO_MS)
   })
 }
