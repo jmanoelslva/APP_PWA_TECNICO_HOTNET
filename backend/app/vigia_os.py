@@ -17,7 +17,7 @@ import logging
 from collections import defaultdict
 from typing import Any
 
-from . import avisos
+from . import avisos, sessions
 from .brbyteapi.controllr import AsyncControllr
 from .brbyteapi.controllr.login import ControllrLogin
 from .config import (
@@ -40,6 +40,8 @@ _MAX_AVISOS_SEPARADOS = 3
 # Login do usuário de consulta recusado: espera mais antes de tentar de novo,
 # para não bloquear a conta no Controllr por excesso de tentativas.
 _ESPERA_APOS_LOGIN_RECUSADO_S = 600
+# Nome do cookie do vigia no store de sessões (sobrevive a reinício).
+_EXTRA_COOKIE = "vigia_os_cookie"
 
 
 def configurado() -> bool:
@@ -107,7 +109,10 @@ async def verificar(ordens: list[dict[str, Any]]) -> int:
 
 async def rodar() -> None:
     """Laço do vigia, até o serviço parar."""
-    cookie: str | None = None
+    # Cookie guardado do reinício anterior: o usuário de consulta não sai e
+    # entra de novo no Controllr a cada atualização do app. Se ele tiver
+    # caído (lease), a primeira consulta falha e o laço entra de novo.
+    cookie: str | None = sessions.ler_extra(_EXTRA_COOKIE)
     logger.info("Vigia de OS ligado: a cada %ss, usuário de consulta %r",
                 AVISOS_INTERVALO_SEGUNDOS, CONTROLLR_CONSULTA_USUARIO)
     try:
@@ -121,12 +126,14 @@ async def rodar() -> None:
                         espera = _ESPERA_APOS_LOGIN_RECUSADO_S
                     else:
                         cookie = login.cookie_header
+                        sessions.guardar_extra(_EXTRA_COOKIE, cookie)
                 if cookie is not None:
                     ordens = await _os_abertas(AsyncControllr(cookie=cookie, server_url=CONTROLLR_URL))
                     if ordens is None:
                         # Sessão pode ter caído: entra de novo na próxima volta.
                         await encerrar_sessao_controllr(CONTROLLR_CONSULTA_USUARIO, cookie)
                         cookie = None
+                        sessions.guardar_extra(_EXTRA_COOKIE, None)
                     else:
                         enviados = await verificar(ordens)
                         if enviados:
@@ -138,7 +145,10 @@ async def rodar() -> None:
                 if cookie is not None:
                     await encerrar_sessao_controllr(CONTROLLR_CONSULTA_USUARIO, cookie)
                 cookie = None
+                sessions.guardar_extra(_EXTRA_COOKIE, None)
             await asyncio.sleep(espera)
     finally:
-        if cookie is not None:
+        # Com sessões persistentes, o cookie fica guardado para o próximo
+        # início (reinício por atualização); sem elas, sai do Controllr.
+        if cookie is not None and not sessions.persistente():
             await encerrar_sessao_controllr(CONTROLLR_CONSULTA_USUARIO, cookie)

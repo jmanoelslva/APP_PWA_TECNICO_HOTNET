@@ -335,6 +335,12 @@ print(f"VAPID_PUBLIC_KEY={b64(publica)}")
 print(f"VAPID_PRIVATE_KEY={b64(chave.private_numbers().private_value.to_bytes(32, 'big'))}")
 PYCHAVES
 fi
+# Sessões cifradas em disco (backend/app/sessions.py): atualizar o app não
+# derruba os técnicos. Gerada uma vez só — trocar obriga todos a entrar de novo.
+if ! grep -q "^SESSOES_CHAVE=" "$ENV_FILE"; then
+  info "Gerando a chave das sessões..."
+  echo "SESSOES_CHAVE=$("$INSTALL_DIR/backend/.venv/bin/python" -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$ENV_FILE"
+fi
 # Usuário de consulta do Controllr: precisa ver as OS de todos os técnicos.
 # Enter = sem avisos (dá para preencher depois no $ENV_FILE).
 if ! grep -q "^CONTROLLR_CONSULTA_USUARIO=" "$ENV_FILE"; then

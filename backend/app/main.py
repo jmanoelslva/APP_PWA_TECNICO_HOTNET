@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import vigia_os
+from . import sessions, vigia_os
 from .config import APP_VERSION, CORS_ALLOW_ORIGINS
 from .routers import (
     auditoria,
@@ -41,6 +41,8 @@ if not _log_app.handlers:
 
 @contextlib.asynccontextmanager
 async def ciclo_de_vida(_app: FastAPI) -> AsyncIterator[None]:
+    # Sessões gravadas antes do reinício: atualizar o app não derruba ninguém.
+    sessions.carregar()
     # Vigia de OS nova (avisos no celular): só com usuário de consulta e
     # chaves configurados no backend.env.
     tarefa = asyncio.create_task(vigia_os.rodar()) if vigia_os.configurado() else None

@@ -45,6 +45,11 @@ AUDITORIA_USUARIOS = {
     u.strip().lower() for u in os.environ.get("AUDITORIA_USUARIOS", "").split(",") if u.strip()
 }
 
+# Sessões gravadas cifradas para sobreviver a reinício (ver sessions.py).
+# SESSOES_CHAVE é uma chave Fernet gerada pelo install.sh; vazia = só memória.
+SESSOES_CHAVE = os.environ.get("SESSOES_CHAVE", "")
+SESSOES_ARQUIVO = os.environ.get("SESSOES_ARQUIVO", "dados/sessoes.bin")
+
 # Tentativas de login erradas antes de bloquear por LOGIN_BLOQUEIO_MINUTOS
 # (ver limite_login.py): por IP + usuário juntos e, mais alto, por IP.
 LOGIN_TENTATIVAS_PAR = int(os.environ.get("LOGIN_TENTATIVAS_PAR", "5"))
