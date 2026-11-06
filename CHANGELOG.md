@@ -7,57 +7,36 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.28.0] - 2026-11-05
+
 ### Adicionado
 
-- **Traçado do cliente até a CTO no Mapa de CTOs:** depois de buscar um
-  cliente, uma linha tracejada liga o endereço dele à CTO gravada na conexão,
-  com o nome, a porta e a distância em linha reta; o mapa enquadra os dois
-  pontos. O mesmo traçado aparece no bloco CTO da Conexão, até a CTO
-  escolhida no campo.
-- **Clientes Offline como diagnóstico:**
-  - bloco "CTOs com mais de um offline" (provável fibra, CTO ou splitter), que filtra a lista ao tocar;
-  - lista do que caiu mais recente para o mais antigo, em grupos (Caiu hoje, De 1 a 7 dias, Mais de 7 dias, Nunca conectou), com "caiu há X" e a última conexão com data e hora — a queda é o último accounting da sessão, não a última autenticação;
-  - filtro de período em controle segmentado (número em destaque e nome);
-  - CTO em destaque no cartão, com a cor, a porta e o selo "N nesta CTO";
-  - ações com ícone numa linha só: Conexão, ONU, Mapa (abre o Mapa de CTOs com o cliente e o traçado), Ligar e Cliente;
-  - "Atualizado às" e carga de 200 por vez (servidor aceita até 500).
+- **Traçado do cliente até a CTO:** no Mapa de CTOs e no bloco CTO da Conexão, uma linha tracejada liga o endereço do cliente à CTO, com o nome, a porta e a distância em linha reta; o mapa enquadra os dois pontos.
+- **Clientes Offline como diagnóstico:** alerta das CTOs com mais de um cliente offline (provável fibra, CTO ou splitter), que filtra a lista ao tocar.
+- **Clientes Offline por tempo de queda:** grupos Caiu hoje, De 1 a 7 dias, Mais de 7 dias e Nunca conectou, com "caiu há X" e a última conexão com data e hora — a queda é o último accounting da sessão, não a última autenticação.
+- **Ações no cartão do offline:** CTO em destaque com cor, porta e selo "N nesta CTO", e os botões Conexão, ONU, Mapa, Ligar e Cliente numa linha só.
+- **Mapa no cliente, na OS e na ONU:** abre o Mapa de CTOs com o cliente e o traçado até a CTO dele.
+- **Início:** o atalho de Clientes Offline mostra também quantas CTOs têm mais de um offline.
+- **Conexão › Rede:** "Última conexão" (último accounting, a hora da queda quando o cliente está offline) além da "Última autenticação"; no cliente, a conexão sem sessão mostra quando caiu.
 
 ### Alterado
 
-- **Mapa mais fluido no zoom e ao arrastar:** as CTOs não são mais
-  redesenhadas a cada leitura do GPS, o "Você" e o círculo de precisão só
-  mudam de lugar, e a posição ao vivo ignora só o tremor do GPS parado
-  (Mapa de CTOs e bloco CTO da Conexão).
-- **Localização mais precisa:** sempre leitura nova do GPS (sem posição
-  guardada); qualquer melhora de 1 m na precisão aparece na hora, assim
-  como movimentos a partir de 3 m.
-- **Visual padronizado no app todo:**
-  - só ícones Lucide, em três tamanhos, com o mesmo ícone por área em todas as telas: Conexão (Wi-Fi), ONU (cabo), OS (chave), Cliente (pessoa);
-  - mesma grade de ações (ícone em cima, nome embaixo) no topo da OS, nas conexões do cliente e em Clientes Offline, com "Mapa" na OS e no cliente;
-  - mesmo botão de ícone (ver ONU/conexão, editar), com área de toque de 48 px;
-  - datas no formato "há 3 h · 05/11/2026 19:25";
-  - filtro segmentado (contagem e nome) em Clientes Offline, lista de OS (com "Atrasadas" em vermelho) e Auditoria;
-  - "Atualizado há X" em Clientes Offline, OS, Financeiro e Auditoria;
-  - Mapa de CTOs e Auditoria com as telas padrão de carregamento e de erro (com "Tentar de novo").
-- **Conexão › Rede:** "Última conexão" (último accounting, a hora da queda quando offline) e "Última autenticação".
-- **Cliente:** conexão sem sessão mostra quando caiu.
-- **Início:** o atalho de Clientes Offline mostra também quantas CTOs têm mais de um offline.
-- **ONU:** a CTO abre o Mapa de CTOs com o cliente e o traçado.
-- **Atualizar o app não derruba mais ninguém:** as sessões ficam gravadas
-  cifradas no servidor e voltam depois da atualização; o usuário de
-  consulta dos avisos de OS também deixa de sair e entrar no Controllr a
-  cada atualização.
+- **Atualizar o app não derruba mais ninguém:** as sessões ficam gravadas cifradas no servidor e voltam depois da atualização; o usuário de consulta dos avisos de OS também deixa de sair e entrar no Controllr a cada atualização.
+- **Mapa mais fluido:** as CTOs não são redesenhadas a cada leitura do GPS, e o "Você" e o círculo de precisão só mudam de lugar.
+- **Localização mais precisa:** sempre leitura nova do GPS; qualquer melhora de 1 m na precisão aparece na hora, assim como movimentos a partir de 3 m.
+- **Mapa mais limpo:** legenda dentro do mapa, e Ampliar e Google Maps como botões no canto superior direito, ao lado da localização.
+- **Visual padronizado:** só ícones Lucide, em três tamanhos, com o mesmo ícone por área em todas as telas (Conexão, ONU, OS e Cliente).
+- **Mesma grade de ações** (ícone em cima, nome embaixo) no topo da OS, nas conexões do cliente e em Clientes Offline, e o mesmo botão de ícone com área de toque de 48 px.
+- **Filtros no mesmo formato** (número em destaque e nome) em Clientes Offline, na lista de OS (com "Atrasadas" em vermelho) e na Auditoria.
+- **Datas e atualização:** formato "há 3 h · 05/11/2026 19:25" e "Atualizado há X" em Clientes Offline, OS, Financeiro e Auditoria.
+- **Telas de carregamento e de erro padrão** no Mapa de CTOs e na Auditoria, com "Tentar de novo".
 
 ### Segurança
 
-- Login: o bloqueio por senha errada passa a ser por aparelho (IP) e
-  usuário juntos, mais um limite por IP — ninguém consegue mais travar a
-  conta de outro técnico errando a senha dele de propósito.
-- Dependências do servidor atualizadas (FastAPI, Starlette, Uvicorn,
-  aiohttp, Pydantic, python-multipart).
-- O servidor não informa mais versão nem nome do programa para fora.
-- Sair do app apaga os clientes buscados recentemente guardados no celular.
-- Build e testes automáticos no GitHub a cada envio.
+- **Login:** o bloqueio por senha errada passa a ser por aparelho (IP) e usuário juntos, mais um limite por IP — ninguém consegue mais travar a conta de outro técnico errando a senha dele de propósito.
+- **Dependências do servidor atualizadas** (FastAPI, Starlette, Uvicorn, aiohttp, Pydantic e python-multipart).
+- **Menos exposição:** o servidor não informa mais versão nem nome do programa para fora, e sair do app apaga os clientes buscados recentemente guardados no celular.
+- **Build e testes automáticos** no GitHub a cada envio.
 
 ## [1.27.0] - 2026-11-05
 
