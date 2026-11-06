@@ -1,6 +1,8 @@
 import { lazy, Suspense, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { LuExternalLink, LuLocateFixed, LuMapPin } from 'react-icons/lu'
 import { soDigitos } from '../utils/formatacao'
+import { CORES } from '../utils/cores'
+import Abas, { type Aba } from './Abas'
 import {
   formatarDistancia,
   obterMelhorLocalizacao,
@@ -22,6 +24,13 @@ interface Props {
   onFechar: () => void
   onSalvo: (endereco: EnderecoDto) => void
 }
+
+// Tela cheia em duas partes: cada uma cabe na tela do celular sem rolar.
+type AbaEndereco = 'endereco' | 'localizacao'
+const ABAS: Aba<AbaEndereco>[] = [
+  { chave: 'endereco', rotulo: 'Endereço' },
+  { chave: 'localizacao', rotulo: 'Localização' },
+]
 
 // Leaflet só carrega quando o endereço tem coordenada.
 const MapaEndereco = lazy(() => import('./MapaEndereco'))
@@ -48,6 +57,7 @@ const CAMPOS_EDITAVEIS: (keyof EnderecoDto)[] = [
 
 export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, onSalvo }: Props) {
   const [form, setForm] = useState<EnderecoDto>(endereco)
+  const [aba, setAba] = useState<AbaEndereco>('endereco')
   const [confirmandoDescarte, setConfirmandoDescarte] = useState(false)
   const [buscandoCep, setBuscandoCep] = useState(false)
   const ultimoCepConsultadoRef = useRef(soDigitos(endereco.address_zipcode))
@@ -184,8 +194,14 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
   return (
     <div className="modal-editar-endereco-fundo" onClick={tentarFechar}>
       <div ref={janelaRef} className="modal-editar-endereco" onClick={(e) => e.stopPropagation()}>
-        <h2>Editar endereço</h2>
+        <div className="modal-editar-endereco-topo">
+          <h2>Editar endereço</h2>
+          <Abas abas={ABAS} ativa={aba} onEscolher={setAba} cor={corDestaque ?? CORES.cliente} rotulo="Partes do endereço" />
+        </div>
 
+        <div className={`modal-editar-endereco-corpo aba-${aba}`}>
+        {aba === 'endereco' && (
+        <>
         <label>Identificação</label>
         <input {...campo('address_identification')} placeholder="Ex: Endereço padrão" />
 
@@ -213,7 +229,7 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
         <label>Bairro</label>
         <input {...campo('address_neighborhood')} />
 
-        <div className="modal-editar-endereco-linha">
+        <div className="modal-editar-endereco-linha uf">
           <div>
             <label>Cidade</label>
             <input {...campo('address_province')} />
@@ -231,8 +247,10 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
 
         <label>Complemento</label>
         <input {...campo('address_completation')} />
+        </>
+        )}
 
-        <label>Localização no mapa</label>
+        {aba === 'localizacao' && (
         <div className={`modal-editar-endereco-localizacao${temCoordenada ? ' com-coordenada' : ''}`}>
           <div className="modal-editar-endereco-localizacao-topo">
             <span className="modal-editar-endereco-localizacao-icone">
@@ -300,6 +318,8 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
                 ? 'Atualizar com minha posição'
                 : 'Usar minha posição atual'}
           </button>
+        </div>
+        )}
         </div>
 
         <div className="modal-editar-endereco-rodape">

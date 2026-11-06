@@ -28,7 +28,11 @@ export default function MapaEndereco({ lat, lng, precisaoM }: { lat: number; lng
       attribution: 'Imagens © Google',
     }).addTo(mapa)
     mapaRef.current = mapa
+    // O mapa ocupa o espaço livre da aba (muda com teclado/rotação).
+    const observador = new ResizeObserver(() => mapa.invalidateSize())
+    observador.observe(divRef.current)
     return () => {
+      observador.disconnect()
       mapa.remove()
       mapaRef.current = null
       pontoRef.current = null
