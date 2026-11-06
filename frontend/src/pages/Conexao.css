@@ -437,16 +437,16 @@
   color: var(--cor-texto-secundario);
 }
 
-.portas-cto-livres {
-  display: flex;
-  flex-wrap: wrap;
+.portas-cto-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
   gap: 8px;
 }
 
-.portas-cto-livres button {
-  min-width: 48px;
+.portas-cto-grade button {
+  position: relative;
   height: 48px;
-  padding: 0 10px;
+  padding: 0;
   border: 1.5px solid var(--cor-borda);
   border-radius: 12px;
   background: var(--cor-superficie);
@@ -457,45 +457,66 @@
   cursor: pointer;
 }
 
-.portas-cto-livres button.escolhida {
+/* Ocupada: cheia, número claro. */
+.portas-cto-grade button.ocupada {
+  border-color: var(--cor-texto-secundario);
+  background: var(--cor-texto-secundario);
+  color: var(--cor-superficie);
+}
+
+.portas-cto-grade button.propria {
+  border-color: var(--cor-conexao);
+  background: var(--cor-conexao);
+  color: #fff;
+}
+
+.portas-cto-grade button.repetida {
+  border-color: var(--cor-erro);
+  background: var(--cor-erro);
+  color: #fff;
+}
+
+/* Livre que já teve cliente (contrato cancelado/desativado). */
+.portas-cto-grade button.liberada {
+  border-style: dashed;
+}
+
+.portas-cto-grade button.livre.escolhida {
   border-color: var(--cor-conexao);
   background: color-mix(in srgb, var(--cor-conexao) 14%, var(--cor-superficie));
 }
 
-.portas-cto-ocupadas {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.portas-cto-grade button.vista {
+  outline: 3px solid color-mix(in srgb, var(--cor-conexao) 45%, transparent);
+  outline-offset: 2px;
 }
 
-.portas-cto-ocupadas li {
+/* Sessão: verde online, apagado offline. */
+.portas-cto-ponto {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.portas-cto-ponto.online {
+  background: #22c55e;
+  box-shadow: 0 0 0 1.5px var(--cor-superficie);
+}
+
+.portas-cto-detalhe {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 48px;
-  padding: 4px 0;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--cor-fundo);
   font-size: 15px;
-}
-
-.portas-cto-ocupadas li + li {
-  border-top: 1px solid var(--cor-borda-suave);
-}
-
-.portas-cto-numero {
-  flex-shrink: 0;
-  min-width: 36px;
-  text-align: center;
-  font-family: var(--fonte-mono);
-  font-weight: 700;
-  color: var(--cor-texto-secundario);
-}
-
-.portas-cto-ocupadas li.propria .portas-cto-numero {
-  color: var(--cor-conexao);
-}
-
-.portas-cto-ocupadas li.repetida .portas-cto-numero {
-  color: var(--cor-erro);
+  color: var(--cor-texto);
 }
 
 .portas-cto-aviso {
