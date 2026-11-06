@@ -8,6 +8,7 @@ import {
   buscarDetalheCliente,
   listarDps,
   type BuscaClienteResultado,
+  type CpeDto,
   type DpDto,
   type EnderecoDto,
 } from '../api/client'
@@ -17,6 +18,7 @@ import Skeleton from '../components/Skeleton'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
+import { ocupaPorta } from '../utils/portasCto'
 import { distanciaMetros, formatarDistancia, useLocalizacaoAoVivo } from './conexao/localizacao'
 import './Conexao.css'
 import './Home.css'
@@ -208,6 +210,37 @@ export default function MapaCtos() {
     [dps],
   )
   const selecionada = comCoordenada.find((dp) => dp.pk === selecionadaPk) ?? null
+
+  // Conexões gravadas na CTO tocada (CPE habilitado, como na grade de portas).
+  const [cpesDaCto, setCpesDaCto] = useState<CpeDto[] | null>(null)
+  useEffect(() => {
+    setCpesDaCto(null)
+    if (selecionadaPk == null) return
+    let cancelado = false
+    buscarCpe({ dp_pk: selecionadaPk })
+      .then((resposta) => {
+        if (!cancelado) setCpesDaCto(resposta.results.filter(ocupaPorta))
+      })
+      .catch(() => {
+        if (!cancelado) toast('Não foi possível consultar os clientes desta CTO.')
+      })
+    return () => {
+      cancelado = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selecionadaPk])
+  const conectados = useMemo(() => {
+    if (!selecionada || !cpesDaCto) return null
+    const pontos = cpesDaCto.flatMap((cpe) => {
+      const lat = Number(cpe.address_latitude)
+      const lng = Number(cpe.address_longitude)
+      if (!cpe.address_latitude || !cpe.address_longitude || !Number.isFinite(lat) || !Number.isFinite(lng) || (!lat && !lng))
+        return []
+      const porta = cpe.dp_port ? ` · porta ${cpe.dp_port}` : ''
+      return [{ lat, lng, rotulo: `${cpe.username ?? `Conexão #${cpe.pk}`}${porta}`, online: (cpe.sessions ?? 0) > 0 }]
+    })
+    return { origem: { lat: selecionada.lat, lng: selecionada.lng }, pontos }
+  }, [selecionada, cpesDaCto])
   // Referência das distâncias: o endereço do cliente buscado; senão, o técnico.
   const referencia = enderecoCliente ?? aoVivo
   const maisProximas = useMemo(
@@ -354,10 +387,21 @@ export default function MapaCtos() {
             precisaoM={aoVivo?.precisaoM ?? null}
             cliente={enderecoCliente}
             ligacoes={ligacoes}
+            conectados={conectados}
             onSelecionar={(dp) => setSelecionadaPk(dp.pk)}
             onSemLocalizacao={() => toast('Aguardando a localização do GPS. Verifique se a permissão está liberada.')}
           />
         </Suspense>
+      )}
+
+      {selecionada && cpesDaCto && conectados && (
+        <p className="mapa-ctos-aviso">
+          {selecionada.name}: {cpesDaCto.length} {cpesDaCto.length === 1 ? 'conexão' : 'conexões'},{' '}
+          {cpesDaCto.filter((cpe) => (cpe.sessions ?? 0) > 0).length} online
+          {conectados.pontos.length < cpesDaCto.length &&
+            ` · ${cpesDaCto.length - conectados.pontos.length} sem coordenada no endereço`}
+          . Tracejado verde online, vermelho offline.
+        </p>
       )}
 
       {dps && (

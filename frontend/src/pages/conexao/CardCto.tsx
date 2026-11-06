@@ -43,7 +43,8 @@ export default function CardCto({
   const [dpPk, setDpPk] = useState(cpe.dp_pk != null ? String(cpe.dp_pk) : '')
   const [dpBusca, setDpBusca] = useState(cpe.dp_name ?? '')
   const [dpListaAberta, setDpListaAberta] = useState(false)
-  const [dpPorta, setDpPorta] = useState(cpe.dp_port != null ? String(cpe.dp_port) : '')
+  // Porta 0 no Controllr = sem porta: mostra o campo vazio.
+  const [dpPorta, setDpPorta] = useState(cpe.dp_port ? String(cpe.dp_port) : '')
   const [salvando, setSalvando] = useState(false)
   // Localização do técnico (botão "Usar minha localização") — usada só
   // para sugerir/ordenar a CTO mais próxima por distância, nunca para
@@ -178,7 +179,8 @@ export default function CardCto({
     setSalvando(true)
     try {
       const novoDpPk = dpPk.trim() ? Number(dpPk.trim()) : undefined
-      const novaPorta = dpPorta.trim() ? Number(dpPorta.trim()) : undefined
+      // Campo vazio (ou 0) com porta gravada: manda 0, que limpa a porta.
+      const novaPorta = dpPorta.trim() ? Number(dpPorta.trim()) : cpe.dp_port ? 0 : undefined
       await atualizarDetalhesCpe(cpe.pk, { dp_pk: novoDpPk, cpe_dp_port: novaPorta })
       const dpEscolhida = dps.find((dp) => String(dp.pk) === dpPk.trim())
       onAtualizado({ dp_pk: novoDpPk, dp_port: novaPorta, dp_name: dpEscolhida?.name ?? cpe.dp_name })
@@ -274,6 +276,14 @@ export default function CardCto({
           onChange={(e) => setDpPorta(e.target.value)}
           placeholder="Não informado"
         />
+        {!!cpe.dp_port && (!dpPorta.trim() || Number(dpPorta.trim()) === 0) && (
+          <small className="conexao-combobox-precisao">Ao salvar, a porta {cpe.dp_port} será limpa.</small>
+        )}
+        {!!cpe.dp_port && dpPorta.trim() !== '' && Number(dpPorta.trim()) !== 0 && (
+          <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => setDpPorta('')}>
+            Limpar porta
+          </button>
+        )}
       </div>
       <PortasCto
         dpPk={dpSelecionada?.pk ?? null}

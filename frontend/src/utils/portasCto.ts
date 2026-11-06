@@ -10,7 +10,7 @@ const CONTRATO_OCUPA_PORTA = new Set([1, 2, 3, 4])
  * habilitado; a única porta repetida é de um desativado com CPE desabilitado).
  * Sem cpe_status, cai na regra do contrato.
  */
-const ocupaPorta = (cpe: CpeDto): boolean =>
+export const ocupaPorta = (cpe: CpeDto): boolean =>
   cpe.status != null ? cpe.status === 1 : CONTRATO_OCUPA_PORTA.has(cpe.contract_status ?? 1)
 
 export interface PortaOcupada {

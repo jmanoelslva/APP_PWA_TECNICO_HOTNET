@@ -18,6 +18,21 @@ export interface Ligacao extends Ponto {
 const COR_LIGACAO = '#ffffff'
 const SEM_LIGACOES: Ligacao[] = []
 
+// Conexão gravada numa CTO, no endereço do cliente (Mapa de CTOs).
+export interface Conectado extends Ponto {
+  rotulo: string
+  online: boolean
+}
+
+// Traçado da CTO até os clientes ligados nela.
+export interface ConectadosDaCto {
+  origem: Ponto
+  pontos: Conectado[]
+}
+
+const COR_CONECTADO_ONLINE = '#2e9e44'
+const COR_CONECTADO_OFFLINE = '#d9463c'
+
 // Mesmas imagens do "Mapa - Informações" do painel do Controllr (Leaflet +
 // satélite com ruas do Google, sem chave) — o técnico vê o mesmo mapa nos
 // dois lugares.
@@ -57,6 +72,7 @@ export default function MapaCto({
   precisaoM,
   cliente,
   ligacoes = SEM_LIGACOES,
+  conectados = null,
   onSelecionar,
   onSemLocalizacao,
 }: {
@@ -68,13 +84,20 @@ export default function MapaCto({
   cliente: Ponto | null
   // Traçado (linha reta tracejada) do endereço do cliente até as CTOs dele.
   ligacoes?: Ligacao[]
+  // Traçado (tracejado) da CTO tocada até os clientes gravados nela.
+  conectados?: ConectadosDaCto | null
   onSelecionar: (dp: DpDto) => void
   // Botão "minha localização" tocado antes de o GPS responder.
   onSemLocalizacao: () => void
 }) {
   const divRef = useRef<HTMLDivElement>(null)
   const mapaRef = useRef<L.Map | null>(null)
-  const camadasRef = useRef<{ projeto: L.LayerGroup; ctos: L.LayerGroup; posicoes: L.LayerGroup } | null>(null)
+  const camadasRef = useRef<{
+    projeto: L.LayerGroup
+    ctos: L.LayerGroup
+    conectados: L.LayerGroup
+    posicoes: L.LayerGroup
+  } | null>(null)
   const vocePontoRef = useRef<L.CircleMarker | null>(null)
   const voceCirculoRef = useRef<L.Circle | null>(null)
   const onSelecionarRef = useRef(onSelecionar)
@@ -102,6 +125,7 @@ export default function MapaCto({
     camadasRef.current = {
       projeto: L.layerGroup().addTo(mapa),
       ctos: L.layerGroup().addTo(mapa),
+      conectados: L.layerGroup().addTo(mapa),
       posicoes: L.layerGroup().addTo(mapa),
     }
     mapaRef.current = mapa
@@ -202,6 +226,45 @@ export default function MapaCto({
     vocePontoRef.current?.bringToFront()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chaveLigacoes])
+
+  // Clientes ligados na CTO tocada: linha tracejada da CTO até o endereço,
+  // verde online e vermelha offline. Redesenha só quando os dados mudam.
+  const chaveConectados = conectados
+    ? `${conectados.origem.lat},${conectados.origem.lng}|${conectados.pontos
+        .map((p) => `${p.lat},${p.lng},${p.rotulo},${p.online}`)
+        .join(';')}`
+    : ''
+  useEffect(() => {
+    const camadas = camadasRef.current
+    const mapa = mapaRef.current
+    if (!camadas || !mapa) return
+    camadas.conectados.clearLayers()
+    if (!conectados || conectados.pontos.length === 0) return
+    const { origem } = conectados
+    for (const ponto of conectados.pontos) {
+      const cor = ponto.online ? COR_CONECTADO_ONLINE : COR_CONECTADO_OFFLINE
+      const metros = distanciaMetros(origem.lat, origem.lng, ponto.lat, ponto.lng)
+      L.polyline(
+        [
+          [origem.lat, origem.lng],
+          [ponto.lat, ponto.lng],
+        ],
+        { color: cor, weight: 2, opacity: 0.9, dashArray: '6 6', interactive: false },
+      ).addTo(camadas.conectados)
+      L.circleMarker([ponto.lat, ponto.lng], { radius: 6, color: '#ffffff', weight: 2, fillColor: cor, fillOpacity: 1 })
+        .bindTooltip(texto(`${ponto.rotulo} · ${ponto.online ? 'online' : 'offline'} · ${formatarDistancia(metros)}`), {
+          direction: 'top',
+          offset: [0, -8],
+        })
+        .addTo(camadas.conectados)
+    }
+    // Enquadra a CTO e os clientes uma vez por CTO/lista.
+    mapa.fitBounds(
+      L.latLngBounds([[origem.lat, origem.lng], ...conectados.pontos.map((p): [number, number] => [p.lat, p.lng])]),
+      { padding: [40, 40], maxZoom: 19 },
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaveConectados])
 
   // Técnico: os marcadores são criados uma vez e depois só mudam de lugar
   // (setLatLng/setRadius) — recriar a cada leitura do GPS engasga o zoom.

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { LuArrowRight } from 'react-icons/lu'
 import { Link } from 'react-router-dom'
-import { buscarCpe, type CpeDto } from '../../api/client'
+import { ApiError, atualizarDetalhesCpe, buscarCpe, type CpeDto } from '../../api/client'
+import { useToast } from '../../components/Toast/useToast'
 import { formatarStatusContrato } from '../../utils/formatacao'
 import { gradeDePortas, ocupanteDaPorta, portasDaCto, type CasaPorta } from '../../utils/portasCto'
 
@@ -30,6 +31,7 @@ export default function PortasCto({
   const [conexoes, setConexoes] = useState<CpeDto[] | null>(null)
   const [falhou, setFalhou] = useState(false)
   const [vista, setVista] = useState<number | null>(null)
+  const [recarga, setRecarga] = useState(0)
 
   useEffect(() => {
     setConexoes(null)
@@ -47,7 +49,13 @@ export default function PortasCto({
     return () => {
       cancelado = true
     }
-  }, [dpPk])
+  }, [dpPk, recarga])
+
+  // Porta liberada (ocupante com porta 0): relê a grade e já escolhe a porta.
+  function aoLiberar(porta: number) {
+    setRecarga((n) => n + 1)
+    onEscolherPorta(String(porta))
+  }
 
   const portas = useMemo(() => (conexoes ? portasDaCto(conexoes, limite) : null), [conexoes, limite])
   const grade = useMemo(() => (portas ? gradeDePortas(portas, limite, cpePk) : []), [portas, limite, cpePk])
@@ -124,7 +132,7 @@ export default function PortasCto({
               ))}
             </div>
           )}
-          <DetalhePorta casa={grade.find((casa) => casa.porta === vista)} cpePk={cpePk} />
+          <DetalhePorta key={vista ?? 0} casa={grade.find((casa) => casa.porta === vista)} cpePk={cpePk} onLiberada={aoLiberar} />
         </>
       )}
       {limite != null && limite > 0 && portas.livres.length === 0 && (
@@ -143,7 +151,41 @@ export default function PortasCto({
   )
 }
 
-function DetalhePorta({ casa, cpePk }: { casa: CasaPorta | undefined; cpePk: number | undefined }) {
+/** Contrato que não usa mais a porta: desativado ou cancelado. */
+const CONTRATO_LIBERAVEL = new Set([0, 5])
+
+function DetalhePorta({
+  casa,
+  cpePk,
+  onLiberada,
+}: {
+  casa: CasaPorta | undefined
+  cpePk: number | undefined
+  onLiberada: (porta: number) => void
+}) {
+  const { toast } = useToast()
+  // Dois toques: o primeiro arma, o segundo grava porta 0 no ocupante.
+  const [confirmando, setConfirmando] = useState<number | null>(null)
+  const [liberando, setLiberando] = useState(false)
+
+  async function liberar(ocupante: { cpePk: number; usuario: string; porta: number }) {
+    if (confirmando !== ocupante.cpePk) {
+      setConfirmando(ocupante.cpePk)
+      return
+    }
+    setLiberando(true)
+    try {
+      await atualizarDetalhesCpe(ocupante.cpePk, { cpe_dp_port: 0 })
+      toast(`Porta ${ocupante.porta} liberada (limpa em ${ocupante.usuario}).`, 'sucesso')
+      setConfirmando(null)
+      onLiberada(ocupante.porta)
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível liberar a porta.')
+    } finally {
+      setLiberando(false)
+    }
+  }
+
   if (!casa) return <p className="portas-cto-nota">Toque numa porta ocupada para ver quem está nela.</p>
   if (casa.situacao === 'livre') {
     const anterior = casa.anterior
@@ -173,6 +215,26 @@ function DetalhePorta({ casa, cpePk }: { casa: CasaPorta | undefined; cpePk: num
               .filter(Boolean)
               .join(' · ')}
           </small>
+          {o.cpePk !== cpePk && o.contrato != null && CONTRATO_LIBERAVEL.has(o.contrato) && (
+            // Contrato cancelado/desativado ainda com CPE habilitado prende a
+            // porta: grava porta 0 nele (limpa) para usá-la nesta conexão.
+            <button
+              type="button"
+              aria-busy={liberando}
+              disabled={liberando}
+              className="botao botao-secundario botao-pequeno botao-largo portas-cto-abrir"
+              onClick={() => void liberar(o)}
+            >
+              {liberando
+                ? 'Liberando…'
+                : confirmando === o.cpePk
+                  ? `Confirmar: limpar a porta de ${o.usuario}`
+                  : `Liberar porta ${casa.porta}`}
+            </button>
+          )}
+          {o.cpePk !== cpePk && o.online && confirmando === o.cpePk && (
+            <small>Essa conexão está online: confira na CTO se o cabo foi retirado.</small>
+          )}
           {o.cpePk !== cpePk && (
             // Para usar a porta, muda-se a do ocupante (ex.: contrato
             // cancelado) na própria conexão dele, como edição normal.
