@@ -74,5 +74,7 @@ export default function MapaEndereco({ lat, lng, precisaoM }: { lat: number; lng
     mapa.setView(posicao, 19)
   }, [lat, lng, precisaoM])
 
-  return <div ref={divRef} className="mapa-endereco" role="img" aria-label="Posição do endereço no mapa" />
+  // data-sem-arrastar: arrastar ou fazer pinça no mapa move o mapa, não a
+  // janela (ver utils/arrastarFolhas.ts).
+  return <div ref={divRef} className="mapa-endereco" role="img" aria-label="Posição do endereço no mapa" data-sem-arrastar />
 }

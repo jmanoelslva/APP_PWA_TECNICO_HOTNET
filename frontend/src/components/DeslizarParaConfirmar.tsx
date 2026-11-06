@@ -67,6 +67,9 @@ export default function DeslizarParaConfirmar({
       ref={trilhoRef}
       className={`deslizar${desabilitado ? ' deslizar-desabilitado' : ''}${arrastando ? ' deslizar-arrastando' : ''}`}
       style={{ '--deslizar-cor': cor, '--deslizar-fracao': fracao } as CSSProperties}
+      // Deslizar com o dedo descendo um pouco não pode arrastar (e fechar)
+      // a janela em volta (utils/arrastarFolhas.ts).
+      data-sem-arrastar
     >
       <span className="deslizar-preenchimento" aria-hidden="true" />
       <span className="deslizar-texto" aria-hidden="true">

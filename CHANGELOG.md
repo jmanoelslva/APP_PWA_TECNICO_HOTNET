@@ -7,6 +7,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+
+- **Editar endereço › Localização:** arrastar ou fazer pinça no mapa movia a tela inteira (o gesto de fechar a janela arrastando); agora mexe só no mapa.
+- **Janelas que fecham arrastando para baixo:** a pinça cancela o arrasto; "Deslizar para confirmar" (reiniciar/remover ONU) não move nem fecha a janela se o dedo descer; e listas com rolagem própria (edição de endereço, registrar cliente na ONU, janela do cliente) voltam a rolar para cima em vez de arrastar a janela.
+
 ## [1.30.1] - 2026-11-06
 
 ### Alterado

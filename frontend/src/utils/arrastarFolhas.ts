@@ -31,6 +31,17 @@ function fundoDaJanela(alvo: EventTarget | null): { fundo: HTMLElement; janela: 
   return null
 }
 
+/** Algum elemento entre o toque e a janela (inclusive ela) está rolado para baixo. */
+function algumRolado(alvo: EventTarget | null, janela: HTMLElement): boolean {
+  let atual = alvo instanceof Element ? alvo : null
+  while (atual) {
+    if (atual.scrollTop > 0) return true
+    if (atual === janela) return false
+    atual = atual.parentElement
+  }
+  return false
+}
+
 export function iniciarArrastarFolhas(): void {
   let ativo: { fundo: HTMLElement; janela: HTMLElement; inicioY: number; deslocamento: number } | null = null
 
@@ -38,8 +49,9 @@ export function iniciarArrastarFolhas(): void {
     'touchstart',
     (evento) => {
       const achado = fundoDaJanela(evento.target)
-      // Só arrasta com o conteúdo da janela já no topo (senão é rolagem).
-      if (!achado || achado.janela.scrollTop > 0 || evento.touches.length !== 1) return
+      // Só arrasta com o conteúdo já no topo — da janela e de qualquer lista
+      // com rolagem própria dentro dela (senão puxar para baixo é rolar).
+      if (!achado || algumRolado(evento.target, achado.janela) || evento.touches.length !== 1) return
       ativo = { ...achado, inicioY: evento.touches[0].clientY, deslocamento: 0 }
     },
     { passive: true },
@@ -49,6 +61,12 @@ export function iniciarArrastarFolhas(): void {
     'touchmove',
     (evento) => {
       if (!ativo) return
+      // Segundo dedo (pinça) não é arrastar a janela: volta para o lugar.
+      if (evento.touches.length > 1) {
+        ativo.janela.style.transform = ''
+        ativo = null
+        return
+      }
       const deslocamento = evento.touches[0].clientY - ativo.inicioY
       if (deslocamento <= 0) {
         ativo.deslocamento = 0
