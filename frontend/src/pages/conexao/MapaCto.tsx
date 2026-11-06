@@ -329,7 +329,7 @@ export default function MapaCto({
           )}
           {offlinePorCto.size > 0 && (
             <span>
-              <i className="mapa-cto-legenda-offline" /> Com offline
+              <i className="mapa-cto-legenda-offline" /> CTO com offline
             </span>
           )}
         </div>
