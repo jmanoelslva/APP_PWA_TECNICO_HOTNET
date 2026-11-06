@@ -226,7 +226,8 @@
 }
 
 .mapa-cto {
-  margin-top: 10px;
+  /* Espaço embaixo para o que vem depois do mapa (ex.: "Salvar CTO"). */
+  margin: 10px 0 14px;
 }
 
 .mapa-cto-mapa {
@@ -246,7 +247,8 @@
 
 /* Fora do mapa (z-index 0 isola os controles do Leaflet), então z-index 1
    já fica por cima. */
-.mapa-cto-localizar {
+.mapa-cto-localizar,
+.mapa-cto-controle {
   position: absolute;
   right: 10px;
   bottom: 22px;
@@ -264,40 +266,26 @@
   cursor: pointer;
 }
 
+.mapa-cto-controle {
+  bottom: auto;
+  color: var(--cor-conexao);
+  text-decoration: none;
+}
+
+.mapa-cto-google {
+  top: 10px;
+}
+
+.mapa-cto-ampliar {
+  top: 52px;
+}
+
 .mapa-cto-mapa-ampliado {
   height: 60vh;
 }
 
 .mapa-cto-carregando {
   margin-top: 10px;
-}
-
-.mapa-cto-rodape {
-  /* Duas ações do mesmo tamanho, lado a lado. */
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.mapa-cto-rodape button,
-.mapa-cto-rodape a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 0 10px;
-  border: 1px solid color-mix(in srgb, var(--cor-conexao) 35%, var(--cor-borda));
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--cor-conexao) 6%, var(--cor-superficie));
-  color: var(--cor-conexao);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
 }
 
 .mapa-cto-legenda {

@@ -498,6 +498,7 @@ select.campo {
 .botao-icone::after,
 .detalhe-ordem-campo-valor button::after,
 .mapa-cto-localizar::after,
+.mapa-cto-controle::after,
 .detalhe-chamado-btn-anexar::after {
   content: '';
   position: absolute;

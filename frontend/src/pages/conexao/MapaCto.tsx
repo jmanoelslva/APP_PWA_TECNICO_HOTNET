@@ -304,6 +304,28 @@ export default function MapaCto({
         >
           <LuLocateFixed size={20} />
         </button>
+        {/* Ampliar e Google Maps dentro do mapa (canto superior direito), no
+            estilo do botão de localização — embaixo do mapa fica só o que é
+            da tela (ex.: "Salvar CTO" na Conexão). */}
+        <a
+          href={linkGoogleMaps}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mapa-cto-controle mapa-cto-google"
+          aria-label="Abrir no Google Maps"
+          title="Abrir no Google Maps"
+        >
+          <LuExternalLink size={18} />
+        </a>
+        <button
+          type="button"
+          className="mapa-cto-controle mapa-cto-ampliar"
+          onClick={() => setAmpliado((valor) => !valor)}
+          aria-label={ampliado ? 'Reduzir o mapa' : 'Ampliar o mapa'}
+          title={ampliado ? 'Reduzir' : 'Ampliar'}
+        >
+          {ampliado ? <LuMinimize2 size={18} /> : <LuMaximize2 size={18} />}
+        </button>
         {/* Legenda dentro do mapa, no canto inferior esquerdo (como no
             Google Maps); cada item com o marcador e o nome juntos. */}
         <div className="mapa-cto-legenda">
@@ -321,15 +343,6 @@ export default function MapaCto({
             </span>
           )}
         </div>
-      </div>
-      {/* Embaixo do mapa, só as duas ações, do mesmo tamanho. */}
-      <div className="mapa-cto-rodape">
-        <button type="button" onClick={() => setAmpliado((valor) => !valor)}>
-          {ampliado ? <LuMinimize2 size={16} /> : <LuMaximize2 size={16} />} {ampliado ? 'Reduzir' : 'Ampliar'}
-        </button>
-        <a href={linkGoogleMaps} target="_blank" rel="noopener noreferrer">
-          <LuExternalLink size={16} /> Google Maps
-        </a>
       </div>
       {avisoProjeto && <span className="mapa-cto-aviso">{avisoProjeto}</span>}
     </div>
