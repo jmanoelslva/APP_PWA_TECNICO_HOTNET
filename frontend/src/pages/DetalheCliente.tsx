@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { LuCable, LuChevronRight, LuFileText, LuLocateFixed, LuMap, LuMapPin, LuPencil, LuPlus, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
+import { LuCable, LuFileText, LuLocateFixed, LuMap, LuMapPin, LuPencil, LuPlus, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
 import {
   ApiError,
   atualizarTelefone,
@@ -441,52 +441,49 @@ function DetalheClienteConteudo() {
                   <h2>Endereços</h2>
                   {enderecos.length === 0 && <p className="detalhe-cliente-vazio">Nenhum endereço cadastrado.</p>}
                   {enderecos.map((endereco) => (
-                    <div key={endereco.address_pk} className="detalhe-cliente-item detalhe-cliente-endereco">
-                      {/* O cartão inteiro abre a edição (seta à direita), como um item de lista. */}
-                      <button
-                        type="button"
-                        className="detalhe-cliente-endereco-abrir"
-                        onClick={() => abrirEndereco(endereco, 'endereco')}
-                        aria-label={`Editar endereço ${endereco.address_identification ?? ''}`.trim()}
-                      >
-                        <span className="detalhe-cliente-endereco-texto">
-                          <strong>{endereco.address_identification ?? 'Endereço'}</strong>
-                          <span>
-                            {[endereco.address, endereco.address_number, endereco.address_neighborhood]
-                              .filter(Boolean)
-                              .join(', ') || 'Endereço não informado'}
-                          </span>
-                          {(endereco.address_province || endereco.address_state) && (
-                            <span>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</span>
-                          )}
-                          {endereco.address_zipcode && <span>CEP: {formatarCep(endereco.address_zipcode)}</span>}
-                        </span>
-                        <LuChevronRight size={22} className="detalhe-cliente-endereco-seta" aria-hidden />
-                      </button>
-                      {!(endereco.address_latitude && endereco.address_longitude) ? (
-                        <div className="detalhe-cliente-item-acoes">
-                          <button
-                            type="button"
-                            className="botao botao-secundario botao-pequeno"
-                            style={{ '--botao-cor': CORES.endereco } as CSSProperties}
-                            onClick={() => abrirEndereco(endereco, 'localizacao')}
-                          >
-                            <LuLocateFixed size={16} /> Marcar localização
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="detalhe-cliente-item-acoes">
+                    <div key={endereco.address_pk} className="detalhe-cliente-item">
+                      <strong>{endereco.address_identification ?? 'Endereço'}</strong>
+                      <p>
+                        {[endereco.address, endereco.address_number, endereco.address_neighborhood]
+                          .filter(Boolean)
+                          .join(', ') || 'Endereço não informado'}
+                      </p>
+                      {(endereco.address_province || endereco.address_state) && (
+                        <p>{[endereco.address_province, endereco.address_state].filter(Boolean).join(' - ')}</p>
+                      )}
+                      {endereco.address_zipcode && <p>CEP: {formatarCep(endereco.address_zipcode)}</p>}
+                      {/* Cartão grande: "Editar" com texto, lado a lado com a ação do mapa
+                          (lápis só em itens pequenos, como telefones). */}
+                      <div className="detalhe-cliente-acoes-par">
+                        <button
+                          type="button"
+                          className="botao botao-secundario"
+                          style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+                          onClick={() => abrirEndereco(endereco, 'endereco')}
+                        >
+                          <LuPencil size={16} /> Editar
+                        </button>
+                        {endereco.address_latitude && endereco.address_longitude ? (
                           <a
                             href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="botao botao-secundario botao-pequeno"
+                            className="botao botao-secundario"
                             style={{ '--botao-cor': CORES.endereco } as CSSProperties}
                           >
-                            <LuMapPin size={16} /> Ver no Google Maps
+                            <LuMapPin size={16} /> Ver no mapa
                           </a>
-                        </div>
-                      )}
+                        ) : (
+                          <button
+                            type="button"
+                            className="botao botao-secundario"
+                            style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                            onClick={() => abrirEndereco(endereco, 'localizacao')}
+                          >
+                            <LuLocateFixed size={16} /> Marcar local
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </section>
