@@ -95,7 +95,10 @@ export default function BuscaOnu({
 
   return (
     <>
-      <form className="onu-card onu-busca onu-combobox" onSubmit={aoSubmeter}>
+      <form
+        className={`onu-card onu-busca onu-combobox${listaAberta && busca.trim().length >= 2 ? ' aberta' : ''}`}
+        onSubmit={aoSubmeter}
+      >
         <label htmlFor="onu-busca-input">Serial da ONU ou usuário PPPoE</label>
         <div className="onu-busca-campo">
           <input
