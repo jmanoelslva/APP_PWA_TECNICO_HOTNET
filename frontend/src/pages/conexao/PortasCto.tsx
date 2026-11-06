@@ -8,7 +8,8 @@ const SITUACAO_CONTRATO: Record<number, string> = { 0: 'contrato desativado', 5:
  * Grade fixa com todas as portas da CTO escolhida: livre, ocupada (cheia),
  * desta conexão ou em conflito. Tocar numa livre preenche o campo; tocar
  * numa ocupada mostra quem está nela, sem mudar o campo. Porta de contrato
- * cancelado/desativado conta como livre, com o antigo ocupante no detalhe.
+ * com CPE desabilitado conta como livre, com o antigo ocupante no detalhe;
+ * CPE habilitado ocupa mesmo com contrato cancelado (o Controllr recusa).
  */
 export default function PortasCto({
   dpPk,
@@ -132,7 +133,7 @@ function DetalhePorta({ casa, cpePk }: { casa: CasaPorta | undefined; cpePk: num
     return (
       <p className={anterior.online ? 'portas-cto-aviso' : 'portas-cto-detalhe'} role="status">
         Porta {casa.porta} livre: antes era de <strong>{anterior.usuario}</strong>
-        {anterior.cliente && ` (${anterior.cliente})`}, {SITUACAO_CONTRATO[anterior.contrato ?? 5] ?? 'contrato encerrado'}.
+        {anterior.cliente && ` (${anterior.cliente})`}, conexão desabilitada.
         {anterior.online && ' Essa conexão ainda está online: confira na CTO se o cabo foi retirado antes de usar.'}
       </p>
     )
@@ -145,7 +146,14 @@ function DetalhePorta({ casa, cpePk }: { casa: CasaPorta | undefined; cpePk: num
             Porta {casa.porta} · {o.usuario}
           </strong>
           <small>
-            {[o.cliente, o.online ? 'online' : 'offline', o.cpePk === cpePk && 'esta conexão'].filter(Boolean).join(' · ')}
+            {[
+              o.cliente,
+              o.contrato != null && SITUACAO_CONTRATO[o.contrato],
+              o.online ? 'online' : 'offline',
+              o.cpePk === cpePk && 'esta conexão',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </small>
         </span>
       ))}

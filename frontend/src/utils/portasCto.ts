@@ -3,6 +3,16 @@ import type { CpeDto } from '../api/client'
 /** Contrato que ainda prende a porta: ativado, alertado, pendente ou bloqueado. */
 const CONTRATO_OCUPA_PORTA = new Set([1, 2, 3, 4])
 
+/**
+ * Quem prende a porta é o CPE habilitado (cpe_status 1), não o contrato: o
+ * Controllr recusa com "duplicate" a porta de outro CPE habilitado, inclusive
+ * de contrato cancelado (visto nos dados em 06/11: cancelados seguem com CPE
+ * habilitado; a única porta repetida é de um desativado com CPE desabilitado).
+ * Sem cpe_status, cai na regra do contrato.
+ */
+const ocupaPorta = (cpe: CpeDto): boolean =>
+  cpe.status != null ? cpe.status === 1 : CONTRATO_OCUPA_PORTA.has(cpe.contract_status ?? 1)
+
 export interface PortaOcupada {
   porta: number
   cpePk: number
@@ -23,8 +33,8 @@ export interface PortasDaCto {
   /** Portas com mais de uma conexão. */
   repetidas: number[]
   /**
-   * Portas gravadas em conexões de contrato cancelado ou desativado. Não
-   * ocupam: a porta conta como livre, só com o registro do antigo ocupante.
+   * Portas gravadas em conexões com CPE desabilitado (contrato desativado).
+   * Não ocupam: a porta conta como livre, só com o registro do antigo ocupante.
    */
   liberadas: PortaOcupada[]
 }
@@ -46,7 +56,8 @@ const paraOcupada = (cpe: CpeDto, porta: number): PortaOcupada => ({
 
 /**
  * Portas ocupadas e livres de uma CTO, a partir das conexões gravadas nela.
- * Contrato cancelado ou desativado não ocupa a porta.
+ * CPE desabilitado não ocupa a porta; CPE habilitado ocupa, mesmo com
+ * contrato cancelado.
  */
 export function portasDaCto(cpes: CpeDto[], limite: number | null | undefined): PortasDaCto {
   const comPk = cpes.filter((cpe) => cpe.pk != null)
@@ -55,7 +66,7 @@ export function portasDaCto(cpes: CpeDto[], limite: number | null | undefined): 
   let semPorta = 0
   for (const cpe of comPk) {
     const porta = numeroDaPorta(cpe)
-    if (!CONTRATO_OCUPA_PORTA.has(cpe.contract_status ?? 1)) {
+    if (!ocupaPorta(cpe)) {
       if (porta != null) liberadas.push(paraOcupada(cpe, porta))
       continue
     }
