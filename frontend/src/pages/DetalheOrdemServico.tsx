@@ -226,7 +226,7 @@ function DetalheOrdemServicoConteudo() {
   const [cpe, setCpe] = useState<CpeDto | null>(null)
   // Sinal da ONU desta conexão (mostrado no card Conexão).
   const [onuOs, setOnuOs] = useState<OnuDto | null>(null)
-  // Sessão PPPoE aberta agora (quadro "Pronto para fechar"); null = consultando.
+  // Sessão PPPoE aberta agora (quadro "Antes de finalizar"); null = consultando.
   const [cpeOnline, setCpeOnline] = useState<boolean | null>(null)
   const [carregandoOnu, setCarregandoOnu] = useState(false)
   const [onuLidaEm, setOnuLidaEm] = useState<number | null>(null)
@@ -354,7 +354,7 @@ function DetalheOrdemServicoConteudo() {
       .catch(() => {})
   }
 
-  // Atalho de cada item pendente do "Pronto para fechar" para a tela que corrige.
+  // Atalho de cada item pendente do "Antes de finalizar" para a tela que corrige.
   function acaoFechamento(item: ItemFechamento) {
     if (item.chave === 'endereco') {
       if (!endereco) return null
@@ -364,22 +364,26 @@ function DetalheOrdemServicoConteudo() {
         </button>
       )
     }
+    // Cada atalho abre a tela já na aba do item (?aba=, ver useAbaLembrada).
     if (item.chave === 'onu' || item.chave === 'sinal') {
-      const destino = onuOs?.sn
-        ? `/onu?serial=${encodeURIComponent(onuOs.sn)}`
+      const busca = onuOs?.sn
+        ? `serial=${encodeURIComponent(onuOs.sn)}`
         : cpe?.username
-          ? `/onu?username=${encodeURIComponent(cpe.username)}`
-          : '/onu'
+          ? `username=${encodeURIComponent(cpe.username)}`
+          : ''
+      // Sinal → aba Sinal; ONU (registrar cliente) → aba Equipamento.
+      const abaOnu = item.chave === 'sinal' ? 'sinal' : 'equipamento'
       return (
-        <Link to={destino} className="pronto-fechar-acao" viewTransition>
-          ONU
+        <Link to={`/onu?${busca ? `${busca}&` : ''}aba=${abaOnu}`} className="pronto-fechar-acao" viewTransition>
+          {item.chave === 'sinal' ? 'Sinal' : 'ONU'}
         </Link>
       )
     }
     if (!cpe?.pk) return null
+    const abaConexao = item.chave === 'cto' ? 'cto' : 'resumo'
     return (
-      <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="pronto-fechar-acao" viewTransition>
-        Conexão
+      <Link to={`/conexao?cpe_pk=${cpe.pk}&aba=${abaConexao}`} className="pronto-fechar-acao" viewTransition>
+        {item.chave === 'cto' ? 'CTO' : 'Conexão'}
       </Link>
     )
   }

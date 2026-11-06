@@ -11,7 +11,7 @@ const ICONE: Record<SituacaoFechamento, ReactNode> = {
 }
 
 /**
- * Quadro "Pronto para fechar" da OS: cada item certo fica verde; o que
+ * Quadro "Antes de finalizar" da OS: cada item certo fica verde; o que
  * falta vem com o atalho para corrigir (`acao`, montado por quem chama).
  */
 export default function ProntoParaFechar({
@@ -25,7 +25,7 @@ export default function ProntoParaFechar({
   return (
     <div className="pronto-fechar">
       <div className="pronto-fechar-topo">
-        <h2>Pronto para fechar</h2>
+        <h2>Antes de finalizar</h2>
         <span className={certos === itens.length ? 'completo' : undefined}>
           {certos} de {itens.length}
         </span>

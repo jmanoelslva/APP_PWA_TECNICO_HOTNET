@@ -22,7 +22,19 @@ export function lerAbaSalva<T extends string>(chaveArmazenamento: string, abas: 
  * cliente/OS/ONU e continua na mesma parte.
  */
 export function useAbaLembrada<T extends string>(chaveArmazenamento: string, abas: Aba<T>[]): [T, (nova: T) => void] {
-  const [aba, setAba] = useState<T>(() => lerAbaSalva(chaveArmazenamento, abas))
+  // "?aba=cto" no endereço abre direto nessa aba (atalhos do "Antes de
+  // finalizar" da OS) e passa a ser a lembrada.
+  const [aba, setAba] = useState<T>(() => {
+    const pedida = new URLSearchParams(window.location.search).get('aba')
+    const valida = abas.find((item) => item.chave === pedida)
+    if (!valida) return lerAbaSalva(chaveArmazenamento, abas)
+    try {
+      sessionStorage.setItem(chaveArmazenamento, valida.chave)
+    } catch {
+      // sem armazenamento: vale só nesta tela
+    }
+    return valida.chave
+  })
   function escolher(nova: T) {
     setAba(nova)
     try {

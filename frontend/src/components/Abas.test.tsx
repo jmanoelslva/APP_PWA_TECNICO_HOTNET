@@ -34,4 +34,16 @@ describe('Abas', () => {
     render(<Tela />)
     expect(screen.getByText('dois')).toBeTruthy()
   })
+
+  it('?aba= no endereço abre direto nessa aba; valor inválido é ignorado', () => {
+    sessionStorage.setItem('teste-aba', 'um')
+    window.history.replaceState(null, '', '/?aba=dois')
+    const { unmount } = render(<Tela />)
+    expect(screen.getByText('dois')).toBeTruthy()
+    unmount()
+    window.history.replaceState(null, '', '/?aba=tres')
+    render(<Tela />)
+    expect(screen.getByText('dois')).toBeTruthy()
+    window.history.replaceState(null, '', '/')
+  })
 })

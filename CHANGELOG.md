@@ -7,9 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- **OS › Antes de finalizar** (antes "Pronto para fechar"): novo nome do quadro. Cada atalho abre a tela já no item: CTO → Conexão › CTO, Conexão → Conexão › Resumo, Sinal → ONU › Sinal, ONU → ONU › Equipamento (registrar cliente).
+
 ### Corrigido
 
-- **ONU pelo PPPoE (OS, Conexão, Cliente e ONU):** a busca do Controllr é por trecho e trazia a ONU de outro cliente quando um PPPoE contém o outro (ex.: "silva@x" e "mariasilva@x"), mostrando sinal e "Registrada para" de outra pessoa no Pronto para fechar. Agora só vale o PPPoE exato.
+- **ONU pelo PPPoE (OS, Conexão, Cliente e ONU):** a busca do Controllr é por trecho e trazia a ONU de outro cliente quando um PPPoE contém o outro (ex.: "silva@x" e "mariasilva@x"), mostrando sinal e "Registrada para" de outra pessoa no Antes de finalizar. Agora só vale o PPPoE exato.
 
 ## [1.30.0] - 2026-11-06
 
