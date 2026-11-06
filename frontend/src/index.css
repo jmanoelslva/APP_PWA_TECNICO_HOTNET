@@ -651,6 +651,13 @@ h3,
   display: contents;
 }
 
+/* Na grade, cada botão cabe na sua coluna (AcoesContato fora da grade
+   usa min-width: max-content para dividir a largura do cartão). */
+.grade-acoes .acoes-contato-numero > * {
+  flex: none;
+  min-width: 0;
+}
+
 .grade-acao,
 .grade-acoes .acoes-contato-botao {
   --acao-cor: var(--cor-texto-secundario);

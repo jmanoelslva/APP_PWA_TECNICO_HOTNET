@@ -397,7 +397,7 @@ function DetalheClienteConteudo() {
                             href={contrato.contract_sign_doc_link}
                             target="_blank"
                             rel="noreferrer"
-                            className="botao botao-secundario botao-pequeno"
+                            className="botao botao-secundario botao-pequeno botao-largo"
                             style={{ '--botao-cor': CORES.cliente } as CSSProperties}
                           >
                             <LuFileText size={16} /> Ver contrato assinado
@@ -458,7 +458,7 @@ function DetalheClienteConteudo() {
                       <div className="acoes-cartao">
                         <button
                           type="button"
-                          className="botao botao-secundario"
+                          className="botao botao-secundario botao-pequeno"
                           style={{ '--botao-cor': CORES.cliente } as CSSProperties}
                           onClick={() => abrirEndereco(endereco, 'endereco')}
                         >
@@ -469,7 +469,7 @@ function DetalheClienteConteudo() {
                             href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="botao botao-secundario"
+                            className="botao botao-secundario botao-pequeno"
                             style={{ '--botao-cor': CORES.endereco } as CSSProperties}
                           >
                             <LuMapPin size={16} /> Ver no mapa
@@ -477,7 +477,7 @@ function DetalheClienteConteudo() {
                         ) : (
                           <button
                             type="button"
-                            className="botao botao-secundario"
+                            className="botao botao-secundario botao-pequeno"
                             style={{ '--botao-cor': CORES.endereco } as CSSProperties}
                             onClick={() => abrirEndereco(endereco, 'localizacao')}
                           >

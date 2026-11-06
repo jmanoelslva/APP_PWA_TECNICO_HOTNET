@@ -41,6 +41,7 @@ export default function CardAcessoRoteador({
           login_anterior: cpe.access_login,
           porta_anterior: cpe.access_port,
           senha_acesso_alterada: acessoSenha !== (cpe.access_password ?? ''),
+          senha_acesso_anterior: cpe.access_password ?? undefined,
         },
       })
       onAtualizado({ access_login: acessoLogin, access_password: acessoSenha, access_port: porta })

@@ -32,6 +32,16 @@ describe('mudancas', () => {
       { rotulo: 'Porta', antes: undefined, depois: '8080' },
     ])
   })
+
+  it('senha de acesso: valor anterior → novo; registro antigo só "alterada"', () => {
+    expect(
+      mudancas({ senha_acesso_alterada: true, senha_acesso_anterior: 'antiga9', cpe_access_password: 'nova123' }),
+    ).toEqual([{ rotulo: 'Senha de acesso', antes: 'antiga9', depois: 'nova123' }])
+    expect(mudancas({ senha_acesso_alterada: false, senha_acesso_anterior: 'x', cpe_access_password: 'x' })).toEqual([])
+    expect(mudancas({ senha_acesso_alterada: true })).toEqual([
+      { rotulo: 'Senha de acesso', depois: 'alterada', nota: 'o valor não é gravado' },
+    ])
+  })
 })
 
 describe('associação de ONU', () => {

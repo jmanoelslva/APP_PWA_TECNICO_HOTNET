@@ -651,8 +651,8 @@ function DetalheOrdemServicoConteudo() {
                   {(endereco?.address_zipcode ?? osAtual.address_zipcode) && (
                     <p className="detalhe-ordem-linha">CEP: {formatarCep(endereco?.address_zipcode ?? osAtual.address_zipcode)}</p>
                   )}
-                  {/* Cartão grande: ações com texto dividindo a largura (Editar, mapa, rota). */}
-                  {(endereco?.address_pk || rota) && (
+                  {/* Cartão grande: ações com texto dividindo a largura (Editar, mapa). A rota fica na grade do topo. */}
+                  {endereco?.address_pk && (
                     <div className="acoes-cartao">
                       {endereco?.address_pk && (
                         <button
@@ -685,17 +685,6 @@ function DetalheOrdemServicoConteudo() {
                             <LuLocateFixed size={16} /> Marcar local
                           </button>
                         )
-                      )}
-                      {rota && (
-                        <a
-                          href={rota}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="botao botao-secundario botao-pequeno"
-                          style={{ '--botao-cor': CORES.endereco } as CSSProperties}
-                        >
-                          <LuNavigation size={16} /> Rota
-                        </a>
                       )}
                     </div>
                   )}

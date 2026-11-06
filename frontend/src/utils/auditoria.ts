@@ -69,7 +69,10 @@ export function mudancas(alvo: Alvo, acao?: string): Mudanca[] {
     senha('Senha do Wi-Fi', alvo.senha_wifi_alterada),
     mudou('Login', alvo.login_anterior, alvo.cpe_access_login),
     mudou('Porta', alvo.porta_anterior, alvo.cpe_access_port),
-    senha('Senha de acesso', alvo.senha_acesso_alterada),
+    // Desde 06/11 a senha de acesso é gravada; registros antigos só têm "alterada".
+    tem(alvo.cpe_access_password)
+      ? mudou('Senha de acesso', alvo.senha_acesso_anterior, alvo.cpe_access_password)
+      : senha('Senha de acesso', alvo.senha_acesso_alterada),
   ].filter((m): m is Mudanca => m !== null)
 }
 

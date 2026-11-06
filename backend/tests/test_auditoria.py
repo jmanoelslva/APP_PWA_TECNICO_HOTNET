@@ -322,7 +322,8 @@ def test_wifi_e_acesso_gravam_antes_e_depois_sem_senha(pasta, monkeypatch):
         }).status_code == 200
         assert c.put("/cpe/9/detalhes", json={
             "cpe_access_login": "admin2", "cpe_access_password": "segredo2", "cpe_access_port": 8080,
-            "auditoria": {**contexto, "login_anterior": "admin", "porta_anterior": 80, "senha_acesso_alterada": False},
+            "auditoria": {**contexto, "login_anterior": "admin", "porta_anterior": 80, "senha_acesso_alterada": True,
+                          "senha_acesso_anterior": "antiga9"},
         }).status_code == 200
     finally:
         app.dependency_overrides.clear()
@@ -331,9 +332,11 @@ def test_wifi_e_acesso_gravam_antes_e_depois_sem_senha(pasta, monkeypatch):
     assert all("auditoria" not in b and "cliente" not in b for b in enviados)
     wifi, acesso = reversed(audit.consultar()[0])
     assert wifi["alvo"] == {"cpe_pk": 9, **contexto, "wifi_tipo_anterior": 0, "senha_wifi_alterada": True, "wifi_tipo": 2}
+    # Senha de acesso ao roteador é gravada (anterior e nova); a do Wi-Fi, não.
     assert acesso["alvo"] == {"cpe_pk": 9, **contexto, "login_anterior": "admin", "porta_anterior": 80,
-                              "senha_acesso_alterada": False, "cpe_access_login": "admin2", "cpe_access_port": 8080}
-    assert "segredo" not in json.dumps([wifi, acesso])
+                              "senha_acesso_alterada": True, "senha_acesso_anterior": "antiga9",
+                              "cpe_access_login": "admin2", "cpe_access_port": 8080, "cpe_access_password": "segredo2"}
+    assert "segredo1" not in json.dumps([wifi, acesso])
 
 
 def test_login_cookie_seguro_e_sem_lista_de_usuarios(monkeypatch):

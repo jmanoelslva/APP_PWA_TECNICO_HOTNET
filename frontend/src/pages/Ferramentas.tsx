@@ -34,7 +34,7 @@ const FERRAMENTAS: Ferramenta[] = [
   },
   {
     nome: 'Verificador de porta aberta',
-    descricao: 'yougetsignal.com — útil pra DVR/câmera não acessando remoto',
+    descricao: 'yougetsignal.com — útil para DVR/câmera não acessando remoto',
     url: 'https://www.yougetsignal.com/tools/open-ports/',
     Icone: LuPlug,
   },

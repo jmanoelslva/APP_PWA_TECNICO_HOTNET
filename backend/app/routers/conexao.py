@@ -150,7 +150,9 @@ async def historico_sessoes_cpe(
 
 class ContextoAuditoriaCpe(BaseModel):
     """Como a conexão estava na tela antes de salvar — só vai para a
-    auditoria, nunca para o Controllr. Senha nenhuma: só se foi trocada."""
+    auditoria, nunca para o Controllr. Senha do Wi-Fi: só se foi trocada.
+    Senha de acesso ao roteador: gravada (anterior e nova), por decisão do
+    usuário em 06/11 — os técnicos já a veem no app."""
 
     cliente: str | None = Field(default=None, max_length=128)
     pppoe: str | None = Field(default=None, max_length=64)
@@ -159,6 +161,7 @@ class ContextoAuditoriaCpe(BaseModel):
     login_anterior: str | None = Field(default=None, max_length=64)
     porta_anterior: int | None = None
     senha_acesso_alterada: bool | None = None
+    senha_acesso_anterior: str | None = Field(default=None, max_length=128)
 
 
 def _alvo_cpe(cpe_pk: int, contexto: ContextoAuditoriaCpe | None, **depois: Any) -> dict[str, Any]:
@@ -274,6 +277,7 @@ async def atualizar_detalhes_cpe(
             ctx.session,
             "cpe.editar_acesso_roteador",
             _alvo_cpe(cpe_pk, payload.auditoria,
-                      cpe_access_login=payload.cpe_access_login, cpe_access_port=payload.cpe_access_port),
+                      cpe_access_login=payload.cpe_access_login, cpe_access_port=payload.cpe_access_port,
+                      cpe_access_password=payload.cpe_access_password),
         )
     return {"success": True, "results": resposta.results}

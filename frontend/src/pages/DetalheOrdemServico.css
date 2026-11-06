@@ -211,16 +211,7 @@
 
 /* Links do endereço (Google Maps e rota): lado a lado com espaço, quebram
    linha em tela estreita. */
-.detalhe-ordem-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
 
-.detalhe-ordem-links .detalhe-ordem-chip {
-  margin-top: 0;
-}
 
 .detalhe-ordem-chip {
   display: inline-flex;

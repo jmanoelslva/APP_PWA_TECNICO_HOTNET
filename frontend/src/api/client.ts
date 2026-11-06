@@ -469,6 +469,7 @@ export interface ContextoAuditoriaCpe {
   login_anterior?: string
   porta_anterior?: number
   senha_acesso_alterada?: boolean
+  senha_acesso_anterior?: string
 }
 
 export function atualizarWifiCpe(

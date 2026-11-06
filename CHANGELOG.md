@@ -16,6 +16,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
+- **Auditoria › Acesso ao roteador:** a senha de acesso passa a ser gravada e exibida (anterior → nova). Registros antigos continuam só com "alterada". A senha do Wi-Fi segue sem valor gravado.
 - **Cliente › Contato › Endereços:** botão "Editar" com texto no lugar do lápis no canto, lado a lado com "Ver no mapa" (ou "Marcar local"), dividindo a largura do cartão. O lápis fica só em itens pequenos.
 - **Padrão de ações em cartões grandes (cliente, OS, conexão):** "Editar" com texto no lugar do lápis, e botões dividindo a largura do cartão (classe global `.acoes-cartao`). Telefone: Ligar / WhatsApp / Editar na mesma linha. Endereço da OS: Editar / Ver no mapa (ou Marcar local) / Rota. Botões sozinhos (Salvar Wi-Fi, Salvar acesso, Salvar observação, Salvar CTO, Carregar mais, Adicionar telefone) em largura cheia (`.botao-largo`). Ficam com ícone onde o espaço é restrito: Renomear ONU (linha de campo), copiar/mostrar senha, e botões de cabeçalho (Atualizar sessão, Detalhes da ONU, Limpar recentes).
 - **OS › Pronto para fechar:** endereço sem coordenada abre "Marcar local" direto na aba Localização.
@@ -25,6 +26,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **OS:** botões do topo (Rota, Ligar, WhatsApp, Chamado, Mapa) voltam a caber cada um na sua coluna; "Rota" saiu do cartão de endereço, onde duplicava a do topo.
+- **Cliente:** botões do endereço no mesmo tamanho dos da OS; "Ver contrato assinado" em largura cheia.
+- **Ferramentas:** texto em registro formal ("para").
 - **Auditoria:** salvar de novo a CTO, a observação ou o acesso ao roteador sem mudar nada não gera mais um segundo registro (visto em 06/11: "Salvar CTO" tocado duas vezes). Troca só da senha de acesso continua registrada como "Senha de acesso: alterada".
 - **Editar endereço:** campos ficavam comprimidos quando o formulário passava da altura da tela; agora a janela rola.
 
