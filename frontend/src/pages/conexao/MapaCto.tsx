@@ -313,22 +313,26 @@ export default function MapaCto({
         </button>
       </div>
       <div className="mapa-cto-rodape">
+        {/* Legenda numa linha só dela (acima dos botões); cada item com o
+            marcador e o nome juntos, quebrando entre itens se faltar espaço. */}
         <span className="mapa-cto-legenda">
-          <i style={{ background: '#1a73e8' }} /> Você
-          {offlinePorCto.size > 0 && (
-            <>
-              <i className="mapa-cto-legenda-offline" /> Com offline
-            </>
-          )}
+          <span>
+            <i style={{ background: '#1a73e8' }} /> Você
+          </span>
           {cliente && (
-            <>
+            <span>
               <i style={{ background: '#2e9e44' }} /> Cliente
-            </>
+            </span>
           )}
           {cliente && ligacoes.length > 0 && (
-            <>
+            <span>
               <i className="mapa-cto-legenda-ligacao" /> Até a CTO
-            </>
+            </span>
+          )}
+          {offlinePorCto.size > 0 && (
+            <span>
+              <i className="mapa-cto-legenda-offline" /> Com offline
+            </span>
           )}
         </span>
         <button type="button" onClick={() => setAmpliado((valor) => !valor)}>

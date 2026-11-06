@@ -274,9 +274,10 @@
 
 .mapa-cto-rodape {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-top: 6px;
+  gap: 8px 16px;
+  margin-top: 8px;
   font-size: 12px;
 }
 
@@ -296,19 +297,28 @@
 }
 
 .mapa-cto-legenda {
+  /* Linha inteira só para a legenda; os botões vão para a linha de baixo. */
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  color: var(--cor-texto-terciario);
+}
+
+.mapa-cto-legenda > span {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-right: auto;
-  color: var(--cor-texto-terciario);
+  gap: 5px;
+  white-space: nowrap;
 }
 
 .mapa-cto-legenda i {
   display: inline-block;
+  flex-shrink: 0;
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  margin-left: 4px;
 }
 
 /* Traçado cliente → CTO: tracejado branco, igual à linha do mapa */
