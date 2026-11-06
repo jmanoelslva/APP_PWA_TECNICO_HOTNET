@@ -34,13 +34,13 @@
 .onu-busca-campo input {
   flex: 1;
   min-width: 0;
-  height: 44px;
+  height: 48px;
   padding: 0 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1.5px solid var(--cor-borda);
   background: var(--cor-fundo);
   color: var(--cor-texto);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .onu-busca-campo input:focus {
@@ -61,7 +61,7 @@
   margin: 4px 0 0;
   padding: 4px;
   list-style: none;
-  max-height: 220px;
+  max-height: 50vh;
   overflow-y: auto;
   background: var(--cor-superficie);
   border: 1.5px solid var(--cor-borda);
@@ -70,16 +70,24 @@
 }
 
 .onu-combobox-lista li button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
+  min-height: 56px;
   text-align: left;
   padding: 8px 10px;
   border: none;
   background: transparent;
   color: var(--cor-texto);
-  font-size: 13px;
-  border-radius: 6px;
+  font-size: 15px;
+  border-radius: 8px;
   cursor: pointer;
+}
+
+.onu-combobox-lista li button svg {
+  flex-shrink: 0;
+  color: var(--cor-texto-terciario);
 }
 
 @media (hover: hover) {
@@ -89,8 +97,8 @@
 }
 
 .onu-combobox-vazio {
-  padding: 8px 10px;
-  font-size: 12px;
+  padding: 12px 10px;
+  font-size: 14px;
   color: var(--cor-texto-terciario);
 }
 
@@ -323,11 +331,11 @@
 }
 
 .onu-modal-input {
-  height: 42px;
-  border: 1px solid var(--cor-borda);
-  border-radius: 8px;
-  padding: 0 12px;
-  font-size: 14px;
+  height: 48px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 16px;
   color: var(--cor-texto);
   background: var(--cor-fundo);
   margin-bottom: 8px;
@@ -451,22 +459,6 @@
 .registrar-lista li button svg {
   flex-shrink: 0;
   color: var(--cor-texto-terciario);
-}
-
-.registrar-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.registrar-item strong {
-  overflow-wrap: anywhere;
-}
-
-.registrar-item small {
-  font-size: 13px;
-  color: var(--cor-texto-secundario);
 }
 
 .registrar-confirmacao {

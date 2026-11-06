@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { LuWifi } from 'react-icons/lu'
 import { CORES } from '../../utils/cores'
 import DeslizarParaConfirmar from '../../components/DeslizarParaConfirmar'
 import { useFecharComVoltar } from '../../hooks/useFecharComVoltar'
@@ -49,11 +50,14 @@ export function ModalConfirmarAcao({
 /** Novo nome da ONU (POST /fiber_ctl/onu/apply_rename, ver CONTROLLR_API_NOTES.md). */
 export function ModalRenomear({
   nomeAtual,
+  sugestao,
   salvando,
   onSalvar,
   onCancelar,
 }: {
   nomeAtual: string
+  // Na HOTNET a descrição da ONU é o login PPPoE em maiúsculo.
+  sugestao?: string
   salvando: boolean
   onSalvar: (nome: string) => void
   onCancelar: () => void
@@ -73,8 +77,19 @@ export function ModalRenomear({
           value={novoNome}
           onChange={(e) => setNovoNome(e.target.value)}
           maxLength={64}
+          autoCapitalize="characters"
+          autoCorrect="off"
+          spellCheck={false}
           autoFocus
         />
+        {sugestao && novoNome.trim() !== sugestao && (
+          <button type="button" className="registrar-sugestao" onClick={() => setNovoNome(sugestao)}>
+            <LuWifi size={16} aria-hidden />
+            <span>
+              Usar o PPPoE: <strong>{sugestao}</strong>
+            </span>
+          </button>
+        )}
         <div className="onu-modal-acoes">
           <button className="botao botao-secundario" onClick={onCancelar} disabled={salvando}>
             Cancelar

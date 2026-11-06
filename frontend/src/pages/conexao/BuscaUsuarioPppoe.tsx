@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
-import { LuSearch } from 'react-icons/lu'
+import { LuSearch, LuWifi } from 'react-icons/lu'
 import { buscarCpe, type CpeDto } from '../../api/client'
 import { CORES } from '../../utils/cores'
 
@@ -95,8 +95,19 @@ export default function BuscaUsuarioPppoe({
                     if (resultado.pk) onEscolher({ cpe_pk: String(resultado.pk) })
                   }}
                 >
-                  <strong>{resultado.username}</strong>
-                  {resultado.client_complete_name && ` — ${resultado.client_complete_name}`}
+                  <LuWifi size={20} aria-hidden />
+                  <span className="item-duas-linhas">
+                    <strong>{resultado.username}</strong>
+                    <small>
+                      {[
+                        resultado.client_complete_name,
+                        resultado.contract_number != null && `Contrato ${resultado.contract_number}`,
+                        resultado.dp_name && `CTO ${resultado.dp_name}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </small>
+                  </span>
                 </button>
               </li>
             ))}

@@ -10,6 +10,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Alterado
 
 - **Registrar cliente na ONU:** busca por nome, CPF/CNPJ, contrato ou login PPPoE; atalho com o PPPoE já configurado na ONU; achado pelo PPPoE ou com uma só conexão, vai direto para a confirmação; mostra serial, OLT e posição da ONU, passos (Cliente, Conexão, Confirmar), contrato e CTO de cada conexão, resumo antes de associar e aviso quando o PPPoE escolhido difere do configurado na ONU; campos e itens com toque de 48px.
+- **Busca de ONU:** itens em duas linhas com ícone; a ONU mostra o cliente (ou "Sem cliente"), a OLT e a posição, e o PPPoE mostra cliente, contrato e CTO.
+- **Busca de PPPoE na Conexão:** itens com cliente, contrato e CTO.
+- **Renomear ONU:** atalho "Usar o PPPoE" com o login configurado na ONU, em maiúsculo.
+- **Toque de 48px:** campos e botões dos cartões da Conexão, lista de CTOs, Editar endereço, abas, ações de contato, Clientes Offline, Auditoria, OS do dia e visualizador de imagem do chamado; campos com letra de 16px.
 
 ## [1.28.0] - 2026-11-05
 

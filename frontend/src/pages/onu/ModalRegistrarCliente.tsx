@@ -236,7 +236,7 @@ export default function ModalRegistrarCliente({
                   <li key={`cpe-${cpe.pk}`}>
                     <button type="button" onClick={() => escolherConexao(cpe)}>
                       <LuWifi size={20} aria-hidden />
-                      <span className="registrar-item">
+                      <span className="item-duas-linhas">
                         <strong>{cpe.username}</strong>
                         <small>
                           {[cpe.client_complete_name, cpe.contract_number != null && `Contrato ${cpe.contract_number}`]
@@ -252,7 +252,7 @@ export default function ModalRegistrarCliente({
                   <li key={resultado.client_pk}>
                     <button type="button" onClick={() => escolherCliente(resultado)}>
                       <LuUser size={20} aria-hidden />
-                      <span className="registrar-item">
+                      <span className="item-duas-linhas">
                         <strong>{resultado.cliente.client_complete_name ?? `Cliente #${resultado.client_pk}`}</strong>
                         <small>
                           {[
@@ -286,7 +286,7 @@ export default function ModalRegistrarCliente({
                   <li key={cpe.cpe_pk}>
                     <button type="button" onClick={() => setCpeEscolhida(cpe)}>
                       <LuWifi size={20} aria-hidden />
-                      <span className="registrar-item">
+                      <span className="item-duas-linhas">
                         <strong>{cpe.cpe_username ?? `Conexão #${cpe.cpe_pk}`}</strong>
                         <small>
                           {[

@@ -333,6 +333,7 @@ export default function OnuStatus() {
         {renomeando !== null && (
           <ModalRenomear
             nomeAtual={renomeando}
+            sugestao={onu?.wancfg_pppoe_username?.trim().toUpperCase() || undefined}
             salvando={salvandoNome}
             onSalvar={confirmarRenomear}
             onCancelar={() => setRenomeando(null)}

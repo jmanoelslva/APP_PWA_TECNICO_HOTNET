@@ -1,10 +1,27 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
-import { LuScanQrCode } from 'react-icons/lu'
+import { LuCable, LuScanQrCode, LuWifi } from 'react-icons/lu'
 import { buscarCpe, buscarOnu, type CpeDto, type OnuDto } from '../../api/client'
 import LeitorCodigoBarras from '../../components/LeitorCodigoBarras'
 import { CORES } from '../../utils/cores'
 
 type ResultadoCombo = { tipo: 'serial'; item: OnuDto } | { tipo: 'usuario'; item: CpeDto }
+
+/** "Cliente · OLT · 1/2:3" — sem cliente, avisa. */
+function detalheOnu(onu: OnuDto): string {
+  const posicao = [onu.slot, onu.pon, onu.id].every((v) => v != null) ? `${onu.slot}/${onu.pon}:${onu.id}` : null
+  return [onu.client_name || 'Sem cliente', onu.olt_name, posicao].filter(Boolean).join(' · ')
+}
+
+/** "Cliente · Contrato 123 · CTO X" */
+function detalheConexao(cpe: CpeDto): string {
+  return [
+    cpe.client_complete_name,
+    cpe.contract_number != null && `Contrato ${cpe.contract_number}`,
+    cpe.dp_name && `CTO ${cpe.dp_name}`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
 
 /**
  * Combobox único — busca por serial (/fiber_ctl/onu/list no formato
@@ -118,13 +135,19 @@ export default function BuscaOnu({
                   <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => selecionar(resultado)}>
                     {resultado.tipo === 'serial' ? (
                       <>
-                        <strong>{resultado.item.sn}</strong>
-                        {resultado.item.client_name && ` — ${resultado.item.client_name}`}
+                        <LuCable size={20} aria-hidden />
+                        <span className="item-duas-linhas">
+                          <strong>{resultado.item.sn}</strong>
+                          <small>{detalheOnu(resultado.item)}</small>
+                        </span>
                       </>
                     ) : (
                       <>
-                        <strong>{resultado.item.username}</strong>
-                        {resultado.item.client_complete_name && ` — ${resultado.item.client_complete_name}`}
+                        <LuWifi size={20} aria-hidden />
+                        <span className="item-duas-linhas">
+                          <strong>{resultado.item.username}</strong>
+                          <small>{detalheConexao(resultado.item)}</small>
+                        </span>
                       </>
                     )}
                   </button>
