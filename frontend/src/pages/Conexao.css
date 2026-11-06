@@ -491,20 +491,54 @@
   outline-offset: 2px;
 }
 
-/* Sessão: verde online, apagado offline. */
+/* Bolinha: situação do contrato do ocupante. Anel claro para aparecer
+   sobre qualquer fundo (cinza, cor da Conexão ou vermelho). */
 .portas-cto-ponto {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 7px;
-  height: 7px;
+  top: 4px;
+  right: 4px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: color-mix(in srgb, currentColor 45%, transparent);
+  background: var(--cor-texto-desabilitado);
+  box-shadow: 0 0 0 1.5px #fff;
 }
 
-.portas-cto-ponto.online {
+.portas-cto-ponto.contrato-1 {
   background: #22c55e;
-  box-shadow: 0 0 0 1.5px var(--cor-superficie);
+}
+
+.portas-cto-ponto.contrato-2,
+.portas-cto-ponto.contrato-3 {
+  background: #facc15;
+}
+
+.portas-cto-ponto.contrato-4 {
+  background: #f97316;
+}
+
+.portas-cto-ponto.contrato-5 {
+  background: #dc2626;
+}
+
+.portas-cto-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.portas-cto-legenda > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.portas-cto-legenda .portas-cto-ponto {
+  position: static;
+  box-shadow: 0 0 0 1px var(--cor-borda);
 }
 
 .portas-cto-detalhe {

@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { LuArrowRight } from 'react-icons/lu'
 import { Link } from 'react-router-dom'
 import { buscarCpe, type CpeDto } from '../../api/client'
+import { formatarStatusContrato } from '../../utils/formatacao'
 import { gradeDePortas, ocupanteDaPorta, portasDaCto, type CasaPorta } from '../../utils/portasCto'
 
 const SITUACAO_CONTRATO: Record<number, string> = { 0: 'contrato desativado', 5: 'contrato cancelado' }
 
 /**
- * Grade fixa com todas as portas da CTO escolhida: livre, ocupada (cheia),
- * desta conexão ou em conflito. Tocar numa livre preenche o campo; tocar
+ * Grade fixa com todas as portas da CTO escolhida: livre, ocupada (cheia,
+ * bolinha na cor da situação do contrato), desta conexão ou em conflito. Tocar numa livre preenche o campo; tocar
  * numa ocupada mostra quem está nela, sem mudar o campo. Porta de contrato
  * com CPE desabilitado conta como livre, com o antigo ocupante no detalhe;
  * CPE habilitado ocupa mesmo com contrato cancelado (o Controllr recusa).
@@ -50,6 +51,12 @@ export default function PortasCto({
 
   const portas = useMemo(() => (conexoes ? portasDaCto(conexoes, limite) : null), [conexoes, limite])
   const grade = useMemo(() => (portas ? gradeDePortas(portas, limite, cpePk) : []), [portas, limite, cpePk])
+  // Legenda só com as situações de contrato presentes na grade.
+  const contratosNaGrade = useMemo(
+    () =>
+      [...new Set(grade.flatMap((casa) => (casa.ocupantes.length === 1 ? [casa.ocupantes[0].contrato ?? 1] : [])))].sort(),
+    [grade],
+  )
 
   if (dpPk == null) return null
   if (falhou) return <p className="portas-cto-nota">Não foi possível consultar as portas desta CTO.</p>
@@ -102,12 +109,21 @@ export default function PortasCto({
                 >
                   {casa.porta}
                   {casa.situacao !== 'livre' && casa.ocupantes.length === 1 && (
-                    <span className={casa.ocupantes[0].online ? 'portas-cto-ponto online' : 'portas-cto-ponto'} />
+                    <span className={`portas-cto-ponto contrato-${casa.ocupantes[0].contrato ?? 1}`} />
                   )}
                 </button>
               )
             })}
           </div>
+          {contratosNaGrade.length > 0 && (
+            <div className="portas-cto-legenda">
+              {contratosNaGrade.map((contrato) => (
+                <span key={contrato}>
+                  <span className={`portas-cto-ponto contrato-${contrato}`} /> {formatarStatusContrato(contrato)}
+                </span>
+              ))}
+            </div>
+          )}
           <DetalhePorta casa={grade.find((casa) => casa.porta === vista)} cpePk={cpePk} />
         </>
       )}
