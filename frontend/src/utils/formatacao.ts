@@ -174,7 +174,7 @@ export const TEXTO_SINAL_ONU: Record<NivelSinal, string> = {
   desconhecida: 'Sinal não informado',
 }
 
-function soDigitos(valor: string | null | undefined): string {
+export function soDigitos(valor: string | null | undefined): string {
   return (valor ?? '').replace(/\D/g, '')
 }
 

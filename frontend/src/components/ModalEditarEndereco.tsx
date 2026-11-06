@@ -1,12 +1,13 @@
-import { useState, type ChangeEvent, type CSSProperties } from 'react'
+import { lazy, Suspense, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { LuExternalLink, LuLocateFixed, LuMapPin } from 'react-icons/lu'
+import { soDigitos } from '../utils/formatacao'
 import {
   formatarDistancia,
   obterMelhorLocalizacao,
   PRECISAO_MAXIMA_ACEITAVEL_M,
   PRECISAO_SUFICIENTE_M,
 } from '../pages/conexao/localizacao'
-import { ApiError, atualizarEndereco, type EnderecoDto } from '../api/client'
+import { ApiError, atualizarEndereco, consultarCep, type EnderecoDto } from '../api/client'
 import { useToast } from './Toast/useToast'
 import './ModalEditarEndereco.css'
 import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
@@ -22,10 +23,53 @@ interface Props {
   onSalvo: (endereco: EnderecoDto) => void
 }
 
+// Leaflet só carrega quando o endereço tem coordenada.
+const MapaEndereco = lazy(() => import('./MapaEndereco'))
+
+// Máscara enquanto digita (00000-000); o formulário guarda só os dígitos.
+function mascararCep(valor: string | null | undefined): string {
+  const d = soDigitos(valor).slice(0, 8)
+  return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d
+}
+
+const CAMPOS_EDITAVEIS: (keyof EnderecoDto)[] = [
+  'address_identification',
+  'address',
+  'address_number',
+  'address_zipcode',
+  'address_neighborhood',
+  'address_province',
+  'address_state',
+  'address_completation',
+  'address_latitude',
+  'address_longitude',
+  'address_siafi',
+]
+
 export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, onSalvo }: Props) {
-  // "Voltar" do celular fecha a janela.
-  useFecharComVoltar(true, onFechar)
   const [form, setForm] = useState<EnderecoDto>(endereco)
+  const [confirmandoDescarte, setConfirmandoDescarte] = useState(false)
+  const [buscandoCep, setBuscandoCep] = useState(false)
+  const ultimoCepConsultadoRef = useRef(soDigitos(endereco.address_zipcode))
+  const janelaRef = useRef<HTMLDivElement>(null)
+
+  const alterado = CAMPOS_EDITAVEIS.some((chave) => (form[chave] ?? '') !== (endereco[chave] ?? ''))
+
+  // Fechar (Cancelar, toque fora, arrastar ou "Voltar" do celular) com
+  // alterações pede confirmação em vez de perder o que foi digitado.
+  function tentarFechar() {
+    if (!alterado) {
+      onFechar()
+      return
+    }
+    // O arrastar para baixo já deslizou a janela para fora: volta ao lugar.
+    if (janelaRef.current) janelaRef.current.style.transform = ''
+    setConfirmandoDescarte(true)
+  }
+
+  // "Voltar" do celular: fecha a janela ou, na confirmação, continua editando.
+  useFecharComVoltar(!confirmandoDescarte, tentarFechar)
+  useFecharComVoltar(confirmandoDescarte, () => setConfirmandoDescarte(false))
   const [salvando, setSalvando] = useState(false)
   const [capturandoLocalizacao, setCapturandoLocalizacao] = useState(false)
   const { toast } = useToast()
@@ -98,6 +142,36 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
     }
   }
 
+  // Com os 8 dígitos, preenche logradouro, bairro, cidade, UF e o código
+  // do município (address_siafi, exigido pelo Controllr). Logradouro e
+  // bairro só mudam se o CEP os informar (CEP geral de cidade vem sem).
+  async function aoMudarCep(e: ChangeEvent<HTMLInputElement>) {
+    const digitos = soDigitos(e.target.value).slice(0, 8)
+    setForm((atual) => ({ ...atual, address_zipcode: digitos }))
+    if (digitos.length !== 8 || digitos === ultimoCepConsultadoRef.current) return
+    ultimoCepConsultadoRef.current = digitos
+    setBuscandoCep(true)
+    try {
+      const cep = await consultarCep(digitos)
+      setForm((atual) => {
+        if (soDigitos(atual.address_zipcode) !== digitos) return atual
+        return {
+          ...atual,
+          address: cep.address ?? atual.address,
+          address_neighborhood: cep.address_neighborhood ?? atual.address_neighborhood,
+          address_province: cep.address_province ?? atual.address_province,
+          address_state: cep.address_state ?? atual.address_state,
+          address_siafi: cep.address_siafi ?? atual.address_siafi,
+        }
+      })
+      toast('Endereço preenchido pelo CEP. Confira o número.', 'sucesso')
+    } catch (excecao) {
+      toast(excecao instanceof ApiError ? excecao.message : 'Não foi possível consultar o CEP.')
+    } finally {
+      setBuscandoCep(false)
+    }
+  }
+
   function campo<K extends keyof EnderecoDto>(chave: K) {
     return {
       value: (form[chave] as string) ?? '',
@@ -108,8 +182,8 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
   const estiloBotaoPrimario = corDestaque ? ({ '--botao-cor': corDestaque } as CSSProperties) : undefined
 
   return (
-    <div className="modal-editar-endereco-fundo" onClick={onFechar}>
-      <div className="modal-editar-endereco" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-editar-endereco-fundo" onClick={tentarFechar}>
+      <div ref={janelaRef} className="modal-editar-endereco" onClick={(e) => e.stopPropagation()}>
         <h2>Editar endereço</h2>
 
         <label>Identificação</label>
@@ -124,8 +198,15 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
             <input {...campo('address_number')} />
           </div>
           <div>
-            <label>CEP</label>
-            <input inputMode="numeric" {...campo('address_zipcode')} />
+            <label>CEP{buscandoCep && <span className="modal-editar-endereco-buscando"> · buscando…</span>}</label>
+            <input
+              inputMode="numeric"
+              autoComplete="postal-code"
+              placeholder="00000-000"
+              value={mascararCep(form.address_zipcode)}
+              onChange={aoMudarCep}
+              aria-busy={buscandoCep}
+            />
           </div>
         </div>
 
@@ -139,7 +220,12 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
           </div>
           <div>
             <label>UF</label>
-            <input {...campo('address_state')} maxLength={2} />
+            <input
+              value={form.address_state ?? ''}
+              onChange={(e) => setForm((atual) => ({ ...atual, address_state: e.target.value.toUpperCase() }))}
+              maxLength={2}
+              autoCapitalize="characters"
+            />
           </div>
         </div>
 
@@ -184,6 +270,15 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
               </a>
             )}
           </div>
+          {temCoordenada && (
+            <Suspense fallback={<div className="mapa-endereco" />}>
+              <MapaEndereco
+                lat={Number(form.address_latitude)}
+                lng={Number(form.address_longitude)}
+                precisaoM={precisaoM}
+              />
+            </Suspense>
+          )}
           {precisaoM !== null && !capturandoLocalizacao && (
             <p className={`modal-editar-endereco-precisao${precisaoRuim ? ' ruim' : ''}`}>
               Precisão de ±{formatarDistancia(precisaoM)}
@@ -207,11 +302,33 @@ export default function ModalEditarEndereco({ endereco, corDestaque, onFechar, o
           </button>
         </div>
 
-        <div className="modal-editar-endereco-acoes">
-          <button className="botao botao-secundario" onClick={onFechar}>Cancelar</button>
-          <button aria-busy={salvando} className="botao botao-primario" style={estiloBotaoPrimario} disabled={salvando} onClick={salvar}>
-            {salvando ? 'Salvando…' : 'Salvar'}
-          </button>
+        <div className="modal-editar-endereco-rodape">
+          {confirmandoDescarte ? (
+            <>
+              <p className="modal-editar-endereco-aviso">Descartar as alterações deste endereço?</p>
+              <div className="modal-editar-endereco-acoes">
+                <button className="botao botao-secundario" onClick={() => setConfirmandoDescarte(false)}>
+                  Continuar editando
+                </button>
+                <button className="botao botao-perigo" onClick={onFechar}>
+                  Descartar
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="modal-editar-endereco-acoes">
+              <button className="botao botao-secundario" onClick={tentarFechar}>Cancelar</button>
+              <button
+                aria-busy={salvando}
+                className="botao botao-primario"
+                style={estiloBotaoPrimario}
+                disabled={salvando || buscandoCep || capturandoLocalizacao}
+                onClick={salvar}
+              >
+                {salvando ? 'Salvando…' : alterado ? 'Salvar alterações' : 'Salvar'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

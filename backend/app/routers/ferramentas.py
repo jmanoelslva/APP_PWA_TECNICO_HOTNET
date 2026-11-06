@@ -57,3 +57,54 @@ async def meu_ip(
         "isp": dados.get("isp"),
         "as_info": dados.get("as"),
     }
+
+
+def normalizar_viacep(dados: dict[str, Any]) -> dict[str, Any] | None:
+    """Converte a resposta do ViaCEP para os campos de endereço do Controllr.
+
+    CEP inexistente vem como {"erro": true}. CEP geral de cidade vem com
+    logradouro e bairro vazios — devolvidos como None para o app não apagar
+    o que o técnico já digitou. "siafi" é o código de município que o
+    Controllr exige em address_siafi.
+    """
+    if not dados or dados.get("erro"):
+        return None
+
+    def texto(chave: str) -> str | None:
+        valor = str(dados.get(chave) or "").strip()
+        return valor or None
+
+    siafi = texto("siafi")
+    return {
+        "address": texto("logradouro"),
+        "address_neighborhood": texto("bairro"),
+        "address_province": texto("localidade"),
+        "address_state": texto("uf"),
+        "address_siafi": int(siafi) if siafi and siafi.isdigit() else None,
+    }
+
+
+@router.get("/cep/{cep}")
+async def consultar_cep(
+    cep: str,
+    _sessao: TechnicianSession = Depends(get_current_session),
+) -> dict[str, Any]:
+    """Endereço de um CEP via ViaCEP (público, sem chave), consultado pelo
+    servidor para não abrir mais um domínio no CSP do app."""
+    digitos = "".join(c for c in cep if c.isdigit())
+    if len(digitos) != 8:
+        raise HTTPException(status_code=400, detail="CEP deve ter 8 dígitos.")
+    try:
+        timeout = aiohttp.ClientTimeout(total=8)
+        async with aiohttp.ClientSession(timeout=timeout) as http:
+            async with http.get(f"https://viacep.com.br/ws/{digitos}/json/") as resposta:
+                if resposta.status != 200:
+                    raise HTTPException(status_code=502, detail="Não foi possível consultar o CEP.")
+                dados = await resposta.json(content_type=None)
+    except (aiohttp.ClientError, TimeoutError):
+        raise HTTPException(status_code=502, detail="Não foi possível consultar o CEP.")
+
+    endereco = normalizar_viacep(dados)
+    if endereco is None:
+        raise HTTPException(status_code=404, detail="CEP não encontrado.")
+    return {"success": True, "cep": digitos, **endereco}

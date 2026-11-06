@@ -1010,6 +1010,22 @@ export function consultarMeuIp(ip?: string): Promise<MeuIpResponse> {
   return get<MeuIpResponse>('ferramentas/meu-ip', { ip })
 }
 
+// Endereço de um CEP (ViaCEP, consultado pelo servidor). Campos vazios no
+// ViaCEP (CEP geral de cidade) vêm null.
+export interface CepResponse {
+  success: boolean
+  cep: string
+  address: string | null
+  address_neighborhood: string | null
+  address_province: string | null
+  address_state: string | null
+  address_siafi: number | null
+}
+
+export function consultarCep(cep: string): Promise<CepResponse> {
+  return get<CepResponse>(`ferramentas/cep/${encodeURIComponent(cep)}`)
+}
+
 // ---------------------------------------------------------------------
 // Auditoria (só para os usuários em AUDITORIA_USUARIOS no servidor)
 // ---------------------------------------------------------------------
