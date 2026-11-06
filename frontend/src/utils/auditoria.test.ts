@@ -23,6 +23,12 @@ describe('mudancas', () => {
     ])
   })
 
+  it('Wi-Fi: senha anterior → nova quando gravada', () => {
+    expect(mudancas({ wifi_tipo_anterior: 2, wifi_tipo: 2, senha_wifi_alterada: true, senha_wifi_anterior: 'velha1', wifi_senha: 'nova12345' })).toEqual([
+      { rotulo: 'Senha do Wi-Fi', antes: 'velha1', depois: 'nova12345' },
+    ])
+  })
+
   it('acesso ao roteador: login e porta; registro antigo só com o valor novo', () => {
     expect(mudancas({ login_anterior: 'admin', cpe_access_login: 'admin2', porta_anterior: 80, cpe_access_port: 80 })).toEqual([
       { rotulo: 'Login', antes: 'admin', depois: 'admin2' },

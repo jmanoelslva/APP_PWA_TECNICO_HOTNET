@@ -44,6 +44,7 @@ export default function CardWifi({
           pppoe: cpe.username,
           wifi_tipo_anterior: cpe.wifi_encryption_type,
           senha_wifi_alterada: senhaParaEnviar !== (cpe.wifi_encryption_password ?? ''),
+          senha_wifi_anterior: cpe.wifi_encryption_password ?? undefined,
         },
       })
       setWifiSenha(senhaParaEnviar)

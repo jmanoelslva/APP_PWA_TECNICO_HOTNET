@@ -466,6 +466,7 @@ export interface ContextoAuditoriaCpe {
   pppoe?: string
   wifi_tipo_anterior?: number
   senha_wifi_alterada?: boolean
+  senha_wifi_anterior?: string
   login_anterior?: string
   porta_anterior?: number
   senha_acesso_alterada?: boolean

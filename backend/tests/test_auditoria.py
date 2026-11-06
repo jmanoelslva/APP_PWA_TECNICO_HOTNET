@@ -318,7 +318,7 @@ def test_wifi_e_acesso_gravam_antes_e_depois_sem_senha(pasta, monkeypatch):
         c = TestClient(app)
         assert c.put("/cpe/9/wifi", json={
             "wifi_encryption_type": 2, "wifi_encryption_password": "segredo1",
-            "auditoria": {**contexto, "wifi_tipo_anterior": 0, "senha_wifi_alterada": True},
+            "auditoria": {**contexto, "wifi_tipo_anterior": 0, "senha_wifi_alterada": True, "senha_wifi_anterior": "velha1"},
         }).status_code == 200
         assert c.put("/cpe/9/detalhes", json={
             "cpe_access_login": "admin2", "cpe_access_password": "segredo2", "cpe_access_port": 8080,
@@ -331,12 +331,12 @@ def test_wifi_e_acesso_gravam_antes_e_depois_sem_senha(pasta, monkeypatch):
     # O contexto da auditoria não vai para o Controllr.
     assert all("auditoria" not in b and "cliente" not in b for b in enviados)
     wifi, acesso = reversed(audit.consultar()[0])
-    assert wifi["alvo"] == {"cpe_pk": 9, **contexto, "wifi_tipo_anterior": 0, "senha_wifi_alterada": True, "wifi_tipo": 2}
-    # Senha de acesso ao roteador é gravada (anterior e nova); a do Wi-Fi, não.
+    assert wifi["alvo"] == {"cpe_pk": 9, **contexto, "wifi_tipo_anterior": 0, "senha_wifi_alterada": True,
+                            "senha_wifi_anterior": "velha1", "wifi_tipo": 2, "wifi_senha": "segredo1"}
+    # Senhas de acesso ao roteador e do Wi-Fi gravadas (anterior e nova).
     assert acesso["alvo"] == {"cpe_pk": 9, **contexto, "login_anterior": "admin", "porta_anterior": 80,
                               "senha_acesso_alterada": True, "senha_acesso_anterior": "antiga9",
                               "cpe_access_login": "admin2", "cpe_access_port": 8080, "cpe_access_password": "segredo2"}
-    assert "segredo1" not in json.dumps([wifi, acesso])
 
 
 def test_login_cookie_seguro_e_sem_lista_de_usuarios(monkeypatch):

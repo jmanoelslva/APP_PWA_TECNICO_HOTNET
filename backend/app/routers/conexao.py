@@ -150,14 +150,15 @@ async def historico_sessoes_cpe(
 
 class ContextoAuditoriaCpe(BaseModel):
     """Como a conexão estava na tela antes de salvar — só vai para a
-    auditoria, nunca para o Controllr. Senha do Wi-Fi: só se foi trocada.
-    Senha de acesso ao roteador: gravada (anterior e nova), por decisão do
-    usuário em 06/11 — os técnicos já a veem no app."""
+    auditoria, nunca para o Controllr. Senhas do Wi-Fi e de acesso ao
+    roteador: gravadas (anterior e nova), por decisão do usuário em 06/11 —
+    os técnicos já as veem no app."""
 
     cliente: str | None = Field(default=None, max_length=128)
     pppoe: str | None = Field(default=None, max_length=64)
     wifi_tipo_anterior: int | None = None
     senha_wifi_alterada: bool | None = None
+    senha_wifi_anterior: str | None = Field(default=None, max_length=128)
     login_anterior: str | None = Field(default=None, max_length=64)
     porta_anterior: int | None = None
     senha_acesso_alterada: bool | None = None
@@ -205,9 +206,18 @@ async def atualizar_wifi_cpe(
     resposta = await ctx.controllr.cpe_update(urlencode(campos))
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível atualizar o Wi-Fi.", resposta))
-    # Sem a senha em si no log — só o registro de que foi alterada.
-    registrar_auditoria(request, ctx.session, "cpe.editar_wifi",
-                        _alvo_cpe(cpe_pk, payload.auditoria, wifi_tipo=payload.wifi_encryption_type))
+    # Senha anterior (vem da tela) e nova no registro. Salvar de novo sem
+    # mudar tipo nem senha não vira registro.
+    a = payload.auditoria
+    sem_mudanca = (
+        a is not None
+        and a.senha_wifi_alterada is False
+        and payload.wifi_encryption_type == a.wifi_tipo_anterior
+    )
+    if not sem_mudanca:
+        registrar_auditoria(request, ctx.session, "cpe.editar_wifi",
+                            _alvo_cpe(cpe_pk, a, wifi_tipo=payload.wifi_encryption_type,
+                                      wifi_senha=payload.wifi_encryption_password))
     return {"success": True, "results": resposta.results}
 
 
