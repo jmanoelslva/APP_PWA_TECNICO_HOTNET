@@ -508,17 +508,26 @@
   background: #22c55e;
 }
 
-.portas-cto-ponto.contrato-2,
-.portas-cto-ponto.contrato-3 {
+/* Mesmas cores do Controllr: cinza desativado, verde ativado, amarelo
+   alertado, laranja pendente, vermelho bloqueado e preto cancelado. */
+.portas-cto-ponto.contrato-0 {
+  background: #9ca3af;
+}
+
+.portas-cto-ponto.contrato-2 {
   background: #facc15;
 }
 
-.portas-cto-ponto.contrato-4 {
+.portas-cto-ponto.contrato-3 {
   background: #f97316;
 }
 
-.portas-cto-ponto.contrato-5 {
+.portas-cto-ponto.contrato-4 {
   background: #dc2626;
+}
+
+.portas-cto-ponto.contrato-5 {
+  background: #000;
 }
 
 .portas-cto-legenda {
