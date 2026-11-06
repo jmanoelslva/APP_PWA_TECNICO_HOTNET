@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { LuArrowRight } from 'react-icons/lu'
+import { LuArrowRight, LuUnlink } from 'react-icons/lu'
 import { Link } from 'react-router-dom'
 import { ApiError, atualizarDetalhesCpe, buscarCpe, type CpeDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { formatarStatusContrato } from '../../utils/formatacao'
 import { gradeDePortas, ocupanteDaPorta, portasDaCto, type CasaPorta } from '../../utils/portasCto'
 
-const SITUACAO_CONTRATO: Record<number, string> = { 0: 'contrato desativado', 5: 'contrato cancelado' }
 
 /**
  * Grade fixa com todas as portas da CTO escolhida: livre, ocupada (cheia,
@@ -206,54 +205,71 @@ function DetalhePorta({
   }
   return (
     <div className="portas-cto-detalhe" role="status">
-      {casa.ocupantes.map((o) => (
-        <span key={o.cpePk} className="item-duas-linhas">
-          <strong>
-            Porta {casa.porta} · {o.usuario}
-          </strong>
-          <small>
-            {[
-              o.cliente,
-              o.contrato != null && SITUACAO_CONTRATO[o.contrato],
-              o.online ? 'online' : 'offline',
-              o.cpePk === cpePk && 'esta conexão',
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </small>
-          {o.cpePk !== cpePk && o.contrato != null && CONTRATO_LIBERAVEL.has(o.contrato) && (
-            // Contrato cancelado/desativado ainda com CPE habilitado prende a
-            // porta: grava CTO e porta 0 nele (limpa) para usá-la nesta conexão.
-            <button
-              type="button"
-              aria-busy={liberando}
-              disabled={liberando}
-              className="botao botao-secundario botao-pequeno botao-largo portas-cto-abrir"
-              onClick={() => void liberar(o)}
-            >
-              {liberando
-                ? 'Liberando…'
-                : confirmando === o.cpePk
-                  ? `Confirmar: limpar CTO e porta de ${o.usuario}`
-                  : `Liberar porta ${casa.porta}`}
-            </button>
-          )}
-          {o.cpePk !== cpePk && o.online && confirmando === o.cpePk && (
-            <small>Essa conexão está online: confira na CTO se o cabo foi retirado.</small>
-          )}
-          {o.cpePk !== cpePk && (
-            // Para usar a porta, muda-se a do ocupante (ex.: contrato
-            // cancelado) na própria conexão dele, como edição normal.
-            <Link
-              to={`/conexao?cpe_pk=${o.cpePk}&aba=cto`}
-              className="botao botao-secundario botao-pequeno botao-largo portas-cto-abrir"
-              viewTransition
-            >
-              Abrir conexão de {o.usuario} <LuArrowRight size={16} />
-            </Link>
-          )}
-        </span>
-      ))}
+      {casa.ocupantes.map((o) => {
+        const outra = o.cpePk !== cpePk
+        const liberavel = outra && o.contrato != null && CONTRATO_LIBERAVEL.has(o.contrato)
+        const armado = confirmando === o.cpePk
+        return (
+          <div key={o.cpePk} className="portas-cto-ocupante">
+            <div className="portas-cto-ocupante-topo">
+              <span className="portas-cto-numero" aria-hidden>
+                {casa.porta}
+              </span>
+              <span className="item-duas-linhas">
+                <strong>{o.usuario}</strong>
+                {o.cliente && <small>{o.cliente}</small>}
+              </span>
+            </div>
+            <div className="portas-cto-selos">
+              {o.contrato != null && (
+                <span className="portas-cto-selo">
+                  <span className={`portas-cto-ponto contrato-${o.contrato}`} />
+                  {formatarStatusContrato(o.contrato)}
+                </span>
+              )}
+              <span className={`portas-cto-selo ${o.online ? 'online' : 'offline'}`}>
+                {o.online ? 'Online' : 'Offline'}
+              </span>
+              {!outra && <span className="portas-cto-selo">Esta conexão</span>}
+            </div>
+            {armado && (
+              <p className={o.online ? 'portas-cto-confirmar alerta' : 'portas-cto-confirmar'}>
+                A CTO e a porta de <strong>{o.usuario}</strong> serão limpas no Controllr. Toque de novo para confirmar.
+                {o.online && ' Essa conexão está online: confira na CTO se o cabo foi retirado.'}
+              </p>
+            )}
+            {outra && (
+              <div className="acoes-cartao">
+                {liberavel && (
+                  // Contrato cancelado/desativado ainda com CPE habilitado prende a
+                  // porta: grava CTO e porta 0 nele (limpa) para usá-la nesta conexão.
+                  <button
+                    type="button"
+                    aria-busy={liberando}
+                    disabled={liberando}
+                    className={`botao botao-pequeno ${armado ? 'botao-perigo-cheio' : 'botao-perigo'}`}
+                    onClick={() => void liberar(o)}
+                  >
+                    <LuUnlink size={16} />
+                    {liberando ? 'Liberando…' : armado ? 'Confirmar' : `Liberar porta ${casa.porta}`}
+                  </button>
+                )}
+                {armado ? (
+                  <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => setConfirmando(null)}>
+                    Cancelar
+                  </button>
+                ) : (
+                  // Para usar a porta, muda-se a do ocupante na própria conexão
+                  // dele, como edição normal.
+                  <Link to={`/conexao?cpe_pk=${o.cpePk}&aba=cto`} className="botao botao-secundario botao-pequeno" viewTransition>
+                    Abrir conexão <LuArrowRight size={16} />
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

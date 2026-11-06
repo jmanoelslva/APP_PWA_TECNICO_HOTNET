@@ -554,16 +554,89 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin: 10px 0 0;
-  padding: 8px 12px;
+  margin: 12px 0 0;
+  padding: 12px;
   border-radius: 10px;
   background: var(--cor-fundo);
   font-size: 15px;
   color: var(--cor-texto);
 }
 
-.portas-cto-abrir {
-  margin-top: 6px;
+.portas-cto-ocupante + .portas-cto-ocupante {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.portas-cto-ocupante-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Número da porta em destaque ao lado do ocupante. */
+.portas-cto-numero {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--cor-superficie);
+  box-shadow: inset 0 0 0 1px var(--cor-borda);
+  font-family: var(--fonte-mono);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.portas-cto-selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.portas-cto-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--cor-superficie);
+  box-shadow: inset 0 0 0 1px var(--cor-borda);
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.portas-cto-selo .portas-cto-ponto {
+  position: static;
+}
+
+.portas-cto-selo.online {
+  color: var(--cor-sucesso, #2e7d32);
+}
+
+.portas-cto-selo.offline {
+  color: var(--cor-offline);
+}
+
+.portas-cto-confirmar {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cor-erro) 8%, var(--cor-superficie));
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.portas-cto-confirmar.alerta {
+  background: color-mix(in srgb, var(--cor-erro) 16%, var(--cor-superficie));
+}
+
+.botao-perigo-cheio {
+  border-color: var(--cor-erro);
+  background: var(--cor-erro);
+  color: #ffffff;
 }
 
 .portas-cto-aviso {
