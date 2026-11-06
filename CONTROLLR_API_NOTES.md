@@ -807,3 +807,16 @@ mais `contract_status IN [1,2,3,4,5]` (oper 21):
 o mesmo filtro do painel, `contract_status IN [1,2,3,4,5]`: mostra
 cancelados e deixa de fora só os desativados (0), por decisão do usuário
 em 04/11.
+
+---
+
+## Porta da CTO única por CPE habilitado (`/aaa_ctl/cpe/update`)
+
+Confirmado ao vivo em 06/11/2026: gravar `cpe_dp_port` já usada por outro
+CPE **habilitado** (`cpe_status = 1`) na mesma CTO é recusado com HTTP 200 e
+`{"success": false, "code": 3, "state": "20000", "message": "Duplicate port
+'14' (cpe_pk = 3757)", "info": "Internal Failure"}`, e nada é gravado. Contrato
+cancelado mantém o CPE habilitado, então segura a porta; contrato desativado
+desabilita o CPE e libera a porta (existe porta repetida entre um CPE
+desabilitado e um ativo). Porta `0` aparece repetida em vários CPEs da mesma
+CTO. Como apagar a porta (vazio ou `0`) ainda não foi testado.
