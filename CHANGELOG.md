@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.29.0] - 2026-11-06
+
 ### Adicionado
 
 - **Pronto para fechar (OS › Checklist):** confere ONU registrada para o cliente, sinal da ONU e da OLT na faixa, PPPoE conectado, CTO e porta gravadas e coordenada do endereço; o que falta vem com atalho para a ONU, a Conexão ou a edição do endereço.

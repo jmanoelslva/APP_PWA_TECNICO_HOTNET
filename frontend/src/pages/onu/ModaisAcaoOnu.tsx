@@ -56,7 +56,7 @@ export function ModalRenomear({
   onCancelar,
 }: {
   nomeAtual: string
-  // Na HOTNET a descrição da ONU é o login PPPoE em maiúsculo.
+  // Nome sugerido (atalho "Usar o PPPoE"); sem ele, o atalho não aparece.
   sugestao?: string
   salvando: boolean
   onSalvar: (nome: string) => void
