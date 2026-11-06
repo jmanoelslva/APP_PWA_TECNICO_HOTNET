@@ -273,37 +273,53 @@
 }
 
 .mapa-cto-rodape {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
+  /* Duas ações do mesmo tamanho, lado a lado. */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 8px;
-  font-size: 12px;
 }
 
 .mapa-cto-rodape button,
 .mapa-cto-rodape a {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 0;
-  border: none;
-  background: none;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--cor-conexao) 35%, var(--cor-borda));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cor-conexao) 6%, var(--cor-superficie));
   color: var(--cor-conexao);
   font: inherit;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .mapa-cto-legenda {
-  /* Linha inteira só para a legenda; os botões vão para a linha de baixo. */
-  flex: 1 0 100%;
+  /* Quadro sobre o mapa, canto inferior esquerdo; não alcança o botão de
+     localização (direita) nem a atribuição das imagens. */
+  position: absolute;
+  left: 8px;
+  bottom: 22px;
+  z-index: 1;
+  max-width: calc(100% - 64px);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 14px;
-  color: var(--cor-texto-terciario);
+  gap: 4px 10px;
+  padding: 5px 9px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cor-superficie) 88%, transparent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  color: var(--cor-texto-secundario);
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
 }
 
 .mapa-cto-legenda > span {

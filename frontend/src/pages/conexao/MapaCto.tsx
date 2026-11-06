@@ -311,11 +311,9 @@ export default function MapaCto({
         >
           <LuLocateFixed size={20} />
         </button>
-      </div>
-      <div className="mapa-cto-rodape">
-        {/* Legenda numa linha só dela (acima dos botões); cada item com o
-            marcador e o nome juntos, quebrando entre itens se faltar espaço. */}
-        <span className="mapa-cto-legenda">
+        {/* Legenda dentro do mapa, no canto inferior esquerdo (como no
+            Google Maps); cada item com o marcador e o nome juntos. */}
+        <div className="mapa-cto-legenda">
           <span>
             <i style={{ background: '#1a73e8' }} /> Você
           </span>
@@ -334,7 +332,10 @@ export default function MapaCto({
               <i className="mapa-cto-legenda-offline" /> Com offline
             </span>
           )}
-        </span>
+        </div>
+      </div>
+      {/* Embaixo do mapa, só as duas ações, do mesmo tamanho. */}
+      <div className="mapa-cto-rodape">
         <button type="button" onClick={() => setAmpliado((valor) => !valor)}>
           {ampliado ? <LuMinimize2 size={16} /> : <LuMaximize2 size={16} />} {ampliado ? 'Reduzir' : 'Ampliar'}
         </button>
