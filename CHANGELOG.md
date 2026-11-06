@@ -43,6 +43,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Cliente:** conexão sem sessão mostra quando caiu.
 - **Início:** o atalho de Clientes Offline mostra também quantas CTOs têm mais de um offline.
 - **ONU:** a CTO abre o Mapa de CTOs com o cliente e o traçado.
+- **Atualizar o app não derruba mais ninguém:** as sessões ficam gravadas
+  cifradas no servidor e voltam depois da atualização; o usuário de
+  consulta dos avisos de OS também deixa de sair e entrar no Controllr a
+  cada atualização.
+- **Mapa de CTOs com os clientes offline:** anel vermelho nas CTOs com
+  cliente offline, quantidade no rótulo e selo na lista de mais próximas.
+
+### Segurança
+
+- Login: o bloqueio por senha errada passa a ser por aparelho (IP) e
+  usuário juntos, mais um limite por IP — ninguém consegue mais travar a
+  conta de outro técnico errando a senha dele de propósito.
+- Dependências do servidor atualizadas (FastAPI, Starlette, Uvicorn,
+  aiohttp, Pydantic, python-multipart).
+- O servidor não informa mais versão nem nome do programa para fora.
+- Sair do app apaga os clientes buscados recentemente guardados no celular.
+- Build e testes automáticos no GitHub a cada envio.
 
 ## [1.27.0] - 2026-11-05
 
