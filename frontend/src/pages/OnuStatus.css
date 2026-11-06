@@ -52,6 +52,12 @@
   position: relative;
 }
 
+/* Com a lista aberta (campo em foco), a busca fica acima das abas fixas
+   (Abas.css, z-index 5); fora disso, as abas passam por cima ao rolar. */
+.onu-combobox:focus-within {
+  z-index: 6;
+}
+
 .onu-combobox-lista {
   position: absolute;
   z-index: 5;
