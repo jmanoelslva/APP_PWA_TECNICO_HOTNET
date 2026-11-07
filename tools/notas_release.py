@@ -54,6 +54,7 @@ TITULOS = {
     "1.30.0": "Endereço em tela cheia com mapa e CEP, botões padronizados e senhas na auditoria",
     "1.30.1": "ONU certa pelo PPPoE e Antes de finalizar com atalhos direto no item",
     "1.30.2": "Mapa, pinça e listas roladas sem arrastar a janela",
+    "1.31.0": "Portas da CTO em grade, liberar porta e conexões da CTO no mapa",
     "1.24.0": "Mensagem e anexo no chamado, atalhos sem texto cortado e botões sem degradê",
 }
 

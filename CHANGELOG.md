@@ -7,10 +7,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.31.0] - 2026-11-06
+
 ### Adicionado
 
 - **Liberar porta:** no detalhe de uma porta ocupada por contrato cancelado ou desativado, o botão "Liberar porta N" limpa a CTO e a porta do ocupante (grava 0 nas duas, com confirmação em dois toques) e já escolhe a porta para esta conexão.
-- **Limpar porta:** apagar o campo "Porta da CTO" (ou digitar 0) e salvar limpa a porta gravada; o "X" dentro do campo apaga a porta digitada.
+- **Limpar porta:** apagar o campo "Porta da CTO" (ou digitar 0) e salvar limpa a porta gravada; o "X" vermelho dentro do campo apaga a porta digitada.
 - **Mapa de CTOs:** ao tocar numa CTO, aparecem as conexões gravadas nela, com linha tracejada até o endereço de cada cliente (verde online, vermelha offline), e um resumo com o total e quantas estão online.
 
 ### Alterado
