@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, type CSSProperties } from 'react'
-import { LuLocateFixed, LuSave } from 'react-icons/lu'
+import { LuLocateFixed, LuSave, LuX } from 'react-icons/lu'
 import { ApiError, atualizarDetalhesCpe, type CpeDto, type DpDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
@@ -269,20 +269,23 @@ export default function CardCto({
       </div>
       <div className="conexao-campo">
         <span>Porta da CTO</span>
-        <input
-          className="conexao-input"
-          type="number"
-          value={dpPorta}
-          onChange={(e) => setDpPorta(e.target.value)}
-          placeholder="Não informado"
-        />
+        {/* Limpar no próprio campo, como o botão de localização da CTO. */}
+        <div className="conexao-campo-valor">
+          <input
+            className="conexao-input"
+            type="number"
+            value={dpPorta}
+            onChange={(e) => setDpPorta(e.target.value)}
+            placeholder="Não informado"
+          />
+          {dpPorta.trim() !== '' && (
+            <button type="button" onClick={() => setDpPorta('')} aria-label="Limpar porta" title="Limpar porta">
+              <LuX size={16} />
+            </button>
+          )}
+        </div>
         {!!cpe.dp_port && (!dpPorta.trim() || Number(dpPorta.trim()) === 0) && (
           <small className="conexao-combobox-precisao">Ao salvar, a porta {cpe.dp_port} será limpa.</small>
-        )}
-        {!!cpe.dp_port && dpPorta.trim() !== '' && Number(dpPorta.trim()) !== 0 && (
-          <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => setDpPorta('')}>
-            Limpar porta
-          </button>
         )}
       </div>
       <PortasCto
