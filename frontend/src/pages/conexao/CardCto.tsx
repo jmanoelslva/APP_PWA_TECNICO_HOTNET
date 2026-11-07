@@ -279,8 +279,14 @@ export default function CardCto({
             placeholder="Não informado"
           />
           {dpPorta.trim() !== '' && (
-            <button type="button" onClick={() => setDpPorta('')} aria-label="Limpar porta" title="Limpar porta">
-              <LuX size={16} />
+            <button
+              type="button"
+              className="conexao-campo-limpar"
+              onClick={() => setDpPorta('')}
+              aria-label="Limpar porta"
+              title="Limpar porta"
+            >
+              <LuX size={20} strokeWidth={2.5} />
             </button>
           )}
         </div>

@@ -89,6 +89,13 @@
   flex-shrink: 0;
 }
 
+/* Limpar porta da CTO: ação destrutiva, em vermelho para se destacar. */
+.conexao-campo-valor button.conexao-campo-limpar {
+  border: 1.5px solid color-mix(in srgb, var(--cor-erro) 55%, transparent);
+  background: color-mix(in srgb, var(--cor-erro) 10%, var(--cor-superficie));
+  color: var(--cor-erro);
+}
+
 .conexao-historico-titulo {
   /* Sem border-top de propósito — a linha "Última autenticação" logo
      acima já termina com um separador. */
