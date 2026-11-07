@@ -234,7 +234,7 @@ function DetalhePorta({
             </div>
             {armado && (
               <p className={o.online ? 'portas-cto-confirmar alerta' : 'portas-cto-confirmar'}>
-                A CTO e a porta de <strong>{o.usuario}</strong> serão limpas no Controllr. Toque de novo para confirmar.
+                A CTO e a porta de <strong>{o.usuario}</strong> serão limpas. Toque de novo para confirmar.
                 {o.online && ' Essa conexão está online: confira na CTO se o cabo foi retirado.'}
               </p>
             )}
