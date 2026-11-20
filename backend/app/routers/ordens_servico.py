@@ -89,6 +89,9 @@ async def listar_ordens_servico(
 
     resultados = resposta.results
     total = resposta.total
+    # Total do Controllr antes dos filtros abaixo: é o que diz ao app se ainda
+    # há página para buscar ("total" muda com o filtro de minhas/finalizadas).
+    total_controllr = resposta.total
     if minhas:
         # O técnico que executa é o staff (staff_username = login dele no
         # app). O user_pk da OS é quem a abriu — filtrar por ele mostrava as
@@ -101,7 +104,7 @@ async def listar_ordens_servico(
     if ticket_pk is None and abertas:
         resultados = await _sem_finalizadas(ctx, resultados)
 
-    return {"success": True, "results": resultados, "total": total}
+    return {"success": True, "results": resultados, "total": total, "total_controllr": total_controllr}
 
 
 async def _sem_finalizadas(ctx: AuthContext, ordens: list[dict[str, Any]]) -> list[dict[str, Any]]:

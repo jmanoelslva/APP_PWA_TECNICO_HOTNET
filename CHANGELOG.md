@@ -7,6 +7,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+
+- **Lista de OS sem limite de 100:** a tela OS / Suporte e o bloco "Minhas OS de hoje" buscam todas as páginas de OS em aberto (de 100 em 100, até o total do Controllr). Antes, com mais de 100 OS abertas, as agendadas mais recentes não apareciam e os filtros não as encontravam.
+
 ## [1.31.0] - 2026-11-06
 
 ### Adicionado

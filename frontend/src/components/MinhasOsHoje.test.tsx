@@ -12,11 +12,9 @@ function hojeAs(hora: string): string {
 }
 
 vi.mock('../api/client', () => ({
-  listarOrdensServico: vi.fn(async () => ({
-    success: true,
-    total: 1,
-    results: [{ op_pk: 1, ticket_pk: 10, client_pk: 5, task_name: 'Instalação', op_date_sched: hojeAs('23:59:00') }],
-  })),
+  listarTodasOrdensServico: vi.fn(async () => [
+    { op_pk: 1, ticket_pk: 10, client_pk: 5, task_name: 'Instalação', op_date_sched: hojeAs('23:59:00') },
+  ]),
   buscarDetalheCliente: vi.fn(async () => ({
     success: true,
     cliente: {},

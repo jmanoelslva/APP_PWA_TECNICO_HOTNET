@@ -6,6 +6,8 @@
  * todo request usa credentials: 'include'.
  */
 
+import { buscarTodasPaginas } from '../utils/paginacao'
+
 const API_BASE = '/api'
 
 export class SessaoExpiradaError extends Error {
@@ -839,6 +841,18 @@ export interface ListarOrdensServicoResponse {
   success: boolean
   results: OrdemServicoDto[]
   total: number
+  // Total do Controllr antes dos filtros do backend (controla a paginação).
+  total_controllr?: number
+}
+
+/** Todas as OS, em páginas de 100, até cobrir o total do Controllr. */
+export function listarTodasOrdensServico(
+  opcoes: { minhas?: boolean; abertas?: boolean },
+): Promise<OrdemServicoDto[]> {
+  return buscarTodasPaginas(async (start, limit) => {
+    const resposta = await listarOrdensServico({ ...opcoes, start, limit })
+    return { results: resposta.results, totalBruto: resposta.total_controllr }
+  }, 100)
 }
 
 export function listarOrdensServico(

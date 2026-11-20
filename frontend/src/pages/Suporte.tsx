@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { LuNavigation, LuSearch, LuSearchX, LuWrench, LuX } from 'react-icons/lu'
-import { ApiError, listarOrdensServico, type OrdemServicoDto } from '../api/client'
+import { ApiError, listarTodasOrdensServico, type OrdemServicoDto } from '../api/client'
 import FiltroSegmentado from '../components/FiltroSegmentado'
 import LidoHa from '../components/LidoHa'
 import CabecalhoTela from '../components/CabecalhoTela'
@@ -14,10 +14,9 @@ import { FILTRO_VAZIO, filtrarOs, filtroAtivo, tarefasDaLista, type FiltroOs, ty
 import { CORES } from '../utils/cores'
 import './Suporte.css'
 
-// Sem "carregar mais" de propósito — a lista já só mostra OS em aberto
-// (o backend tira as finalizadas, ver ordens_servico.py::_sem_finalizadas),
-// então o volume normal cabe numa página só. Os filtros trabalham nessa lista.
-const TAMANHO_PAGINA = 100
+// Sem "carregar mais": busca todas as páginas de OS em aberto de uma vez
+// (api/client.ts::listarTodasOrdensServico), porque os filtros trabalham na
+// lista inteira e a ordem é da mais antiga para a mais nova.
 
 // Filtro escolhido vale enquanto o app estiver aberto (volta da OS e continua).
 const CHAVE_FILTRO = 'hotnet-tecnico-filtro-os'
@@ -118,8 +117,7 @@ export default function Suporte() {
     setCarregando(true)
     setErro(null)
     try {
-      const resposta = await listarOrdensServico({ minhas: false, abertas: true, start: 0, limit: TAMANHO_PAGINA })
-      setOrdens(resposta.results)
+      setOrdens(await listarTodasOrdensServico({ minhas: false, abertas: true }))
       setAtualizadoEm(Date.now())
     } catch (excecao) {
       setErro(excecao instanceof ApiError ? excecao.message : 'Não foi possível carregar as OS.')

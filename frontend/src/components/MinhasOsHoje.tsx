@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import { LuExternalLink, LuNavigation, LuPhone, LuWrench } from 'react-icons/lu'
-import { buscarDetalheCliente, listarOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
+import { buscarDetalheCliente, listarTodasOrdensServico, type EnderecoDto, type OrdemServicoDto } from '../api/client'
 import {
   enderecoCurto,
   horarioOs,
@@ -16,9 +16,6 @@ import {
 import { linkLigar, linkWhatsapp } from '../utils/formatacao'
 import Skeleton from './Skeleton'
 import './MinhasOsHoje.css'
-
-// Mesmo limite da tela OS / Suporte: a lista já vem só com OS em aberto.
-const LIMITE = 100
 
 function tituloOs(os: OrdemServicoDto): string {
   return os.task_name ?? (os.op_desc?.trim() || `OS do chamado #${os.ticket_pk ?? '-'}`)
@@ -50,11 +47,11 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
 
   useEffect(() => {
     let cancelado = false
-    listarOrdensServico({ minhas: true, abertas: true, start: 0, limit: LIMITE })
-      .then((resposta) => {
+    listarTodasOrdensServico({ minhas: true, abertas: true })
+      .then((ordens) => {
         if (cancelado) return
-        const lista = osDoDia(resposta.results)
-        const futuras = osFuturas(resposta.results)
+        const lista = osDoDia(ordens)
+        const futuras = osFuturas(ordens)
         setItens(lista)
         setFutura(futuras[0] ?? null)
         onResumo?.({
