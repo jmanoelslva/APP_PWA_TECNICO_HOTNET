@@ -43,5 +43,5 @@ export const TEXTO_SINAL: Record<NivelSinal, string> = {
   boa: 'Sinal normal',
   alerta: 'Sinal fraco — atenção',
   critica: 'Sinal crítico',
-  desconhecida: 'Sinal não informado',
+  desconhecida: 'Sem leitura',
 }
