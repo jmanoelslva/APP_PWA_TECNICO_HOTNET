@@ -368,7 +368,7 @@ function DetalheOrdemServicoConteudo() {
     if (item.chave === 'endereco') {
       if (!endereco) return null
       return (
-        <button type="button" className="pronto-fechar-acao" onClick={() => abrirEndereco(endereco, 'localizacao')}>
+        <button type="button" className="pronto-fechar-acao acao-ir" onClick={() => abrirEndereco(endereco, 'localizacao')}>
           Marcar local
         </button>
       )
@@ -383,7 +383,7 @@ function DetalheOrdemServicoConteudo() {
       // Sinal → aba Sinal; ONU (registrar cliente) → aba Equipamento.
       const abaOnu = item.chave === 'sinal' ? 'sinal' : 'equipamento'
       return (
-        <Link to={`/onu?${busca ? `${busca}&` : ''}aba=${abaOnu}`} className="pronto-fechar-acao" viewTransition>
+        <Link to={`/onu?${busca ? `${busca}&` : ''}aba=${abaOnu}`} className="pronto-fechar-acao acao-rede" viewTransition>
           {item.chave === 'sinal' ? 'Sinal' : 'ONU'}
         </Link>
       )
@@ -391,7 +391,7 @@ function DetalheOrdemServicoConteudo() {
     if (!cpe?.pk) return null
     const abaConexao = item.chave === 'cto' ? 'cto' : 'resumo'
     return (
-      <Link to={`/conexao?cpe_pk=${cpe.pk}&aba=${abaConexao}`} className="pronto-fechar-acao" viewTransition>
+      <Link to={`/conexao?cpe_pk=${cpe.pk}&aba=${abaConexao}`} className="pronto-fechar-acao acao-rede" viewTransition>
         {item.chave === 'cto' ? 'CTO' : 'Conexão'}
       </Link>
     )
@@ -561,7 +561,7 @@ function DetalheOrdemServicoConteudo() {
         {!carregando && !erro && !osAtual && (
           <div className="detalhe-ordem-card">
             <p className="detalhe-ordem-vazio">Nenhuma OS encontrada para este chamado.</p>
-            <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip" viewTransition>
+            <Link to={`/suporte/${pk}`} className="detalhe-ordem-chip acao-registro" viewTransition>
               <LuMessageCircle size={16} /> Ver chamado
             </Link>
           </div>
@@ -680,7 +680,7 @@ function DetalheOrdemServicoConteudo() {
                           href={linkWhatsappComTexto(telefone, mensagem.texto(primeiroNome(osAtual.client_complete_name))) ?? undefined}
                           target="_blank"
                           rel="noreferrer"
-                          className="detalhe-ordem-mensagem"
+                          className="detalhe-ordem-mensagem acao-contato"
                         >
                           <FaWhatsapp size={18} aria-hidden="true" />
                           {mensagem.rotulo}
@@ -709,8 +709,7 @@ function DetalheOrdemServicoConteudo() {
                       {endereco?.address_pk && (
                         <button
                           type="button"
-                          className="botao botao-secundario botao-pequeno"
-                          style={{ '--botao-cor': CORES.suporte } as CSSProperties}
+                          className="botao botao-secundario botao-pequeno acao-registro"
                           onClick={() => abrirEndereco(endereco, 'endereco')}
                         >
                           <LuPencil size={16} /> Editar
@@ -721,8 +720,7 @@ function DetalheOrdemServicoConteudo() {
                           href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="botao botao-secundario botao-pequeno"
-                          style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                          className="botao botao-secundario botao-pequeno acao-ir"
                         >
                           <LuMapPin size={16} /> Ver no mapa
                         </a>
@@ -730,8 +728,7 @@ function DetalheOrdemServicoConteudo() {
                         endereco?.address_pk && (
                           <button
                             type="button"
-                            className="botao botao-secundario botao-pequeno"
-                            style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                            className="botao botao-secundario botao-pequeno acao-ir"
                             onClick={() => abrirEndereco(endereco, 'localizacao')}
                           >
                             <LuLocateFixed size={16} /> Marcar local
@@ -806,7 +803,7 @@ function DetalheOrdemServicoConteudo() {
                     </p>
                   )}
                   {cpe?.pk && (
-                    <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip" viewTransition>
+                    <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip acao-rede" viewTransition>
                       <LuWifi size={16} /> Ver conexão completa
                     </Link>
                   )}

@@ -153,12 +153,12 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
           )}
           <div className="minhas-os-acoes">
             {rota && (
-              <a href={rota} target="_blank" rel="noreferrer" className="minhas-os-acao">
+              <a href={rota} target="_blank" rel="noreferrer" className="minhas-os-acao acao-ir">
                 <LuNavigation size={20} /> Rota
               </a>
             )}
             {telefone && (
-              <a href={linkLigar(telefone) ?? `tel:${telefone}`} className="minhas-os-acao">
+              <a href={linkLigar(telefone) ?? `tel:${telefone}`} className="minhas-os-acao acao-contato">
                 <LuPhone size={20} /> Ligar
               </a>
             )}
@@ -167,7 +167,7 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
                 href={whatsapp}
                 target="_blank"
                 rel="noreferrer"
-                className="minhas-os-acao minhas-os-acao-whatsapp"
+                className="minhas-os-acao minhas-os-acao-whatsapp acao-contato"
                 aria-label="WhatsApp"
                 title="WhatsApp"
               >

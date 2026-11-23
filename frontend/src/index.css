@@ -724,14 +724,15 @@ h3,
 
 /* Botões de ação coloridos pela função: falar com o cliente (verde), ir até
    o lugar (azul), rede do cliente (verde-azulado) e registros (laranja
-   escuro). Vale para grade de ações, Ligar/WhatsApp e atalhos do cliente. */
-:is(.grade-acao, .acoes-contato-botao, .detalhe-cliente-atalho):is(.acao-contato, .acao-ir, .acao-rede, .acao-registro) {
+   escuro). Vale para grade de ações, Ligar/WhatsApp, atalhos do cliente,
+   botões de endereço, Minhas OS de hoje, rota da lista de OS e atalhos da OS. */
+:is(.grade-acao, .acoes-contato-botao, .detalhe-cliente-atalho, .botao, .minhas-os-acao, .os-linha-rota, .pronto-fechar-acao, .detalhe-ordem-chip, .detalhe-ordem-mensagem):is(.acao-contato, .acao-ir, .acao-rede, .acao-registro) {
   background: var(--acao-fundo);
   border-color: color-mix(in srgb, var(--acao-texto) 22%, transparent);
   color: var(--acao-texto);
 }
 
-:is(.grade-acao, .acoes-contato-botao, .detalhe-cliente-atalho):is(.acao-contato, .acao-ir, .acao-rede, .acao-registro) svg {
+:is(.grade-acao, .acoes-contato-botao, .detalhe-cliente-atalho, .botao, .minhas-os-acao, .os-linha-rota, .pronto-fechar-acao, .detalhe-ordem-chip, .detalhe-ordem-mensagem):is(.acao-contato, .acao-ir, .acao-rede, .acao-registro) svg {
   color: var(--acao-texto);
 }
 

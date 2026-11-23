@@ -451,8 +451,7 @@ function DetalheClienteConteudo() {
                       <div className="acoes-cartao">
                         <button
                           type="button"
-                          className="botao botao-secundario botao-pequeno"
-                          style={{ '--botao-cor': CORES.cliente } as CSSProperties}
+                          className="botao botao-secundario botao-pequeno acao-registro"
                           onClick={() => abrirEndereco(endereco, 'endereco')}
                         >
                           <LuPencil size={16} /> Editar
@@ -462,16 +461,14 @@ function DetalheClienteConteudo() {
                             href={`https://www.google.com/maps/search/?api=1&query=${endereco.address_latitude},${endereco.address_longitude}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="botao botao-secundario botao-pequeno"
-                            style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                            className="botao botao-secundario botao-pequeno acao-ir"
                           >
                             <LuMapPin size={16} /> Ver no mapa
                           </a>
                         ) : (
                           <button
                             type="button"
-                            className="botao botao-secundario botao-pequeno"
-                            style={{ '--botao-cor': CORES.endereco } as CSSProperties}
+                            className="botao botao-secundario botao-pequeno acao-ir"
                             onClick={() => abrirEndereco(endereco, 'localizacao')}
                           >
                             <LuLocateFixed size={16} /> Marcar local

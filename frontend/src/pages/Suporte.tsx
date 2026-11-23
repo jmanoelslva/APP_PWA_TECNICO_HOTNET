@@ -278,7 +278,7 @@ export default function Suporte() {
                           href={rota}
                           target="_blank"
                           rel="noreferrer"
-                          className="os-linha-rota"
+                          className="os-linha-rota acao-ir"
                           aria-label="Rota até o cliente"
                           onClick={(evento) => evento.stopPropagation()}
                         >

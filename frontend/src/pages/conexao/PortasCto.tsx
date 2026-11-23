@@ -261,7 +261,7 @@ function DetalhePorta({
                 ) : (
                   // Para usar a porta, muda-se a do ocupante na própria conexão
                   // dele, como edição normal.
-                  <Link to={`/conexao?cpe_pk=${o.cpePk}&aba=cto`} className="botao botao-secundario botao-pequeno" viewTransition>
+                  <Link to={`/conexao?cpe_pk=${o.cpePk}&aba=cto`} className="botao botao-secundario botao-pequeno acao-rede" viewTransition>
                     Abrir conexão <LuArrowRight size={16} />
                   </Link>
                 )}
