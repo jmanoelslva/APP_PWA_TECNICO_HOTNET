@@ -41,16 +41,33 @@
   gap: 10px;
 }
 
+.login-cabecalho-centro {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0 8px;
+}
+
 .login-cabecalho-logo {
   /* O desenho do técnico tem fundo transparente: vai num quadro branco. */
   box-sizing: border-box;
-  width: 40px;
-  height: 40px;
-  padding: 3px;
-  border-radius: 12px;
+  width: 112px;
+  height: 112px;
+  padding: 8px;
+  border-radius: 30px;
   background: #ffffff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
   object-fit: contain;
-  flex: none;
+}
+
+/* Celular baixo ou teclado aberto: logo menor, sem empurrar o formulário. */
+@media (max-height: 640px) {
+  .login-cabecalho-logo {
+    width: 84px;
+    height: 84px;
+    border-radius: 24px;
+  }
 }
 
 .login-cabecalho-nome {
@@ -70,8 +87,7 @@
 }
 
 .login-titulo {
-  margin: auto 0 0;
-  padding-top: 40px;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 6px;

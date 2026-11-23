@@ -219,9 +219,13 @@ export default function Login() {
       <div className="login-rolagem">
         <header className="login-cabecalho">
           <div className="login-cabecalho-linha">
-            <img className="login-cabecalho-logo" src="/icons/icon-512.png" alt="" />
             <strong className="login-cabecalho-nome">HOTNET</strong>
             <span className="login-selo">Área do Técnico</span>
+          </div>
+          {/* Desenho do técnico grande no meio do laranja (preenche o espaço
+              acima do formulário, que fica embaixo para o polegar). */}
+          <div className="login-cabecalho-centro">
+            <img className="login-cabecalho-logo" src="/icons/icon-512.png" alt="" />
           </div>
           {etapa === 'senha' ? (
             <>

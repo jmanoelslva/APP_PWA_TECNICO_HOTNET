@@ -14,7 +14,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Login novo:** cabeçalho laranja com o logo, "HOTNET" e o selo "Área do Técnico"; cartão branco sobreposto com campos com ícone, "Lembrar meu usuário", "Esqueci minha senha", botão Entrar com seta e rodapé com "Fale com o suporte" e a versão. Em duas etapas: com o usuário lembrado, abre em "Olá, usuário" pedindo só a senha (o ícone de troca ao lado do nome muda o usuário); sem usuário lembrado, pede o usuário e depois a senha. Feita para o polegar: senha, opções e Entrar ficam na metade de baixo da tela. Com o teclado aberto, a tela rola até o Entrar ficar logo acima dele. "Esqueci minha senha" e "Fale com o suporte" abrem o WhatsApp do suporte com mensagem pronta.
+- **Login novo:** cabeçalho laranja com "HOTNET", o selo "Área do Técnico" e o desenho do técnico grande no centro; cartão branco sobreposto com campos com ícone, "Lembrar meu usuário", "Esqueci minha senha", botão Entrar com seta e rodapé com "Fale com o suporte" e a versão. Em duas etapas: com o usuário lembrado, abre em "Olá, usuário" pedindo só a senha (o ícone de troca ao lado do nome muda o usuário); sem usuário lembrado, pede o usuário e depois a senha. Feita para o polegar: senha, opções e Entrar ficam na metade de baixo da tela. Com o teclado aberto, a tela rola até o Entrar ficar logo acima dele. "Esqueci minha senha" e "Fale com o suporte" abrem o WhatsApp do suporte com mensagem pronta.
 
 ### Corrigido
 
