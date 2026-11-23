@@ -1,138 +1,155 @@
+/* Login em duas etapas (usuário → "Olá, fulano" + senha). A tela ocupa só a
+   área visível (--login-altura/--login-topo, do visualViewport em
+   Login.tsx): com o teclado aberto, o rodapé com o botão Entrar fica logo
+   acima dele. Sem visualViewport, vale a altura da tela. */
 .login-tela {
-  position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--login-topo, 0px);
+  height: var(--login-altura, 100dvh);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  /* Faixa escura da marca em cima; o formulário sobe como uma folha clara. */
-  background: var(--cor-marca-escura);
+  background: var(--cor-superficie);
   overflow: hidden;
 }
 
-.login-card {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 480px;
-  background: var(--cor-superficie);
-  border-radius: 28px 28px 0 0;
-  padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
-  text-align: center;
+/* Topo: logo pequeno, nome e tema, com a faixa laranja da marca embaixo. */
+.login-topo {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+  border-bottom: 4px solid var(--cor-primaria);
 }
 
-/* Tela larga (tablet/computador): a folha vira um cartão centralizado. */
-@media (min-width: 600px) {
-  .login-tela {
-    justify-content: center;
-    padding: 24px;
-  }
-
-  .login-card {
-    border-radius: 24px;
-    padding: 32px 28px;
-  }
+.login-topo-logo {
+  /* O desenho do técnico tem fundo transparente: vai num quadro branco. */
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--cor-borda);
+  object-fit: contain;
 }
 
-/* Ocupa todo o laranja acima do formulário e centraliza logo e nome nele
-   (antes ficavam colados no formulário, com um vazio grande em cima). O
-   formulário continua no mesmo lugar. */
-.login-marca {
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  width: 100%;
-  max-width: 480px;
+.login-topo-nome {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: calc(56px + env(safe-area-inset-top, 0px)) 28px 32px;
-  text-align: center;
+  line-height: 1.05;
+  white-space: nowrap;
 }
 
-@media (min-width: 600px) {
-  .login-marca {
-    flex: none;
-  }
-}
-
-.login-marca-logo {
-  /* O desenho do técnico tem fundo transparente e some sobre a faixa
-     laranja: vai num quadro branco, como um ícone de app. */
-  box-sizing: border-box;
-  width: 104px;
-  height: 104px;
-  padding: 8px;
-  border-radius: 26px;
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-  object-fit: contain;
-  margin-bottom: 12px;
-}
-
-.login-marca strong {
-  font-size: 28px;
+.login-topo-nome strong {
+  font-size: 16px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--cor-branco-fixo);
-  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: var(--cor-texto);
 }
 
-.login-lembrar {
-  min-height: 44px;
-  margin-top: 8px;
-  font-weight: 600;
-  color: var(--cor-texto-secundario);
-  cursor: pointer;
+.login-topo-nome span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cor-primaria);
 }
 
-.login-card .login-lembrar input {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  accent-color: var(--cor-primaria);
-}
-
-/* Tema claro/escuro já na tela de login, no canto. */
 .login-tema {
-  position: absolute;
-  top: calc(16px + env(safe-area-inset-top, 0px));
-  right: 16px;
-  z-index: 2;
+  margin-left: auto;
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--cor-branco-fixo) 25%, transparent);
-  background: color-mix(in srgb, var(--cor-branco-fixo) 8%, transparent);
-  color: var(--cor-branco-fixo);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
 
-.login-campos {
+.login-form {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  border: none;
-  margin: 0;
-  padding: 0;
+}
+
+/* Conteúdo da etapa: rola sozinho se não couber (teclado aberto em celular
+   pequeno); o rodapé continua fixo embaixo. */
+.login-corpo {
+  flex: 1;
+  min-height: 0;
   min-width: 0;
-}
-
-.login-card form {
+  overflow-y: auto;
+  margin: 0;
+  border: none;
+  padding: 28px 20px 16px;
   display: flex;
   flex-direction: column;
-  text-align: left;
 }
 
-.login-card label {
+.login-titulo {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--cor-texto);
+}
+
+.login-avatar {
+  align-self: center;
+  width: 72px;
+  height: 72px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--cor-primaria) 14%, var(--cor-superficie));
+  color: var(--cor-primaria);
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.login-ola {
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.login-trocar {
+  align-self: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  background: transparent;
+  color: var(--cor-primaria);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Usuário escondido na etapa da senha (só para o gerenciador de senhas). */
+.login-usuario-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.login-corpo label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -142,14 +159,11 @@
   margin-top: 12px;
 }
 
-.login-label-icone {
-  font-size: 14px;
-}
-
-.login-card input {
+.login-corpo input:not([type='checkbox']):not(.login-usuario-oculto) {
   margin-top: 6px;
-  height: 52px;
+  height: 54px;
   width: 100%;
+  box-sizing: border-box;
   border: 1.5px solid var(--cor-borda);
   border-radius: 12px;
   padding: 0 16px;
@@ -158,16 +172,17 @@
   background: var(--cor-superficie);
 }
 
-.login-card input:focus {
+.login-corpo input:focus {
   outline: none;
   border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cor-primaria) 18%, transparent);
 }
 
-.login-card input[aria-invalid='true'] {
+.login-corpo input[aria-invalid='true'] {
   border-color: var(--cor-erro);
 }
 
-.login-campos:disabled input {
+.login-corpo:disabled input {
   opacity: 0.6;
 }
 
@@ -193,15 +208,15 @@
 }
 
 .login-campo-senha input {
-  padding-right: 44px;
+  padding-right: 48px !important;
 }
 
 .login-toggle-senha {
   position: absolute;
-  top: 6px;
-  right: 0;
+  top: 9px;
+  right: 2px;
   height: 48px;
-  width: 44px;
+  width: 48px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -211,12 +226,28 @@
   justify-content: center;
 }
 
+.login-lembrar {
+  min-height: 44px;
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+  cursor: pointer;
+}
+
+.login-lembrar input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin: 0;
+  accent-color: var(--cor-primaria);
+}
+
 /* Erro do login (caixa com ícone); bloqueio por tentativas em tom de espera. */
 .login-mensagem {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 12px;
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--cor-erro) 40%, transparent);
@@ -241,13 +272,24 @@
   color: var(--cor-alerta);
 }
 
+/* Rodapé fixo: Entrar sempre ao alcance do polegar, acima do teclado. */
+.login-rodape {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 20px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+}
+
 .login-btn-entrar {
-  margin-top: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   height: 56px;
+  padding: 0 16px;
   border: none;
   border-radius: 14px;
   color: var(--cor-branco-fixo);
@@ -277,27 +319,32 @@
   }
 }
 
+.login-rodape-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+}
+
 .login-versao {
-  margin-top: 20px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--cor-texto-terciario);
 }
 
 .login-btn-instalar {
-  margin-top: 16px;
-  height: 44px;
-  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
   border-radius: 10px;
-  border: 1px solid var(--cor-borda);
-  background: var(--cor-fundo);
-  color: var(--cor-texto-secundario);
+  background: transparent;
+  color: var(--cor-texto);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }

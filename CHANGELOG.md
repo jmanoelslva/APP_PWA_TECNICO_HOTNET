@@ -14,6 +14,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
+- **Login em duas etapas:** com o usuário lembrado, a tela abre em "Olá, usuário" pedindo só a senha, com "Não é você? Trocar usuário". Sem usuário lembrado, pede o usuário e depois a senha. O botão Entrar fica preso no rodapé, logo acima do teclado. Topo com o logo e a assinatura "HOTNET / TÉCNICO" sobre a faixa laranja.
 - **Uma cor para agir:** botão principal sempre no laranja da marca e botões secundários, grades de ações e Ligar/WhatsApp neutros em todas as telas. Só o ícone do WhatsApp continua verde. Verde, vermelho e amarelo passam a indicar apenas estado (online, atrasada, sinal).
 - **Cor de área só no ícone do cabeçalho:** abas e barra de baixo usam o laranja em todas as telas.
 - **Cabeçalho compacto:** título em uma linha, sem a frase explicativa abaixo.
