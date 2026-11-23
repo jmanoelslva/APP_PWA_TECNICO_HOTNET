@@ -128,11 +128,11 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
             )}
           </span>
           {futura ? (
-            <button type="button" className="minhas-os-vazio-link" onClick={() => abrir(futura)}>
+            <button type="button" className="minhas-os-vazio-link acao-registro" onClick={() => abrir(futura)}>
               Abrir
             </button>
           ) : (
-            <Link to="/suporte" className="minhas-os-vazio-link" viewTransition>
+            <Link to="/suporte" className="minhas-os-vazio-link acao-registro" viewTransition>
               Ver todas as OS
             </Link>
           )}
