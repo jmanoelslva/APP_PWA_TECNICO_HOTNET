@@ -415,7 +415,7 @@ function DetalheClienteConteudo() {
                       <AcoesContato
                         numero={tel.phone_number}
                         extra={
-                          <button type="button" className="acoes-contato-botao acoes-contato-editar" onClick={() => setTelefoneEditando(tel)}>
+                          <button type="button" className="acoes-contato-botao acoes-contato-editar acao-registro" onClick={() => setTelefoneEditando(tel)}>
                             <LuPencil size={16} /> Editar
                           </button>
                         }
