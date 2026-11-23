@@ -9,15 +9,28 @@ import './BottomNav.css'
 // Sem "Buscar" de propósito: a busca geral é o campo do topo da Home
 // (cliente, serial da ONU e PPPoE) — um item aqui só a repetia.
 const ITENS = [
-  { to: '/', icone: LuHouse, cor: CORES.primaria, label: 'Início', fim: true },
-  { to: '/suporte', icone: LuWrench, cor: CORES.suporte, label: 'OS' },
-  { to: '/conexao', icone: LuWifi, cor: CORES.conexao, label: 'Conexão' },
-  { to: '/onu', icone: LuCable, cor: CORES.onu, label: 'ONU' },
+  { to: '/', icone: LuHouse, label: 'Início', fim: true },
+  { to: '/suporte', icone: LuWrench, label: 'OS' },
+  { to: '/conexao', icone: LuWifi, label: 'Conexão' },
+  { to: '/onu', icone: LuCable, label: 'ONU' },
 ]
 // Sem "Sair" de propósito: já fica em Configurações (avatar da tela
 // inicial); aqui só repetia. A pill usa o total para calcular a largura
 // (ver BottomNav.css).
 const TOTAL_SLOTS = ITENS.length
+
+/**
+ * Item marcado na barra. Telas fora das quatro abas marcam a aba de origem:
+ * detalhe da OS fica em "OS"; cliente, mapa, offline, ferramentas e as
+ * demais (abertas pelo Início ou pela busca dele) ficam em "Início".
+ */
+export function itemMarcado(caminho: string): number {
+  const direto = ITENS.findIndex((item) => (item.fim ? caminho === item.to : caminho.startsWith(item.to)))
+  if (direto >= 0) return direto
+  if (caminho.startsWith('/os/')) return ITENS.findIndex((item) => item.to === '/suporte')
+  if (caminho === '/login') return -1
+  return 0
+}
 
 // Posição do Início no histórico (quando está por baixo da tela atual) e
 // aba a abrir depois de descer até ele. Fora do componente: a barra some
@@ -53,9 +66,7 @@ export default function BottomNav() {
     }
   }
 
-  const indiceAtivo = ITENS.findIndex((item) =>
-    item.fim ? location.pathname === item.to : location.pathname.startsWith(item.to),
-  )
+  const indiceAtivo = itemMarcado(location.pathname)
 
   return (
     <>
@@ -67,7 +78,7 @@ export default function BottomNav() {
               {
                 '--indice': indiceAtivo,
                 '--total-slots': TOTAL_SLOTS,
-                '--cor-pill': comAlpha(ITENS[indiceAtivo].cor, 14),
+                '--cor-pill': comAlpha(CORES.primaria, 14),
               } as CSSProperties
             }
           />
@@ -79,8 +90,8 @@ export default function BottomNav() {
             end={item.fim}
             viewTransition
             onClick={(evento) => irPara(evento, item.to)}
-            className={({ isActive }) => `bottom-nav-item ${isActive ? 'ativo' : ''}`}
-            style={({ isActive }) => ({ color: isActive ? item.cor : undefined })}
+            className={`bottom-nav-item ${ITENS[indiceAtivo] === item ? 'ativo' : ''}`}
+            style={{ color: ITENS[indiceAtivo] === item ? CORES.primaria : undefined }}
           >
             <item.icone size={22} />
             <span>{item.label}</span>

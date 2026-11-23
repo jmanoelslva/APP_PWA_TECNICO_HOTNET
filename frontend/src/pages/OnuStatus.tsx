@@ -236,7 +236,7 @@ export default function OnuStatus() {
   return (
     <PullToRefresh aoAtualizar={recarregar}>
       <div className="onu-tela tela-entrada">
-        <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" subtitulo="Sinal óptico e status do equipamento." />
+        <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" />
 
         {/* Escolher troca a busca pelo resultado: "Voltar" sai da aba. */}
         <BuscaOnu onEscolher={(parametros) => setParams(parametros, { replace: true })} />
@@ -266,7 +266,7 @@ export default function OnuStatus() {
 
         {!carregando && !erro && onu && (
           <>
-            <Abas abas={ABAS} ativa={aba} onEscolher={setAba} cor={CORES.onu} rotulo="Partes da ONU" />
+            <Abas abas={ABAS} ativa={aba} onEscolher={setAba} rotulo="Partes da ONU" />
 
             {aba === 'sinal' && (
               <>

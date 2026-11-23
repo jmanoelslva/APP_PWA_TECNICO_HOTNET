@@ -18,23 +18,23 @@ interface Ferramenta {
 const FERRAMENTAS: Ferramenta[] = [
   {
     nome: 'SIMET (NIC.br)',
-    descricao: 'top.nic.br — teste de qualidade da conexão',
+    descricao: 'top.nic.br · qualidade da conexão',
     url: 'https://top.nic.br/connection/',
     Icone: LuRadar,
   },
-  { nome: 'Speedtest', descricao: 'speedtest.net — teste de velocidade Ookla', url: 'https://www.speedtest.net/', Icone: LuGauge },
-  { nome: 'Fast.com', descricao: 'Teste de velocidade da Netflix', url: 'https://fast.com/', Icone: LuZap },
+  { nome: 'Speedtest', descricao: 'speedtest.net · velocidade Ookla', url: 'https://www.speedtest.net/', Icone: LuGauge },
+  { nome: 'Fast.com', descricao: 'Velocidade pela Netflix', url: 'https://fast.com/', Icone: LuZap },
   { nome: 'ISP Focus (IPv6)', descricao: 'tcp6.ispfocus.net.br', url: 'https://tcp6.ispfocus.net.br/', Icone: LuNetwork },
   { nome: 'ISP Focus (IPv4)', descricao: 'tcp4.ispfocus.net.br', url: 'https://tcp4.ispfocus.net.br/', Icone: LuNetwork },
   {
     nome: 'Teste de Bufferbloat',
-    descricao: 'waveform.com — detecta latência sob carga (jogo/chamada travando)',
+    descricao: 'waveform.com · latência sob carga',
     url: 'https://www.waveform.com/tools/bufferbloat',
     Icone: LuActivity,
   },
   {
     nome: 'Verificador de porta aberta',
-    descricao: 'yougetsignal.com — útil para DVR/câmera não acessando remoto',
+    descricao: 'yougetsignal.com · DVR e câmeras',
     url: 'https://www.yougetsignal.com/tools/open-ports/',
     Icone: LuPlug,
   },
@@ -94,7 +94,6 @@ export default function Ferramentas() {
         icone={LuHammer}
         cor={CORES.ferramentas}
         titulo="Ferramentas"
-        subtitulo="Testes de velocidade e conectividade."
       />
 
       <div className="ferramentas-ip-card">
@@ -104,7 +103,7 @@ export default function Ferramentas() {
           </span>
           <span className="ferramentas-item-texto">
             <strong>Meu IP</strong>
-            <span>IP público e localização aproximada da rede atual</span>
+            <span>IP público e localização da rede</span>
           </span>
         </div>
 
@@ -139,7 +138,7 @@ export default function Ferramentas() {
               </span>
               <span className="ferramentas-item-texto">
                 <strong>Auditoria</strong>
-                <span>Quem reiniciou, removeu ou alterou ONU e Wi-Fi, quando e de qual IP</span>
+                <span>Quem alterou ONU e Wi-Fi, e quando</span>
               </span>
               <LuChevronRight size={20} className="ferramentas-item-seta" />
             </Link>

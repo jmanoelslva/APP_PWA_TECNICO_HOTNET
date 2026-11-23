@@ -577,17 +577,36 @@ function DetalheOrdemServicoConteudo() {
                 <span className="detalhe-ordem-etapa-badge">{estagioResumo(eventos, osAtual)}</span>
               </div>
               {osAtual.client_complete_name && <span className="detalhe-ordem-subtitulo">{osAtual.client_complete_name}</span>}
-              <div className="detalhe-ordem-metas">
+              {/* Dados da OS em lista rótulo/valor, uma linha cada (sem quebra). */}
+              <dl className="detalhe-ordem-dados">
                 {osAtual.op_date_sched && (
-                  <span className="detalhe-ordem-meta" title={`Agendada para ${formatarDataHora(osAtual.op_date_sched)}`}>
-                    {quandoOs(osAtual.op_date_sched)}
-                  </span>
+                  <>
+                    <dt>Agendada</dt>
+                    <dd title={`Agendada para ${formatarDataHora(osAtual.op_date_sched)}`}>
+                      {atrasada && <span className="detalhe-ordem-dado-atraso">Atrasada · </span>}
+                      {quandoOs(osAtual.op_date_sched)}
+                    </dd>
+                  </>
                 )}
-                {atrasada && <span className="detalhe-ordem-meta detalhe-ordem-meta-atraso">Atrasada</span>}
-                {osAtual.task_name && <span className="detalhe-ordem-meta">{osAtual.task_name}</span>}
-                {osAtual.op_number && <span className="detalhe-ordem-meta">OS {osAtual.op_number}</span>}
-                {protocolo && <span className="detalhe-ordem-meta">Chamado {protocolo}</span>}
-              </div>
+                {osAtual.task_name && (
+                  <>
+                    <dt>Serviço</dt>
+                    <dd>{osAtual.task_name}</dd>
+                  </>
+                )}
+                {osAtual.op_number && (
+                  <>
+                    <dt>OS</dt>
+                    <dd className="detalhe-ordem-dado-codigo">{osAtual.op_number}</dd>
+                  </>
+                )}
+                {protocolo && (
+                  <>
+                    <dt>Chamado</dt>
+                    <dd className="detalhe-ordem-dado-codigo">{protocolo}</dd>
+                  </>
+                )}
+              </dl>
               {osAtual.op_pk && !encerrada && (
                 <ol className="detalhe-ordem-passos" aria-label="Etapas da OS">
                   <li className="detalhe-ordem-passo-feito">Agendada</li>
@@ -631,7 +650,7 @@ function DetalheOrdemServicoConteudo() {
               </div>
             </div>
 
-            <Abas abas={ABAS} ativa={aba} onEscolher={setAba} cor={CORES.suporte} rotulo="Partes da OS" />
+            <Abas abas={ABAS} ativa={aba} onEscolher={setAba} rotulo="Partes da OS" />
 
             {aba === 'resumo' && (
               <>
@@ -654,7 +673,7 @@ function DetalheOrdemServicoConteudo() {
 
                 {!encerrada && linkWhatsappComTexto(telefone, '') && (
                   <div className="detalhe-ordem-card">
-                    <h2>Avisar o cliente pelo WhatsApp</h2>
+                    <h2>Avisar o cliente</h2>
                     <div className="detalhe-ordem-mensagens">
                       {MENSAGENS_CLIENTE.map((mensagem) => (
                         <a
@@ -664,11 +683,8 @@ function DetalheOrdemServicoConteudo() {
                           rel="noreferrer"
                           className="detalhe-ordem-mensagem"
                         >
-                          <FaWhatsapp size={20} aria-hidden="true" />
-                          <span className="item-duas-linhas">
-                            <strong>{mensagem.rotulo}</strong>
-                            <small>{mensagem.dica}</small>
-                          </span>
+                          <FaWhatsapp size={18} aria-hidden="true" />
+                          {mensagem.rotulo}
                         </a>
                       ))}
                     </div>

@@ -81,7 +81,6 @@ export default function Financeiro() {
           icone={LuWallet}
           cor={CORES.financeiro}
           titulo="Financeiro"
-          subtitulo="Faturas e pagamentos em observação."
         />
 
         {carregando && (

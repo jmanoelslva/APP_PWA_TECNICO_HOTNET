@@ -165,7 +165,7 @@ export default function Conexao() {
   return (
     <PullToRefresh aoAtualizar={atualizarTela}>
       <div className="conexao-tela tela-entrada">
-        <CabecalhoTela icone={LuWifi} cor={CORES.conexao} titulo="Conexão" subtitulo="Dados de acesso e sessão do cliente." />
+        <CabecalhoTela icone={LuWifi} cor={CORES.conexao} titulo="Conexão" />
 
         {!temParametroInicial && (
           <>
@@ -208,7 +208,7 @@ export default function Conexao() {
             />
             {/* Abas: o técnico vai direto ao que precisa em vez de rolar
                 por todos os cards. Cliente (com o selo) fica acima, sempre. */}
-            <Abas abas={ABAS} ativa={aba} onEscolher={escolherAba} cor={CORES.conexao} rotulo="Partes da conexão" />
+            <Abas abas={ABAS} ativa={aba} onEscolher={escolherAba} rotulo="Partes da conexão" />
 
             {aba === 'resumo' && (
               <>

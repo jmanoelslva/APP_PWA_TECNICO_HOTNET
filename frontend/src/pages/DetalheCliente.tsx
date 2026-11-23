@@ -28,7 +28,7 @@ import PullToRefresh from '../components/PullToRefresh'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
-import { CORES } from '../utils/cores'
+import { CORES, comAlpha } from '../utils/cores'
 import {
   formatarCep,
   formatarData,
@@ -51,6 +51,9 @@ interface ResumoConexao {
   carregando: boolean
   cpe: CpeDto | null
   onu: OnuDto | null
+  // Consulta da ONU respondeu e não há ONU (esconde o botão "ONU", que
+  // levaria a uma tela vazia). Falha na consulta não conta: o botão fica.
+  semOnu: boolean
   // Sessão RADIUS agora: true/false; null se a consulta falhou.
   online: boolean | null
   // Quando o app leu (Date.now()), para o "Lido há X min".
@@ -152,7 +155,7 @@ function DetalheClienteConteudo() {
       const cpePk = cpe.cpe_pk
       setResumosConexao((atual) => ({
         ...atual,
-        [cpePk]: { carregando: true, cpe: null, onu: null, online: null, lidoEm: null },
+        [cpePk]: { carregando: true, cpe: null, onu: null, semOnu: false, online: null, lidoEm: null },
       }))
       Promise.allSettled([
         buscarCpe({ cpe_pk: cpePk }),
@@ -166,6 +169,7 @@ function DetalheClienteConteudo() {
             carregando: false,
             cpe: resultadoCpe.status === 'fulfilled' ? (resultadoCpe.value.results[0] ?? null) : null,
             onu: resultadoOnu.status === 'fulfilled' ? (resultadoOnu.value.results[0] ?? null) : null,
+            semOnu: resultadoOnu.status === 'fulfilled' && resultadoOnu.value.results.length === 0,
             online: resultadoSessao.status === 'fulfilled' ? resultadoSessao.value.results.length > 0 : null,
             lidoEm: Date.now(),
           },
@@ -205,8 +209,8 @@ function DetalheClienteConteudo() {
         {!carregando && !erro && (
           <>
             <div className="detalhe-cliente-card">
-              <span className="detalhe-cliente-icone" style={{ background: CORES.cliente }}>
-                <LuUser size={22} color={CORES.branco} />
+              <span className="detalhe-cliente-icone" style={{ background: comAlpha(CORES.primaria, 14) }}>
+                <LuUser size={22} color={CORES.primaria} />
               </span>
               <div className="detalhe-cliente-card-texto">
                 <strong>{nome ?? `Cliente #${pk}`}</strong>
@@ -221,7 +225,6 @@ function DetalheClienteConteudo() {
               <Link
                 to={`/suporte?busca=${encodeURIComponent(nome ?? '')}`}
                 className="detalhe-cliente-atalho"
-                style={{ '--atalho-cor': CORES.suporte } as CSSProperties}
                 viewTransition
               >
                 <LuWrench size={22} /> OS
@@ -229,14 +232,13 @@ function DetalheClienteConteudo() {
               <Link
                 to={`/financeiro?client_pk=${pk}`}
                 className="detalhe-cliente-atalho"
-                style={{ '--atalho-cor': CORES.financeiro } as CSSProperties}
                 viewTransition
               >
                 <LuReceipt size={22} /> Financeiro
               </Link>
             </nav>
 
-            <Abas abas={ABAS} ativa={aba} onEscolher={setAba} cor={CORES.cliente} rotulo="Partes do cliente" />
+            <Abas abas={ABAS} ativa={aba} onEscolher={setAba} rotulo="Partes do cliente" />
 
             {aba === 'conexoes' && (
               <section className="detalhe-cliente-secao">
@@ -304,32 +306,23 @@ function DetalheClienteConteudo() {
 
                       {/* Mesma grade de ações do Offline e da OS. */}
                       <div className="grade-acoes detalhe-cliente-grade">
-                        <Link
-                          to={`/conexao?cpe_pk=${cpe.cpe_pk}`}
-                          className="grade-acao"
-                          style={{ '--acao-cor': CORES.conexao } as CSSProperties}
-                          viewTransition
-                        >
+                        <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="grade-acao" viewTransition>
                           <LuWifi size={22} /> Conexão
                         </Link>
-                        <Link
-                          to={
-                            cpe.cpe_username
-                              ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
-                              : `/onu?cpe_pk=${cpe.cpe_pk}`
-                          }
-                          className="grade-acao"
-                          style={{ '--acao-cor': CORES.onu } as CSSProperties}
-                          viewTransition
-                        >
-                          <LuCable size={22} /> ONU
-                        </Link>
-                        <Link
-                          to={`/mapa?cliente=${pk}`}
-                          className="grade-acao"
-                          style={{ '--acao-cor': CORES.endereco } as CSSProperties}
-                          viewTransition
-                        >
+                        {!resumo?.semOnu && (
+                          <Link
+                            to={
+                              cpe.cpe_username
+                                ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
+                                : `/onu?cpe_pk=${cpe.cpe_pk}`
+                            }
+                            className="grade-acao"
+                            viewTransition
+                          >
+                            <LuCable size={22} /> ONU
+                          </Link>
+                        )}
+                        <Link to={`/mapa?cliente=${pk}`} className="grade-acao" viewTransition>
                           <LuMap size={22} /> Mapa
                         </Link>
                       </div>

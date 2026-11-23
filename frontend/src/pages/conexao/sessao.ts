@@ -106,18 +106,11 @@ function porConsumo(direcao: 'rx' | 'tx'): (sessao: Sessao) => ValorEncontrado |
   }
 }
 
+// Ordem da tela (opção C da revisão de layout): primeiro o que o técnico
+// confere (IP, tempo), depois concentrador, equipamento e consumo. Rótulos
+// curtos para caber numa linha. O usuário PPPoE não entra: já está no
+// cartão de acesso logo acima.
 const CAMPOS_DESEJADOS: CampoDesejado[] = [
-  { rotulo: 'Usuário PPPoE', extrair: porCandidatos(['session_username', 'cpe_username', 'username']) },
-  { rotulo: 'MAC da CPE', extrair: porCandidatos(['session_callingid', 'cpe_mac', 'session_calling_station_id', 'mac']) },
-  {
-    rotulo: 'Status do contrato',
-    extrair: porCandidatos(['contract_status', 'contract_status_name', 'client_contract_status']),
-    formatar: (valor) => formatarStatusContrato(valor as number | string),
-  },
-  { rotulo: 'NAS (nome/identificador)', extrair: porCandidatos(['nas_name', 'session_nas_identifier', 'nas_identifier']) },
-  { rotulo: 'NAS (endereço/IP)', extrair: porCandidatos(['nas_addr', 'session_nas_ip', 'nas_ip_address', 'nas_address']) },
-  { rotulo: 'NAS (porta)', extrair: porCandidatos(['session_nas_port_id', 'nas_port_id']) },
-  { rotulo: 'Circuit ID', extrair: porCandidatos(['session_circuit_id', 'cpe_circuit_id']) },
   { rotulo: 'IPv4', extrair: porCandidatos(['session_v4_ip', 'v4_ip']) },
   { rotulo: 'IPv6 (PX)', extrair: porCandidatos(['session_v6_px', 'v6_px']) },
   { rotulo: 'IPv6 (PD)', extrair: porCandidatos(['session_v6_pd', 'v6_pd']) },
@@ -126,12 +119,25 @@ const CAMPOS_DESEJADOS: CampoDesejado[] = [
     extrair: porCandidatos(['session_acct_time', 'session_uptime', 'session_duration', 'session_time']),
     formatar: formatarTempoConectado,
   },
+  { rotulo: 'Concentrador', extrair: porCandidatos(['nas_name', 'session_nas_identifier', 'nas_identifier']) },
+  { rotulo: 'IP concentrador', extrair: porCandidatos(['nas_addr', 'session_nas_ip', 'nas_ip_address', 'nas_address']) },
+  { rotulo: 'Porta NAS', extrair: porCandidatos(['session_nas_port_id', 'nas_port_id']) },
+  { rotulo: 'MAC da CPE', extrair: porCandidatos(['session_callingid', 'cpe_mac', 'session_calling_station_id', 'mac']) },
+  { rotulo: 'Circuit ID', extrair: porCandidatos(['session_circuit_id', 'cpe_circuit_id']) },
   // rx/tx aqui são do ponto de vista do NAS (padrão RADIUS accounting):
   // rx_byte = recebido PELO NAS vindo do cliente = upload do cliente;
   // tx_byte = enviado PELO NAS para o cliente = download do cliente.
-  { rotulo: 'Consumo (download)', extrair: porConsumo('tx'), formatar: formatarBytes },
-  { rotulo: 'Consumo (upload)', extrair: porConsumo('rx'), formatar: formatarBytes },
+  { rotulo: 'Download', extrair: porConsumo('tx'), formatar: formatarBytes },
+  { rotulo: 'Upload', extrair: porConsumo('rx'), formatar: formatarBytes },
+  {
+    rotulo: 'Contrato',
+    extrair: porCandidatos(['contract_status', 'contract_status_name', 'client_contract_status']),
+    formatar: (valor) => formatarStatusContrato(valor as number | string),
+  },
 ]
+
+/** Campos mostrados em fonte de código (endereços e identificadores). */
+export const ROTULOS_CODIGO = new Set(['IPv4', 'IPv6 (PX)', 'IPv6 (PD)', 'IP concentrador', 'Porta NAS', 'MAC da CPE', 'Circuit ID'])
 
 /** [rótulo, valor formatado] de cada campo conhecido presente na sessão. */
 export function camposSessao(sessao: Sessao | null): Array<[string, string]> {

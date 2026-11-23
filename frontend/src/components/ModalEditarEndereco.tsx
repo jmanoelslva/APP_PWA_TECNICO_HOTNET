@@ -1,7 +1,6 @@
 import { lazy, Suspense, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { LuExternalLink, LuLocateFixed, LuMapPin } from 'react-icons/lu'
 import { soDigitos } from '../utils/formatacao'
-import { CORES } from '../utils/cores'
 import Abas, { type Aba } from './Abas'
 import {
   formatarDistancia,
@@ -198,7 +197,7 @@ export default function ModalEditarEndereco({ endereco, corDestaque, abaInicial 
       <div ref={janelaRef} className="modal-editar-endereco" onClick={(e) => e.stopPropagation()}>
         <div className="modal-editar-endereco-topo">
           <h2>Editar endereço</h2>
-          <Abas abas={ABAS} ativa={aba} onEscolher={setAba} cor={corDestaque ?? CORES.cliente} rotulo="Partes do endereço" />
+          <Abas abas={ABAS} ativa={aba} onEscolher={setAba} rotulo="Partes do endereço" />
         </div>
 
         <div className={`modal-editar-endereco-corpo aba-${aba}`}>

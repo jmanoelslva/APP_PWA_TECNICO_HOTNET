@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 import './Abas.css'
 
 export interface Aba<T extends string> {
@@ -48,25 +48,23 @@ export function useAbaLembrada<T extends string>(chaveArmazenamento: string, aba
 
 /**
  * Abas de uma tela (Conexão, OS, ONU, Cliente): trilho que gruda no topo ao
- * rolar, com a aba ativa em destaque na cor da área.
+ * rolar, com a aba ativa em destaque no laranja da marca (igual em todas as
+ * telas; a cor de área fica só no ícone do cabeçalho).
  */
 export default function Abas<T extends string>({
   abas,
   ativa,
   onEscolher,
-  cor,
   rotulo,
 }: {
   abas: Aba<T>[]
   ativa: T
   onEscolher: (aba: T) => void
-  /** Cor da área (CORES.*) para o contorno da aba ativa. */
-  cor: string
   /** Nome do grupo para leitor de tela (ex.: "Partes da OS"). */
   rotulo: string
 }) {
   return (
-    <div className="abas" role="tablist" aria-label={rotulo} style={{ '--abas-cor': cor } as CSSProperties}>
+    <div className="abas" role="tablist" aria-label={rotulo}>
       {abas.map((item) => (
         <button
           key={item.chave}

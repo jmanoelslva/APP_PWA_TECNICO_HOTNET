@@ -107,7 +107,6 @@ export default function BuscaCliente() {
         icone={LuUsers}
         cor={CORES.cliente}
         titulo="Buscar"
-        subtitulo="Cliente, serial da ONU ou login PPPoE."
       />
 
       <form className="busca-cliente-form" onSubmit={aoBuscar}>

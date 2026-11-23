@@ -257,7 +257,6 @@ export default function ClientesOffline() {
           icone={LuWifiOff}
           cor={CORES.offline}
           titulo="Clientes Offline"
-          subtitulo="Contrato ativo e CPE habilitado, mas sem sessão agora."
         />
 
         {!carregando && (cpes.length > 0 || erro == null) && (

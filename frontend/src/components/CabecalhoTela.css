@@ -1,17 +1,17 @@
-/* Faixa compacta: ícone + título + subtítulo numa linha baixa, para sobrar
-   mais tela para o conteúdo (antes era um cartão alto de 80px+). */
+/* Faixa compacta: ícone + título numa linha baixa, para sobrar mais tela
+   para o conteúdo. */
 .cabecalho-tela {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 4px 0;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 2px 0;
 }
 
 .cabecalho-tela-icone {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -30,11 +30,8 @@
   letter-spacing: -0.01em;
   line-height: 1.2;
   color: var(--cor-texto);
-}
-
-.cabecalho-tela p {
-  margin: 2px 0 0;
-  color: var(--cor-texto-secundario);
-  font-size: 14px;
-  line-height: 1.3;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

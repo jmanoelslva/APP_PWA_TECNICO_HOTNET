@@ -276,23 +276,31 @@
 }
 
 .detalhe-ordem-mensagens {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
 
 /* Mesmo verde do botão WhatsApp (AcoesContato.css). */
 .detalhe-ordem-mensagem {
   --cor-whatsapp: #1fa855;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 4px;
   min-height: 56px;
-  padding: 8px 14px;
+  padding: 6px 4px;
   border: 1px solid var(--cor-borda);
   border-radius: 12px;
+  background: var(--cor-superficie);
   color: var(--cor-texto);
+  font-size: 12px;
+  font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .detalhe-ordem-mensagem svg {
@@ -467,25 +475,40 @@
   color: var(--cor-texto-secundario);
 }
 
-.detalhe-ordem-metas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+/* Agendada / Serviço / OS / Chamado: rótulo à esquerda, valor à direita,
+   uma linha cada (valor longo corta com reticências, sem quebrar). */
+.detalhe-ordem-dados {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 12px;
+  margin: 0;
+  font-size: 13px;
 }
 
-.detalhe-ordem-meta {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 8px;
-  background: var(--cor-fundo);
+.detalhe-ordem-dados dt {
   color: var(--cor-texto-secundario);
-  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.detalhe-ordem-meta-atraso {
-  background: color-mix(in srgb, var(--cor-erro) 14%, transparent);
+.detalhe-ordem-dados dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  color: var(--cor-texto);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detalhe-ordem-dados .detalhe-ordem-dado-codigo {
+  font-family: var(--fonte-mono);
+  font-weight: 500;
+}
+
+.detalhe-ordem-dado-atraso {
   color: var(--cor-erro);
+  font-weight: 800;
 }
 
 /* Linha de etapas: Agendada → Respondida → Iniciada → Finalizada. */
@@ -514,20 +537,21 @@
   background: var(--cor-borda);
 }
 
+/* Feito em grafite; a próxima etapa (a ação) no laranja da marca. */
 .detalhe-ordem-passos .detalhe-ordem-passo-feito {
-  color: var(--cor-suporte);
-}
-
-.detalhe-ordem-passos .detalhe-ordem-passo-feito::before {
-  background: var(--cor-suporte);
-}
-
-.detalhe-ordem-passos .detalhe-ordem-passo-atual {
   color: var(--cor-texto);
 }
 
+.detalhe-ordem-passos .detalhe-ordem-passo-feito::before {
+  background: var(--cor-texto-secundario);
+}
+
+.detalhe-ordem-passos .detalhe-ordem-passo-atual {
+  color: var(--cor-primaria);
+}
+
 .detalhe-ordem-passos .detalhe-ordem-passo-atual::before {
-  background: repeating-linear-gradient(90deg, var(--cor-suporte) 0 6px, transparent 6px 9px);
+  background: var(--cor-primaria);
 }
 
 /* Rota, Ligar, WhatsApp, Chamado e Mapa: grade padrão (.grade-acoes, em

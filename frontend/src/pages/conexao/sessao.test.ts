@@ -12,16 +12,15 @@ describe('sessão online', () => {
     expect(rotuloEncerramento(7)).toBe('Código 7')
   })
 
-  it('campos da sessão: consumo aninhado em KB, ordem fixa, vazios fora', () => {
+  it('campos da sessão: consumo aninhado em KB, ordem fixa, vazios e PPPoE fora', () => {
     const campos = camposSessao({
       SESSION_USERNAME: 'maria', session_v4_ip: '100.64.1.20', session_v6_px: '',
       stats: { total: { rx_byte: 512, tx_byte: 1024 } },
     })
     expect(campos).toEqual([
-      ['Usuário PPPoE', 'maria'],
       ['IPv4', '100.64.1.20'],
-      ['Consumo (download)', '1.00 MB'],
-      ['Consumo (upload)', '512.0 KB'],
+      ['Download', '1.00 MB'],
+      ['Upload', '512.0 KB'],
     ])
     expect(camposSessao(null)).toEqual([])
   })

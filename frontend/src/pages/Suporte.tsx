@@ -129,7 +129,7 @@ export default function Suporte() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="suporte-tela tela-entrada">
-        <CabecalhoTela icone={LuWrench} cor={CORES.suporte} titulo="OS / Suporte" subtitulo="Ordens de serviço agendadas." />
+        <CabecalhoTela icone={LuWrench} cor={CORES.suporte} titulo="OS / Suporte" />
 
         {carregando && (
           <ul className="suporte-lista">

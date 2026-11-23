@@ -7,7 +7,6 @@ import { linkWhatsapp, separarTelefones } from './formatacao'
 export interface MensagemCliente {
   chave: string
   rotulo: string
-  dica: string
   texto: (nome: string) => string
 }
 
@@ -18,20 +17,17 @@ function saudacao(nome: string): string {
 export const MENSAGENS_CLIENTE: MensagemCliente[] = [
   {
     chave: 'caminho',
-    rotulo: 'Estou a caminho',
-    dica: 'ao sair para o endereço',
+    rotulo: 'A caminho',
     texto: (nome) => `${saudacao(nome)} Sou o técnico da HOTNET e estou a caminho do seu endereço.`,
   },
   {
     chave: 'cheguei',
     rotulo: 'Cheguei',
-    dica: 'quando ninguém atende',
     texto: (nome) => `${saudacao(nome)} Sou o técnico da HOTNET e já estou no seu endereço.`,
   },
   {
     chave: 'concluido',
-    rotulo: 'Atendimento concluído',
-    dica: 'ao terminar o serviço',
+    rotulo: 'Concluído',
     texto: (nome) =>
       `${saudacao(nome)} O atendimento foi concluído e sua internet está funcionando. Qualquer dúvida, fale com a HOTNET.`,
   },

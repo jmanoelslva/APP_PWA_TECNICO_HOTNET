@@ -119,7 +119,7 @@ export default function MinhasOsHoje({ onResumo }: { onResumo?: (resumo: ResumoD
         <div className="minhas-os-vazio">
           <LuWrench size={20} />
           <span className="minhas-os-vazio-texto">
-            Nenhuma OS sua para hoje.
+            Nenhuma OS hoje.
             {futura?.op_date_sched && (
               <small>
                 Próxima: {quandoOsFutura(futura.op_date_sched)}

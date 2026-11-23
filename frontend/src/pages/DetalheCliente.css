@@ -22,6 +22,10 @@
   margin-bottom: 20px;
 }
 
+.detalhe-cliente-atalho svg {
+  color: var(--cor-texto-secundario);
+}
+
 .detalhe-cliente-icone {
   width: 44px;
   height: 44px;
@@ -346,9 +350,10 @@
   min-height: 60px;
   padding: 6px 4px;
   border-radius: 12px;
-  border: 1.5px solid color-mix(in srgb, var(--atalho-cor) 45%, transparent);
-  background: color-mix(in srgb, var(--atalho-cor) 10%, var(--cor-superficie));
-  color: var(--atalho-cor);
+  /* Neutro, como a grade de ações (cor só para estado). */
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
   font-family: inherit;
   font-size: 14px;
   font-weight: 700;

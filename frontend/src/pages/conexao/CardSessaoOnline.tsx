@@ -3,7 +3,7 @@ import { LuRefreshCw } from 'react-icons/lu'
 import Skeleton from '../../components/Skeleton'
 import LidoHa from '../../components/LidoHa'
 import { CORES } from '../../utils/cores'
-import { camposSessao } from './sessao'
+import { ROTULOS_CODIGO, camposSessao } from './sessao'
 
 /** Sessão RADIUS ativa agora (carregada pela tela junto com a conexão). */
 export default function CardSessaoOnline({
@@ -40,9 +40,11 @@ export default function CardSessaoOnline({
       {sessao && campos.length === 0 && <p className="conexao-sessao-vazio">Cliente sem sessão online no momento.</p>}
       {sessao &&
         campos.map(([rotulo, valor]) => (
-          <div className="conexao-linha" key={rotulo}>
+          <div className="conexao-linha conexao-linha-sessao" key={rotulo}>
             <span>{rotulo}</span>
-            <strong>{valor}</strong>
+            <strong className={ROTULOS_CODIGO.has(rotulo) ? 'conexao-valor-codigo' : undefined} title={valor}>
+              {valor}
+            </strong>
           </div>
         ))}
       {!carregando && !sessao && <p className="conexao-sessao-vazio">Não foi possível consultar a sessão online agora.</p>}

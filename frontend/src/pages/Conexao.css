@@ -42,6 +42,30 @@
   text-align: right;
 }
 
+/* Sessão online: uma linha por campo, sem quebra (valor longo, como o
+   IPv6, corta com reticências; o valor inteiro fica no title). */
+.conexao-linha-sessao {
+  gap: 12px;
+}
+
+.conexao-linha-sessao span {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.conexao-linha-sessao strong {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conexao-linha-sessao .conexao-valor-codigo {
+  font-family: var(--fonte-mono);
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
 .conexao-campo {
   padding: 8px 0;
   border-bottom: 1px solid var(--cor-borda-suave);

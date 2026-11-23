@@ -205,7 +205,6 @@ export default function Auditoria() {
           icone={LuFileSearch}
           cor={CORES.ferramentas}
           titulo="Auditoria"
-          subtitulo="Quem mexeu no equipamento do cliente, quando e de qual IP."
         />
 
         <div className="auditoria-filtros">

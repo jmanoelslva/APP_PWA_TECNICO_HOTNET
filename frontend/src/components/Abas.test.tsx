@@ -12,7 +12,7 @@ function Tela() {
   const [aba, escolher] = useAbaLembrada('teste-aba', ABAS)
   return (
     <>
-      <Abas abas={ABAS} ativa={aba} onEscolher={escolher} cor="red" rotulo="Partes" />
+      <Abas abas={ABAS} ativa={aba} onEscolher={escolher} rotulo="Partes" />
       <p>{aba}</p>
     </>
   )

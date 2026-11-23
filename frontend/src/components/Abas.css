@@ -34,10 +34,10 @@
 .aba.ativa {
   background: var(--cor-superficie);
   color: var(--cor-texto);
-  box-shadow: 0 0 0 1.5px var(--abas-cor, var(--cor-primaria));
+  box-shadow: 0 0 0 1.5px var(--cor-primaria);
 }
 
 .aba:focus-visible {
-  outline: 3px solid var(--abas-cor, var(--cor-primaria));
+  outline: 3px solid var(--cor-primaria);
   outline-offset: 1px;
 }
