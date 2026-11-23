@@ -629,19 +629,18 @@ function DetalheOrdemServicoConteudo() {
               {/* Ações do topo em grade: mesmo tamanho, ícone sobre o rótulo. */}
               <div className="detalhe-ordem-contato grade-acoes">
                 {rota && (
-                  <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao detalhe-ordem-rota">
+                  <a href={rota} target="_blank" rel="noreferrer" className="acoes-contato-botao acao-ir">
                     <LuNavigation size={22} /> Rota
                   </a>
                 )}
                 <AcoesContato numero={telefone} />
-                <Link to={`/suporte/${pk}`} className="acoes-contato-botao" viewTransition>
+                <Link to={`/suporte/${pk}`} className="acoes-contato-botao acao-registro" viewTransition>
                   <LuMessageCircle size={22} /> Chamado
                 </Link>
                 {osAtual.client_pk && (
                   <Link
                     to={`/mapa?cliente=${osAtual.client_pk}`}
-                    className="grade-acao"
-                    style={{ '--acao-cor': CORES.endereco } as CSSProperties}
+                    className="grade-acao acao-ir"
                     viewTransition
                   >
                     <LuMap size={22} /> Mapa

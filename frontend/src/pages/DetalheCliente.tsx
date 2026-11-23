@@ -224,14 +224,14 @@ function DetalheClienteConteudo() {
             <nav className="detalhe-cliente-atalhos" aria-label="Atalhos do cliente">
               <Link
                 to={`/suporte?busca=${encodeURIComponent(nome ?? '')}`}
-                className="detalhe-cliente-atalho"
+                className="detalhe-cliente-atalho acao-registro"
                 viewTransition
               >
                 <LuWrench size={22} /> OS
               </Link>
               <Link
                 to={`/financeiro?client_pk=${pk}`}
-                className="detalhe-cliente-atalho"
+                className="detalhe-cliente-atalho acao-registro"
                 viewTransition
               >
                 <LuReceipt size={22} /> Financeiro
@@ -306,7 +306,7 @@ function DetalheClienteConteudo() {
 
                       {/* Mesma grade de ações do Offline e da OS. */}
                       <div className="grade-acoes detalhe-cliente-grade">
-                        <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="grade-acao" viewTransition>
+                        <Link to={`/conexao?cpe_pk=${cpe.cpe_pk}`} className="grade-acao acao-rede" viewTransition>
                           <LuWifi size={22} /> Conexão
                         </Link>
                         {!resumo?.semOnu && (
@@ -316,13 +316,13 @@ function DetalheClienteConteudo() {
                                 ? `/onu?username=${encodeURIComponent(cpe.cpe_username)}`
                                 : `/onu?cpe_pk=${cpe.cpe_pk}`
                             }
-                            className="grade-acao"
+                            className="grade-acao acao-rede"
                             viewTransition
                           >
                             <LuCable size={22} /> ONU
                           </Link>
                         )}
-                        <Link to={`/mapa?cliente=${pk}`} className="grade-acao" viewTransition>
+                        <Link to={`/mapa?cliente=${pk}`} className="grade-acao acao-ir" viewTransition>
                           <LuMap size={22} /> Mapa
                         </Link>
                       </div>

@@ -566,10 +566,6 @@
   transform: scale(0.97);
 }
 
-.detalhe-ordem-rota {
-  --cor-suporte: var(--cor-primaria);
-}
-
 /* Próxima etapa fixa no rodapé, logo acima da barra de navegação. */
 .detalhe-ordem-tela:has(.detalhe-ordem-barra-acao) {
   padding-bottom: 104px;

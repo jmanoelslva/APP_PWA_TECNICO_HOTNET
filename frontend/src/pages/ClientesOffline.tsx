@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { LuCable, LuMap, LuPhone, LuSearch, LuSearchX, LuTriangleAlert, LuUser, LuWifi, LuWifiOff, LuX } from 'react-icons/lu'
 import { ApiError, listarCpeOffline, listarDps, type CpeDto, type DpDto } from '../api/client'
@@ -202,15 +202,14 @@ export default function ClientesOffline() {
         </p>
         {/* Uma linha só: ícone em cima, rótulo curto embaixo, colunas iguais. */}
         <div className="grade-acoes">
-          <Link className="grade-acao" to={`/conexao?cpe_pk=${cpe.pk}`} style={{ '--acao-cor': CORES.conexao } as CSSProperties} viewTransition>
+          <Link className="grade-acao acao-rede" to={`/conexao?cpe_pk=${cpe.pk}`} viewTransition>
             <LuWifi size={20} aria-hidden="true" />
             Conexão
           </Link>
           {cpe.username ? (
             <Link
-              className="grade-acao"
+              className="grade-acao acao-rede"
               to={`/onu?username=${encodeURIComponent(cpe.username)}`}
-              style={{ '--acao-cor': CORES.onu } as CSSProperties}
               viewTransition
             >
               <LuCable size={20} aria-hidden="true" />
@@ -224,14 +223,13 @@ export default function ClientesOffline() {
           )}
           {cpe.client_pk ? (
             <>
-              <Link className="grade-acao" to={`/mapa?cliente=${cpe.client_pk}`} style={{ '--acao-cor': CORES.endereco } as CSSProperties} viewTransition>
+              <Link className="grade-acao acao-ir" to={`/mapa?cliente=${cpe.client_pk}`} viewTransition>
                 <LuMap size={20} aria-hidden="true" />
                 Mapa
               </Link>
               <button
                 type="button"
-                className="grade-acao"
-                style={{ '--acao-cor': CORES.sucesso } as CSSProperties}
+                className="grade-acao acao-contato"
                 onClick={() => void ligar(cpe)}
                 aria-busy={ligandoPk === cpe.client_pk}
                 disabled={ligandoPk != null}
@@ -239,7 +237,7 @@ export default function ClientesOffline() {
                 <LuPhone size={20} aria-hidden="true" />
                 Ligar
               </button>
-              <Link className="grade-acao" to={`/clientes/${cpe.client_pk}`} style={{ '--acao-cor': CORES.cliente } as CSSProperties} viewTransition>
+              <Link className="grade-acao acao-registro" to={`/clientes/${cpe.client_pk}`} viewTransition>
                 <LuUser size={20} aria-hidden="true" />
                 Cliente
               </Link>

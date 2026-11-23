@@ -15,6 +15,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Alterado
 
 - **Login novo:** cabeçalho laranja com "HOTNET", o selo "Área do Técnico" e o desenho do técnico grande no centro; cartão branco sobreposto com campos com ícone, "Lembrar meu usuário", "Esqueci minha senha", botão Entrar com seta e rodapé com "Fale com o suporte" e a versão. Em duas etapas: com o usuário lembrado, abre em "Olá, usuário" pedindo só a senha (o ícone de troca ao lado do nome muda o usuário); sem usuário lembrado, pede o usuário e depois a senha. Feita para o polegar: senha, opções e Entrar ficam na metade de baixo da tela. Com o teclado aberto, a tela rola até o Entrar ficar logo acima dele. "Esqueci minha senha" e "Fale com o suporte" abrem o WhatsApp do suporte com mensagem pronta.
+- **Uma cor para agir e cores por função:** botão principal sempre no laranja da marca. Os demais botões de ação ganham fundo suave na cor do que fazem, igual em todo o app: verde para falar com o cliente (Ligar, WhatsApp), azul para ir até o lugar (Rota, Mapa), verde-azulado para a rede do cliente (Conexão, ONU) e laranja-escuro para registros (Chamado, OS, Financeiro, Cliente).
+- **Cor de área só no ícone do cabeçalho:** abas e barra de baixo usam o laranja em todas as telas.
+- **Cabeçalho compacto:** título em uma linha, sem a frase explicativa abaixo.
+- **Barra de baixo sempre marcada:** o detalhe da OS marca "OS"; cliente, mapa, offline, ferramentas e as demais telas abertas pelo Início marcam "Início".
+- **Detalhe da OS:** data, serviço, número da OS e do chamado em lista rótulo/valor (uma linha cada), com "Atrasada" em vermelho na data; a próxima etapa em laranja.
+- **Cliente:** ícone do cliente no laranja da marca; o botão "ONU" some quando a conexão não tem ONU (antes levava a uma tela vazia).
+- **Sessão online:** IP e tempo conectado primeiro, depois concentrador, equipamento, consumo e contrato; códigos em fonte de código, uma linha por campo, sem o usuário PPPoE repetido.
+- **Textos sem quebra:** descrições de Ferramentas encurtadas para caber em uma linha; no Início, "Nenhuma OS hoje.".
+- **Teclado certo:** porta do roteador, porta da CTO e período do financeiro abrem o teclado numérico; a busca de "Registrar cliente" na ONU não põe maiúscula nem corrige o texto (aceita PPPoE).
+- **Sinal fraco:** consultas que passam de 30 segundos sem resposta param e mostram "O sinal está fraco… Tente de novo", em vez de carregar sem fim. Envios e anexos não têm esse limite.
+- **Servidor em atualização:** durante o reinício do servidor, a mensagem passa a ser "Servidor em atualização. Tente de novo em alguns segundos." em vez de "Erro 502 ao chamar …".
 
 ### Corrigido
 

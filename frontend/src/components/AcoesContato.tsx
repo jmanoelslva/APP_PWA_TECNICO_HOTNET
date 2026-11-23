@@ -31,7 +31,7 @@ export default function AcoesContato({
         const telefone = varios ? <small className="acoes-contato-telefone">{sufixo}</small> : null
         return (
           <div key={n} className="acoes-contato-numero">
-            <a href={ligar} className="acoes-contato-botao" aria-label={`Ligar${sufixo}`}>
+            <a href={ligar} className="acoes-contato-botao acao-contato" aria-label={`Ligar${sufixo}`}>
               <LuPhone size={16} /> Ligar{telefone}
             </a>
             {whatsapp && (
@@ -39,7 +39,7 @@ export default function AcoesContato({
                 href={whatsapp}
                 target="_blank"
                 rel="noreferrer"
-                className="acoes-contato-botao acoes-contato-whatsapp"
+                className="acoes-contato-botao acoes-contato-whatsapp acao-contato"
                 aria-label={`WhatsApp${sufixo}`}
               >
                 <FaWhatsapp size={16} /> WhatsApp

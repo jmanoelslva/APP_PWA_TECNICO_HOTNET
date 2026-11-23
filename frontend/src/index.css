@@ -29,6 +29,16 @@
 }
 
 :root {
+  /* Cor por FUNÇÃO do botão (não por tela): o mesmo botão tem a mesma cor
+     em todo o app. Fundo suave + ícone e texto na cor (ver .acao-* abaixo). */
+  --funcao-contato: #15803d;
+  --funcao-contato-fundo: #e7f5ec;
+  --funcao-ir: #1d5fbf;
+  --funcao-ir-fundo: #e6eefa;
+  --funcao-rede: #0f766e;
+  --funcao-rede-fundo: #e3f4f2;
+  --funcao-registro: #a33700;
+  --funcao-registro-fundo: #fbede6;
   font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   /* Algarismos de largura fixa: datas, IPs e consumo alinham em coluna e
      não "pulam" quando o valor muda. */
@@ -117,6 +127,14 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+  --funcao-contato: #5cc98a;
+  --funcao-contato-fundo: #173325;
+  --funcao-ir: #7fb0f5;
+  --funcao-ir-fundo: #172a44;
+  --funcao-rede: #4fc2b8;
+  --funcao-rede-fundo: #12302f;
+  --funcao-registro: #f08a54;
+  --funcao-registro-fundo: #3a2215;
   --cor-fundo: #141a1f;
   --cor-superficie: #1a2127;
   --cor-borda: #2a343c;
@@ -154,6 +172,14 @@
    continuarem legíveis com o sol batendo na tela. */
 :root[data-sol='1'] {
   color-scheme: light;
+  --funcao-contato: #0b5d2a;
+  --funcao-contato-fundo: #ffffff;
+  --funcao-ir: #123f85;
+  --funcao-ir-fundo: #ffffff;
+  --funcao-rede: #0a4f4a;
+  --funcao-rede-fundo: #ffffff;
+  --funcao-registro: #6e2200;
+  --funcao-registro-fundo: #ffffff;
   --cor-primaria: #8f2d00;
   --cor-primaria-escura: #6e2200;
   --cor-fundo: #ffffff;
@@ -694,6 +720,39 @@ h3,
 /* Única exceção: o ícone do WhatsApp mantém o verde da marca dele. */
 .grade-acoes .acoes-contato-whatsapp svg {
   color: var(--cor-whatsapp);
+}
+
+/* Botões de ação coloridos pela função: falar com o cliente (verde), ir até
+   o lugar (azul), rede do cliente (verde-azulado) e registros (laranja
+   escuro). Vale para grade de ações, Ligar/WhatsApp e atalhos do cliente. */
+:is(.grade-acao, .acoes-contato-botao, .detalhe-cliente-atalho):is(.acao-contato, .acao-ir, .acao-rede, .acao-registro) {
+  background: var(--acao-fundo);
+  border-color: color-mix(in srgb, var(--acao-texto) 22%, transparent);
+  color: var(--acao-texto);
+}
+
+:is(.grade-acao, .acoes-contato-botao, .detalhe-cliente-atalho):is(.acao-contato, .acao-ir, .acao-rede, .acao-registro) svg {
+  color: var(--acao-texto);
+}
+
+.acao-contato {
+  --acao-texto: var(--funcao-contato);
+  --acao-fundo: var(--funcao-contato-fundo);
+}
+
+.acao-ir {
+  --acao-texto: var(--funcao-ir);
+  --acao-fundo: var(--funcao-ir-fundo);
+}
+
+.acao-rede {
+  --acao-texto: var(--funcao-rede);
+  --acao-fundo: var(--funcao-rede-fundo);
+}
+
+.acao-registro {
+  --acao-texto: var(--funcao-registro);
+  --acao-fundo: var(--funcao-registro-fundo);
 }
 
 .grade-acao:disabled,
