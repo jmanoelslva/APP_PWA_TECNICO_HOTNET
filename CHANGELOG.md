@@ -14,22 +14,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Login novo:** cabeçalho laranja com o logo, "HOTNET" e o selo "Área do Técnico"; cartão branco sobreposto com campos com ícone, "Lembrar meu usuário", "Esqueci minha senha", botão Entrar com seta e rodapé com "Fale com o suporte" e a versão. Em duas etapas: com o usuário lembrado, abre em "Olá, usuário" pedindo só a senha ("Não é você? Trocar usuário"); sem usuário lembrado, pede o usuário e depois a senha. Com o teclado aberto, a tela rola até o Entrar ficar logo acima dele. "Esqueci minha senha" e "Fale com o suporte" abrem o WhatsApp do suporte com mensagem pronta.
-
-### Adicionado (login)
-
-- **Entrar com biometria:** depois do primeiro login com "Lembrar meu usuário", o celular oferece guardar a senha no próprio gerenciador de senhas; nos acessos seguintes, o botão "Entrar com biometria" pede a digital ou o rosto e entra. O app não guarda a senha. No iPhone o botão não aparece: o Face ID já é oferecido pelo teclado ao tocar na senha.
-- **Uma cor para agir:** botão principal sempre no laranja da marca e botões secundários, grades de ações e Ligar/WhatsApp neutros em todas as telas. Só o ícone do WhatsApp continua verde. Verde, vermelho e amarelo passam a indicar apenas estado (online, atrasada, sinal).
-- **Cor de área só no ícone do cabeçalho:** abas e barra de baixo usam o laranja em todas as telas.
-- **Cabeçalho compacto:** título em uma linha, sem a frase explicativa abaixo.
-- **Barra de baixo sempre marcada:** o detalhe da OS marca "OS"; cliente, mapa, offline, ferramentas e as demais telas abertas pelo Início marcam "Início".
-- **Detalhe da OS:** data, serviço, número da OS e do chamado em lista rótulo/valor (uma linha cada), com "Atrasada" em vermelho na data; a próxima etapa em laranja.
-- **Cliente:** atalhos e botões neutros, ícone do cliente no laranja da marca; o botão "ONU" some quando a conexão não tem ONU (antes levava a uma tela vazia).
-- **Sessão online:** IP e tempo conectado primeiro, depois concentrador, equipamento, consumo e contrato; códigos em fonte de código, uma linha por campo, sem o usuário PPPoE repetido.
-- **Textos sem quebra:** descrições de Ferramentas encurtadas para caber em uma linha; no Início, "Nenhuma OS hoje.".
-- **Teclado certo:** porta do roteador, porta da CTO e período do financeiro abrem o teclado numérico; a busca de "Registrar cliente" na ONU não põe maiúscula nem corrige o texto (aceita PPPoE).
-- **Sinal fraco:** consultas que passam de 30 segundos sem resposta param e mostram "O sinal está fraco… Tente de novo", em vez de carregar sem fim. Envios e anexos não têm esse limite.
-- **Servidor em atualização:** durante o reinício do servidor, a mensagem passa a ser "Servidor em atualização. Tente de novo em alguns segundos." em vez de "Erro 502 ao chamar …".
+- **Login novo:** cabeçalho laranja com o logo, "HOTNET" e o selo "Área do Técnico"; cartão branco sobreposto com campos com ícone, "Lembrar meu usuário", "Esqueci minha senha", botão Entrar com seta e rodapé com "Fale com o suporte" e a versão. Em duas etapas: com o usuário lembrado, abre em "Olá, usuário" pedindo só a senha (o lápis ao lado do nome troca de usuário); sem usuário lembrado, pede o usuário e depois a senha. Feita para o polegar: senha, opções e Entrar ficam na metade de baixo da tela. Com o teclado aberto, a tela rola até o Entrar ficar logo acima dele. "Esqueci minha senha" e "Fale com o suporte" abrem o WhatsApp do suporte com mensagem pronta.
 
 ### Corrigido
 

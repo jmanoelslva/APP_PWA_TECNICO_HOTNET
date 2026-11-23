@@ -7,9 +7,9 @@ import {
   LuDownload,
   LuEye,
   LuEyeOff,
-  LuFingerprint,
   LuLock,
   LuMoon,
+  LuPencil,
   LuSun,
   LuTimer,
   LuUser,
@@ -18,7 +18,6 @@ import { useSessao } from '../auth/useSessao'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import { usePwaInstall } from '../hooks/usePwaInstall'
 import { useTema } from '../hooks/useTema'
-import { esquecerCredencial, guardarCredencial, obterCredencial, temCredencialSalva } from '../utils/credencialSalva'
 import './Login.css'
 
 type Campo = 'usuario' | 'senha'
@@ -110,7 +109,6 @@ export default function Login() {
   const { tema, alternarTema } = useTema()
   const { podeInstalar, podeInstalarIos, aoClicarInstalar, modalIosAberto, fecharModalIos } = usePwaInstall()
   const { estilo: estiloArea, altura: alturaVisivel } = useAreaVisivel()
-  const biometria = etapa === 'senha' && temCredencialSalva(usuario)
 
   // Ao sair (ou com a sessão encerrada), as telas visitadas continuam no
   // histórico atrás do login: o "voltar" do Android passava por elas (cada
@@ -179,13 +177,7 @@ export default function Login() {
     setEditouDepoisDoErro(false)
     const sucesso = await entrar(login, senhaLogin)
     if (!sucesso) return
-    if (lembrar) {
-      salvarUsuarioLembrado(login)
-      await guardarCredencial(login, senhaLogin)
-    } else {
-      salvarUsuarioLembrado(null)
-      esquecerCredencial()
-    }
+    salvarUsuarioLembrado(lembrar ? login : null)
     // Veio do Coletor de OLTs (/olt/) sem sessão: volta para onde estava.
     // Só aceita caminhos do coletor, para o parâmetro não virar um
     // redirecionamento para qualquer lugar.
@@ -220,15 +212,6 @@ export default function Login() {
     await fazerLogin(usuario.trim(), senha)
   }
 
-  // Digital/rosto pelo gerenciador de senhas do celular (utils/credencialSalva).
-  async function entrarComBiometria() {
-    const credencial = await obterCredencial()
-    if (!credencial) return
-    setUsuario(credencial.usuario)
-    setSenha(credencial.senha)
-    await fazerLogin(credencial.usuario, credencial.senha)
-  }
-
   const erroVisivel = etapa === 'senha' && erro && !editouDepoisDoErro ? erro : null
 
   return (
@@ -242,10 +225,20 @@ export default function Login() {
           </div>
           {etapa === 'senha' ? (
             <>
-              <h1 className="login-titulo">Olá, {usuario}</h1>
-              <button type="button" className="login-trocar" onClick={trocarUsuario}>
-                Não é você? Trocar usuário
-              </button>
+              {/* Trocar de usuário: só o lápis ao lado do nome (outra pessoa
+                  usando o mesmo celular). */}
+              <h1 className="login-titulo">
+                <span>Olá, {usuario}</span>
+                <button
+                  type="button"
+                  className="login-trocar"
+                  onClick={trocarUsuario}
+                  aria-label="Trocar usuário"
+                  title="Trocar usuário"
+                >
+                  <LuPencil size={18} />
+                </button>
+              </h1>
             </>
           ) : (
             <h1 className="login-titulo">Bem-vindo de volta</h1>
@@ -362,17 +355,6 @@ export default function Login() {
             {carregando ? 'Entrando…' : etapa === 'usuario' ? 'Continuar' : 'Entrar'}
             {!carregando && <LuArrowRight size={20} aria-hidden="true" />}
           </button>
-
-          {biometria && (
-            <>
-              <div className="login-divisor" aria-hidden="true">
-                <span>ou</span>
-              </div>
-              <button type="button" className="login-btn-biometria" onClick={entrarComBiometria} disabled={carregando}>
-                <LuFingerprint size={22} /> Entrar com biometria
-              </button>
-            </>
-          )}
 
           <footer className="login-rodape">
             <p>

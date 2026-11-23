@@ -106,9 +106,4 @@ describe('Login', () => {
     expect(decodeURIComponent(linkSuporte('acesso', ''))).toContain('problema para acessar o app do técnico.')
   })
 
-  it('sem credencial salva (ou sem suporte no navegador), não mostra biometria', () => {
-    localStorage.setItem('hotnet-tecnico-usuario-lembrado', 'jmanoel')
-    montar()
-    expect(screen.queryByRole('button', { name: /biometria/ })).toBeNull()
-  })
 })
