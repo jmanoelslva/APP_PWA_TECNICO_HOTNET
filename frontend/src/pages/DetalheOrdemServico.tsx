@@ -780,8 +780,8 @@ function DetalheOrdemServicoConteudo() {
                     </p>
                   )}
                   {cpe?.pk && (
-                    <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="detalhe-ordem-chip acao-rede" viewTransition>
-                      <LuWifi size={16} /> Ver conexão completa
+                    <Link to={`/conexao?cpe_pk=${cpe.pk}`} className="botao botao-secundario botao-largo acao-rede detalhe-ordem-ver-conexao" viewTransition>
+                      <LuWifi size={18} /> Ver conexão completa
                     </Link>
                   )}
                 </div>

@@ -586,3 +586,9 @@ html body:has(.detalhe-ordem-barra-acao) {
   font-size: 12px;
   color: var(--cor-texto-secundario);
 }
+
+/* "Ver conexão completa": botão sozinho no pé do cartão ocupa a largura toda. */
+.detalhe-ordem-ver-conexao {
+  margin-top: 12px;
+  text-decoration: none;
+}
