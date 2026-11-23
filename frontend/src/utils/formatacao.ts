@@ -171,7 +171,7 @@ export const TEXTO_SINAL_ONU: Record<NivelSinal, string> = {
   boa: 'Sinal normal',
   alerta: 'Sinal fraco',
   critica: 'Sinal crítico',
-  desconhecida: 'Sinal não informado',
+  desconhecida: 'Sem leitura',
 }
 
 export function soDigitos(valor: string | null | undefined): string {

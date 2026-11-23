@@ -640,10 +640,21 @@ export interface BuscaOnuResponse {
   results: OnuDto[]
 }
 
-export function buscarOnu(
+/**
+ * Sinal recebido 0 dBm não é leitura real (uma ONU/OLT nunca recebe 0 dBm):
+ * é o Controllr sem dado. Vira "sem leitura" aqui, na origem, para nenhuma
+ * tela mostrar "0 dBm" com selo de sinal bom.
+ */
+export function normalizarSinalOnu(onu: OnuDto): OnuDto {
+  const semZero = (rx: number | undefined) => (rx === 0 ? undefined : rx)
+  return { ...onu, omddm_rx_power: semZero(onu.omddm_rx_power), olt_omddm_rx_power: semZero(onu.olt_omddm_rx_power) }
+}
+
+export async function buscarOnu(
   filtro: { serial?: string; username?: string; cpe_pk?: number; olt_pk?: number },
 ): Promise<BuscaOnuResponse> {
-  return get<BuscaOnuResponse>('onu/busca', filtro)
+  const resposta = await get<BuscaOnuResponse>('onu/busca', filtro)
+  return { ...resposta, results: (resposta.results ?? []).map(normalizarSinalOnu) }
 }
 
 export function atualizarInfoOnu(

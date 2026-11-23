@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, SessaoExpiradaError, aoExpirarSessao, buscarTecnicoAtual, login } from './client'
+import { ApiError, SessaoExpiradaError, aoExpirarSessao, buscarTecnicoAtual, login, normalizarSinalOnu } from './client'
 
 function mockFetchUmaVez(resposta: { status: number; ok: boolean; json: unknown }) {
   vi.stubGlobal(
@@ -87,5 +87,13 @@ describe('falhas de servidor e de sinal', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
     const erro = await buscarTecnicoAtual().catch((e: unknown) => e)
     expect(erro).toBeInstanceOf(TypeError)
+  })
+})
+
+describe('normalizarSinalOnu', () => {
+  it('0 dBm vira sem leitura; leitura real fica', () => {
+    const onu = normalizarSinalOnu({ omddm_rx_power: 0, olt_omddm_rx_power: -23.5 } as Parameters<typeof normalizarSinalOnu>[0])
+    expect(onu.omddm_rx_power).toBeUndefined()
+    expect(onu.olt_omddm_rx_power).toBe(-23.5)
   })
 })

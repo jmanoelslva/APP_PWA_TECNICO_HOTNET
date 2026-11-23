@@ -33,6 +33,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Corrigido
 
+- **Sinal da ONU 0 dBm:** passa a ser "Sem leitura", com selo cinza, em todo o app (OS, Cliente, Conexão, ONU e "Antes de finalizar"). Antes aparecia "0 dBm" com selo verde de sinal bom.
 - **Etapas da OS e chat do chamado:** as consultas de eventos ao Controllr passam a pedir um limite explícito. Sem ele, a resposta podia vir cortada, e uma OS já finalizada continuaria aparecendo como aberta, ou o chat de um chamado longo ficaria incompleto.
 
 ## [1.31.1] - 2026-11-19
