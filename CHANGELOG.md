@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.32.0] - 2026-11-23
+
 ### Adicionado
 
 - **Mensagens prontas para o cliente:** na aba Resumo da OS, três botões lado a lado ("A caminho", "Cheguei" e "Concluído") abrem o WhatsApp do cliente com o texto e o primeiro nome já preenchidos. Aparecem só quando o cliente tem celular e a OS está em aberto.
