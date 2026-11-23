@@ -1,6 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { ApiError, SessaoExpiradaError } from '../api/client'
-import { lerChecklist, salvarChecklist, textoChecklist } from './checklistSaida'
 import { decidirAposFalha, ehFalhaDeRede } from './filaAnexos'
 import { deveComprimir, dimensoesReduzidas } from './imagem'
 
@@ -39,26 +38,5 @@ describe('fila de anexos', () => {
     expect(ehFalhaDeRede(new TypeError('Failed to fetch'))).toBe(true)
     expect(ehFalhaDeRede(new ApiError('x', 400))).toBe(false)
     expect(ehFalhaDeRede(new SessaoExpiradaError())).toBe(false)
-  })
-})
-
-describe('checklist de saída', () => {
-  beforeEach(() => localStorage.clear())
-
-  it('monta a linha na ordem da lista, com o sinal', () => {
-    expect(textoChecklist(['fotos', 'sinal'], -19.8)).toBe('Checklist: sinal da ONU conferido (-19,8 dBm); fotos anexadas.')
-  })
-
-  it('sem leitura de sinal e sem itens', () => {
-    expect(textoChecklist(['sinal'], null)).toBe('Checklist: sinal da ONU conferido.')
-    expect(textoChecklist([])).toBe('')
-  })
-
-  it('guarda por OS', () => {
-    salvarChecklist(10, ['sinal'])
-    expect(lerChecklist(10)).toEqual(['sinal'])
-    expect(lerChecklist(11)).toEqual([])
-    salvarChecklist(10, [])
-    expect(lerChecklist(10)).toEqual([])
   })
 })

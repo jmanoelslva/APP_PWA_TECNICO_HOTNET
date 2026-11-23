@@ -404,47 +404,6 @@
   min-height: 52px;
 }
 
-/* Checklist de saída. */
-.detalhe-ordem-checklist {
-  display: flex;
-  flex-direction: column;
-}
-
-.detalhe-ordem-checklist label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 52px;
-  font-size: 15px;
-  color: var(--cor-texto);
-  cursor: pointer;
-}
-
-.detalhe-ordem-checklist label + label {
-  border-top: 1px solid var(--cor-borda-suave);
-}
-
-.detalhe-ordem-checklist input {
-  flex: none;
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  accent-color: var(--cor-suporte);
-}
-
-.detalhe-ordem-checklist small {
-  font-size: 13px;
-  color: var(--cor-texto-secundario);
-  font-variant-numeric: tabular-nums;
-}
-
-.detalhe-ordem-checklist-contagem {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--cor-texto-secundario);
-  font-variant-numeric: tabular-nums;
-}
-
 .detalhe-ordem-anexo-erro .detalhe-ordem-anexo-situacao {
   color: var(--cor-erro);
 }

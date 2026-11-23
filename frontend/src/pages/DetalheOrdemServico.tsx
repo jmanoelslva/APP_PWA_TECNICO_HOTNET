@@ -52,14 +52,7 @@ import {
 import { linkRota, osAtrasada, quandoOs } from '../utils/minhasOs'
 import { comprimirImagem } from '../utils/imagem'
 import { EVENTO_FILA, ehFalhaDeRede, enfileirarAnexo, type DetalheEventoFila } from '../utils/filaAnexos'
-import {
-  ITENS_CHECKLIST,
-  lerChecklist,
-  lerRascunhoFinalizacao,
-  salvarChecklist,
-  salvarRascunhoFinalizacao,
-  textoChecklist,
-} from '../utils/checklistSaida'
+import { lerRascunhoFinalizacao, salvarRascunhoFinalizacao } from '../utils/rascunhoFinalizacao'
 import './DetalheOrdemServico.css'
 import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
@@ -203,7 +196,7 @@ type AbaOs = 'resumo' | 'conexao' | 'checklist' | 'historico'
 
 // O topo (título, etapas, rota e contato) e o botão do rodapé ficam fora das
 // abas, sempre à vista. "Checklist" junta o que se faz ao terminar o
-// atendimento: checklist de saída e fotos/anexos.
+// atendimento: "Antes de finalizar" e fotos/anexos.
 const ABAS: Aba<AbaOs>[] = [
   { chave: 'resumo', rotulo: 'Resumo' },
   { chave: 'conexao', rotulo: 'Conexão' },
@@ -261,14 +254,8 @@ function DetalheOrdemServicoConteudo() {
 
   const inputArquivoRef = useRef<HTMLInputElement>(null)
   const inputCameraRef = useRef<HTMLInputElement>(null)
-  // Checklist de saída desta OS (salvo no aparelho por OS).
-  const [checklist, setChecklist] = useState<string[]>([])
 
   useEffect(() => () => urlsPreviaRef.current.forEach((url) => URL.revokeObjectURL(url)), [])
-
-  useEffect(() => {
-    if (osAtual?.op_pk) setChecklist(lerChecklist(osAtual.op_pk))
-  }, [osAtual?.op_pk])
 
   // Anexo que estava na fila saiu (ou foi recusado) com a tela aberta.
   useEffect(() => {
@@ -281,13 +268,6 @@ function DetalheOrdemServicoConteudo() {
     window.addEventListener(EVENTO_FILA, aoMudarFila)
     return () => window.removeEventListener(EVENTO_FILA, aoMudarFila)
   }, [])
-
-  function alternarItemChecklist(chave: string) {
-    if (!osAtual?.op_pk) return
-    const novo = checklist.includes(chave) ? checklist.filter((item) => item !== chave) : [...checklist, chave]
-    setChecklist(novo)
-    salvarChecklist(osAtual.op_pk, novo)
-  }
 
   useEffect(() => {
     if (!Number.isFinite(pk)) return
@@ -454,12 +434,9 @@ function DetalheOrdemServicoConteudo() {
         acaoConfirmando.desfazer ? `Etapa "${etapa.rotulo}" desfeita.` : `Etapa "${etapa.rotulo}" confirmada.`,
         'sucesso',
       )
-      // Finalizada: o checklist já foi para a descrição — não fica marcado
-      // no aparelho (nem reaparece se a OS for reaberta).
+      // Finalizada: o rascunho da descrição já foi enviado.
       if (etapa.chave === 'finalizar' && !acaoConfirmando.desfazer) {
-        salvarChecklist(osAtual.op_pk, [])
         salvarRascunhoFinalizacao(osAtual.op_pk, '')
-        setChecklist([])
       }
       setAcaoConfirmando(null)
       setObservacaoEtapa('')
@@ -826,34 +803,6 @@ function DetalheOrdemServicoConteudo() {
                     acao={(item: ItemFechamento) => acaoFechamento(item)}
                   />
                 )}
-                {!encerrada && osAtual.op_pk && (
-                  <div className="detalhe-ordem-card">
-                    <div className="detalhe-ordem-topo">
-                      <h2>Checklist de saída</h2>
-                      <span className="detalhe-ordem-checklist-contagem">
-                        {checklist.length} de {ITENS_CHECKLIST.length}
-                      </span>
-                    </div>
-                    <div className="detalhe-ordem-checklist">
-                      {ITENS_CHECKLIST.map((item) => (
-                        <label key={item.chave}>
-                          <input
-                            type="checkbox"
-                            checked={checklist.includes(item.chave)}
-                            onChange={() => alternarItemChecklist(item.chave)}
-                          />
-                          <span>
-                            {item.rotulo}
-                            {item.chave === 'sinal' && onuOs?.omddm_rx_power != null && (
-                              <small> · agora {onuOs.omddm_rx_power.toLocaleString('pt-BR')} dBm</small>
-                            )}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                    <p className="detalhe-ordem-lido">Ao finalizar, o que estiver marcado já entra na descrição.</p>
-                  </div>
-                )}
 
                 <div className="detalhe-ordem-card">
                   <h2>Anexo</h2>
@@ -1007,11 +956,9 @@ function DetalheOrdemServicoConteudo() {
                   className="botao botao-primario botao-bloco detalhe-ordem-barra-botao"
                   style={{ '--botao-cor': CORES.suporte } as CSSProperties}
                   onClick={() => {
-                    // Finalizar: volta o rascunho salvo; sem ele, o checklist
-                    // marcado já entra na descrição (editável).
-                    if (proximaEtapa.chave === 'finalizar' && !observacaoEtapa.trim()) {
-                      const rascunho = osAtual?.op_pk ? lerRascunhoFinalizacao(osAtual.op_pk) : ''
-                      setObservacaoEtapa(rascunho || textoChecklist(checklist, onuOs?.omddm_rx_power))
+                    // Finalizar: volta o rascunho salvo neste aparelho, se houver.
+                    if (proximaEtapa.chave === 'finalizar' && !observacaoEtapa.trim() && osAtual?.op_pk) {
+                      setObservacaoEtapa(lerRascunhoFinalizacao(osAtual.op_pk))
                     }
                     setAcaoConfirmando({ etapa: proximaEtapa.chave, desfazer: false })
                   }}

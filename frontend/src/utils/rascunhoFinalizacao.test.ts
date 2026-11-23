@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { lerRascunhoFinalizacao, salvarRascunhoFinalizacao } from './checklistSaida'
+import { lerRascunhoFinalizacao, salvarRascunhoFinalizacao } from './rascunhoFinalizacao'
 
 afterEach(() => localStorage.clear())
 

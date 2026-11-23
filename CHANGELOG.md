@@ -27,6 +27,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Sinal fraco:** consultas que passam de 30 segundos sem resposta param e mostram "O sinal está fraco… Tente de novo", em vez de carregar sem fim. Envios e anexos não têm esse limite.
 - **Servidor em atualização:** durante o reinício do servidor, a mensagem passa a ser "Servidor em atualização. Tente de novo em alguns segundos." em vez de "Erro 502 ao chamar …".
 
+### Removido
+
+- **Checklist de saída da OS:** a lista de itens marcáveis (sinal, fotos, velocidade, organização) saiu da aba Checklist; o quadro "Antes de finalizar" já cobre essas conferências. A descrição da finalização deixa de vir preenchida com o checklist (continua voltando o rascunho salvo).
+
 ### Corrigido
 
 - **Etapas da OS e chat do chamado:** as consultas de eventos ao Controllr passam a pedir um limite explícito. Sem ele, a resposta podia vir cortada, e uma OS já finalizada continuaria aparecendo como aberta, ou o chat de um chamado longo ficaria incompleto.
