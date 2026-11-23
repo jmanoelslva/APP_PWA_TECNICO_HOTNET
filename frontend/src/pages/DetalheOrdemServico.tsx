@@ -50,7 +50,14 @@ import {
 import { linkRota, osAtrasada, quandoOs } from '../utils/minhasOs'
 import { comprimirImagem } from '../utils/imagem'
 import { EVENTO_FILA, ehFalhaDeRede, enfileirarAnexo, type DetalheEventoFila } from '../utils/filaAnexos'
-import { ITENS_CHECKLIST, lerChecklist, salvarChecklist, textoChecklist } from '../utils/checklistSaida'
+import {
+  ITENS_CHECKLIST,
+  lerChecklist,
+  lerRascunhoFinalizacao,
+  salvarChecklist,
+  salvarRascunhoFinalizacao,
+  textoChecklist,
+} from '../utils/checklistSaida'
 import './DetalheOrdemServico.css'
 import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
 
@@ -449,6 +456,7 @@ function DetalheOrdemServicoConteudo() {
       // no aparelho (nem reaparece se a OS for reaberta).
       if (etapa.chave === 'finalizar' && !acaoConfirmando.desfazer) {
         salvarChecklist(osAtual.op_pk, [])
+        salvarRascunhoFinalizacao(osAtual.op_pk, '')
         setChecklist([])
       }
       setAcaoConfirmando(null)
@@ -962,9 +970,11 @@ function DetalheOrdemServicoConteudo() {
                   className="botao botao-primario botao-bloco detalhe-ordem-barra-botao"
                   style={{ '--botao-cor': CORES.suporte } as CSSProperties}
                   onClick={() => {
-                    // Finalizar: o checklist marcado já entra na descrição (editável).
+                    // Finalizar: volta o rascunho salvo; sem ele, o checklist
+                    // marcado já entra na descrição (editável).
                     if (proximaEtapa.chave === 'finalizar' && !observacaoEtapa.trim()) {
-                      setObservacaoEtapa(textoChecklist(checklist, onuOs?.omddm_rx_power))
+                      const rascunho = osAtual?.op_pk ? lerRascunhoFinalizacao(osAtual.op_pk) : ''
+                      setObservacaoEtapa(rascunho || textoChecklist(checklist, onuOs?.omddm_rx_power))
                     }
                     setAcaoConfirmando({ etapa: proximaEtapa.chave, desfazer: false })
                   }}
@@ -999,10 +1009,18 @@ function DetalheOrdemServicoConteudo() {
               </p>
               <textarea
                 value={observacaoEtapa}
-                onChange={(e) => setObservacaoEtapa(e.target.value)}
+                onChange={(e) => {
+                  setObservacaoEtapa(e.target.value)
+                  if (acaoConfirmando.etapa === 'finalizar' && !acaoConfirmando.desfazer && osAtual?.op_pk) {
+                    salvarRascunhoFinalizacao(osAtual.op_pk, e.target.value)
+                  }
+                }}
                 placeholder="Ex: Trocado cabo de rede, sinal normalizado."
                 rows={3}
               />
+              {acaoConfirmando.etapa === 'finalizar' && !acaoConfirmando.desfazer && observacaoEtapa.trim() && (
+                <p className="detalhe-ordem-rascunho">Rascunho salvo neste aparelho</p>
+              )}
               <div className="detalhe-ordem-modal-acoes">
                 <button
                   className="botao botao-secundario"

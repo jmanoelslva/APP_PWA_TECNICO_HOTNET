@@ -7,6 +7,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Rascunho da finalização da OS:** o texto de "O que foi feito" fica salvo no aparelho enquanto o técnico digita e volta ao reabrir a finalização, mesmo se o app recarregar por versão nova ou for fechado pelo sistema. É apagado ao finalizar.
+
+### Alterado
+
+- **Sinal fraco:** consultas que passam de 30 segundos sem resposta param e mostram "O sinal está fraco… Tente de novo", em vez de carregar sem fim. Envios e anexos não têm esse limite.
+- **Servidor em atualização:** durante o reinício do servidor, a mensagem passa a ser "Servidor em atualização. Tente de novo em alguns segundos." em vez de "Erro 502 ao chamar …".
+
+### Corrigido
+
+- **Etapas da OS e chat do chamado:** as consultas de eventos ao Controllr passam a pedir um limite explícito. Sem ele, a resposta podia vir cortada, e uma OS já finalizada continuaria aparecendo como aberta, ou o chat de um chamado longo ficaria incompleto.
+
 ## [1.31.1] - 2026-11-19
 
 ### Corrigido

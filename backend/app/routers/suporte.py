@@ -67,7 +67,8 @@ async def detalhe_ticket(ticket_pk: int, ctx: AuthContext = Depends(get_auth_con
 async def listar_mensagens_ticket(ticket_pk: int, ctx: AuthContext = Depends(get_auth_context)) -> dict[str, Any]:
     # support_ctl/op/list não tem wrapper no brbyteapi (só op/create).
     resposta = await ctx.controllr.call_api_post(
-        "/support_ctl/op/list", montar_corpo(where_eq("ticket_pk", ticket_pk))
+        # limit explícito: sem ele o Controllr pode cortar o chat na 1ª página.
+        "/support_ctl/op/list", montar_corpo(where_eq("ticket_pk", ticket_pk), start=0, limit=1000)
     )
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível listar as mensagens do chamado.", resposta))

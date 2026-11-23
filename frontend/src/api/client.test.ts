@@ -66,3 +66,26 @@ describe('get/post — ouvinte global de sessão expirada (aoExpirarSessao)', ()
     expect(ouvinte).not.toHaveBeenCalled()
   })
 })
+
+describe('falhas de servidor e de sinal', () => {
+  it('502 sem JSON (backend reiniciando) vira mensagem clara', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ status: 502, ok: false, json: async () => { throw new SyntaxError('html') } }),
+    )
+    await expect(buscarTecnicoAtual()).rejects.toThrow('Servidor em atualização. Tente de novo em alguns segundos.')
+  })
+
+  it('consulta que passa do tempo-limite vira ApiError de sinal fraco', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('tempo', 'TimeoutError')))
+    const erro = await buscarTecnicoAtual().catch((e: unknown) => e)
+    expect(erro).toBeInstanceOf(ApiError)
+    expect((erro as ApiError).message).toMatch(/sinal está fraco/)
+  })
+
+  it('outra falha de rede continua como erro de rede (fila de anexos depende disso)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+    const erro = await buscarTecnicoAtual().catch((e: unknown) => e)
+    expect(erro).toBeInstanceOf(TypeError)
+  })
+})
