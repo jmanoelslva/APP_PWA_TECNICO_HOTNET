@@ -275,6 +275,39 @@
   resize: vertical;
 }
 
+.detalhe-ordem-mensagens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Mesmo verde do botão WhatsApp (AcoesContato.css). */
+.detalhe-ordem-mensagem {
+  --cor-whatsapp: #1fa855;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  color: var(--cor-texto);
+  text-decoration: none;
+}
+
+.detalhe-ordem-mensagem svg {
+  color: var(--cor-whatsapp);
+  flex-shrink: 0;
+}
+
+:root[data-theme='dark'] .detalhe-ordem-mensagem {
+  --cor-whatsapp: #3fd27a;
+}
+
+.detalhe-ordem-mensagem:active {
+  transform: scale(0.98);
+}
+
 .detalhe-ordem-rascunho {
   margin: 6px 0 0;
   font-size: 12.5px;

@@ -8,7 +8,9 @@ import SeloQuedas from '../components/SeloQuedas'
 import ProntoParaFechar from '../components/ProntoParaFechar'
 import { verificarFechamento, type ItemFechamento } from '../utils/fechamentoOs'
 import PullToRefresh from '../components/PullToRefresh'
+import { FaWhatsapp } from 'react-icons/fa'
 import AcoesContato from '../components/AcoesContato'
+import { MENSAGENS_CLIENTE, linkWhatsappComTexto, primeiroNome } from '../utils/mensagensCliente'
 import Skeleton from '../components/Skeleton'
 import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
@@ -647,6 +649,29 @@ function DetalheOrdemServicoConteudo() {
                         <p className="detalhe-ordem-descricao">{osAtual.op_obs}</p>
                       </>
                     )}
+                  </div>
+                )}
+
+                {!encerrada && linkWhatsappComTexto(telefone, '') && (
+                  <div className="detalhe-ordem-card">
+                    <h2>Avisar o cliente pelo WhatsApp</h2>
+                    <div className="detalhe-ordem-mensagens">
+                      {MENSAGENS_CLIENTE.map((mensagem) => (
+                        <a
+                          key={mensagem.chave}
+                          href={linkWhatsappComTexto(telefone, mensagem.texto(primeiroNome(osAtual.client_complete_name))) ?? undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="detalhe-ordem-mensagem"
+                        >
+                          <FaWhatsapp size={20} aria-hidden="true" />
+                          <span className="item-duas-linhas">
+                            <strong>{mensagem.rotulo}</strong>
+                            <small>{mensagem.dica}</small>
+                          </span>
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
 

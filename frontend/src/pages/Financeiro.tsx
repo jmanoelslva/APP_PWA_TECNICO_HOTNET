@@ -247,7 +247,7 @@ function ModalObservacao({
         ) : (
           <>
             <label>Período (dias)</label>
-            <input type="number" min={1} value={dias} onChange={(e) => setDias(e.target.value)} />
+            <input type="number" inputMode="numeric" pattern="[0-9]*" min={1} value={dias} onChange={(e) => setDias(e.target.value)} />
           </>
         )}
 

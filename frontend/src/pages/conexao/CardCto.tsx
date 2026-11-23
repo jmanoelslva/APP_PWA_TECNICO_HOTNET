@@ -274,6 +274,8 @@ export default function CardCto({
           <input
             className="conexao-input"
             type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={dpPorta}
             onChange={(e) => setDpPorta(e.target.value)}
             placeholder="Não informado"

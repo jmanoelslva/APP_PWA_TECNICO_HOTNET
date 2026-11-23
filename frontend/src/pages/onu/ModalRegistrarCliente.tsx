@@ -216,6 +216,10 @@ export default function ModalRegistrarCliente({
               aria-label="Buscar cliente por nome, CPF/CNPJ, contrato ou login PPPoE"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
+              // Busca também PPPoE: sem maiúscula nem correção automática.
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               autoFocus
             />
             {pppoeDaOnu && busca.trim() !== pppoeDaOnu && (

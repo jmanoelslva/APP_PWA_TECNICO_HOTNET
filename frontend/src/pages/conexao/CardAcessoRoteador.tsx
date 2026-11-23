@@ -85,6 +85,8 @@ export default function CardAcessoRoteador({
         <input
           className="conexao-input"
           type="number"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={acessoPorta}
           onChange={(e) => setAcessoPorta(e.target.value)}
           placeholder="Não informado"

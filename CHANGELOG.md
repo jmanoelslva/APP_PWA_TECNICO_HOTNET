@@ -9,10 +9,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
+- **Mensagens prontas para o cliente:** na aba Resumo da OS, botões "Estou a caminho", "Cheguei" e "Atendimento concluído" abrem o WhatsApp do cliente com o texto e o primeiro nome já preenchidos. Aparece só quando o cliente tem celular e a OS está em aberto.
 - **Rascunho da finalização da OS:** o texto de "O que foi feito" fica salvo no aparelho enquanto o técnico digita e volta ao reabrir a finalização, mesmo se o app recarregar por versão nova ou for fechado pelo sistema. É apagado ao finalizar.
 
 ### Alterado
 
+- **Teclado certo:** porta do roteador, porta da CTO e período do financeiro abrem o teclado numérico; a busca de "Registrar cliente" na ONU não põe maiúscula nem corrige o texto (aceita PPPoE).
 - **Sinal fraco:** consultas que passam de 30 segundos sem resposta param e mostram "O sinal está fraco… Tente de novo", em vez de carregar sem fim. Envios e anexos não têm esse limite.
 - **Servidor em atualização:** durante o reinício do servidor, a mensagem passa a ser "Servidor em atualização. Tente de novo em alguns segundos." em vez de "Erro 502 ao chamar …".
 
