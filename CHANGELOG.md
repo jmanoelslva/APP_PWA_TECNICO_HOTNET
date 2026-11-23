@@ -14,7 +14,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Login em duas etapas:** com o usuário lembrado, a tela abre em "Olá, usuário" pedindo só a senha, com "Não é você? Trocar usuário". Sem usuário lembrado, pede o usuário e depois a senha. O botão Entrar fica preso no rodapé, logo acima do teclado. Topo com o logo e a assinatura "HOTNET / TÉCNICO" sobre a faixa laranja.
+- **Login novo:** cabeçalho laranja com o logo, "HOTNET" e o selo "Área do Técnico"; cartão branco sobreposto com campos com ícone, "Lembrar meu usuário", "Esqueci minha senha", botão Entrar com seta e rodapé com "Fale com o suporte" e a versão. Em duas etapas: com o usuário lembrado, abre em "Olá, usuário" pedindo só a senha ("Não é você? Trocar usuário"); sem usuário lembrado, pede o usuário e depois a senha. Com o teclado aberto, a tela rola até o Entrar ficar logo acima dele. "Esqueci minha senha" e "Fale com o suporte" abrem o WhatsApp do suporte com mensagem pronta.
+
+### Adicionado (login)
+
+- **Entrar com biometria:** depois do primeiro login com "Lembrar meu usuário", o celular oferece guardar a senha no próprio gerenciador de senhas; nos acessos seguintes, o botão "Entrar com biometria" pede a digital ou o rosto e entra. O app não guarda a senha. No iPhone o botão não aparece: o Face ID já é oferecido pelo teclado ao tocar na senha.
 - **Uma cor para agir:** botão principal sempre no laranja da marca e botões secundários, grades de ações e Ligar/WhatsApp neutros em todas as telas. Só o ícone do WhatsApp continua verde. Verde, vermelho e amarelo passam a indicar apenas estado (online, atrasada, sinal).
 - **Cor de área só no ícone do cabeçalho:** abas e barra de baixo usam o laranja em todas as telas.
 - **Cabeçalho compacto:** título em uma linha, sem a frase explicativa abaixo.

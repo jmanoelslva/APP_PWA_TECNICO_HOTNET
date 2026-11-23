@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import Login, { iniciaisUsuario } from './Login'
+import Login, { linkSuporte } from './Login'
 
 // Constante que o Vite injeta no build (vite.config.ts → define).
 vi.stubGlobal('__APP_VERSION__', '0.0.0-teste')
@@ -99,9 +99,16 @@ describe('Login', () => {
     expect(campo.getAttribute('spellcheck')).toBe('false')
   })
 
-  it('iniciais do usuário', () => {
-    expect(iniciaisUsuario('jmanoel')).toBe('JM')
-    expect(iniciaisUsuario('a.b')).toBe('AB')
-    expect(iniciaisUsuario('  ')).toBe('?')
+  it('links de suporte abrem o WhatsApp com o usuário na mensagem', () => {
+    const link = linkSuporte('senha', 'jmanoel')
+    expect(link.startsWith('https://wa.me/5582981414870?text=')).toBe(true)
+    expect(decodeURIComponent(link)).toContain('Esqueci minha senha do app do técnico (usuário: jmanoel).')
+    expect(decodeURIComponent(linkSuporte('acesso', ''))).toContain('problema para acessar o app do técnico.')
+  })
+
+  it('sem credencial salva (ou sem suporte no navegador), não mostra biometria', () => {
+    localStorage.setItem('hotnet-tecnico-usuario-lembrado', 'jmanoel')
+    montar()
+    expect(screen.queryByRole('button', { name: /biometria/ })).toBeNull()
   })
 })
