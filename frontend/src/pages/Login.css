@@ -88,7 +88,7 @@
   text-overflow: ellipsis;
 }
 
-/* Lápis para trocar de usuário (item pequeno, ao lado do nome). */
+/* Ícone de troca de usuário (item pequeno, ao lado do nome). */
 .login-trocar {
   flex: none;
   width: 44px;

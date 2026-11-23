@@ -9,7 +9,7 @@ import {
   LuEyeOff,
   LuLock,
   LuMoon,
-  LuPencil,
+  LuArrowLeftRight,
   LuSun,
   LuTimer,
   LuUser,
@@ -225,7 +225,7 @@ export default function Login() {
           </div>
           {etapa === 'senha' ? (
             <>
-              {/* Trocar de usuário: só o lápis ao lado do nome (outra pessoa
+              {/* Trocar de usuário: só o ícone de troca ao lado do nome (outra pessoa
                   usando o mesmo celular). */}
               <h1 className="login-titulo">
                 <span>Olá, {usuario}</span>
@@ -236,7 +236,7 @@ export default function Login() {
                   aria-label="Trocar usuário"
                   title="Trocar usuário"
                 >
-                  <LuPencil size={18} />
+                  <LuArrowLeftRight size={18} />
                 </button>
               </h1>
             </>
