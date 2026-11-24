@@ -138,6 +138,8 @@ async function postForm<T>(path: string, form: FormData): Promise<T> {
 
 export interface TecnicoDto {
   username: string
+  /** Nome no Controllr (ex.: "Pedro Carlos"); null sem permissão para ler. */
+  nome?: string | null
 }
 
 export interface LoginResponse {

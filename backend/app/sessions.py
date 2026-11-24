@@ -43,6 +43,10 @@ class TechnicianSession:
     # é uma sessão válida lá (ver deps.py::get_current_session) — 0.0 força
     # a primeira checagem já na próxima requisição autenticada.
     controllr_checked_at: float = 0.0
+    # Nome do técnico no Controllr (user_name do acl_user), usado nas
+    # mensagens ao cliente. None = ainda não consultado; "" = consultado
+    # sem resultado (sem permissão ou sem nome) — aí vale o username.
+    nome: str | None = None
 
 
 _sessions: dict[str, TechnicianSession] = {}
@@ -75,7 +79,13 @@ def _gravar() -> None:
         return
     dados = {
         "sessoes": [
-            {"id": s.session_id, "usuario": s.username, "cookie": s.controllr_cookie, "criada": s.created_at}
+            {
+                "id": s.session_id,
+                "usuario": s.username,
+                "cookie": s.controllr_cookie,
+                "criada": s.created_at,
+                "nome": s.nome,
+            }
             for s in _sessions.values()
         ],
         "extras": _extras,
@@ -111,7 +121,11 @@ def carregar() -> None:
         if agora - float(s["criada"]) > SESSION_COOKIE_MAX_AGE_SECONDS:
             continue
         _sessions[s["id"]] = TechnicianSession(
-            session_id=s["id"], username=s["usuario"], controllr_cookie=s["cookie"], created_at=float(s["criada"])
+            session_id=s["id"],
+            username=s["usuario"],
+            controllr_cookie=s["cookie"],
+            created_at=float(s["criada"]),
+            nome=s.get("nome"),
         )
     _extras.clear()
     _extras.update({str(k): str(v) for k, v in dados.get("extras", {}).items()})
@@ -129,6 +143,11 @@ def create_session(username: str, controllr_cookie: str) -> TechnicianSession:
     _sessions[session_id] = session
     _gravar()
     return session
+
+
+def definir_nome(session: TechnicianSession, nome: str) -> None:
+    session.nome = nome
+    _gravar()
 
 
 def get_session(session_id: str | None) -> TechnicianSession | None:

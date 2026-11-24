@@ -29,7 +29,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     buscarTecnicoAtual()
       .then((dado) => {
-        setTecnico({ username: dado.username })
+        setTecnico({ username: dado.username, nome: dado.nome })
         setLogado(true)
       })
       .catch(() => {
@@ -46,6 +46,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (resposta.success && resposta.tecnico) {
         setLogado(true)
         setTecnico({ username: resposta.tecnico.username })
+        // O login não busca o nome (fica rápido); vem do /auth/me em segundo plano.
+        buscarTecnicoAtual()
+          .then((dado) => setTecnico({ username: dado.username, nome: dado.nome }))
+          .catch(() => {})
         return true
       }
       setErro(resposta.message ?? 'Usuário ou senha incorretos.')

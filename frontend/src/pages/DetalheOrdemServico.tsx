@@ -10,7 +10,8 @@ import { verificarFechamento, type ItemFechamento } from '../utils/fechamentoOs'
 import PullToRefresh from '../components/PullToRefresh'
 import { FaWhatsapp } from 'react-icons/fa'
 import AcoesContato from '../components/AcoesContato'
-import { MENSAGENS_CLIENTE, linkWhatsappComTexto, primeiroNome } from '../utils/mensagensCliente'
+import { MENSAGENS_CLIENTE, identificacaoTecnico, linkWhatsappComTexto, primeiroNome } from '../utils/mensagensCliente'
+import { useSessao } from '../auth/useSessao'
 import Skeleton from '../components/Skeleton'
 import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
@@ -210,6 +211,7 @@ function DetalheOrdemServicoConteudo() {
   const pk = Number(ticketPk)
   const location = useLocation()
   const { toast } = useToast()
+  const { tecnico } = useSessao()
 
   const estadoNavegacao = location.state as { os?: OrdemServicoDto } | null
 
@@ -654,7 +656,7 @@ function DetalheOrdemServicoConteudo() {
                       {MENSAGENS_CLIENTE.map((mensagem) => (
                         <a
                           key={mensagem.chave}
-                          href={linkWhatsappComTexto(telefone, mensagem.texto(primeiroNome(osAtual.client_complete_name))) ?? undefined}
+                          href={linkWhatsappComTexto(telefone, mensagem.texto(primeiroNome(osAtual.client_complete_name), identificacaoTecnico(tecnico))) ?? undefined}
                           target="_blank"
                           rel="noreferrer"
                           className="detalhe-ordem-mensagem acao-contato"

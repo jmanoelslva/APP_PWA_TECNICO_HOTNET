@@ -7,6 +7,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- **Técnico identificado nas mensagens ao cliente:** "A caminho", "Cheguei" e "Concluído" passam a dizer quem é o técnico, com o nome cadastrado no Controllr (ex.: "Olá, Maria! Sou Pedro Carlos, técnico da HOTNET, e estou a caminho do seu endereço."). Se o usuário não tiver nome no Controllr ou não puder consultar a lista de usuários, a mensagem usa o próprio usuário de acesso. O login continua sem buscar a lista de usuários: o nome é consultado uma vez por sessão, logo depois de entrar.
+
 ## [1.32.0] - 2026-11-23
 
 ### Adicionado

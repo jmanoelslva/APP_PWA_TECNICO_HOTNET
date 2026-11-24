@@ -350,6 +350,19 @@ def test_login_cookie_seguro_e_sem_lista_de_usuarios(monkeypatch):
 
     monkeypatch.setattr(auth.ControllrLogin, "login", falso_login)
     r = TestClient(app).post("/auth/login", json={"username": "joao", "password": "x"})
-    assert r.json() == {"success": True, "message": None, "tecnico": {"username": "joao"}}
+    assert r.json() == {"success": True, "message": None, "tecnico": {"username": "joao", "nome": None}}
     cookie = r.headers["set-cookie"].lower()
     assert "secure" in cookie and "httponly" in cookie
+
+
+def test_nome_do_usuario_pelo_username():
+    from app.routers.auth import nome_do_usuario
+
+    registros = [
+        {"user_username": "camila", "user_name": "Camila"},
+        {"user_username": "PedroCarlos", "user_name": " Pedro Carlos "},
+        {"user_username": "semnome", "user_name": None},
+    ]
+    assert nome_do_usuario(registros, "pedrocarlos") == "Pedro Carlos"
+    assert nome_do_usuario(registros, "semnome") == ""
+    assert nome_do_usuario(registros, "outro") == ""
