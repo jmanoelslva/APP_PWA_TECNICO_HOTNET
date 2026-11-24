@@ -9,7 +9,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Alterado
 
-- **Técnico identificado nas mensagens ao cliente:** "A caminho", "Cheguei" e "Concluído" passam a dizer quem é o técnico, com o nome cadastrado no Controllr pelo primeiro nome do cadastro no Controllr (ex.: "Olá, Maria! Sou Edson, técnico da HOTNET, e estou a caminho do seu endereço."). Se o usuário não tiver nome no Controllr ou não puder consultar a lista de usuários, vale o usuário de acesso com a inicial maiúscula.
+- **Técnico identificado nas mensagens ao cliente:** "A caminho", "Cheguei" e "Concluído" passam a dizer quem é o técnico, pelo primeiro nome do cadastro no Controllr (ex.: "Olá, Maria! Sou Edson, técnico da HOTNET, e estou a caminho do seu endereço."). Se o usuário não tiver nome no Controllr ou não puder consultar a lista de usuários, vale o usuário de acesso com a inicial maiúscula.
 - **Nome do técnico no Início e no login:** a saudação do Início, as iniciais do avatar e o "Olá" do login com usuário lembrado passam a usar o mesmo primeiro nome, em vez do usuário de acesso.
 - **Vários telefones na OS:** com mais de um número, Ligar e WhatsApp saem da grade do topo (os botões ficavam estreitos e o número cortava) e vão para uma lista logo abaixo, uma linha por número, com o número escrito por inteiro e os dois botões ao lado. Com um número só, nada muda. O login continua sem buscar a lista de usuários: o nome é consultado uma vez por sessão, logo depois de entrar.
 
