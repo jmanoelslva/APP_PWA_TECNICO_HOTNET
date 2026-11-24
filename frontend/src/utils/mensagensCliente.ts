@@ -19,10 +19,7 @@ function apresentacao(tecnico: string): string {
   return tecnico ? `Sou ${tecnico}, técnico da HOTNET,` : 'Sou o técnico da HOTNET'
 }
 
-/** Nome do técnico na mensagem: o do Controllr ou, sem ele, o usuário. */
-export function identificacaoTecnico(tecnico: { username: string; nome?: string | null } | null | undefined): string {
-  return (tecnico?.nome ?? '').trim() || (tecnico?.username ?? '').trim()
-}
+
 
 export const MENSAGENS_CLIENTE: MensagemCliente[] = [
   {

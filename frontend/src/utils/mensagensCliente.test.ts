@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MENSAGENS_CLIENTE, identificacaoTecnico, linkWhatsappComTexto, primeiroNome } from './mensagensCliente'
+import { MENSAGENS_CLIENTE, linkWhatsappComTexto, primeiroNome } from './mensagensCliente'
 
 describe('primeiroNome', () => {
   it('pega o primeiro nome e acerta maiúsculas', () => {
@@ -29,18 +29,9 @@ describe('MENSAGENS_CLIENTE', () => {
     expect(MENSAGENS_CLIENTE[0].texto('Maria', '')).toMatch(/^Olá, Maria! /)
   })
   it('identifica o técnico pelo nome', () => {
-    expect(MENSAGENS_CLIENTE[0].texto('Maria', 'Pedro Carlos')).toBe(
-      'Olá, Maria! Sou Pedro Carlos, técnico da HOTNET, e estou a caminho do seu endereço.',
+    expect(MENSAGENS_CLIENTE[0].texto('Maria', 'Pedro')).toBe(
+      'Olá, Maria! Sou Pedro, técnico da HOTNET, e estou a caminho do seu endereço.',
     )
     expect(MENSAGENS_CLIENTE[0].texto('Maria', '')).toBe('Olá, Maria! Sou o técnico da HOTNET e estou a caminho do seu endereço.')
-  })
-})
-
-describe('identificacaoTecnico', () => {
-  it('usa o nome do Controllr e, sem ele, o usuário', () => {
-    expect(identificacaoTecnico({ username: 'pedrocarlos', nome: 'Pedro Carlos' })).toBe('Pedro Carlos')
-    expect(identificacaoTecnico({ username: 'pedrocarlos', nome: null })).toBe('pedrocarlos')
-    expect(identificacaoTecnico({ username: 'pedrocarlos', nome: '  ' })).toBe('pedrocarlos')
-    expect(identificacaoTecnico(null)).toBe('')
   })
 })

@@ -36,14 +36,14 @@ describe('Login', () => {
     expect(screen.getByText('Informe o usuário.')).toBeTruthy()
     fireEvent.change(screen.getByLabelText('Usuário'), { target: { value: ' jmanoel ' } })
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
-    expect(screen.getByText('Olá, jmanoel')).toBeTruthy()
+    expect(screen.getByText('Olá, Jmanoel')).toBeTruthy()
     expect(sessao.entrar).not.toHaveBeenCalled()
   })
 
   it('com usuário lembrado: abre direto na senha e não envia senha vazia', () => {
     localStorage.setItem('hotnet-tecnico-usuario-lembrado', 'jmanoel')
     montar()
-    expect(screen.getByText('Olá, jmanoel')).toBeTruthy()
+    expect(screen.getByText('Olá, Jmanoel')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }))
     expect(screen.getByText('Informe a senha.')).toBeTruthy()
     expect(sessao.entrar).not.toHaveBeenCalled()

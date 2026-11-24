@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { nomeExibicao } from '../utils/nomeTecnico'
 import {
   LuCable,
   LuCalendarClock,
@@ -199,13 +200,13 @@ export default function Home() {
         <div className="home-conteudo">
           <header className="home-cabecalho">
             <div className="home-header-saudacao">
-              <span className="home-saudacao">{saudacaoPorHorario(tecnico?.username ?? 'Técnico')}</span>
+              <span className="home-saudacao">{saudacaoPorHorario(nomeExibicao(tecnico) || 'Técnico')}</span>
               <span className="home-resumo">{textoHoje()}</span>
             </div>
 
             <div className="home-avatar-wrapper">
               <button className="home-avatar" onClick={() => setConfiguracoesAberta(true)} aria-label="Configurações">
-                {iniciais(tecnico?.username)}
+                {iniciais(tecnico?.nome?.trim() || tecnico?.username)}
               </button>
             </div>
             {/* Números do dia: o que está aberto, o que atrasou e o que já

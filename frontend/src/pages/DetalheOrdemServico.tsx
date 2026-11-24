@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { LuCamera, LuCircleCheck, LuCopy, LuEye, LuEyeOff, LuLocateFixed, LuMap, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuUser, LuWifi } from 'react-icons/lu'
+import { LuCamera, LuCircleCheck, LuPhone, LuCopy, LuEye, LuEyeOff, LuLocateFixed, LuMap, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuUser, LuWifi } from 'react-icons/lu'
 import ModalEditarEndereco, { type AbaEndereco } from '../components/ModalEditarEndereco'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
@@ -10,7 +10,8 @@ import { verificarFechamento, type ItemFechamento } from '../utils/fechamentoOs'
 import PullToRefresh from '../components/PullToRefresh'
 import { FaWhatsapp } from 'react-icons/fa'
 import AcoesContato from '../components/AcoesContato'
-import { MENSAGENS_CLIENTE, identificacaoTecnico, linkWhatsappComTexto, primeiroNome } from '../utils/mensagensCliente'
+import { MENSAGENS_CLIENTE, linkWhatsappComTexto, primeiroNome } from '../utils/mensagensCliente'
+import { nomeExibicao } from '../utils/nomeTecnico'
 import { useSessao } from '../auth/useSessao'
 import Skeleton from '../components/Skeleton'
 import EstadoErro from '../components/EstadoErro'
@@ -46,6 +47,8 @@ import {
   formatarDataHora,
   formatarStatusContrato,
   formatarTelefone,
+  linkLigar,
+  linkWhatsapp,
   nivelSinalOnu,
   separarTelefones,
   TEXTO_SINAL_ONU,
@@ -520,6 +523,7 @@ function DetalheOrdemServicoConteudo() {
   // eventos já carregados (acabou de iniciar nesta tela = não atrasa mais).
   const atrasada = !!osAtual && osAtrasada(osAtual) && !concluidas[1]
   const rota = osAtual ? linkRota(endereco, osAtual) : null
+  const telefonesOs = separarTelefones(telefone).filter((n) => linkLigar(n))
   const protocolo = ticket?.ticket_protocol ?? osAtual?.ticket_protocol
 
   return (
@@ -612,7 +616,7 @@ function DetalheOrdemServicoConteudo() {
                     <LuNavigation size={22} /> Rota
                   </a>
                 )}
-                <AcoesContato numero={telefone} />
+                {telefonesOs.length <= 1 && <AcoesContato numero={telefone} />}
                 <Link to={`/suporte/${pk}`} className="acoes-contato-botao acao-registro" viewTransition>
                   <LuMessageCircle size={22} /> Chamado
                 </Link>
@@ -626,6 +630,38 @@ function DetalheOrdemServicoConteudo() {
                   </Link>
                 )}
               </div>
+              {/* Vários números: fora da grade, uma linha por número (na grade
+                  os botões ficavam estreitos e o número cortava). */}
+              {telefonesOs.length > 1 && (
+                <ul className="detalhe-ordem-telefones">
+                  {telefonesOs.map((n) => {
+                    const ligar = linkLigar(n)
+                    const whatsapp = linkWhatsapp(n)
+                    const escrito = formatarTelefone(n)
+                    return (
+                      <li key={n} className="detalhe-ordem-telefone">
+                        <span className="detalhe-ordem-telefone-numero">{escrito}</span>
+                        {ligar && (
+                          <a href={ligar} className="acoes-contato-botao acao-contato" aria-label={`Ligar ${escrito}`}>
+                            <LuPhone size={20} aria-hidden="true" />
+                          </a>
+                        )}
+                        {whatsapp && (
+                          <a
+                            href={whatsapp}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="acoes-contato-botao acoes-contato-whatsapp acao-contato"
+                            aria-label={`WhatsApp ${escrito}`}
+                          >
+                            <FaWhatsapp size={20} aria-hidden="true" />
+                          </a>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
             </div>
 
             <Abas abas={ABAS} ativa={aba} onEscolher={setAba} rotulo="Partes da OS" />
@@ -656,7 +692,7 @@ function DetalheOrdemServicoConteudo() {
                       {MENSAGENS_CLIENTE.map((mensagem) => (
                         <a
                           key={mensagem.chave}
-                          href={linkWhatsappComTexto(telefone, mensagem.texto(primeiroNome(osAtual.client_complete_name), identificacaoTecnico(tecnico))) ?? undefined}
+                          href={linkWhatsappComTexto(telefone, mensagem.texto(primeiroNome(osAtual.client_complete_name), nomeExibicao(tecnico))) ?? undefined}
                           target="_blank"
                           rel="noreferrer"
                           className="detalhe-ordem-mensagem acao-contato"

@@ -3,6 +3,7 @@ import { aoExpirarSessao, buscarTecnicoAtual, login as apiLogin, logout as apiLo
 import { useToast } from '../components/Toast/useToast'
 import { limparRecentes } from '../utils/buscaUnica'
 import { SessionContext, type TecnicoLogado } from './session-context'
+import { lembrarNome } from '../utils/nomeTecnico'
 
 /**
  * Estado de sessão em memória — o cookie de sessão (TECSESSION) em si é do
@@ -30,6 +31,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     buscarTecnicoAtual()
       .then((dado) => {
         setTecnico({ username: dado.username, nome: dado.nome })
+        lembrarNome(dado.username, dado.nome)
         setLogado(true)
       })
       .catch(() => {
@@ -48,7 +50,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setTecnico({ username: resposta.tecnico.username })
         // O login não busca o nome (fica rápido); vem do /auth/me em segundo plano.
         buscarTecnicoAtual()
-          .then((dado) => setTecnico({ username: dado.username, nome: dado.nome }))
+          .then((dado) => {
+            setTecnico({ username: dado.username, nome: dado.nome })
+            lembrarNome(dado.username, dado.nome)
+          })
           .catch(() => {})
         return true
       }

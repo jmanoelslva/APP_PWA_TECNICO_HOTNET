@@ -525,6 +525,40 @@
   transform: scale(0.97);
 }
 
+/* Vários telefones: lista abaixo da grade, número + Ligar + WhatsApp. */
+.detalhe-ordem-telefones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detalhe-ordem-telefone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detalhe-ordem-telefone-numero {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.detalhe-ordem-telefone .acoes-contato-botao {
+  justify-content: center;
+  width: 56px;
+  padding: 0;
+}
+
+.detalhe-ordem-telefone .acoes-contato-botao:active {
+  transform: scale(0.97);
+}
+
 /* Próxima etapa fixa no rodapé, logo acima da barra de navegação. */
 .detalhe-ordem-tela:has(.detalhe-ordem-barra-acao) {
   padding-bottom: 104px;

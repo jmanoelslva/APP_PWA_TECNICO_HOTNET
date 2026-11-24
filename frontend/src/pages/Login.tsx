@@ -18,6 +18,7 @@ import { useSessao } from '../auth/useSessao'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import { usePwaInstall } from '../hooks/usePwaInstall'
 import { useTema } from '../hooks/useTema'
+import { nomeLembrado } from '../utils/nomeTecnico'
 import './Login.css'
 
 type Campo = 'usuario' | 'senha'
@@ -232,7 +233,7 @@ export default function Login() {
               {/* Trocar de usuário: só o ícone de troca ao lado do nome (outra pessoa
                   usando o mesmo celular). */}
               <h1 className="login-titulo">
-                <span>Olá, {usuario}</span>
+                <span>Olá, {nomeLembrado(usuario)}</span>
                 <button
                   type="button"
                   className="login-trocar"
