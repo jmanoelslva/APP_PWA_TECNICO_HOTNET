@@ -11,6 +11,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 - Editar endereço: o Complemento virou campo de três linhas, para descrições longas não ficarem cortadas.
 
+### Corrigido
+
+- OS transferida de técnico: a tela da OS mostrava "Responder" mesmo com a OS já respondida e iniciada pelo técnico anterior. Sem evento da etapa no chamado, vale a data gravada na própria OS, como a lista de OS já fazia.
+
 ## [1.32.1] - 2026-11-24
 
 ### Alterado

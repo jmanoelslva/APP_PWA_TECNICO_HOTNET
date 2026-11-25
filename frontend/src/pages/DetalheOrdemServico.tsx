@@ -152,9 +152,19 @@ function ultimoEvento(eventos: OperacaoDto[], osRaizPk: number, opType: number):
     }, undefined)
 }
 
-function etapaConcluida(eventos: OperacaoDto[], osRaizPk: number, etapa: ConfigEtapa): boolean {
-  const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
-  return !!evento?.[etapa.campoData]
+/**
+ * Data da etapa: a do evento mais recente daquele tipo; sem evento algum
+ * (etapa marcada fora do app ou OS transferida de técnico, quando o
+ * Controllr só deixa a data na raiz), vale a data da raiz, como no
+ * backend (ordens_servico.py::_etapa_marcada).
+ */
+function dataEtapa(eventos: OperacaoDto[], os: OrdemServicoDto, etapa: ConfigEtapa): string | undefined {
+  const evento = os.op_pk ? ultimoEvento(eventos, os.op_pk, etapa.opType) : undefined
+  return evento ? evento[etapa.campoData] : os[etapa.campoData]
+}
+
+function etapaConcluida(eventos: OperacaoDto[], os: OrdemServicoDto, etapa: ConfigEtapa): boolean {
+  return !!dataEtapa(eventos, os, etapa)
 }
 
 /**
@@ -184,7 +194,7 @@ function estagioResumo(eventos: OperacaoDto[], os: OrdemServicoDto): string {
   if (os.op_date_close) return 'Fechada'
   if (!os.op_pk) return 'Agendada'
   for (let i = ETAPAS.length - 1; i >= 0; i--) {
-    if (etapaConcluida(eventos, os.op_pk, ETAPAS[i])) return ETAPAS[i].rotulo
+    if (etapaConcluida(eventos, os, ETAPAS[i])) return ETAPAS[i].rotulo
   }
   return 'Agendada'
 }
@@ -408,7 +418,7 @@ function DetalheOrdemServicoConteudo() {
     // desatualizado, ex: outro técnico mexeu na mesma OS enquanto o
     // diálogo estava aberto) — o botão já vem desabilitado fora de
     // ordem, mas não custa garantir aqui também.
-    const concluidas = ETAPAS.map((e) => etapaConcluida(eventos, osAtual.op_pk!, e))
+    const concluidas = ETAPAS.map((e) => etapaConcluida(eventos, osAtual, e))
     const situacao = situacaoEtapa(concluidas, indice)
     const acaoEsperada = acaoConfirmando.desfazer ? 'desfazer' : 'confirmar'
     if (situacao !== acaoEsperada) {
@@ -515,7 +525,7 @@ function DetalheOrdemServicoConteudo() {
   // Próxima etapa pendente (a única que pode ser confirmada agora): vira o
   // botão fixo no rodapé, no alcance do polegar, em vez de ficar no último
   // card da tela. OS fechada/cancelada não tem próxima etapa.
-  const concluidas = osAtual?.op_pk ? ETAPAS.map((e) => etapaConcluida(eventos, osAtual.op_pk!, e)) : []
+  const concluidas = osAtual?.op_pk ? ETAPAS.map((e) => etapaConcluida(eventos, osAtual, e)) : []
   const encerrada = !!(osAtual?.op_date_close || osAtual?.op_date_cancel)
   const proximaEtapa =
     osAtual?.op_pk && !encerrada ? ETAPAS.find((_, indice) => situacaoEtapa(concluidas, indice) === 'confirmar') : undefined
@@ -944,9 +954,8 @@ function DetalheOrdemServicoConteudo() {
                   </div>
                   {(() => {
                     if (!osAtual.op_pk) return null
-                    const osRaizPk = osAtual.op_pk
                     return ETAPAS.map((etapa, indice) => {
-                      const evento = ultimoEvento(eventos, osRaizPk, etapa.opType)
+                      const data = dataEtapa(eventos, osAtual, etapa)
                       const concluida = concluidas[indice]
                       const situacao = situacaoEtapa(concluidas, indice)
                       // Texto explica por que o botão está bloqueado, em vez de
@@ -954,8 +963,8 @@ function DetalheOrdemServicoConteudo() {
                       // nos dois sentidos (marcar em ordem, desfazer em ordem
                       // reversa).
                       let subtitulo: string
-                      if (concluida && evento) {
-                        subtitulo = formatarDataHora(evento[etapa.campoData])
+                      if (concluida && data) {
+                        subtitulo = formatarDataHora(data)
                         if (situacao === 'bloqueada') subtitulo += ` · desfaça "${ETAPAS[indice + 1]?.rotulo}" antes`
                       } else if (situacao === 'bloqueada') {
                         subtitulo = `Aguardando "${ETAPAS[indice - 1]?.rotulo}"`
