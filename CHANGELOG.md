@@ -7,6 +7,10 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+
+- Editar endereço: o Complemento virou campo de três linhas, para descrições longas não ficarem cortadas.
+
 ## [1.32.1] - 2026-11-24
 
 ### Alterado

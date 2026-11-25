@@ -247,7 +247,15 @@ export default function ModalEditarEndereco({ endereco, corDestaque, abaInicial 
         </div>
 
         <label>Complemento</label>
-        <input {...campo('address_completation')} />
+        <textarea
+          className="modal-editar-endereco-complemento"
+          rows={3}
+          value={form.address_completation ?? ''}
+          onChange={(e) =>
+            setForm((atual) => ({ ...atual, address_completation: e.target.value.replace(/\s*\n\s*/g, ' ') }))
+          }
+          placeholder="Ex: casa azul, ao lado da padaria"
+        />
         </>
         )}
 

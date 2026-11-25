@@ -78,6 +78,22 @@
   color: var(--cor-texto);
 }
 
+.modal-editar-endereco-complemento {
+  margin-top: 6px;
+  width: 100%;
+  min-height: 84px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--cor-texto);
+  background: var(--cor-superficie, #fff);
+  resize: none;
+  flex-shrink: 0;
+}
+
 .modal-editar-endereco-linha {
   display: flex;
   gap: 12px;
