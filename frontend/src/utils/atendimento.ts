@@ -76,6 +76,19 @@ export function limparAtendimento(): void {
   gravar(null)
 }
 
+export type OsDoCliente = { tipo: 'uma'; ticketPk: number } | { tipo: 'varias' } | { tipo: 'nenhuma' }
+
+/**
+ * OS em aberto do cliente (pela lista de OS abertas): uma abre direto,
+ * várias vão para a lista filtrada, nenhuma vira aviso. Conta por chamado
+ * (ticket_pk), não por linha.
+ */
+export function osDoCliente(ordens: { client_pk?: number; ticket_pk?: number }[], clientPk: number): OsDoCliente {
+  const chamados = new Set(ordens.filter((o) => o.client_pk === clientPk && o.ticket_pk != null).map((o) => o.ticket_pk as number))
+  if (chamados.size === 1) return { tipo: 'uma', ticketPk: [...chamados][0] }
+  return chamados.size > 1 ? { tipo: 'varias' } : { tipo: 'nenhuma' }
+}
+
 /** Caminho de cada tela do atendimento; ausente quando falta o dado. */
 export function destinosAtendimento(a: Atendimento | null): Partial<Record<TelaAtendimento, string>> {
   if (!a) return {}

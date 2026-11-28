@@ -2,10 +2,13 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import type { IconType } from 'react-icons'
 import { LuCable, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { listarTodasOrdensServico } from '../api/client'
+import { useToast } from './Toast/useToast'
 import {
   EVENTO_ATENDIMENTO,
   destinosAtendimento,
   lerAtendimento,
+  osDoCliente,
   registrarAtendimento,
   type Atendimento,
   type DadosAtendimento,
@@ -33,7 +36,9 @@ const ITENS: { tela: TelaAtendimento; rotulo: string; Icone: IconType; cor: stri
 export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendimento; dados: DadosAtendimento | null }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [atendimento, setAtendimento] = useState<Atendimento | null>(() => lerAtendimento())
+  const [buscandoOs, setBuscandoOs] = useState(false)
   const chave = dados ? JSON.stringify(dados) : ''
 
   useEffect(() => {
@@ -59,6 +64,26 @@ export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendiment
   const itens = ITENS.filter((item) => item.tela === tela || destinos[item.tela])
   if (!atual || itens.length < 2) return null
 
+  // OS sem chamado no atendimento: procura as OS abertas do cliente em vez
+  // de abrir a lista inteira.
+  async function abrirOs(para: string) {
+    if (atual?.ticketPk != null || atual?.clientPk == null) {
+      navigate(para, { replace: true, viewTransition: true })
+      return
+    }
+    setBuscandoOs(true)
+    try {
+      const escolha = osDoCliente(await listarTodasOrdensServico({ minhas: false, abertas: true }), atual.clientPk)
+      if (escolha.tipo === 'uma') navigate(`/os/${escolha.ticketPk}`, { replace: true, viewTransition: true })
+      else if (escolha.tipo === 'varias') navigate(para, { replace: true, viewTransition: true })
+      else toast('Este cliente não tem OS em aberto.')
+    } catch {
+      toast('Não foi possível buscar as OS do cliente agora.')
+    } finally {
+      setBuscandoOs(false)
+    }
+  }
+
   return (
     <div className="barra-atendimento">
       <nav className="barra-atendimento-itens" aria-label="Telas do atendimento">
@@ -71,10 +96,14 @@ export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendiment
               className="barra-atendimento-item"
               data-ativo={ativo}
               aria-current={ativo ? 'page' : undefined}
+              aria-busy={destino === 'os' && buscandoOs ? true : undefined}
+              disabled={destino === 'os' && buscandoOs}
               style={{ '--item-cor': cor } as CSSProperties}
               onClick={() => {
                 const para = destinos[destino]
-                if (!ativo && para) navigate(para, { replace: true, viewTransition: true })
+                if (ativo || !para) return
+                if (destino === 'os') void abrirOs(para)
+                else navigate(para, { replace: true, viewTransition: true })
               }}
             >
               <Icone size={20} aria-hidden />

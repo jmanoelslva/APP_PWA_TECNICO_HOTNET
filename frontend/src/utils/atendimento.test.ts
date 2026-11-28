@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { destinosAtendimento, juntarAtendimento } from './atendimento'
+import { destinosAtendimento, juntarAtendimento, osDoCliente } from './atendimento'
 
 describe('juntarAtendimento', () => {
   it('mesmo cliente: completa com o que a tela sabe', () => {
@@ -28,5 +28,23 @@ describe('destinosAtendimento', () => {
   })
   it('com OS no atendimento, OS abre ela', () => {
     expect(destinosAtendimento({ ticketPk: 9, em: 1 }).os).toBe('/os/9')
+  })
+})
+
+describe('osDoCliente', () => {
+  const ordens = [
+    { client_pk: 5, ticket_pk: 9 },
+    { client_pk: 5, ticket_pk: 9 },
+    { client_pk: 6, ticket_pk: 10 },
+    { client_pk: 6, ticket_pk: 11 },
+  ]
+  it('uma OS (mesmo chamado em duas linhas): abre direto', () => {
+    expect(osDoCliente(ordens, 5)).toEqual({ tipo: 'uma', ticketPk: 9 })
+  })
+  it('várias: lista filtrada', () => {
+    expect(osDoCliente(ordens, 6)).toEqual({ tipo: 'varias' })
+  })
+  it('nenhuma', () => {
+    expect(osDoCliente(ordens, 7)).toEqual({ tipo: 'nenhuma' })
   })
 })

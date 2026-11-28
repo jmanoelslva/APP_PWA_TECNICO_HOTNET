@@ -39,3 +39,8 @@
   color: var(--item-cor);
   cursor: default;
 }
+
+.barra-atendimento-item[aria-busy="true"] {
+  opacity: 0.6;
+  cursor: progress;
+}
