@@ -41,8 +41,8 @@ describe('osDoCliente', () => {
   it('uma OS (mesmo chamado em duas linhas): abre direto', () => {
     expect(osDoCliente(ordens, 5)).toEqual({ tipo: 'uma', ticketPk: 9 })
   })
-  it('várias: lista filtrada', () => {
-    expect(osDoCliente(ordens, 6)).toEqual({ tipo: 'varias' })
+  it('várias: uma por chamado, para escolher', () => {
+    expect(osDoCliente(ordens, 6)).toEqual({ tipo: 'varias', ordens: [ordens[2], ordens[3]] })
   })
   it('nenhuma', () => {
     expect(osDoCliente(ordens, 7)).toEqual({ tipo: 'nenhuma' })

@@ -44,3 +44,72 @@
   opacity: 0.6;
   cursor: progress;
 }
+
+/* Janela "OS em aberto" (cliente com mais de uma OS). */
+.barra-atendimento-os-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.barra-atendimento-os {
+  width: 100%;
+  max-width: 420px;
+  max-height: 80dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 12px 20px 28px;
+  border-radius: 20px 20px 0 0;
+  background: var(--cor-superficie);
+}
+
+.barra-atendimento-os::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 16px;
+  border-radius: 2px;
+  background: var(--cor-borda);
+}
+
+.barra-atendimento-os h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.barra-atendimento-os ul {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.barra-atendimento-os li button {
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  border: none;
+  border-bottom: 1px solid var(--cor-borda-suave);
+  background: transparent;
+  color: var(--cor-texto);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.barra-atendimento-os li button strong {
+  font-size: 15px;
+}
+
+.barra-atendimento-os li button span {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}

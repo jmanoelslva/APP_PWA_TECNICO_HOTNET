@@ -2,7 +2,9 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import type { IconType } from 'react-icons'
 import { LuCable, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { listarTodasOrdensServico } from '../api/client'
+import { listarTodasOrdensServico, type OrdemServicoDto } from '../api/client'
+import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
+import { quandoOs } from '../utils/minhasOs'
 import { useToast } from './Toast/useToast'
 import {
   EVENTO_ATENDIMENTO,
@@ -39,6 +41,9 @@ export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendiment
   const { toast } = useToast()
   const [atendimento, setAtendimento] = useState<Atendimento | null>(() => lerAtendimento())
   const [buscandoOs, setBuscandoOs] = useState(false)
+  // Cliente com mais de uma OS aberta: escolha numa janela, sem sair do atendimento.
+  const [escolherOs, setEscolherOs] = useState<OrdemServicoDto[] | null>(null)
+  useFecharComVoltar(escolherOs !== null, () => setEscolherOs(null))
   const chave = dados ? JSON.stringify(dados) : ''
 
   useEffect(() => {
@@ -75,7 +80,7 @@ export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendiment
     try {
       const escolha = osDoCliente(await listarTodasOrdensServico({ minhas: false, abertas: true }), atual.clientPk)
       if (escolha.tipo === 'uma') navigate(`/os/${escolha.ticketPk}`, { replace: true, viewTransition: true })
-      else if (escolha.tipo === 'varias') navigate(para, { replace: true, viewTransition: true })
+      else if (escolha.tipo === 'varias') setEscolherOs(escolha.ordens)
       else toast('Este cliente não tem OS em aberto.')
     } catch {
       toast('Não foi possível buscar as OS do cliente agora.')
@@ -112,6 +117,49 @@ export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendiment
           )
         })}
       </nav>
+
+      {escolherOs && (
+        <div className="barra-atendimento-os-fundo" onClick={() => setEscolherOs(null)}>
+          <div
+            className="barra-atendimento-os"
+            role="dialog"
+            aria-label="OS em aberto do cliente"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>OS em aberto</h2>
+            <ul>
+              {escolherOs.map((os) => (
+                <li key={os.ticket_pk}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Fechar a janela tira a entrada dela do histórico (history.back,
+                      // ver useFecharComVoltar); a troca de tela vem depois disso, para
+                      // não sobrar tela empilhada.
+                      let feito = false
+                      const trocar = () => {
+                        if (feito) return
+                        feito = true
+                        window.removeEventListener('popstate', trocar)
+                        navigate(`/os/${os.ticket_pk}`, { replace: true, state: { os }, viewTransition: true })
+                      }
+                      window.addEventListener('popstate', trocar)
+                      setTimeout(trocar, 400)
+                      setEscolherOs(null)
+                    }}
+                  >
+                    <strong>{os.task_name ?? os.op_desc ?? `OS ${os.op_number ?? os.ticket_pk}`}</strong>
+                    <span>{quandoOs(os.op_date_sched) ?? 'Sem data'}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="botao botao-secundario botao-largo" onClick={() => setEscolherOs(null)}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
