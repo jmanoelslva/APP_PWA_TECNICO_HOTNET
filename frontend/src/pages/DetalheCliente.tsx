@@ -24,6 +24,7 @@ import { statusDoCliente } from '../utils/statusCliente'
 import { registrarRecente } from '../utils/buscaUnica'
 import ModalEditarEndereco, { type AbaEndereco } from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
+import IpComAcesso from '../components/IpComAcesso'
 import PullToRefresh from '../components/PullToRefresh'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import EstadoErro from '../components/EstadoErro'
@@ -278,7 +279,9 @@ function DetalheClienteConteudo() {
                           {(resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last) && (
                             <div>
                               <span>IP</span>
-                              <strong>{resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last}</strong>
+                              <strong>
+                                <IpComAcesso ip={resumo.cpe?.v4_ip ?? resumo.cpe?.v4_ip_last} porta={resumo.cpe?.access_port} />
+                              </strong>
                             </div>
                           )}
                           {resumo.onu && (

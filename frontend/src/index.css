@@ -786,6 +786,40 @@ h3,
   background: transparent;
 }
 
+/* IP do cliente + ícone que abre o roteador no navegador (IpComAcesso). */
+.ip-com-acesso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Fica dentro de <strong> de linhas cujo "span" é o rótulo (cor clara,
+   caixa alta na grade do cliente): herda o estilo do valor. */
+.ip-com-acesso.ip-com-acesso,
+.ip-com-acesso .ip-com-acesso-texto {
+  font: inherit;
+  color: inherit;
+  text-transform: none;
+  letter-spacing: inherit;
+  white-space: nowrap;
+}
+
+.ip-com-acesso-texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ip-com-acesso-botao {
+  width: 28px;
+  height: 28px;
+  margin: -6px -6px -6px 0;
+  --botao-icone-cor: var(--funcao-rede);
+}
+
 /* "Atualizado há X" das listas que se atualizam puxando para baixo. */
 .lista-atualizada {
   margin: 0 0 10px;

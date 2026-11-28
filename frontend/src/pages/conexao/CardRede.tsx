@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { LuChevronDown } from 'react-icons/lu'
 import { ApiError, buscarHistoricoSessoesCpe, type CpeDto, type SessaoHistoricoDto } from '../../api/client'
 import Skeleton from '../../components/Skeleton'
+import IpComAcesso from '../../components/IpComAcesso'
 import { useToast } from '../../components/Toast/useToast'
 import { CORES } from '../../utils/cores'
 import { formatarDataHoraSegundos, quandoFoi } from '../../utils/formatacao'
@@ -71,7 +72,9 @@ export default function CardRede({ cpe }: { cpe: CpeDto }) {
       <h2>Rede</h2>
       <div className="conexao-linha">
         <span>IP</span>
-        <strong>{cpe.v4_ip ?? cpe.v4_ip_last ?? '—'}</strong>
+        <strong>
+          <IpComAcesso ip={cpe.v4_ip ?? cpe.v4_ip_last} porta={cpe.access_port} />
+        </strong>
       </div>
       <div className="conexao-linha">
         <span>MAC</span>

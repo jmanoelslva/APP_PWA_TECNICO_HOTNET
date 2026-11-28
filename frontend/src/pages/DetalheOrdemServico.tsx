@@ -14,6 +14,7 @@ import { MENSAGENS_CLIENTE, linkWhatsappComTexto, primeiroNome } from '../utils/
 import { nomeExibicao } from '../utils/nomeTecnico'
 import { useSessao } from '../auth/useSessao'
 import Skeleton from '../components/Skeleton'
+import IpComAcesso from '../components/IpComAcesso'
 import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
@@ -794,7 +795,9 @@ function DetalheOrdemServicoConteudo() {
                   </div>
                   <div className="detalhe-ordem-linha-campo">
                     <span>IP</span>
-                    <strong>{cpe?.v4_ip ?? cpe?.v4_ip_last ?? '—'}</strong>
+                    <strong>
+                      <IpComAcesso ip={cpe?.v4_ip ?? cpe?.v4_ip_last} porta={cpe?.access_port} />
+                    </strong>
                   </div>
                   <div className="detalhe-ordem-linha-campo">
                     <span>MAC</span>

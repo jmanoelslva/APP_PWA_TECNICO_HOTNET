@@ -219,6 +219,7 @@ export default function Conexao() {
                   sessao={sessao}
                   carregando={carregandoSessao}
                   lidaEm={sessaoLidaEm}
+                  portaRoteador={cpe.access_port}
                   onAtualizar={() => cpe.pk != null && carregarSessaoOnline(cpe.pk)}
                 />
               </>

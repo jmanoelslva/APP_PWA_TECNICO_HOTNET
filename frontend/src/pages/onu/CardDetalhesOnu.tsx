@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { LuMap, LuPencil, LuUser, LuUserPlus } from 'react-icons/lu'
-import type { OnuDto } from '../../api/client'
+import { buscarCpe, type OnuDto } from '../../api/client'
+import IpComAcesso from '../../components/IpComAcesso'
 import { formatarUltimaQueda } from './formato'
 
 /** Cliente, nome, serial, modelo, estado, OLT/CTO etc. da ONU. */
@@ -17,6 +19,19 @@ export default function CardDetalhesOnu({
   onRenomear: () => void
 }) {
   const ultimaQueda = formatarUltimaQueda(onu.last_down_time)
+  // A ONU não traz a porta do acesso ao roteador: vem do CPE vinculado.
+  const [portaRoteador, setPortaRoteador] = useState<number | undefined>()
+  useEffect(() => {
+    setPortaRoteador(undefined)
+    if (onu.cpe_pk == null || !onu.cpe_v4_ip_last) return
+    let ativo = true
+    buscarCpe({ cpe_pk: onu.cpe_pk })
+      .then((r) => ativo && setPortaRoteador(r.results[0]?.access_port))
+      .catch(() => {})
+    return () => {
+      ativo = false
+    }
+  }, [onu.cpe_pk, onu.cpe_v4_ip_last])
   return (
     <div className="onu-card">
       <div className="onu-linha">
@@ -86,7 +101,9 @@ export default function CardDetalhesOnu({
       </div>
       <div className="onu-linha">
         <span>IP</span>
-        <strong>{onu.cpe_v4_ip_last ?? '—'}</strong>
+        <strong>
+          <IpComAcesso ip={onu.cpe_v4_ip_last} porta={portaRoteador} />
+        </strong>
       </div>
       <div className="onu-linha">
         <span>OLT</span>
