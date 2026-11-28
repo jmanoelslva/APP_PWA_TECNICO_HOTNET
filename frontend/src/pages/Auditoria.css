@@ -80,6 +80,22 @@
   overflow-wrap: anywhere;
 }
 
+.auditoria-local {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  min-height: 32px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--funcao-ir);
+  text-decoration: none;
+}
+
+.auditoria-titulo .auditoria-local-sem {
+  font-style: italic;
+}
+
 .auditoria-mudancas {
   display: flex;
   flex-direction: column;

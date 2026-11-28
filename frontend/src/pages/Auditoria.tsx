@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import type { IconType } from 'react-icons'
 import { LuArrowRight, LuBanknote, LuCircleX, LuClipboardCheck, LuFileSearch, LuLink, LuLocateFixed, LuLogIn, LuMapPin, LuMapPinOff, LuMapPinPlus, LuNetwork, LuPencil, LuPhone, LuPlay, LuRefreshCw, LuRotateCcw, LuRotateCw, LuRouter, LuStickyNote, LuTrash2, LuUndo2, LuWifi } from 'react-icons/lu'
-import { ApiError, listarAuditoria } from '../api/client'
+import { ApiError, listarAuditoria, type EventoAuditoria } from '../api/client'
 import EstadoErro from '../components/EstadoErro'
 import LidoHa from '../components/LidoHa'
 import FiltroSegmentado, { type OpcaoSegmentada } from '../components/FiltroSegmentado'
@@ -20,6 +20,22 @@ import {
 } from '../utils/auditoria'
 import { CORES } from '../utils/cores'
 import './Auditoria.css'
+
+/** Onde o técnico estava na ação de campo (GPS do celular, pode ter idade). */
+function LocalDoTecnico({ local }: { local: EventoAuditoria['local'] }) {
+  if (!local) return <span className="auditoria-local-sem">Sem localização</span>
+  const idade = local.idade_s < 60 ? `${local.idade_s} s` : `${Math.round(local.idade_s / 60)} min`
+  return (
+    <a
+      className="auditoria-local"
+      href={`https://www.google.com/maps/search/?api=1&query=${local.lat},${local.lng}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <LuMapPin size={14} /> Local ± {local.precisao_m} m · leitura de {idade} antes
+    </a>
+  )
+}
 
 /**
  * Quem fez o quê, de qual IP: ações que mexem no cadastro e no equipamento
@@ -304,6 +320,7 @@ export default function Auditoria() {
                             {ev.tecnico} · {hora(ev.quando)}
                           </span>
                           <span>IP {ev.ip}</span>
+                          {ev.local !== undefined && <LocalDoTecnico local={ev.local} />}
                         </div>
                       </div>
 

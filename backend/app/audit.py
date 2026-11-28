@@ -94,6 +94,28 @@ def _limpar_antigos(mes_atual: str) -> None:
             arq.unlink(missing_ok=True)
 
 
+# Ações de campo: levam a localização do técnico (cabeçalho X-Localizacao,
+# "lat;lng;precisão_m;idade_s", enviado pelo app com a última leitura do
+# GPS). Login, financeiro e telefone ficam sem localização.
+PREFIXOS_ACAO_CAMPO = ("os.", "cpe.", "onu.", "endereco.")
+
+
+def ler_localizacao(request: Request) -> dict[str, Any] | None:
+    """Localização do cabeçalho X-Localizacao, ou None se ausente/inválida."""
+    bruto = (request.headers.get("x-localizacao") or "").strip()
+    partes = bruto.split(";")
+    if len(partes) != 4 or len(bruto) > 80:
+        return None
+    try:
+        lat, lng, precisao = float(partes[0]), float(partes[1]), float(partes[2])
+        idade = int(partes[3])
+    except ValueError:
+        return None
+    if not (-90 <= lat <= 90 and -180 <= lng <= 180 and 0 <= precisao <= 100_000 and 0 <= idade <= 86_400):
+        return None
+    return {"lat": round(lat, 6), "lng": round(lng, 6), "precisao_m": round(precisao), "idade_s": idade}
+
+
 def registrar_auditoria(
     request: Request,
     session: TechnicianSession,
@@ -108,6 +130,8 @@ def registrar_auditoria(
         "acao": acao,
         "alvo": alvo or {},
     }
+    if acao.startswith(PREFIXOS_ACAO_CAMPO):
+        evento["local"] = ler_localizacao(request)
     mes = evento["quando"][:7]
     with _lock:
         _pasta().mkdir(parents=True, exist_ok=True)

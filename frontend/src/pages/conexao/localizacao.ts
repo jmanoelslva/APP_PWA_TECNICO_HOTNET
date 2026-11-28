@@ -1,6 +1,7 @@
 // Localização do técnico para sugerir a CTO mais próxima (CardCto.tsx).
 
 import { useEffect, useRef, useState } from 'react'
+import { registrarLeituraLocal } from '../../utils/localizacaoAuditoria'
 
 export interface PosicaoAoVivo {
   lat: number
@@ -21,6 +22,7 @@ export function useLocalizacaoAoVivo(): PosicaoAoVivo | null {
     if (!navigator.geolocation) return
     const watchId = navigator.geolocation.watchPosition(
       (leitura) => {
+        registrarLeituraLocal(leitura)
         const nova = {
           lat: leitura.coords.latitude,
           lng: leitura.coords.longitude,
@@ -116,7 +118,10 @@ export function obterMelhorLocalizacao(opcoes: OpcoesMelhorLocalizacao = {}): Pr
       encerrado = true
       clearTimeout(temporizador)
       navigator.geolocation.clearWatch(watchId)
-      if (melhor) resolve(melhor)
+      if (melhor) {
+        registrarLeituraLocal(melhor)
+        resolve(melhor)
+      }
       else reject(ultimoErro ?? new Error('Não foi possível obter a localização.'))
     }
 

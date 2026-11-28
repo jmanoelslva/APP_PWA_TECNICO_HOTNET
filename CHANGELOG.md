@@ -10,6 +10,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### Adicionado
 
 - Ícone ao lado do IP do cliente (Sessão online, Rede, cliente, OS e ONU) que abre o roteador no navegador, na porta gravada no acesso ao roteador (443 e 8443 abrem em https).
+- Auditoria: as ações de campo (OS, conexão, ONU e endereço) gravam a localização do técnico, com a precisão e a idade da leitura, e a tela Auditoria mostra o local com link para o mapa. Usa a última leitura do GPS (não atrasa a ação) e só com a permissão de localização já concedida.
 
 ## [1.32.3] - 2026-11-28
 

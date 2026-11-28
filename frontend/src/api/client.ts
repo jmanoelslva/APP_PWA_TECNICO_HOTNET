@@ -7,6 +7,7 @@
  */
 
 import { buscarTodasPaginas } from '../utils/paginacao'
+import { cabecalhoLocalizacao } from '../utils/localizacaoAuditoria'
 
 const API_BASE = '/api'
 const TEMPO_LIMITE_CONSULTA_MS = 30_000
@@ -102,11 +103,19 @@ async function get<T>(path: string, params?: Record<string, string | number | bo
   return tratarResposta<T>(response, path)
 }
 
+// Cabeçalhos das ações (envios): localização do técnico para a auditoria.
+function cabecalhosAcao(json: boolean): Record<string, string> {
+  const cabecalhos: Record<string, string> = json ? { 'Content-Type': 'application/json' } : {}
+  const local = cabecalhoLocalizacao()
+  if (local) cabecalhos['X-Localizacao'] = local
+  return cabecalhos
+}
+
 async function post<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${API_BASE}/${path}`, {
     method: 'POST',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: cabecalhosAcao(true),
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   return tratarResposta<T>(response, path)
@@ -116,19 +125,19 @@ async function put<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${API_BASE}/${path}`, {
     method: 'PUT',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: cabecalhosAcao(true),
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   return tratarResposta<T>(response, path)
 }
 
 async function del<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE}/${path}`, { method: 'DELETE', credentials: 'include' })
+  const response = await fetch(`${API_BASE}/${path}`, { method: 'DELETE', credentials: 'include', headers: cabecalhosAcao(false) })
   return tratarResposta<T>(response, path)
 }
 
 async function postForm<T>(path: string, form: FormData): Promise<T> {
-  const response = await fetch(`${API_BASE}/${path}`, { method: 'POST', credentials: 'include', body: form })
+  const response = await fetch(`${API_BASE}/${path}`, { method: 'POST', credentials: 'include', headers: cabecalhosAcao(false), body: form })
   return tratarResposta<T>(response, path)
 }
 
@@ -1084,6 +1093,8 @@ export interface EventoAuditoria {
   ip: string
   acao: string
   alvo: Record<string, unknown>
+  // Localização do técnico na ação (só ações de campo).
+  local?: { lat: number; lng: number; precisao_m: number; idade_s: number } | null
 }
 
 export function acessoAuditoria(): Promise<{ permitido: boolean }> {

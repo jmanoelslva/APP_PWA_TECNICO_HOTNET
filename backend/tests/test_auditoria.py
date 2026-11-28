@@ -366,3 +366,28 @@ def test_nome_do_usuario_pelo_username():
     assert nome_do_usuario(registros, "pedrocarlos") == "Pedro Carlos"
     assert nome_do_usuario(registros, "semnome") == ""
     assert nome_do_usuario(registros, "outro") == ""
+
+
+
+@pytest.mark.parametrize("valor,esperado", [
+    ("-9.665800;-35.735300;12;30", {"lat": -9.6658, "lng": -35.7353, "precisao_m": 12, "idade_s": 30}),
+    (None, None),
+    ("abc", None),
+    ("-9.6;-35.7;12", None),
+    ("91;-35.7;12;30", None),
+    ("-9.6;-35.7;12;-1", None),
+])
+def test_ler_localizacao(valor, esperado):
+    assert audit.ler_localizacao(req({"X-Localizacao": valor} if valor else None)) == esperado
+
+
+def test_localizacao_so_em_acao_de_campo(pasta):
+    r = req({"X-Localizacao": "-9.6658;-35.7353;12;30"})
+    audit.registrar_auditoria(r, sessao(), "os.iniciar", {"os": 1})
+    audit.registrar_auditoria(r, sessao(), "financeiro.liberacao", {})
+    audit.registrar_auditoria(req(), sessao(), "onu.reiniciar", {})
+    eventos, _ = audit.consultar()
+    por_acao = {e["acao"]: e for e in eventos}
+    assert por_acao["os.iniciar"]["local"]["precisao_m"] == 12
+    assert "local" not in por_acao["financeiro.liberacao"]
+    assert por_acao["onu.reiniciar"]["local"] is None
