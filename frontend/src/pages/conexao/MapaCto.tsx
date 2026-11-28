@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { LuExternalLink, LuLocateFixed, LuMaximize2, LuMinimize2 } from 'react-icons/lu'
 import { ApiError, buscarProjetoRede, type DpDto, type ItemProjetoDto } from '../../api/client'
 import { distanciaMetros, formatarDistancia } from './localizacao'
-import { COR_OCUPACAO, corMaisProxima, ocupacaoDaCto } from '../../utils/coresFibra'
+import { corMaisProxima } from '../../utils/coresFibra'
 
 export interface Ponto {
   lat: number
@@ -166,16 +166,13 @@ export default function MapaCto({
     for (const dp of dps) {
       if (dp.lat == null || dp.lng == null) continue
       const eSelecionada = dp.pk === selecionadaPk
-      // Preenchimento pela ocupação (verde livre, amarelo 1–2 livres,
-      // vermelho lotada); contorno na cor da fibra da CTO (ABNT).
-      const ocupacaoDp = ocupacaoDaCto(dp)
-      const corFibra = corMaisProxima(dp.cor)?.hex ?? COR_PADRAO_CTO
+      // Cor da fibra da CTO (tom ABNT mais próximo do cadastro).
       const marcador = L.circleMarker([dp.lat, dp.lng], {
         renderer,
-        radius: eSelecionada ? 11 : 8,
-        color: eSelecionada ? '#ffffff' : corFibra,
-        weight: eSelecionada ? 4 : 3,
-        fillColor: COR_OCUPACAO[ocupacaoDp],
+        radius: eSelecionada ? 10 : 7,
+        color: eSelecionada ? '#ffffff' : '#000000',
+        weight: eSelecionada ? 3 : 1,
+        fillColor: corMaisProxima(dp.cor)?.hex ?? COR_PADRAO_CTO,
         fillOpacity: 0.95,
       })
       marcador.bindTooltip(texto(`${dp.name}${ocupacao(dp)}`), {
@@ -405,15 +402,6 @@ export default function MapaCto({
         {/* Legenda dentro do mapa, no canto inferior esquerdo (como no
             Google Maps); cada item com o marcador e o nome juntos. */}
         <div className="mapa-cto-legenda">
-          <span>
-            <i style={{ background: COR_OCUPACAO.livre }} /> Livre
-          </span>
-          <span>
-            <i style={{ background: COR_OCUPACAO.pouca }} /> 1–2 livres
-          </span>
-          <span>
-            <i style={{ background: COR_OCUPACAO.lotada }} /> Lotada
-          </span>
           <span>
             <i style={{ background: '#1a73e8' }} /> Você
           </span>

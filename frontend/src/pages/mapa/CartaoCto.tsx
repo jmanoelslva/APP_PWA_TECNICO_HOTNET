@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { LuCheck, LuGrid3X3, LuNavigation, LuPencil, LuX } from 'react-icons/lu'
 import { useNavigate } from 'react-router-dom'
 import type { CpeDto, DpDto } from '../../api/client'
-import { COR_OCUPACAO, corMaisProxima, ocupacaoDaCto } from '../../utils/coresFibra'
+import { corMaisProxima } from '../../utils/coresFibra'
 import { formatarDistancia } from '../conexao/localizacao'
 import PortasCto from '../conexao/PortasCto'
 import './CartaoCto.css'
@@ -41,7 +41,6 @@ export default function CartaoCto({
   const [portasAbertas, setPortasAbertas] = useState(false)
   const [porta, setPorta] = useState('')
   const livres = dp.limite != null && dp.ativos != null ? dp.limite - dp.ativos : null
-  const ocupacao = ocupacaoDaCto(dp)
   const fibra = corMaisProxima(dp.cor)
   const online = cpesDaCto?.filter((cpe) => (cpe.sessions ?? 0) > 0).length ?? null
   const rota =
@@ -55,7 +54,7 @@ export default function CartaoCto({
   return (
     <div className={`cartao-cto${flutuante ? ' cartao-cto-flutuante' : ''}`}>
       <div className="cartao-cto-topo">
-        <i style={{ background: COR_OCUPACAO[ocupacao], borderColor: fibra?.hex ?? '#000' }} aria-hidden="true" />
+        <i style={{ background: fibra?.hex ?? '#555555' }} aria-hidden="true" />
         <span className="cartao-cto-nome">
           <strong>{dp.name}</strong>
           <span>

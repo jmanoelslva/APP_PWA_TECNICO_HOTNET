@@ -21,7 +21,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Início: "Continuar atendimento" volta direto à última tela do cliente que estava aberto (até 12 horas; some ao sair da conta).
 - Ferramentas › Potência óptica: sinal esperado na ONU pela potência da porta PON, splitters, distância, conectores e emendas, comparado com o sinal lido.
 - Mapa de CTOs: cartão da CTO tocada com ocupação, cor da fibra, distância, conexões online e offline, Rota, grade de portas e "Usar esta CTO" para o cliente buscado (abre a Conexão dele na aba CTO com a CTO e a porta escolhidas, faltando salvar).
-- Mapa de CTOs: ponto preenchido pela ocupação (verde com porta livre, amarelo com 1 ou 2, vermelho lotada) e contorno na cor da fibra; legenda; filtro "Só com porta livre"; "Mostrar mais"; distância "em linha reta"; mapa ampliado em tela cheia; busca de CTO pelo nome no mesmo campo do cliente.
+- Mapa de CTOs: ponto na cor da fibra da CTO (tom ABNT); filtro "Só com porta livre"; "Mostrar mais"; distância "em linha reta"; mapa ampliado em tela cheia; busca de CTO pelo nome no mesmo campo do cliente.
 - Mapa de CTOs: cadastrar CTO nova (setor, hub, número, capacidade 8 ou 16, cor e posição pelo GPS, nome no padrão do setor) e editar posição, cor e capacidade. As cores ficam nas 12 do código ABNT; as cores antigas, escolhidas à mão, são reconhecidas pela mais próxima. Depende da liberação de ACL do técnico no Controllr. CTOs sem localização aparecem numa lista para gravar a posição.
 
 ### Alterado

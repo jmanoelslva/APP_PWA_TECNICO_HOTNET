@@ -19,7 +19,7 @@ import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import { ocupaPorta } from '../utils/portasCto'
-import { COR_OCUPACAO, corMaisProxima, ocupacaoDaCto } from '../utils/coresFibra'
+import { corMaisProxima, ocupacaoDaCto } from '../utils/coresFibra'
 import CartaoCto, { type ConexaoDoCliente } from './mapa/CartaoCto'
 import ModalCto from './mapa/ModalCto'
 import { distanciaMetros, formatarDistancia, useLocalizacaoAoVivo } from './conexao/localizacao'
@@ -351,7 +351,7 @@ export default function MapaCtos() {
                     else setSelecionadaPk(dp.pk)
                   }}
                 >
-                  <i className="mapa-ctos-ponto" style={{ background: COR_OCUPACAO[ocupacaoDaCto(dp)], borderColor: corMaisProxima(dp.cor)?.hex ?? '#000' }} aria-hidden="true" />
+                  <i className="mapa-ctos-ponto" style={{ background: corMaisProxima(dp.cor)?.hex ?? '#555555' }} aria-hidden="true" />
                   <span className="item-duas-linhas">
                     <strong>{dp.name}</strong>
                     <small>
@@ -498,7 +498,7 @@ export default function MapaCtos() {
                   onClick={() => setSelecionadaPk(dp.pk)}
                 >
                   <i
-                    style={{ background: COR_OCUPACAO[ocupacaoDaCto(dp)], borderColor: corMaisProxima(dp.cor)?.hex ?? '#000' }}
+                    style={{ background: corMaisProxima(dp.cor)?.hex ?? '#555555' }}
                     aria-hidden="true"
                   />
                   <span className="mapa-ctos-nome">

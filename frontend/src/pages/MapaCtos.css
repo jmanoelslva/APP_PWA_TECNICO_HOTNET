@@ -188,14 +188,14 @@
   border-radius: 16px;
 }
 
-/* Ponto da CTO: preenchimento pela ocupação, contorno na cor da fibra. */
+/* Ponto da CTO: cor da fibra, contorno fino. */
 .mapa-ctos-item i,
 .mapa-ctos-ponto {
   flex: none;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  border: 3px solid #000000;
+  border: 1px solid #000000;
 }
 
 .mapa-ctos-pouca {
