@@ -75,8 +75,16 @@ def _inteiro(valor: Any) -> int | None:
 # provedor): sem ela o dp/update e o dp/create devolvem 403 "Access Denied",
 # repassado como 403 com mensagem clara (mesmo jeito do financeiro).
 
+# Padrão de nome da CTO nova, próprio de cada provedor (lido no cadastro
+# real do Controllr). {sigla} vem do setor: SIGLAS_SETOR pelo nome exato ou,
+# senão, o fim do nome "FTTH-VSJ" → "VSJ". Setor sem sigla não aparece.
+FORMATO_NOME_CTO = "{sigla}-CTO-{hub}.{numero}"  # VSJ-CTO-1.3
+SIGLAS_SETOR: dict[str, str] = {}
+# Preencher dp_id/dp_code/dp_num (VSJ-H01-03 / VSJ-H01 / 3) como no cadastro.
+PREENCHER_IDS_CTO = True
+
 # As 12 cores de fibra (código de cores ABNT, 12 fibras por tubo), no hex
-# que a paleta do painel já usa nas CTOs da HOTNET quando existe.
+# que a paleta do painel do Controllr usa.
 CORES_ABNT: dict[str, str] = {
     "#00FF00": "Verde",
     "#FFFF00": "Amarelo",
@@ -164,25 +172,29 @@ async def listar_setores(ctx: AuthContext = Depends(get_auth_context)) -> dict[s
         ],
         "cores": [{"hex": h, "nome": n} for h, n in CORES_ABNT.items()],
         "capacidades": sorted(CAPACIDADES),
+        # Para o app mostrar o nome antes de cadastrar.
+        "formato_nome": FORMATO_NOME_CTO,
     }
 
 
 def sigla_do_setor(nome: Any) -> str | None:
-    """"FTTH-VSJ" → "VSJ" (padrão dos nomes de CTO: VSJ-CTO-1.3)."""
+    """"FTTH-VSJ" → "VSJ" (ou a de SIGLAS_SETOR); None sem padrão."""
     if not nome:
         return None
+    if str(nome).strip() in SIGLAS_SETOR:
+        return SIGLAS_SETOR[str(nome).strip()]
     parte = str(nome).strip().split("-")[-1].strip().upper()
     return parte if re.fullmatch(r"[A-Z0-9]{2,6}", parte) else None
 
 
 def nomes_da_cto(sigla: str, hub: int, numero: int) -> dict[str, str]:
-    """Campos de nome no padrão já cadastrado (VSJ-CTO-1.3 / VSJ-H01-03 / VSJ-H01 / 3)."""
-    return {
-        "dp_name": f"{sigla}-CTO-{hub}.{numero}",
-        "dp_id": f"{sigla}-H{hub:02d}-{numero:02d}",
-        "dp_code": f"{sigla}-H{hub:02d}",
-        "dp_num": str(numero),
-    }
+    """Campos de nome no padrão do provedor (FORMATO_NOME_CTO, PREENCHER_IDS_CTO)."""
+    nomes = {"dp_name": FORMATO_NOME_CTO.format(sigla=sigla, hub=hub, numero=numero)}
+    if PREENCHER_IDS_CTO:
+        nomes.update({"dp_id": f"{sigla}-H{hub:02d}-{numero:02d}", "dp_code": f"{sigla}-H{hub:02d}", "dp_num": str(numero)})
+    else:
+        nomes.update({"dp_id": "", "dp_code": "", "dp_num": ""})
+    return nomes
 
 
 async def _registro_cru(ctx: AuthContext, dp_pk: int) -> dict[str, Any]:

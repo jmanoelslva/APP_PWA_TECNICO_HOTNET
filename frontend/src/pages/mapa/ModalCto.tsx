@@ -52,6 +52,7 @@ export default function ModalCto({
   const [lendo, setLendo] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [setores, setSetores] = useState<SetorDpDto[] | null>(null)
+  const [formatoNome, setFormatoNome] = useState('{sigla}-CTO-{hub}.{numero}')
   const [setorPk, setSetorPk] = useState('')
   const [hub, setHub] = useState('')
   const [numero, setNumero] = useState('')
@@ -59,7 +60,10 @@ export default function ModalCto({
   useEffect(() => {
     if (!nova) return
     listarSetoresDp()
-      .then((r) => setSetores(r.results.filter((s) => s.sigla)))
+      .then((r) => {
+        setSetores(r.results.filter((s) => s.sigla))
+        if (r.formato_nome) setFormatoNome(r.formato_nome)
+      })
       .catch(() => setSetores([]))
   }, [nova])
 
@@ -88,7 +92,7 @@ export default function ModalCto({
   const numeroN = Number(numero)
   const nomeNovo =
     setor?.sigla && Number.isInteger(hubN) && hubN >= 1 && Number.isInteger(numeroN) && numeroN >= 1
-      ? `${setor.sigla}-CTO-${hubN}.${numeroN}`
+      ? formatoNome.replace('{sigla}', setor.sigla).replace('{hub}', String(hubN)).replace('{numero}', String(numeroN))
       : null
   const nomeRepetido = !!nomeNovo && existentes.some((n) => n.toUpperCase() === nomeNovo)
 

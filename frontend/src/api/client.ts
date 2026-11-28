@@ -562,7 +562,13 @@ export interface SetorDpDto {
 }
 
 /** Setores para a CTO nova (e as cores/capacidades que o servidor aceita). */
-export function listarSetoresDp(): Promise<{ success: boolean; results: SetorDpDto[]; capacidades: number[] }> {
+export function listarSetoresDp(): Promise<{
+  success: boolean
+  results: SetorDpDto[]
+  capacidades: number[]
+  // "{sigla}-CTO-{hub}.{numero}": padrão de nome do provedor.
+  formato_nome?: string
+}> {
   return get('dp/setores')
 }
 
