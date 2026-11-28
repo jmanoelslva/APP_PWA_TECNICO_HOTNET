@@ -1,6 +1,7 @@
+import asyncio
 from dataclasses import dataclass
 
-from aiohttp import ClientSession, ClientTimeout
+from aiohttp import ClientError, ClientSession, ClientTimeout
 from typing import Any
 from urllib.parse import quote
 
@@ -13,6 +14,8 @@ class ControllrLoginResult:
     # Cookie de sessão retornado pelo POST /login — usado em toda chamada
     # deste backend ao Controllr (ver app/deps.py::get_auth_context).
     cookie_header: str | None = None
+    # Controllr fora do ar, lento ou respondendo sem JSON: não é senha errada.
+    indisponivel: bool = False
 
 
 class ControllrLogin(BrByteAPIBase):
@@ -21,9 +24,20 @@ class ControllrLogin(BrByteAPIBase):
         url_login = f"{url}/login"
         data = f'username={quote(str(username))}&password={quote(str(password))}'
         aiohttp_timeout = ClientTimeout(timeout)
+        try:
+            return await cls._login(url, url_login, data, aiohttp_timeout)
+        except (ClientError, asyncio.TimeoutError, ValueError):
+            return ControllrLoginResult(success=False, indisponivel=True)
+
+    @classmethod
+    async def _login(cls, url: str, url_login: str, data: str, aiohttp_timeout: ClientTimeout) -> ControllrLoginResult:
         async with ClientSession() as session:
             async with session.post(url=url_login, data=data, timeout=aiohttp_timeout) as response:
-                response_json: dict[str, Any] = await response.json()
+                if response.status >= 500:
+                    return ControllrLoginResult(success=False, indisponivel=True)
+                response_json: dict[str, Any] = await response.json(content_type=None)
+                if not isinstance(response_json, dict):
+                    return ControllrLoginResult(success=False, indisponivel=True)
                 sucesso = bool(response_json.get('success', False))
                 cookie_header = None
                 if sucesso:

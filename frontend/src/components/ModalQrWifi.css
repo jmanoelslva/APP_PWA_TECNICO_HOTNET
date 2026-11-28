@@ -1,0 +1,68 @@
+.modal-qr-wifi-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-qr-wifi {
+  background: var(--cor-superficie);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 24px 28px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  animation: modal-qr-wifi-subir 0.2s ease;
+}
+
+.modal-qr-wifi::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cor-borda);
+  margin: 0 auto 16px;
+}
+
+.modal-qr-wifi h2 {
+  margin: 0 0 16px;
+  font-size: 17px;
+}
+
+/* Fundo sempre branco: a câmera lê mal o QR invertido do modo escuro. */
+.modal-qr-wifi-codigo {
+  width: min(72vw, 280px);
+  margin: 0 auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.modal-qr-wifi-codigo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.modal-qr-wifi-rede {
+  margin: 12px 0 16px;
+  font-family: var(--fonte-mono);
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@keyframes modal-qr-wifi-subir {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

@@ -1,9 +1,12 @@
 import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { LuCopy, LuEye, LuEyeOff, LuWifi } from 'react-icons/lu'
+import { LuCopy, LuEye, LuEyeOff, LuQrCode, LuWifi } from 'react-icons/lu'
+import { FaWhatsapp } from 'react-icons/fa'
 import type { OnuDto } from '../../api/client'
 import { useCopiar } from '../../hooks/useCopiar'
 import { CORES } from '../../utils/cores'
+import { mensagemWifi } from '../../utils/wifiQr'
+import ModalQrWifi from '../../components/ModalQrWifi'
 
 /**
  * PPPoE e Wi-Fi configurados na própria ONU. A senha PPPoE aparece de
@@ -12,6 +15,7 @@ import { CORES } from '../../utils/cores'
  */
 export default function CardsCredenciais({ onu }: { onu: OnuDto }) {
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [qrAberto, setQrAberto] = useState(false)
   const copiar = useCopiar()
 
   return (
@@ -80,6 +84,26 @@ export default function CardsCredenciais({ onu }: { onu: OnuDto }) {
               </div>
             </div>
           )}
+          {/* Para o cliente: conectar pela câmera ou receber os dados no WhatsApp. */}
+          <div className="acoes-cartao">
+            <button type="button" className="botao botao-secundario acao-rede" onClick={() => setQrAberto(true)}>
+              <LuQrCode size={20} /> QR Code
+            </button>
+            <a
+              className="botao botao-secundario acao-contato"
+              href={`https://wa.me/?text=${encodeURIComponent(mensagemWifi(onu.wificfg_name, onu.wificfg_password))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaWhatsapp size={20} /> Enviar
+            </a>
+          </div>
+          <ModalQrWifi
+            aberto={qrAberto}
+            rede={onu.wificfg_name}
+            senha={onu.wificfg_password}
+            onFechar={() => setQrAberto(false)}
+          />
         </div>
       )}
     </>

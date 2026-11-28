@@ -189,7 +189,7 @@ export default function CardCto({
       // O Controllr recusa porta de outro CPE habilitado com "duplicate".
       const mensagem = excecao instanceof ApiError ? excecao.message : ''
       toast(
-        /duplicat/i.test(mensagem)
+        /duplicat|já está em uso/i.test(mensagem)
           ? `A porta ${dpPorta.trim()} já está em uso por outra conexão nesta CTO. Escolha uma porta livre.`
           : mensagem || 'Não foi possível atualizar a CTO.',
       )

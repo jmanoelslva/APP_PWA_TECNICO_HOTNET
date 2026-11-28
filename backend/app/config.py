@@ -54,7 +54,10 @@ SESSOES_ARQUIVO = os.environ.get("SESSOES_ARQUIVO", "dados/sessoes.bin")
 # (ver limite_login.py): por IP + usuário juntos e, mais alto, por IP.
 LOGIN_TENTATIVAS_PAR = int(os.environ.get("LOGIN_TENTATIVAS_PAR", "5"))
 LOGIN_TENTATIVAS_IP = int(os.environ.get("LOGIN_TENTATIVAS_IP", "20"))
-LOGIN_BLOQUEIO_MINUTOS = int(os.environ.get("LOGIN_BLOQUEIO_MINUTOS", "15"))
+LOGIN_BLOQUEIO_MINUTOS = int(os.environ.get("LOGIN_BLOQUEIO_MINUTOS", "5"))
+# Teto por usuário somando todos os IPs (IPv6 troca de endereço e o
+# CGNAT muda o IPv4): alto para que errar de propósito não trave o dono.
+LOGIN_TENTATIVAS_USUARIO = int(os.environ.get("LOGIN_TENTATIVAS_USUARIO", "15"))
 
 # Origens permitidas em dev (Vite) — em produção o frontend é servido
 # pela mesma origem do backend (ou por um reverse proxy), então CORS

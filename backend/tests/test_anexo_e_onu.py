@@ -32,6 +32,17 @@ class _RespostaFalsa:
     async def read(self):
         return self.conteudo
 
+    @property
+    def content(self):
+        resposta = self
+
+        class _Fluxo:
+            async def iter_chunked(self, tamanho):
+                for i in range(0, len(resposta.conteudo), tamanho):
+                    yield resposta.conteudo[i:i + tamanho]
+
+        return _Fluxo()
+
     async def __aenter__(self):
         return self
 
@@ -43,6 +54,9 @@ def _controllr_devolve(monkeypatch, tipo, urls=None, conteudo=b"<script>alert(1)
     from app.routers import suporte
 
     class _Sessao:
+        def __init__(self, *a, **k):
+            pass
+
         async def __aenter__(self):
             return self
 
@@ -188,6 +202,9 @@ def test_erro_do_controllr_no_anexo_nao_vira_401(cliente, monkeypatch):
     from app.routers import suporte
 
     class _Sessao:
+        def __init__(self, *a, **k):
+            pass
+
         async def __aenter__(self):
             return self
 
@@ -217,3 +234,22 @@ def test_anexo_grande_demais_e_recusado(cliente, monkeypatch):
     r = cliente.post("/suporte/tickets/1/anexos", files={"file": ("video.mp4", b"0" * (1024 * 1024 + 1), "video/mp4")})
     assert r.status_code == 413
     assert enviados == []
+
+
+def test_anexo_que_nao_responde_a_tempo_vira_504(cliente, monkeypatch):
+    import asyncio
+
+    from app.routers import suporte
+
+    class _Sessao:
+        def __init__(self, *a, **k):
+            pass
+
+        async def __aenter__(self):
+            raise asyncio.TimeoutError()
+
+        async def __aexit__(self, *a):
+            return False
+
+    monkeypatch.setattr(suporte.aiohttp, "ClientSession", _Sessao)
+    assert cliente.get("/suporte/tickets/1/anexos/foto.jpg").status_code == 504

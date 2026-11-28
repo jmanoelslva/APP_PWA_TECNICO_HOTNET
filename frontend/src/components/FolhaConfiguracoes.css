@@ -199,3 +199,7 @@
     animation: none;
   }
 }
+
+.folha-config-texto small.folha-config-dica-alerta {
+  color: var(--cor-erro);
+}

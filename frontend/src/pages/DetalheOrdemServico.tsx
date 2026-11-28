@@ -445,7 +445,14 @@ function DetalheOrdemServicoConteudo() {
     setExecutandoEtapa(true)
     try {
       const chamada = acaoConfirmando.desfazer ? etapa.desfazer : etapa.marcar
-      await chamada(pk, { opOsPk: osAtual.op_pk, opDesc: observacao })
+      // Ao finalizar, o serial da ONU vai junto: o servidor lê o sinal e
+      // registra na Auditoria (as outras etapas ignoram o campo).
+      const parametros = {
+        opOsPk: osAtual.op_pk,
+        opDesc: observacao,
+        onuSerial: etapa.chave === 'finalizar' && !acaoConfirmando.desfazer ? onuOs?.sn : undefined,
+      }
+      await chamada(pk, parametros)
       toast(
         acaoConfirmando.desfazer ? `Etapa "${etapa.rotulo}" desfeita.` : `Etapa "${etapa.rotulo}" confirmada.`,
         'sucesso',

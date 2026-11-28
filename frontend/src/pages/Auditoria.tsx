@@ -1,11 +1,12 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import type { IconType } from 'react-icons'
-import { LuArrowRight, LuBanknote, LuCircleX, LuClipboardCheck, LuFileSearch, LuLink, LuLocateFixed, LuLogIn, LuMapPin, LuMapPinOff, LuMapPinPlus, LuNetwork, LuPencil, LuPhone, LuPlay, LuRefreshCw, LuRotateCcw, LuRotateCw, LuRouter, LuStickyNote, LuTrash2, LuUndo2, LuWifi } from 'react-icons/lu'
+import { LuArrowRight, LuBanknote, LuDownload, LuCircleX, LuClipboardCheck, LuFileSearch, LuLink, LuLocateFixed, LuLogIn, LuMapPin, LuMapPinOff, LuMapPinPlus, LuNetwork, LuPencil, LuPhone, LuPlay, LuRefreshCw, LuRotateCcw, LuRotateCw, LuRouter, LuStickyNote, LuTrash2, LuUndo2, LuWifi } from 'react-icons/lu'
 import { ApiError, listarAuditoria, type EventoAuditoria } from '../api/client'
 import EstadoErro from '../components/EstadoErro'
 import LidoHa from '../components/LidoHa'
 import FiltroSegmentado, { type OpcaoSegmentada } from '../components/FiltroSegmentado'
 import CabecalhoTela from '../components/CabecalhoTela'
+import { auditoriaParaCsv, baixarArquivo } from '../utils/auditoriaCsv'
 import PullToRefresh from '../components/PullToRefresh'
 import EstadoVazio from '../components/EstadoVazio'
 import Skeleton from '../components/Skeleton'
@@ -132,7 +133,7 @@ const PERIODOS: OpcaoSegmentada<PeriodoAuditoria>[] = [
   { chave: 'periodo', rotulo: 'Período' },
 ]
 
-const FILTRO_VAZIO = { tecnico: '', acao: '', de: '', ate: '' }
+const FILTRO_VAZIO = { tecnico: '', acao: '', de: '', ate: '', busca: '' }
 
 const PASSO = 100
 
@@ -142,6 +143,7 @@ function plural(n: number): string {
 
 export default function Auditoria() {
   const [tecnico, setTecnico] = useState('')
+  const [busca, setBusca] = useState('')
   const [periodo, setPeriodo] = useState<PeriodoAuditoria>('tudo')
   const [escolhido, setEscolhido] = useState({ de: '', ate: '' })
   const [filtro, setFiltro] = useState(FILTRO_VAZIO)
@@ -161,6 +163,7 @@ export default function Auditoria() {
       acao: filtro.acao || undefined,
       de: filtro.de || undefined,
       ate: filtro.ate || undefined,
+      busca: filtro.busca || undefined,
       limite,
     })
       .then((r) => {
@@ -192,6 +195,20 @@ export default function Auditoria() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tecnico])
 
+  useEffect(() => {
+    const valor = busca.trim()
+    if (valor === filtro.busca) return
+    const temporizador = setTimeout(() => mudarFiltro({ busca: valor }), 400)
+    return () => clearTimeout(temporizador)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busca])
+
+  function exportarCsv() {
+    const eventos = dias?.flatMap((d) => d.eventos) ?? []
+    const csv = auditoriaParaCsv(eventos, (a) => POR_ACAO[a]?.rotulo ?? a)
+    baixarArquivo(`auditoria-${new Date().toISOString().slice(0, 10)}.csv`, csv)
+  }
+
   function escolherPeriodo(novo: PeriodoAuditoria, datas = escolhido) {
     setPeriodo(novo)
     mudarFiltro(datasDoPeriodo(novo, datas))
@@ -205,13 +222,14 @@ export default function Auditoria() {
 
   function limparFiltros() {
     setTecnico('')
+    setBusca('')
     setPeriodo('tudo')
     setEscolhido({ de: '', ate: '' })
     setLimite(PASSO)
     setFiltro(FILTRO_VAZIO)
   }
 
-  const comFiltro = !!(filtro.tecnico || filtro.acao || filtro.de || filtro.ate)
+  const comFiltro = !!(filtro.tecnico || filtro.acao || filtro.de || filtro.ate || filtro.busca)
   const totalEventos = dias?.reduce((soma, dia) => soma + dia.eventos.length, 0) ?? 0
 
   return (
@@ -265,14 +283,33 @@ export default function Auditoria() {
               autoCorrect="off"
               spellCheck={false}
             />
+            <input
+              className="campo auditoria-busca"
+              type="search"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Cliente, PPPoE, serial ou nº da OS"
+              aria-label="Cliente, PPPoE, serial ou número da OS"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="search"
+            />
           </div>
           <div className="auditoria-resumo">
             <span>{dias ? plural(totalEventos) : ''}</span>
-            {comFiltro && (
-              <button type="button" className="auditoria-limpar" onClick={limparFiltros}>
-                Limpar filtros
-              </button>
-            )}
+            <span className="auditoria-resumo-acoes">
+              {comFiltro && (
+                <button type="button" className="auditoria-limpar" onClick={limparFiltros}>
+                  Limpar filtros
+                </button>
+              )}
+              {totalEventos > 0 && (
+                <button type="button" className="auditoria-limpar" onClick={exportarCsv}>
+                  <LuDownload size={16} /> CSV
+                </button>
+              )}
+            </span>
           </div>
         </div>
 

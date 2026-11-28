@@ -1,10 +1,33 @@
+import { useEffect, useState } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useOnline } from '../hooks/useOnline'
+import { EVENTO_FILA, EVENTO_FILA_MUDOU, contarFila } from '../utils/filaAnexos'
 import './StatusBanners.css'
 
-/** Faixa fixa no topo: sem internet, ou versão nova do app disponível. */
+/** Anexos aguardando envio, recontados a cada entrada/saída da fila. */
+function useAnexosNaFila(): number {
+  const [quantidade, setQuantidade] = useState(0)
+  useEffect(() => {
+    const recontar = () => void contarFila().then(setQuantidade)
+    recontar()
+    window.addEventListener(EVENTO_FILA, recontar)
+    window.addEventListener(EVENTO_FILA_MUDOU, recontar)
+    return () => {
+      window.removeEventListener(EVENTO_FILA, recontar)
+      window.removeEventListener(EVENTO_FILA_MUDOU, recontar)
+    }
+  }, [])
+  return quantidade
+}
+
+function textoFila(n: number): string {
+  return n === 1 ? '1 anexo aguardando envio' : `${n} anexos aguardando envio`
+}
+
+/** Faixa fixa no topo: sem internet (e anexos na fila), ou versão nova do app disponível. */
 export default function StatusBanners() {
   const online = useOnline()
+  const naFila = useAnexosNaFila()
   const {
     needRefresh: [precisaAtualizar],
     updateServiceWorker,
@@ -22,7 +45,19 @@ export default function StatusBanners() {
   })
 
   if (!online) {
-    return <div className="status-banner status-banner-offline">Sem conexão com a internet</div>
+    return (
+      <div className="status-banner status-banner-offline" role="status">
+        Sem conexão com a internet{naFila > 0 && ` · ${textoFila(naFila)}`}
+      </div>
+    )
+  }
+
+  if (naFila > 0) {
+    return (
+      <div className="status-banner status-banner-fila" role="status">
+        {textoFila(naFila)}
+      </div>
+    )
   }
 
   if (precisaAtualizar) {

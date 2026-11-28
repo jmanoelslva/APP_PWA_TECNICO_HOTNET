@@ -932,9 +932,15 @@ export function iniciarOrdemServico(
 
 export function finalizarOrdemServico(
   ticketPk: number,
-  parametros: { opOsPk: number; opDesc?: string },
+  // onuSerial: o servidor lê o sinal dessa ONU no Controllr e grava na
+  // Auditoria junto da finalização.
+  parametros: { opOsPk: number; opDesc?: string; onuSerial?: string },
 ): Promise<{ success: boolean; results: unknown }> {
-  return post(`os/${ticketPk}/finalizar`, { op_os_pk: parametros.opOsPk, op_desc: parametros.opDesc })
+  return post(`os/${ticketPk}/finalizar`, {
+    op_os_pk: parametros.opOsPk,
+    op_desc: parametros.opDesc,
+    onu_serial: parametros.onuSerial || undefined,
+  })
 }
 
 // Desfazer exige op_desc — sem opcional, diferente das funções de marcar
@@ -1107,6 +1113,8 @@ export function listarAuditoria(filtro: {
   de?: string
   ate?: string
   limite?: number
+  // Cliente, PPPoE, serial ou número do chamado/OS.
+  busca?: string
 }): Promise<{ eventos: EventoAuditoria[]; mais: boolean }> {
   return get<{ eventos: EventoAuditoria[]; mais: boolean }>('auditoria', filtro)
 }

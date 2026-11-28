@@ -179,6 +179,19 @@
   gap: 8px;
 }
 
+.auditoria-busca {
+  grid-column: 1 / -1;
+}
+
+.auditoria-resumo-acoes {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.auditoria-limpar svg {
+  vertical-align: -3px;
+}
+
 .auditoria-datas label {
   display: flex;
   flex-direction: column;

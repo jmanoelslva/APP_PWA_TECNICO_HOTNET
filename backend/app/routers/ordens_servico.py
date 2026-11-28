@@ -44,6 +44,7 @@ from ..audit import registrar_auditoria
 from ..deps import AuthContext, get_auth_context
 from ..http_errors import detalhe_erro
 from ..where import OPER_EQ, OPER_GTE, OPER_LTE, corpo, where_and, where_in
+from .onu import _corpo_busca_wizard
 
 router = APIRouter(prefix="/os", tags=["ordem-servico"])
 
@@ -221,6 +222,40 @@ async def resumo_do_dia(
 class AcaoOSPayload(BaseModel):
     op_os_pk: int
     op_desc: str | None = None
+    # Só no finalizar: serial da ONU do cliente, para o servidor ler e
+    # registrar o sinal na Auditoria (com que sinal o serviço foi entregue).
+    onu_serial: str | None = None
+
+
+def _sinal(valor: Any) -> float | None:
+    return float(valor) if isinstance(valor, (int, float)) and not isinstance(valor, bool) else None
+
+
+async def _leitura_sinal_onu(ctx: AuthContext, serial: str) -> dict[str, Any]:
+    """Sinal da ONU lido pelo próprio servidor no Controllr na hora de
+    finalizar — não vem do aparelho, então o técnico não tem como alterar.
+    Falha na leitura nunca impede a finalização: devolve só o serial."""
+    serial = serial.strip().upper()[:40]
+    leitura: dict[str, Any] = {"serial": serial}
+    try:
+        resposta = await ctx.controllr.onu_list(
+            _corpo_busca_wizard("onu_serial", serial, sort="onu_ponid"), model_return=True, model_extended=True
+        )
+    except Exception:  # noqa: BLE001 — leitura é complemento, não pode derrubar a finalização
+        return leitura
+    if not resposta.success:
+        return leitura
+    for onu in resposta.results:
+        dados = onu.model_dump(mode="json")
+        if str(dados.get("sn") or "").strip().upper() != serial:
+            continue
+        rx_onu, rx_olt = _sinal(dados.get("omddm_rx_power")), _sinal(dados.get("olt_omddm_rx_power"))
+        if rx_onu is not None:
+            leitura["sinal_onu"] = rx_onu
+        if rx_olt is not None:
+            leitura["sinal_olt"] = rx_olt
+        break
+    return leitura
 
 
 def _alvo_os(ticket_pk: int, payload: AcaoOSPayload) -> dict[str, Any]:
@@ -275,7 +310,10 @@ async def finalizar_ordem_servico(
     resposta = await ctx.controllr.call_api_post("/support_ctl/os/set_finish", corpo_req)
     if not resposta.success:
         raise HTTPException(status_code=400, detail=detalhe_erro("Não foi possível finalizar a OS.", resposta))
-    registrar_auditoria(request, ctx.session, "os.finalizar", _alvo_os(ticket_pk, payload))
+    alvo = _alvo_os(ticket_pk, payload)
+    if payload.onu_serial and payload.onu_serial.strip():
+        alvo.update(await _leitura_sinal_onu(ctx, payload.onu_serial))
+    registrar_auditoria(request, ctx.session, "os.finalizar", alvo)
     return {"success": True, "results": resposta.results}
 
 

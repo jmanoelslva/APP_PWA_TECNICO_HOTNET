@@ -75,7 +75,21 @@ export async function enfileirarAnexo(ticketPk: number, arquivo: File): Promise<
     criadoEm: Date.now(),
   }
   const id = await transacao('readwrite', (loja) => loja.add(item))
+  window.dispatchEvent(new Event(EVENTO_FILA_MUDOU))
   return Number(id)
+}
+
+/** Algo entrou ou saiu da fila (o aviso do topo reconta). */
+export const EVENTO_FILA_MUDOU = 'hotnet-fila-anexos-mudou'
+
+/** Quantos anexos aguardam envio (0 se o IndexedDB não estiver disponível). */
+export async function contarFila(): Promise<number> {
+  if (typeof indexedDB === 'undefined') return 0
+  try {
+    return (await listarFila()).length
+  } catch {
+    return 0
+  }
 }
 
 export function listarFila(): Promise<AnexoNaFila[]> {

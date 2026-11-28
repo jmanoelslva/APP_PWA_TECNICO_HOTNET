@@ -151,8 +151,11 @@ def consultar(
     de: str | None = None,
     ate: str | None = None,
     limite: int = 200,
+    busca: str | None = None,
 ) -> tuple[list[dict[str, Any]], bool]:
     """Eventos mais recentes primeiro (datas "AAAA-MM-DD", inclusivas).
+    `busca`: trecho do cliente, PPPoE, serial ou número do chamado/OS
+    ("#123" ou "123"), procurado em qualquer campo do alvo.
     Lê também o arquivo único antigo (antes da divisão por mês)."""
     arquivos = sorted(_pasta().glob(f"{Path(AUDIT_LOG_PATH).stem}-*.jsonl"), reverse=True)
     antigo = Path(AUDIT_LOG_PATH)
@@ -160,6 +163,7 @@ def consultar(
         arquivos.append(antigo)
     t = (tecnico or "").strip().lower()
     a = (acao or "").strip().lower()
+    b = (busca or "").strip().lower().lstrip("#")
     out: list[dict[str, Any]] = []
     for arq in arquivos:
         mes_arq = _mes_do_arquivo(arq)
@@ -180,6 +184,8 @@ def consultar(
             if t and t not in str(ev.get("tecnico", "")).lower():
                 continue
             if a and not str(ev.get("acao", "")).lower().startswith(a):
+                continue
+            if b and b not in json.dumps(ev.get("alvo") or {}, ensure_ascii=False).lower():
                 continue
             out.append(ev)
             if len(out) > limite:

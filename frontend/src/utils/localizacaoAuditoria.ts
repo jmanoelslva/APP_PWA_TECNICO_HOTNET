@@ -75,3 +75,32 @@ export function iniciarLocalizacaoAuditoria(): void {
     if (document.visibilityState === 'visible' && (!ultima || Date.now() - ultima.em > IDADE_RENOVAR_MS)) renovar()
   })
 }
+
+export type EstadoLocalizacao = 'permitida' | 'negada' | 'perguntar' | 'sem-suporte'
+
+/** Estado da permissão de localização (Configurações). */
+export async function estadoLocalizacao(): Promise<EstadoLocalizacao> {
+  if (typeof navigator === 'undefined' || !navigator.geolocation) return 'sem-suporte'
+  if (!navigator.permissions?.query) return permitido ? 'permitida' : 'perguntar'
+  try {
+    const estado = await navigator.permissions.query({ name: 'geolocation' })
+    return estado.state === 'granted' ? 'permitida' : estado.state === 'denied' ? 'negada' : 'perguntar'
+  } catch {
+    return 'perguntar'
+  }
+}
+
+/** Abre o pedido de permissão do navegador (só por toque do técnico). */
+export function pedirLocalizacao(): Promise<EstadoLocalizacao> {
+  return new Promise((resolve) => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return resolve('sem-suporte')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        registrarLeituraLocal(pos)
+        resolve('permitida')
+      },
+      (erro) => resolve(erro.code === erro.PERMISSION_DENIED ? 'negada' : 'permitida'),
+      { enableHighAccuracy: true, maximumAge: 60_000, timeout: 20_000 },
+    )
+  })
+}

@@ -160,6 +160,9 @@ def _tipo_pela_assinatura(inicio: bytes) -> str | None:
     return None
 
 
+ANEXO_VER_MAX_BYTES = max(ANEXO_MAX_MB, 50) * 1024 * 1024
+
+
 @router.get("/tickets/{ticket_pk}/anexos/{arquivo}")
 async def visualizar_anexo_ticket(
     ticket_pk: int, arquivo: str, ctx: AuthContext = Depends(get_auth_context)
@@ -170,18 +173,35 @@ async def visualizar_anexo_ticket(
     # com o cookie de sessão do técnico, o mesmo usado em toda chamada
     # deste backend ao Controllr (ver deps.py::get_auth_context).
     url = f"{CONTROLLR_URL}/support_ctl/annex/view/{ticket_pk}/{quote(arquivo, safe='')}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers={"Cookie": ctx.session.controllr_cookie}) as resposta:
-            conteudo = await resposta.read()
-            if resposta.status >= 400:
-                # Não repassa o código do Controllr: um 401 dele aqui faria o
-                # app achar que a sessão do técnico caiu e mandar para o login.
-                logger.warning("Anexo %s/%s: Controllr respondeu HTTP %s", ticket_pk, arquivo, resposta.status)
-                raise HTTPException(
-                    status_code=404 if resposta.status == 404 else 502,
-                    detail="Não foi possível carregar o anexo.",
-                )
-            tipo = resposta.headers.get("Content-Type", "application/octet-stream")
+    # Com sinal ruim ou Controllr lento a tela não pode ficar presa: 60 s no
+    # total e no máximo ANEXO_VER_MAX_BYTES (anexo do painel pode ser maior
+    # que o limite de envio do app).
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
+            async with session.get(url, headers={"Cookie": ctx.session.controllr_cookie}) as resposta:
+                pedacos: list[bytes] = []
+                lidos = 0
+                async for pedaco in resposta.content.iter_chunked(64 * 1024):
+                    pedacos.append(pedaco)
+                    lidos += len(pedaco)
+                    if lidos > ANEXO_VER_MAX_BYTES:
+                        break
+                conteudo = b"".join(pedacos)
+                status = resposta.status
+                tipo = resposta.headers.get("Content-Type", "application/octet-stream")
+    except (aiohttp.ClientError, asyncio.TimeoutError):
+        logger.warning("Anexo %s/%s: Controllr não respondeu a tempo", ticket_pk, arquivo)
+        raise HTTPException(status_code=504, detail="O anexo demorou demais para carregar. Tente de novo.")
+    if len(conteudo) > ANEXO_VER_MAX_BYTES:
+        raise HTTPException(status_code=413, detail="Anexo grande demais para abrir no app.")
+    if status >= 400:
+        # Não repassa o código do Controllr: um 401 dele aqui faria o
+        # app achar que a sessão do técnico caiu e mandar para o login.
+        logger.warning("Anexo %s/%s: Controllr respondeu HTTP %s", ticket_pk, arquivo, status)
+        raise HTTPException(
+            status_code=404 if status == 404 else 502,
+            detail="Não foi possível carregar o anexo.",
+        )
 
     base = tipo.split(";")[0].strip().lower()
     cabecalhos = {"X-Content-Type-Options": "nosniff"}

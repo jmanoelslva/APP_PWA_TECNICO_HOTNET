@@ -76,6 +76,10 @@ async def login(payload: LoginRequest, request: Request, response: Response) -> 
             message=f"Muitas tentativas erradas. Aguarde {LOGIN_BLOQUEIO_MINUTOS} minutos e tente de novo.",
         )
     resultado_login = await ControllrLogin.login(CONTROLLR_URL, payload.username, payload.password)
+    if getattr(resultado_login, "indisponivel", False):
+        # Não conta como tentativa errada: a senha nem foi conferida.
+        logger.warning("Controllr indisponível no login de %r", payload.username)
+        return LoginResponse(success=False, message="Servidor indisponível. Tente de novo em instantes.")
     if not resultado_login.success:
         limite_login.falhou(ip, payload.username)
         logger.info("Login recusado pelo Controllr: usuário %r, IP %s", payload.username, ip)

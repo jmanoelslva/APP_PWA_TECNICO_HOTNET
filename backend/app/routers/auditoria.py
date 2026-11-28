@@ -94,6 +94,7 @@ async def listar(
     de: str | None = Query(default=None, description="AAAA-MM-DD"),
     ate: str | None = Query(default=None, description="AAAA-MM-DD"),
     limite: int = Query(default=200, ge=1, le=1000),
+    busca: str | None = Query(default=None, max_length=80),
     ctx: AuthContext = Depends(get_auth_context),
 ) -> dict[str, Any]:
     session = ctx.session
@@ -102,7 +103,7 @@ async def listar(
     for nome, valor in (("de", de), ("ate", ate)):
         if valor and not _DATA.match(valor):
             raise HTTPException(status_code=400, detail=f"Data inválida em '{nome}': use AAAA-MM-DD.")
-    eventos, mais = consultar(tecnico, acao, de, ate, limite)
+    eventos, mais = consultar(tecnico, acao, de, ate, limite, busca)
     # Registros antigos: completa em paralelo (poucos de cada vez, para não
     # sobrecarregar o Controllr) e no máximo BUSCAS_POR_CONSULTA ONUs novas.
     pendentes = [e.setdefault("alvo", {}) for e in eventos]

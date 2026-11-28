@@ -20,6 +20,10 @@
   background: var(--cor-texto-desabilitado);
 }
 
+.status-banner-fila {
+  background: var(--funcao-ir);
+}
+
 .status-banner-atualizar {
   background: var(--cor-primaria);
 }

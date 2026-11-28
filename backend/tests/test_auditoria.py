@@ -86,6 +86,37 @@ def test_limite_login(monkeypatch):
     assert not limite_login.bloqueado("2.2.2.2", "joao")
 
 
+def test_limite_login_ipv6_por_prefixo_e_teto_do_usuario(monkeypatch):
+    monkeypatch.setattr(limite_login, "_falhas", {})
+    monkeypatch.setattr(limite_login, "LOGIN_TENTATIVAS_PAR", 3)
+    monkeypatch.setattr(limite_login, "LOGIN_TENTATIVAS_USUARIO", 5)
+    # Trocar o endereço dentro do mesmo /64 não zera o bloqueio.
+    for final in ("1", "2", "3"):
+        limite_login.falhou(f"2804:7ce0:1:2::{final}", "joao")
+    assert limite_login.bloqueado("2804:7ce0:1:2::99", "joao")
+    assert not limite_login.bloqueado("2804:7ce0:1:3::1", "joao")
+    # Somando IPs diferentes, o teto do usuário bloqueia.
+    limite_login.falhou("1.1.1.1", "joao")
+    limite_login.falhou("2.2.2.2", "joao")
+    assert limite_login.bloqueado("3.3.3.3", "joao")
+    assert limite_login.origem("::ffff:1.2.3.4") == "1.2.3.4"
+
+
+def test_controllr_indisponivel_no_login_nao_conta_tentativa(monkeypatch):
+    from app.main import app
+    from app.routers import auth
+
+    monkeypatch.setattr(limite_login, "_falhas", {})
+
+    async def fora_do_ar(url, usuario, senha):
+        return SimpleNamespace(success=False, cookie_header=None, indisponivel=True)
+
+    monkeypatch.setattr(auth.ControllrLogin, "login", fora_do_ar)
+    r = TestClient(app).post("/auth/login", json={"username": "joao", "password": "x"}, headers={"X-Real-IP": "9.9.9.9"})
+    assert r.json() == {**r.json(), "success": False, "message": "Servidor indisponível. Tente de novo em instantes."}
+    assert limite_login._falhas == {}
+
+
 def test_login_bloqueado_nem_chama_o_controllr(monkeypatch):
     from app.main import app
     from app.routers import auth
@@ -95,7 +126,7 @@ def test_login_bloqueado_nem_chama_o_controllr(monkeypatch):
 
     async def falso_login(url, usuario, senha):
         chamadas.append(usuario)
-        return SimpleNamespace(success=False, cookie_header=None)
+        return SimpleNamespace(success=False, cookie_header=None, indisponivel=False)
 
     monkeypatch.setattr(auth.ControllrLogin, "login", falso_login)
     c = TestClient(app)
@@ -391,3 +422,39 @@ def test_localizacao_so_em_acao_de_campo(pasta):
     assert por_acao["os.iniciar"]["local"]["precisao_m"] == 12
     assert "local" not in por_acao["financeiro.liberacao"]
     assert por_acao["onu.reiniciar"]["local"] is None
+
+
+def test_finalizar_registra_sinal_lido_pelo_servidor(pasta, monkeypatch):
+    from app.brbyteapi.controllr import AsyncControllr
+    from app.deps import get_current_session
+    from app.main import app
+
+    async def falso_post(self, caminho, body):
+        return SimpleNamespace(success=True, results=[])
+
+    async def falsa_onu_list(self, body, model_return=False, model_extended=False):
+        onu = SimpleNamespace(model_dump=lambda mode=None: {
+            "sn": "ZTEG1234ABCD", "omddm_rx_power": -21.5, "olt_omddm_rx_power": -24.1})
+        outra = SimpleNamespace(model_dump=lambda mode=None: {"sn": "OUTRA", "omddm_rx_power": -10.0})
+        return SimpleNamespace(success=True, results=[outra, onu])
+
+    monkeypatch.setattr(AsyncControllr, "call_api_post", falso_post)
+    monkeypatch.setattr(AsyncControllr, "onu_list", falsa_onu_list)
+    app.dependency_overrides[get_current_session] = lambda: sessao("joao")
+    try:
+        c = TestClient(app)
+        assert c.post("/os/7/finalizar", json={"op_os_pk": 70, "op_desc": "Ok", "onu_serial": "zteg1234abcd"}).status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+
+    (fim,), _ = audit.consultar()
+    assert fim["alvo"] == {"ticket_pk": 7, "op_os_pk": 70, "motivo": "Ok", "serial": "ZTEG1234ABCD",
+                           "sinal_onu": -21.5, "sinal_olt": -24.1}
+
+
+def test_busca_por_cliente_ou_chamado(pasta):
+    audit.registrar_auditoria(req(), sessao(), "os.iniciar", {"ticket_pk": 123, "cliente": "Maria da Silva"})
+    audit.registrar_auditoria(req(), sessao(), "onu.reiniciar", {"pppoe": "joao@hotnet"})
+    assert [e["acao"] for e in audit.consultar(busca="maria")[0]] == ["os.iniciar"]
+    assert [e["acao"] for e in audit.consultar(busca="#123")[0]] == ["os.iniciar"]
+    assert [e["acao"] for e in audit.consultar(busca="JOAO@")[0]] == ["onu.reiniciar"]

@@ -97,6 +97,9 @@ export function detalhes(alvo: Alvo, acao?: string): Detalhe[] {
   if (tem(alvo.telefone)) itens.push({ rotulo: 'Telefone', valor: texto(alvo.telefone) })
   if (tem(alvo.ticket_pk)) itens.push({ rotulo: 'Chamado', valor: `#${alvo.ticket_pk}` })
   if (tem(alvo.motivo)) itens.push({ rotulo: ETAPAS_OS.has(acao ?? '') ? 'Descrição' : 'Motivo', valor: texto(alvo.motivo) })
+  // Sinal lido pelo servidor ao finalizar a OS.
+  if (tem(alvo.sinal_onu)) itens.push({ rotulo: 'Sinal na ONU', valor: `${texto(alvo.sinal_onu)} dBm` })
+  if (tem(alvo.sinal_olt)) itens.push({ rotulo: 'Sinal na OLT', valor: `${texto(alvo.sinal_olt)} dBm` })
   if (tem(alvo.fatura)) itens.push({ rotulo: 'Fatura', valor: `#${alvo.fatura}` })
   if (tem(alvo.liberacao)) itens.push({ rotulo: 'Liberação', valor: texto(alvo.liberacao) })
   if (tem(alvo.observacao)) itens.push({ rotulo: 'Observação', valor: texto(alvo.observacao) })

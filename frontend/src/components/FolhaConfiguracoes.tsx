@@ -1,12 +1,46 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { IconType } from 'react-icons'
-import { LuBellRing, LuDownload, LuLogOut, LuMoon, LuSun, LuSunMedium, LuSunMoon, LuType } from 'react-icons/lu'
+import { LuBellRing, LuDownload, LuLogOut, LuMapPin, LuMoon, LuSun, LuSunMedium, LuSunMoon, LuType } from 'react-icons/lu'
 import { useTema } from '../hooks/useTema'
 import type { EscolhaTema } from '../utils/tema'
 import { iniciais } from '../utils/formatacao'
 import type { useAvisos } from '../hooks/useAvisos'
 import './FolhaConfiguracoes.css'
 import { useFecharComVoltar } from '../hooks/useFecharComVoltar'
+import { estadoLocalizacao, pedirLocalizacao, type EstadoLocalizacao } from '../utils/localizacaoAuditoria'
+
+const DICA_LOCALIZACAO: Record<EstadoLocalizacao, string> = {
+  permitida: 'Permitida · registrada nas ações de campo',
+  perguntar: 'Toque para permitir',
+  negada: 'Negada · libere no cadeado da barra de endereço › Permissões › Localização',
+  'sem-suporte': 'Este aparelho não informa a localização',
+}
+
+/** Estado da permissão de localização; toque pede a permissão quando ainda não foi respondida. */
+function LinhaLocalizacao({ aberta }: { aberta: boolean }) {
+  const [estado, setEstado] = useState<EstadoLocalizacao | null>(null)
+  useEffect(() => {
+    if (aberta) void estadoLocalizacao().then(setEstado)
+  }, [aberta])
+  if (!estado) return null
+  return (
+    <button
+      type="button"
+      className="folha-config-linha"
+      // Só "perguntar" faz algo: negada só se libera nas permissões do navegador.
+      aria-disabled={estado !== 'perguntar'}
+      onClick={() => estado === 'perguntar' && void pedirLocalizacao().then(setEstado)}
+    >
+      <span className="folha-config-icone">
+        <LuMapPin size={20} />
+      </span>
+      <span className="folha-config-texto">
+        Localização
+        <small className={estado === 'negada' ? 'folha-config-dica-alerta' : undefined}>{DICA_LOCALIZACAO[estado]}</small>
+      </span>
+    </button>
+  )
+}
 
 function Interruptor({
   icone,
@@ -150,6 +184,11 @@ export default function FolhaConfiguracoes({
             </div>
           </>
         )}
+
+        <h3>Permissões</h3>
+        <div className="folha-config-grupo">
+          <LinhaLocalizacao aberta={aberto} />
+        </div>
 
         {podeInstalar && (
           <div className="folha-config-grupo folha-config-acoes">
