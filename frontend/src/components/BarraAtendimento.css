@@ -5,32 +5,9 @@
   top: 0;
   z-index: 20;
   margin: -24px -20px 16px;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 6px;
+  padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
   background: var(--cor-superficie);
   border-bottom: 1px solid var(--cor-borda-suave);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.barra-atendimento-cliente {
-  margin: 0;
-  padding: 0 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--cor-texto);
-}
-
-.barra-atendimento-cliente strong {
-  font-weight: 700;
-}
-
-.barra-atendimento-cliente span {
-  font-family: var(--fonte-mono);
-  font-size: 12.5px;
-  color: var(--cor-texto-secundario);
 }
 
 .barra-atendimento-itens {

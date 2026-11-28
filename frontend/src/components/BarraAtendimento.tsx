@@ -24,7 +24,8 @@ const ITENS: { tela: TelaAtendimento; rotulo: string; Icone: IconType; cor: stri
 
 /**
  * Barra do atendimento, fixa no topo de Cliente, Conexão, ONU, OS e
- * Financeiro: o cliente atendido e as cinco telas dele. Trocar por ela não
+ * Financeiro: as cinco telas do cliente atendido. Sem o nome do cliente:
+ * cada tela já mostra quem é (o usuário achou a linha repetida). Trocar por ela não
  * empilha (replace), então um Voltar devolve à tela de onde o técnico veio
  * (lista de OS, busca, Início). `dados`: o que esta tela sabe do cliente;
  * null enquanto carrega.
@@ -60,12 +61,6 @@ export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendiment
 
   return (
     <div className="barra-atendimento">
-      {(atual.cliente || atual.pppoe) && (
-        <p className="barra-atendimento-cliente">
-          <strong>{atual.cliente ?? 'Cliente'}</strong>
-          {atual.pppoe && <span> · {atual.pppoe}</span>}
-        </p>
-      )}
       <nav className="barra-atendimento-itens" aria-label="Telas do atendimento">
         {itens.map(({ tela: destino, rotulo, Icone, cor }) => {
           const ativo = destino === tela
