@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.33.0] - 2026-11-28
+
 ### Adicionado
 
 - Ícone ao lado do IP do cliente (Sessão online, Rede, cliente, OS e ONU) que abre o roteador no navegador, na porta gravada no acesso ao roteador (443 e 8443 abrem em https).
