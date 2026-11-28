@@ -285,6 +285,15 @@ chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR/backend"
 # 8. Backend: venv + dependências Python
 # --------------------------------------------------------------------------
 info "Preparando o ambiente Python do backend..."
+# Depois de um upgrade do sistema (ex.: Debian 12 -> 13, Python 3.11 -> 3.13),
+# o venv antigo continua apontando para /usr/bin/python3, mas as bibliotecas
+# ficam em lib/python<versão antiga> e o serviço não sobe. Se não houver a
+# pasta da versão atual do Python, o venv é recriado do zero.
+PY_VER="$("$PYTHON_BIN" -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
+if [ -d "$INSTALL_DIR/backend/.venv" ] && [ ! -d "$INSTALL_DIR/backend/.venv/lib/python$PY_VER" ]; then
+  warn "O venv do backend foi criado com outro Python. Recriando para o Python $PY_VER..."
+  rm -rf "$INSTALL_DIR/backend/.venv"
+fi
 if [ ! -d "$INSTALL_DIR/backend/.venv" ]; then
   sudo -H -u "$SERVICE_USER" "$PYTHON_BIN" -m venv "$INSTALL_DIR/backend/.venv"
 fi
