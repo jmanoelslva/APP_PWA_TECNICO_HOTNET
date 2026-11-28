@@ -19,7 +19,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Aviso no topo com a quantidade de anexos aguardando envio (junto do "Sem conexão com a internet" ou sozinho).
 - Configurações: estado da permissão de localização (permitida, negada com o caminho para liberar, ou toque para permitir).
 - Auditoria: busca por cliente, PPPoE, serial ou número da OS, e exportação do que está na tela em CSV (abre no Excel).
-- Barra do atendimento no topo de Cliente, Conexão, ONU, OS e Financeiro: o cliente atendido e as cinco telas dele. Trocar por ela não empilha telas, então um Voltar devolve à lista de onde o técnico veio.
+- Barra do atendimento no topo de Cliente, Conexão, ONU, OS e Financeiro, com as cinco telas do cliente atendido (no lugar do título da tela). Trocar por ela não empilha telas, então um Voltar devolve à lista de onde o técnico veio. OS abre direto a OS aberta do cliente ou mostra a escolha quando há mais de uma.
 - Início: "Continuar atendimento" volta direto à última tela do cliente que estava aberto (até 12 horas; some ao sair da conta).
 - Ferramentas › Potência óptica: sinal esperado na ONU pela potência da porta PON, splitters, distância, conectores e emendas, comparado com o sinal lido.
 - Mapa de CTOs: cartão da CTO tocada com ocupação, cor da fibra, distância, conexões online e offline, Rota, grade de portas e "Usar esta CTO" para o cliente buscado (abre a Conexão dele na aba CTO com a CTO e a porta escolhidas, faltando salvar).
