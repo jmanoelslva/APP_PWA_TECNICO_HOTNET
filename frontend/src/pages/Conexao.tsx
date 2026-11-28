@@ -179,7 +179,9 @@ export default function Conexao() {
                   : null
           }
         />
-        <CabecalhoTela icone={LuWifi} cor={CORES.conexao} titulo="Conexão" />
+        {/* Título só na tela geral (busca); aberta para um cliente, a barra
+            do atendimento já marca onde se está. */}
+        {!temParametroInicial && <CabecalhoTela icone={LuWifi} cor={CORES.conexao} titulo="Conexão" />}
 
         {!temParametroInicial && (
           <>

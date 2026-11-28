@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { LuCamera, LuCircleCheck, LuPhone, LuCopy, LuEye, LuEyeOff, LuLocateFixed, LuMap, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay, LuWrench } from 'react-icons/lu'
+import { LuCamera, LuCircleCheck, LuPhone, LuCopy, LuEye, LuEyeOff, LuLocateFixed, LuMap, LuMapPin, LuMessageCircle, LuNavigation, LuPaperclip, LuPencil, LuPlay } from 'react-icons/lu'
 import ModalEditarEndereco, { type AbaEndereco } from '../components/ModalEditarEndereco'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
 import LidoHa from '../components/LidoHa'
@@ -15,7 +15,6 @@ import { nomeExibicao } from '../utils/nomeTecnico'
 import { useSessao } from '../auth/useSessao'
 import Skeleton from '../components/Skeleton'
 import BarraAtendimento from '../components/BarraAtendimento'
-import CabecalhoTela from '../components/CabecalhoTela'
 import IpComAcesso from '../components/IpComAcesso'
 import EstadoErro from '../components/EstadoErro'
 import { useToast } from '../components/Toast/useToast'
@@ -563,7 +562,6 @@ function DetalheOrdemServicoConteudo() {
               : { ticketPk: pk }
           }
         />
-        <CabecalhoTela icone={LuWrench} cor={CORES.suporte} titulo="OS" />
 
         {carregando && (
           <div className="detalhe-ordem-card">

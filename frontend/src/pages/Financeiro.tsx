@@ -79,11 +79,8 @@ export default function Financeiro() {
     <PullToRefresh aoAtualizar={carregar}>
       <div className="financeiro-tela tela-entrada">
         <BarraAtendimento tela="financeiro" dados={clientPk ? { clientPk } : null} />
-        <CabecalhoTela
-          icone={LuWallet}
-          cor={CORES.financeiro}
-          titulo="Financeiro"
-        />
+        {/* Com cliente, a barra do atendimento já marca a tela; sem ele, título. */}
+        {!clientPk && <CabecalhoTela icone={LuWallet} cor={CORES.financeiro} titulo="Financeiro" />}
 
         {carregando && (
           <ul className="financeiro-lista">

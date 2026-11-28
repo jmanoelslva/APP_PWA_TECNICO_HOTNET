@@ -25,7 +25,6 @@ import { registrarRecente } from '../utils/buscaUnica'
 import ModalEditarEndereco, { type AbaEndereco } from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
 import BarraAtendimento from '../components/BarraAtendimento'
-import CabecalhoTela from '../components/CabecalhoTela'
 import IpComAcesso from '../components/IpComAcesso'
 import PullToRefresh from '../components/PullToRefresh'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
@@ -212,7 +211,6 @@ function DetalheClienteConteudo() {
               : { clientPk: pk }
           }
         />
-        <CabecalhoTela icone={LuUser} cor={CORES.cliente} titulo="Cliente" />
         {carregando && (
           <div className="detalhe-cliente-card">
             <Skeleton width="50%" height={18} />

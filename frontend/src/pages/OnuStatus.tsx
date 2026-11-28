@@ -249,7 +249,9 @@ export default function OnuStatus() {
                   : null
           }
         />
-        <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" />
+        {/* Título só na tela geral (busca); aberta para um cliente, a barra
+            do atendimento já marca onde se está. */}
+        {!temParametroInicial && <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" />}
 
         {/* Busca só sem ONU escolhida, como na Conexão: aberta pela barra do
             atendimento ou por um atalho, a tela já vem com a ONU. Escolher
