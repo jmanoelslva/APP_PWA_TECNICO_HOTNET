@@ -1,0 +1,64 @@
+/* Fixa no topo enquanto a tela rola; ocupa a largura toda (as telas têm
+   20px de margem lateral). */
+.barra-atendimento {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: -24px -20px 16px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 6px;
+  background: var(--cor-superficie);
+  border-bottom: 1px solid var(--cor-borda-suave);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.barra-atendimento-cliente {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--cor-texto);
+}
+
+.barra-atendimento-cliente strong {
+  font-weight: 700;
+}
+
+.barra-atendimento-cliente span {
+  font-family: var(--fonte-mono);
+  font-size: 12.5px;
+  color: var(--cor-texto-secundario);
+}
+
+.barra-atendimento-itens {
+  display: flex;
+  gap: 2px;
+}
+
+.barra-atendimento-item {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cor-texto-secundario);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.barra-atendimento-item[data-ativo='true'] {
+  background: color-mix(in srgb, var(--item-cor) 12%, transparent);
+  color: var(--item-cor);
+  cursor: default;
+}

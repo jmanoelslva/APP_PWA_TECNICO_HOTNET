@@ -1,0 +1,117 @@
+.potencia-tela {
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.potencia-card {
+  background: var(--cor-superficie);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--sombra-card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.potencia-card h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.potencia-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.potencia-par {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.potencia-trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.potencia-nota {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
+.potencia-resultado {
+  --potencia-cor: var(--cor-texto-terciario);
+  gap: 4px;
+  background: color-mix(in srgb, var(--potencia-cor) 7%, var(--cor-superficie));
+}
+
+.potencia-boa { --potencia-cor: var(--cor-sucesso); }
+.potencia-alerta { --potencia-cor: var(--cor-alerta); }
+.potencia-critica { --potencia-cor: var(--cor-erro); }
+
+.potencia-resultado-rotulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.potencia-resultado-valor {
+  font-family: var(--fonte-mono);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.potencia-resultado-nivel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--potencia-cor);
+}
+
+.potencia-perdas {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 13px;
+}
+
+.potencia-perdas li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--cor-borda-suave);
+}
+
+.potencia-perdas li span:last-child {
+  font-family: var(--fonte-mono);
+}
+
+.potencia-perdas-total {
+  border-bottom: none !important;
+  font-weight: 700;
+}
+
+.potencia-aviso {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--cor-texto-secundario);
+}
+
+.potencia-aviso-ruim {
+  color: var(--cor-erro);
+  font-weight: 600;
+}

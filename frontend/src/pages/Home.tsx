@@ -39,6 +39,7 @@ import {
 import { dataParaFormatoServidor, detectarTipoBusca, formatarDocumento, iniciais } from '../utils/formatacao'
 import { ctosComVariosOffline } from '../utils/offline'
 import './Home.css'
+import ContinuarAtendimento from '../components/ContinuarAtendimento'
 
 function saudacaoPorHorario(nome: string): string {
   const hora = new Date().getHours()
@@ -365,6 +366,7 @@ export default function Home() {
             )}
           </form>
 
+          <ContinuarAtendimento />
           <MinhasOsHoje key={recarga} onResumo={setResumoDia} />
 
           <nav className="home-atalhos" aria-label="Atalhos">
@@ -426,7 +428,7 @@ export default function Home() {
               </span>
               <span className="home-atalho-texto">
                 <strong>Ferramentas</strong>
-                <span>Meu IP e testes de velocidade</span>
+                <span>Meu IP, velocidade e potência óptica</span>
               </span>
               <LuChevronRight size={20} className="home-atalho-seta" aria-hidden="true" />
             </Link>

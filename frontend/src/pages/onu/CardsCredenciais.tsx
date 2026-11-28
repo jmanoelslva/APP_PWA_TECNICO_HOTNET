@@ -1,10 +1,8 @@
-import { useState, type CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
-import { LuCopy, LuEye, LuEyeOff, LuQrCode, LuWifi } from 'react-icons/lu'
+import { useState } from 'react'
+import { LuCopy, LuEye, LuEyeOff, LuQrCode } from 'react-icons/lu'
 import { FaWhatsapp } from 'react-icons/fa'
 import type { OnuDto } from '../../api/client'
 import { useCopiar } from '../../hooks/useCopiar'
-import { CORES } from '../../utils/cores'
 import { mensagemWifi } from '../../utils/wifiQr'
 import ModalQrWifi from '../../components/ModalQrWifi'
 
@@ -27,15 +25,6 @@ export default function CardsCredenciais({ onu }: { onu: OnuDto }) {
             <span>Usuário</span>
             <div className="onu-campo-valor">
               <strong>{onu.wancfg_pppoe_username}</strong>
-              <Link
-                to={`/conexao?username=${encodeURIComponent(onu.wancfg_pppoe_username)}`}
-                className="botao-icone"
-                style={{ '--botao-icone-cor': CORES.conexao } as CSSProperties}
-                aria-label="Ver conexão deste usuário"
-                viewTransition
-              >
-                <LuWifi size={16} />
-              </Link>
               <button onClick={() => copiar(onu.wancfg_pppoe_username, 'Usuário')} aria-label="Copiar usuário">
                 <LuCopy size={16} />
               </button>

@@ -1,10 +1,6 @@
-import type { CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
-import { LuCable } from 'react-icons/lu'
 import type { OnuDto } from '../../api/client'
 import FaixaSinal from '../../components/FaixaSinal'
 import Skeleton from '../../components/Skeleton'
-import { CORES } from '../../utils/cores'
 import { nivelSinalOnu } from '../../utils/formatacao'
 
 /**
@@ -15,11 +11,9 @@ import { nivelSinalOnu } from '../../utils/formatacao'
 export default function CardOnuResumo({
   onu,
   carregando,
-  username,
 }: {
   onu: OnuDto | null
   carregando: boolean
-  username: string | undefined
 }) {
   if (carregando) {
     return (
@@ -33,15 +27,8 @@ export default function CardOnuResumo({
   return (
     <div className="conexao-card">
       <div className="conexao-sessao-topo">
+        {/* Detalhes da ONU: barra do atendimento, no topo. */}
         <h2>ONU</h2>
-        <Link
-          to={`/onu?username=${encodeURIComponent(username ?? '')}`}
-          className="botao botao-secundario botao-pequeno"
-          style={{ '--botao-cor': CORES.onu } as CSSProperties}
-          viewTransition
-        >
-          <LuCable size={16} /> Detalhes
-        </Link>
       </div>
       <div className="conexao-linha">
         <span>Estado</span>

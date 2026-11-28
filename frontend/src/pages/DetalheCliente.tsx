@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { LuCable, LuFileText, LuLocateFixed, LuMap, LuMapPin, LuPencil, LuPlus, LuReceipt, LuUser, LuWifi, LuWrench } from 'react-icons/lu'
+import { LuCable, LuFileText, LuLocateFixed, LuMap, LuMapPin, LuPencil, LuPlus, LuUser, LuWifi } from 'react-icons/lu'
 import {
   ApiError,
   atualizarTelefone,
@@ -24,6 +24,7 @@ import { statusDoCliente } from '../utils/statusCliente'
 import { registrarRecente } from '../utils/buscaUnica'
 import ModalEditarEndereco, { type AbaEndereco } from '../components/ModalEditarEndereco'
 import Skeleton from '../components/Skeleton'
+import BarraAtendimento from '../components/BarraAtendimento'
 import IpComAcesso from '../components/IpComAcesso'
 import PullToRefresh from '../components/PullToRefresh'
 import Abas, { useAbaLembrada, type Aba } from '../components/Abas'
@@ -196,6 +197,20 @@ function DetalheClienteConteudo() {
   return (
     <PullToRefresh aoAtualizar={carregar}>
       <div className="detalhe-cliente-tela tela-entrada">
+        <BarraAtendimento
+          tela="cliente"
+          dados={
+            nome
+              ? {
+                  clientPk: pk,
+                  cliente: nome,
+                  // Com uma conexão só, ela entra no atendimento; com várias,
+                  // fica a que o técnico abrir.
+                  ...(cpes.length === 1 ? { cpePk: cpes[0].cpe_pk, pppoe: cpes[0].cpe_username } : {}),
+                }
+              : null
+          }
+        />
         {carregando && (
           <div className="detalhe-cliente-card">
             <Skeleton width="50%" height={18} />
@@ -220,24 +235,8 @@ function DetalheClienteConteudo() {
               </div>
             </div>
 
-            {/* Atalhos do cliente — Conexão e ONU não entram aqui: cada
-                conexão logo abaixo já tem os seus botões. */}
-            <nav className="detalhe-cliente-atalhos" aria-label="Atalhos do cliente">
-              <Link
-                to={`/suporte?busca=${encodeURIComponent(nome ?? '')}`}
-                className="detalhe-cliente-atalho acao-registro"
-                viewTransition
-              >
-                <LuWrench size={22} /> OS
-              </Link>
-              <Link
-                to={`/financeiro?client_pk=${pk}`}
-                className="detalhe-cliente-atalho acao-registro"
-                viewTransition
-              >
-                <LuReceipt size={22} /> Financeiro
-              </Link>
-            </nav>
+            {/* OS e Financeiro do cliente ficam na barra do atendimento
+                (topo); Conexão e ONU, nos botões de cada conexão abaixo. */}
 
             <Abas abas={ABAS} ativa={aba} onEscolher={setAba} rotulo="Partes do cliente" />
 

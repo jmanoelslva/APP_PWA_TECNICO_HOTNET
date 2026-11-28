@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { IconType } from 'react-icons'
-import { LuActivity, LuChevronRight, LuExternalLink, LuFileSearch, LuGauge, LuGlobe, LuHammer, LuNetwork, LuPlug, LuRadar, LuZap } from 'react-icons/lu'
+import { LuActivity, LuCalculator, LuChevronRight, LuExternalLink, LuFileSearch, LuGauge, LuGlobe, LuHammer, LuNetwork, LuPlug, LuRadar, LuZap } from 'react-icons/lu'
 import { acessoAuditoria, ApiError, consultarMeuIp, type MeuIpResponse } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import { CORES } from '../utils/cores'
@@ -130,6 +130,18 @@ export default function Ferramentas() {
       </div>
 
       <ul className="ferramentas-lista">
+        <li>
+          <Link to="/ferramentas/potencia" className="ferramentas-item" viewTransition>
+            <span className="ferramentas-item-icone">
+              <LuCalculator size={22} />
+            </span>
+            <span className="ferramentas-item-texto">
+              <strong>Potência óptica</strong>
+              <span>Sinal esperado na ONU pelo caminho da fibra</span>
+            </span>
+            <LuChevronRight size={20} className="ferramentas-item-seta" />
+          </Link>
+        </li>
         {podeAuditoria && (
           <li>
             <Link to="/auditoria" className="ferramentas-item" viewTransition>

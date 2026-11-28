@@ -18,6 +18,7 @@ import { formatarTempoDesdeColeta } from './onu/formato'
 import { ModalConfirmarAcao, ModalRenomear } from './onu/ModaisAcaoOnu'
 import ModalRegistrarCliente from './onu/ModalRegistrarCliente'
 import './OnuStatus.css'
+import BarraAtendimento from '../components/BarraAtendimento'
 
 type AbaOnu = 'sinal' | 'credenciais' | 'equipamento'
 
@@ -236,6 +237,14 @@ export default function OnuStatus() {
   return (
     <PullToRefresh aoAtualizar={recarregar}>
       <div className="onu-tela tela-entrada">
+        <BarraAtendimento
+          tela="onu"
+          dados={
+            onu
+              ? { clientPk: onu.client_pk, cliente: onu.client_name, cpePk: onu.cpe_pk, pppoe: onu.wancfg_pppoe_username || usernameParam || undefined }
+              : null
+          }
+        />
         <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" />
 
         {/* Escolher troca a busca pelo resultado: "Voltar" sai da aba. */}

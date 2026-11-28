@@ -418,3 +418,9 @@
   color: var(--cor-erro);
   font-weight: 700;
 }
+
+/* "Continuar atendimento" (components/ContinuarAtendimento): contorno da
+   marca para se destacar dos atalhos comuns. */
+.home-continuar {
+  box-shadow: 0 0 0 2px var(--cor-primaria);
+}

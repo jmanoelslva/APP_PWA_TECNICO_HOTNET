@@ -12,6 +12,7 @@ import { aplicarVersaoNovaSePreciso } from './utils/atualizacaoApp'
 const BuscaCliente = lazy(() => import('./pages/BuscaCliente'))
 const ClientesOffline = lazy(() => import('./pages/ClientesOffline'))
 const Conexao = lazy(() => import('./pages/Conexao'))
+const Potencia = lazy(() => import('./pages/Potencia'))
 const DetalheChamado = lazy(() => import('./pages/DetalheChamado'))
 const DetalheCliente = lazy(() => import('./pages/DetalheCliente'))
 const DetalheOrdemServico = lazy(() => import('./pages/DetalheOrdemServico'))
@@ -126,6 +127,14 @@ function App() {
             element={
               <RotaProtegida>
                 <Ferramentas />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/ferramentas/potencia"
+            element={
+              <RotaProtegida>
+                <Potencia />
               </RotaProtegida>
             }
           />

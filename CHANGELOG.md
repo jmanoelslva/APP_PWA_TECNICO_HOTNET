@@ -17,6 +17,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Aviso no topo com a quantidade de anexos aguardando envio (junto do "Sem conexão com a internet" ou sozinho).
 - Configurações: estado da permissão de localização (permitida, negada com o caminho para liberar, ou toque para permitir).
 - Auditoria: busca por cliente, PPPoE, serial ou número da OS, e exportação do que está na tela em CSV (abre no Excel).
+- Barra do atendimento no topo de Cliente, Conexão, ONU, OS e Financeiro: o cliente atendido e as cinco telas dele. Trocar por ela não empilha telas, então um Voltar devolve à lista de onde o técnico veio.
+- Início: "Continuar atendimento" volta direto à última tela do cliente que estava aberto (até 12 horas; some ao sair da conta).
+- Ferramentas › Potência óptica: sinal esperado na ONU pela potência da porta PON, splitters, distância, conectores e emendas, comparado com o sinal lido.
+
+### Alterado
+
+- Atalhos que a barra do atendimento substitui saíram das telas (nome do cliente na Conexão, na ONU e na OS, "Detalhes" da ONU e ícones de ONU/Conexão ao lado do PPPoE, "Ver conexão completa" na OS, OS e Financeiro no topo do cliente).
 
 ### Corrigido
 

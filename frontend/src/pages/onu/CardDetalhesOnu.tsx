@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { LuMap, LuPencil, LuUser, LuUserPlus } from 'react-icons/lu'
+import { LuMap, LuPencil, LuUserPlus } from 'react-icons/lu'
 import { buscarCpe, type OnuDto } from '../../api/client'
 import IpComAcesso from '../../components/IpComAcesso'
 import { formatarUltimaQueda } from './formato'
@@ -36,10 +36,9 @@ export default function CardDetalhesOnu({
     <div className="onu-card">
       <div className="onu-linha">
         <span>Cliente</span>
+        {/* Abrir o cliente: barra do atendimento, no topo. */}
         {onu.client_pk ? (
-          <Link to={`/clientes/${onu.client_pk}`} className="onu-link" viewTransition>
-            <LuUser size={16} /> {onu.client_name ?? '—'}
-          </Link>
+          <strong>{onu.client_name ?? '—'}</strong>
         ) : (
           <button type="button" className="onu-btn-registrar-cliente" onClick={onRegistrarCliente} disabled={ocupado}>
             <LuUserPlus size={16} /> Registrar cliente

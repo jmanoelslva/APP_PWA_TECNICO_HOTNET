@@ -29,6 +29,7 @@ import CardPppoe from './conexao/CardPppoe'
 import CardRede from './conexao/CardRede'
 import CardSessaoOnline from './conexao/CardSessaoOnline'
 import CardDiagnostico from './conexao/CardDiagnostico'
+import BarraAtendimento from '../components/BarraAtendimento'
 import CardWifi from './conexao/CardWifi'
 import { statusDoCliente } from '../utils/statusCliente'
 import './Conexao.css'
@@ -166,6 +167,10 @@ export default function Conexao() {
   return (
     <PullToRefresh aoAtualizar={atualizarTela}>
       <div className="conexao-tela tela-entrada">
+        <BarraAtendimento
+          tela="conexao"
+          dados={cpe ? { clientPk: cpe.client_pk, cliente: cpe.client_complete_name, cpePk: cpe.pk, pppoe: cpe.username } : null}
+        />
         <CabecalhoTela icone={LuWifi} cor={CORES.conexao} titulo="Conexão" />
 
         {!temParametroInicial && (
@@ -223,7 +228,7 @@ export default function Conexao() {
                   onAba={escolherAba}
                 />
                 {/* Sinal da ONU logo depois: é o que o técnico confere antes de tudo. */}
-                <CardOnuResumo onu={onuResumo} carregando={carregandoOnuResumo} username={cpe.username} />
+                <CardOnuResumo onu={onuResumo} carregando={carregandoOnuResumo} />
                 <CardPppoe key={cpe.pk} cpe={cpe} />
                 <CardSessaoOnline
                   sessao={sessao}
