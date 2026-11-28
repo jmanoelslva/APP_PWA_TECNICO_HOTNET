@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.32.3] - 2026-11-28
+
 ### Corrigido
 
 - Instalador: recria o venv do backend quando ele foi criado com outra versão do Python (ex.: depois de atualizar o Debian 12 para o 13). Antes, o venv antigo era mantido e o serviço do backend não subia.
