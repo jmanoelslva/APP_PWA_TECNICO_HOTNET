@@ -10,6 +10,7 @@ import {
   EVENTO_ATENDIMENTO,
   destinosAtendimento,
   lerAtendimento,
+  mesmoAtendimento,
   osDoCliente,
   registrarAtendimento,
   type Atendimento,
@@ -59,11 +60,7 @@ export default function BarraAtendimento({ tela, dados }: { tela: TelaAtendiment
   }, [])
 
   // Até registrar, vale o que a tela sabe (não mostra o cliente anterior).
-  const valido =
-    dados &&
-    atendimento &&
-    ((dados.clientPk != null && atendimento.clientPk === dados.clientPk) ||
-      (dados.cpePk != null && atendimento.cpePk === dados.cpePk))
+  const valido = !!dados && mesmoAtendimento(atendimento, dados)
   const atual = valido ? atendimento : dados ? { ...dados, em: 0 } : null
   const destinos = destinosAtendimento(atual)
   const itens = ITENS.filter((item) => item.tela === tela || destinos[item.tela])

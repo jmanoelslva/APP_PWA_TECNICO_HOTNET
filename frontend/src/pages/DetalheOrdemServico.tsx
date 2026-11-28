@@ -559,7 +559,7 @@ function DetalheOrdemServicoConteudo() {
                   cpePk: cpe?.pk,
                   pppoe: cpe?.username,
                 }
-              : null
+              : { ticketPk: pk }
           }
         />
 

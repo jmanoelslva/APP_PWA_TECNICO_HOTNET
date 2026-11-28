@@ -14,6 +14,18 @@ describe('juntarAtendimento', () => {
     const a = juntarAtendimento({ clientPk: 5, cpePk: 70, em: 1 }, { cpePk: 70, pppoe: 'ana' }, 2)
     expect(a.clientPk).toBe(5)
   })
+  it('só o PPPoE do endereço (ONU não encontrada): mantém o atendimento', () => {
+    const a = juntarAtendimento({ clientPk: 5, cpePk: 70, pppoe: 'Ana', ticketPk: 9, em: 1 }, { pppoe: 'ana' }, 2)
+    expect(a).toMatchObject({ clientPk: 5, cpePk: 70, ticketPk: 9 })
+  })
+  it('PPPoE de outro cliente: atendimento novo', () => {
+    const a = juntarAtendimento({ clientPk: 5, pppoe: 'ana', em: 1 }, { pppoe: 'bruno' }, 2)
+    expect(a).toEqual({ pppoe: 'bruno', em: 2 })
+  })
+  it('identificador em comum mas outro diferente: atendimento novo', () => {
+    const a = juntarAtendimento({ clientPk: 5, cpePk: 70, em: 1 }, { clientPk: 5, cpePk: 71 }, 2)
+    expect(a).toEqual({ clientPk: 5, cpePk: 71, em: 2 })
+  })
 })
 
 describe('destinosAtendimento', () => {

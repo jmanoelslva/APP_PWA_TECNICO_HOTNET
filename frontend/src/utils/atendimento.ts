@@ -54,16 +54,35 @@ function gravar(a: Atendimento | null): void {
 
 export type DadosAtendimento = Omit<Atendimento, 'em' | 'caminho' | 'tela'>
 
+const IDENTIFICADORES = ['clientPk', 'cpePk', 'ticketPk', 'pppoe'] as const
+
 /**
- * Junta o que a tela sabe ao atendimento guardado. Mesmo cliente (ou mesma
- * conexão): completa. Outro cliente: começa um atendimento novo, para a
- * barra nunca misturar a conexão de um com o cliente de outro.
+ * O que a tela sabe é do mesmo atendimento guardado? Algum identificador
+ * (cliente, conexão, OS ou PPPoE) em comum e nenhum diferente. Enquanto a
+ * tela carrega, ou quando não acha a ONU/conexão, ela só tem o que veio no
+ * endereço (ex.: o PPPoE) — e isso basta para manter a barra.
+ */
+export function mesmoAtendimento(atual: Atendimento | null, novo: DadosAtendimento): boolean {
+  if (!atual) return false
+  let emComum = false
+  for (const chave of IDENTIFICADORES) {
+    const a = atual[chave]
+    const n = novo[chave]
+    if (a == null || a === '' || n == null || n === '') continue
+    const iguais = chave === 'pppoe' ? String(a).toLowerCase() === String(n).toLowerCase() : a === n
+    if (!iguais) return false
+    emComum = true
+  }
+  return emComum
+}
+
+/**
+ * Junta o que a tela sabe ao atendimento guardado. Mesmo atendimento:
+ * completa. Outro cliente: começa um atendimento novo, para a barra nunca
+ * misturar a conexão de um com o cliente de outro.
  */
 export function juntarAtendimento(atual: Atendimento | null, novo: DadosAtendimento, agora = Date.now()): Atendimento {
-  const mesmoCliente = atual && novo.clientPk != null && atual.clientPk === novo.clientPk
-  const mesmaConexao = atual && novo.cpePk != null && atual.cpePk === novo.cpePk
-  const semCliente = novo.clientPk == null && novo.cpePk == null
-  const base = atual && (mesmoCliente || mesmaConexao || semCliente) ? atual : null
+  const base = mesmoAtendimento(atual, novo) ? atual : null
   const limpo = Object.fromEntries(Object.entries(novo).filter(([, v]) => v != null && v !== '')) as DadosAtendimento
   return { ...(base ?? {}), ...limpo, em: agora }
 }

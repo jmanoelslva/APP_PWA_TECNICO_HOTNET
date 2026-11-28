@@ -242,7 +242,11 @@ export default function OnuStatus() {
           dados={
             onu
               ? { clientPk: onu.client_pk, cliente: onu.client_name, cpePk: onu.cpe_pk, pppoe: onu.wancfg_pppoe_username || usernameParam || undefined }
-              : null
+              : usernameParam
+                ? { pppoe: usernameParam }
+                : cpePkParam
+                  ? { cpePk: Number(cpePkParam) }
+                  : null
           }
         />
         <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" />

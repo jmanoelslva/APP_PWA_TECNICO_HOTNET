@@ -208,7 +208,7 @@ function DetalheClienteConteudo() {
                   // fica a que o técnico abrir.
                   ...(cpes.length === 1 ? { cpePk: cpes[0].cpe_pk, pppoe: cpes[0].cpe_username } : {}),
                 }
-              : null
+              : { clientPk: pk }
           }
         />
         {carregando && (

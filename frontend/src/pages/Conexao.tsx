@@ -169,7 +169,15 @@ export default function Conexao() {
       <div className="conexao-tela tela-entrada">
         <BarraAtendimento
           tela="conexao"
-          dados={cpe ? { clientPk: cpe.client_pk, cliente: cpe.client_complete_name, cpePk: cpe.pk, pppoe: cpe.username } : null}
+          dados={
+            cpe
+              ? { clientPk: cpe.client_pk, cliente: cpe.client_complete_name, cpePk: cpe.pk, pppoe: cpe.username }
+              : cpePkParam
+                ? { cpePk: Number(cpePkParam) }
+                : usernameParam
+                  ? { pppoe: usernameParam }
+                  : null
+          }
         />
         <CabecalhoTela icone={LuWifi} cor={CORES.conexao} titulo="Conexão" />
 
