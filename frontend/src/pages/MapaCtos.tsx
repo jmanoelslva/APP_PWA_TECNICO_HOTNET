@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { LuMap, LuSearch, LuUser, LuX } from 'react-icons/lu'
+import { LuMap, LuMapPin, LuPlus, LuSearch, LuUser, LuX } from 'react-icons/lu'
 import {
   ApiError,
   buscarClientes,
@@ -19,6 +19,9 @@ import { useToast } from '../components/Toast/useToast'
 import { CORES } from '../utils/cores'
 import { detectarTipoBusca, formatarDocumento } from '../utils/formatacao'
 import { ocupaPorta } from '../utils/portasCto'
+import { COR_OCUPACAO, corMaisProxima, ocupacaoDaCto } from '../utils/coresFibra'
+import CartaoCto, { type ConexaoDoCliente } from './mapa/CartaoCto'
+import ModalCto from './mapa/ModalCto'
 import { distanciaMetros, formatarDistancia, useLocalizacaoAoVivo } from './conexao/localizacao'
 import './Conexao.css'
 import './Home.css'
@@ -28,6 +31,15 @@ import './MapaCtos.css'
 const MapaCto = lazy(() => import('./conexao/MapaCto'))
 
 const QTD_MAIS_PROXIMAS = 5
+// "Mostrar mais": até quantas na lista.
+const QTD_MOSTRAR_MAIS = 20
+
+type JanelaCto = { tipo: 'editar'; dp: DpDto; lerPosicao: boolean } | { tipo: 'nova' } | null
+
+/** Nome sem espaço, hífen ou ponto, em minúsculas: "vsj cto 1.3" acha VSJ-CTO-1.3. */
+function normalizarNome(texto: string): string {
+  return texto.toLowerCase().replace(/[\s\-_.]/g, '')
+}
 
 interface EnderecoNoMapa {
   lat: number
@@ -83,6 +95,12 @@ export default function MapaCtos() {
   const [enderecos, setEnderecos] = useState<EnderecoNoMapa[] | null>(null)
   const [enderecoCliente, setEnderecoCliente] = useState<EnderecoNoMapa | null>(null)
   const [ctosCliente, setCtosCliente] = useState<CtoDoCliente[] | null>(null)
+  // Todas as conexões do cliente buscado (para "Usar esta CTO").
+  const [conexoesCliente, setConexoesCliente] = useState<ConexaoDoCliente[]>([])
+  const [soLivre, setSoLivre] = useState(false)
+  const [mostrarMais, setMostrarMais] = useState(false)
+  const [telaCheia, setTelaCheia] = useState(false)
+  const [janela, setJanela] = useState<JanelaCto>(null)
 
   // Ao vivo, como a busca do Início: 2 letras, 350 ms parado e consulta.
   useEffect(() => {
@@ -133,7 +151,12 @@ export default function MapaCtos() {
     // CTO e porta já gravadas nas conexões do cliente — complemento: se
     // falhar, o mapa segue só com o endereço.
     buscarCpe({ client_pk: resultado.client_pk })
-      .then((resposta) =>
+      .then((resposta) => {
+        setConexoesCliente(
+          resposta.results
+            .filter((cpe) => cpe.pk != null)
+            .map((cpe) => ({ cpePk: cpe.pk as number, pppoe: cpe.username ?? null })),
+        )
         setCtosCliente(
           resposta.results
             .filter((cpe) => cpe.dp_pk != null)
@@ -143,8 +166,8 @@ export default function MapaCtos() {
               porta: cpe.dp_port ?? null,
               pppoe: cpe.username ?? null,
             })),
-        ),
-      )
+        )
+      })
       .catch(() => {})
     try {
       const detalhe = await buscarDetalheCliente(resultado.client_pk)
@@ -175,6 +198,7 @@ export default function MapaCtos() {
   function limparCliente() {
     setEnderecoCliente(null)
     setCtosCliente(null)
+    setConexoesCliente([])
     setResultados(null)
     setEnderecos(null)
     setBusca('')
@@ -247,14 +271,28 @@ export default function MapaCtos() {
     () =>
       referencia
         ? comCoordenada
+            .filter((dp) => !soLivre || ocupacaoDaCto(dp) === 'livre' || ocupacaoDaCto(dp) === 'pouca')
             .map((dp) => ({ dp, distanciaM: distanciaMetros(referencia.lat, referencia.lng, dp.lat, dp.lng) }))
             .sort((a, b) => a.distanciaM - b.distanciaM)
-            .slice(0, QTD_MAIS_PROXIMAS)
+            .slice(0, mostrarMais ? QTD_MOSTRAR_MAIS : QTD_MAIS_PROXIMAS + 1)
         : [],
     // referencia muda de objeto a cada render do cliente; o que importa é a coordenada
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [comCoordenada, referencia?.lat, referencia?.lng],
+    [comCoordenada, referencia?.lat, referencia?.lng, soLivre, mostrarMais],
   )
+  // Uma a mais que o mostrado indica que há mais para "Mostrar mais".
+  const haMais = !mostrarMais && maisProximas.length > QTD_MAIS_PROXIMAS
+  const proximasVisiveis = mostrarMais ? maisProximas : maisProximas.slice(0, QTD_MAIS_PROXIMAS)
+  const distanciaSelecionada =
+    selecionada && referencia ? distanciaMetros(referencia.lat, referencia.lng, selecionada.lat, selecionada.lng) : null
+  // CTOs ativas sem coordenada: não aparecem no mapa; o técnico grava pelo GPS.
+  const semCoordenada = useMemo(() => (dps ?? []).filter((dp) => dp.lat == null || dp.lng == null), [dps])
+  // Busca por nome de CTO no mesmo campo da busca de cliente.
+  const ctosDaBusca = useMemo(() => {
+    const termo = normalizarNome(busca.trim())
+    if (termo.length < 2 || !dps) return []
+    return dps.filter((dp) => normalizarNome(dp.name).includes(termo)).slice(0, 5)
+  }, [busca, dps])
   // Traçado do endereço do cliente até as CTOs já gravadas nas conexões dele.
   const ligacoes = useMemo(
     () =>
@@ -291,8 +329,8 @@ export default function MapaCtos() {
             onChange={(e) => setBusca(e.target.value)}
             onFocus={() => setListaAberta(true)}
             onBlur={() => setTimeout(() => setListaAberta(false), 150)}
-            placeholder="Cliente, CPF ou contrato"
-            aria-label="Buscar cliente"
+            placeholder="Cliente, CPF, contrato ou CTO"
+            aria-label="Buscar cliente ou CTO"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
@@ -300,8 +338,32 @@ export default function MapaCtos() {
         </div>
         {listaAberta && busca.trim().length >= 2 && (
           <ul className="home-combobox-lista">
-            {(buscando || !resultados) && <li className="home-combobox-vazio">Buscando…</li>}
-            {!buscando && resultados?.length === 0 && <li className="home-combobox-vazio">Nada encontrado.</li>}
+            {ctosDaBusca.map((dp) => (
+              <li key={`cto-${dp.pk}`}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    ;(document.activeElement as HTMLElement | null)?.blur()
+                    setListaAberta(false)
+                    setBusca('')
+                    if (dp.lat == null) setJanela({ tipo: 'editar', dp, lerPosicao: false })
+                    else setSelecionadaPk(dp.pk)
+                  }}
+                >
+                  <i className="mapa-ctos-ponto" style={{ background: COR_OCUPACAO[ocupacaoDaCto(dp)], borderColor: corMaisProxima(dp.cor)?.hex ?? '#000' }} aria-hidden="true" />
+                  <span className="item-duas-linhas">
+                    <strong>{dp.name}</strong>
+                    <small>
+                      CTO{dp.limite != null && dp.ativos != null ? ` · ${dp.ativos}/${dp.limite} portas` : ''}
+                      {dp.lat == null ? ' · sem localização' : ''}
+                    </small>
+                  </span>
+                </button>
+              </li>
+            ))}
+            {(buscando || !resultados) && ctosDaBusca.length === 0 && <li className="home-combobox-vazio">Buscando…</li>}
+            {!buscando && resultados?.length === 0 && ctosDaBusca.length === 0 && <li className="home-combobox-vazio">Nada encontrado.</li>}
             {!buscando &&
               resultados?.map((resultado) => (
                 <li key={resultado.client_pk}>
@@ -390,36 +452,55 @@ export default function MapaCtos() {
             conectados={conectados}
             onSelecionar={(dp) => setSelecionadaPk(dp.pk)}
             onSemLocalizacao={() => toast('Aguardando a localização do GPS. Verifique se a permissão está liberada.')}
+            telaCheia
+            aoAmpliar={setTelaCheia}
           />
         </Suspense>
       )}
 
-      {selecionada && cpesDaCto && conectados && (
-        <p className="mapa-ctos-aviso">
-          {selecionada.name}: {cpesDaCto.length} {cpesDaCto.length === 1 ? 'conexão' : 'conexões'},{' '}
-          {cpesDaCto.filter((cpe) => (cpe.sessions ?? 0) > 0).length} online
-          {conectados.pontos.length < cpesDaCto.length &&
-            ` · ${cpesDaCto.length - conectados.pontos.length} sem coordenada no endereço`}
-          . Tracejado verde online, vermelho offline.
-        </p>
+      {selecionada && (
+        <CartaoCto
+          key={selecionada.pk}
+          dp={selecionada}
+          distanciaM={distanciaSelecionada}
+          cpesDaCto={cpesDaCto}
+          conexoesCliente={conexoesCliente}
+          nomeCliente={enderecoCliente?.nomeCliente ?? null}
+          flutuante={telaCheia}
+          onFechar={() => setSelecionadaPk(null)}
+          onEditar={() => setJanela({ tipo: 'editar', dp: selecionada, lerPosicao: false })}
+        />
       )}
 
       {dps && (
         <section className="mapa-ctos-proximas">
-          <h2>{enderecoCliente ? 'Mais próximas do cliente' : 'Mais próximas de você'}</h2>
+          <div className="mapa-ctos-proximas-topo">
+            <h2>{enderecoCliente ? 'Mais próximas do cliente' : 'Mais próximas de você'}</h2>
+            <button
+              type="button"
+              className="mapa-ctos-filtro"
+              aria-pressed={soLivre}
+              onClick={() => setSoLivre((v) => !v)}
+            >
+              Só com porta livre
+            </button>
+          </div>
           {!referencia && <p className="mapa-ctos-aviso">Aguardando sua localização…</p>}
           {!enderecoCliente && aoVivo && (
             <p className="mapa-ctos-aviso mapa-ctos-precisao">Precisão do GPS: ±{Math.round(aoVivo.precisaoM)} m</p>
           )}
           <ul>
-            {maisProximas.map(({ dp, distanciaM }) => (
+            {proximasVisiveis.map(({ dp, distanciaM }) => (
               <li key={dp.pk}>
                 <button
                   type="button"
                   className={dp.pk === selecionadaPk ? 'mapa-ctos-item ativo' : 'mapa-ctos-item'}
                   onClick={() => setSelecionadaPk(dp.pk)}
                 >
-                  <i style={{ background: dp.cor || '#555555' }} aria-hidden="true" />
+                  <i
+                    style={{ background: COR_OCUPACAO[ocupacaoDaCto(dp)], borderColor: corMaisProxima(dp.cor)?.hex ?? '#000' }}
+                    aria-hidden="true"
+                  />
                   <span className="mapa-ctos-nome">
                     <strong>
                       {dp.name}
@@ -431,7 +512,7 @@ export default function MapaCtos() {
                           <>
                             {dp.ativos}/{dp.limite} portas ·{' '}
                             {dp.limite - dp.ativos > 0 ? (
-                              <b className="mapa-ctos-livres">
+                              <b className={dp.limite - dp.ativos <= 2 ? 'mapa-ctos-pouca' : 'mapa-ctos-livres'}>
                                 {dp.limite - dp.ativos} {dp.limite - dp.ativos === 1 ? 'livre' : 'livres'}
                               </b>
                             ) : (
@@ -444,12 +525,67 @@ export default function MapaCtos() {
                       </span>
                     )}
                   </span>
-                  <span className="mapa-ctos-distancia">{formatarDistancia(distanciaM)}</span>
+                  <span className="mapa-ctos-distancia">
+                    {formatarDistancia(distanciaM)}
+                    <small>em linha reta</small>
+                  </span>
                 </button>
               </li>
             ))}
           </ul>
+          {soLivre && referencia && proximasVisiveis.length === 0 && (
+            <p className="mapa-ctos-aviso">Nenhuma CTO com porta livre por perto.</p>
+          )}
+          {haMais && (
+            <button type="button" className="botao botao-secundario botao-largo mapa-ctos-mais" onClick={() => setMostrarMais(true)}>
+              Mostrar mais
+            </button>
+          )}
         </section>
+      )}
+
+      {dps && (
+        <section className="mapa-ctos-cadastro">
+          {semCoordenada.length > 0 && (
+            <>
+              <h2>
+                <LuMapPin size={18} aria-hidden="true" /> {semCoordenada.length}{' '}
+                {semCoordenada.length === 1 ? 'CTO sem localização' : 'CTOs sem localização'} (fora do mapa)
+              </h2>
+              <p className="mapa-ctos-aviso">Parado ao lado da CTO, grave a sua posição como a localização dela.</p>
+              <ul>
+                {semCoordenada.map((dp) => (
+                  <li key={dp.pk}>
+                    <span>{dp.name}</span>
+                    <button
+                      type="button"
+                      className="botao botao-secundario acao-registro"
+                      onClick={() => setJanela({ tipo: 'editar', dp, lerPosicao: true })}
+                    >
+                      Gravar minha posição
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <button type="button" className="botao botao-secundario botao-largo acao-registro" onClick={() => setJanela({ tipo: 'nova' })}>
+            <LuPlus size={18} /> Cadastrar CTO nova
+          </button>
+        </section>
+      )}
+
+      {janela && (
+        <ModalCto
+          dp={janela.tipo === 'editar' ? janela.dp : null}
+          lerPosicaoAoAbrir={janela.tipo === 'editar' && janela.lerPosicao}
+          existentes={(dps ?? []).map((dp) => dp.name)}
+          onFechar={() => setJanela(null)}
+          onSalvo={() => {
+            setJanela(null)
+            carregarCtos()
+          }}
+        />
       )}
     </div>
   )

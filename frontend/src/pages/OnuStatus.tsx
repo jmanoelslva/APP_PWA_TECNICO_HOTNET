@@ -247,8 +247,10 @@ export default function OnuStatus() {
         />
         <CabecalhoTela icone={LuCable} cor={CORES.onu} titulo="ONU" />
 
-        {/* Escolher troca a busca pelo resultado: "Voltar" sai da aba. */}
-        <BuscaOnu onEscolher={(parametros) => setParams(parametros, { replace: true })} />
+        {/* Busca só sem ONU escolhida, como na Conexão: aberta pela barra do
+            atendimento ou por um atalho, a tela já vem com a ONU. Escolher
+            troca a busca pelo resultado: "Voltar" sai da aba. */}
+        {!temParametroInicial && <BuscaOnu onEscolher={(parametros) => setParams(parametros, { replace: true })} />}
 
         {semSelecao && !erro && (
           <EstadoVazio

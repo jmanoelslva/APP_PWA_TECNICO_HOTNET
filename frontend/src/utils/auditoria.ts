@@ -91,6 +91,7 @@ export function detalhes(alvo: Alvo, acao?: string): Detalhe[] {
   } else if (tem(alvo.onu_pk)) {
     itens.push({ rotulo: 'ONU', valor: texto(alvo.onu_pk) })
   }
+  if (tem(alvo.cto)) itens.push({ rotulo: 'CTO', valor: texto(alvo.cto) })
   if (tem(alvo.serial)) itens.push({ rotulo: 'Serial', valor: texto(alvo.serial) })
   if (associacao) return itens
   if (tem(alvo.endereco)) itens.push({ rotulo: 'Endereço', valor: texto(alvo.endereco) })

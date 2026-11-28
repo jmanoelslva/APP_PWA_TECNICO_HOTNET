@@ -741,3 +741,26 @@
 .diagnostico-girando {
   animation: botao-girar 1s linear infinite;
 }
+
+/* Mapa de CTOs ampliado: tela inteira acima da barra de baixo. */
+.mapa-cto-moldura.mapa-cto-tela-cheia {
+  position: fixed;
+  inset: 0 0 var(--altura-nav) 0;
+  z-index: 60;
+  background: var(--cor-fundo);
+}
+
+.mapa-cto-moldura.mapa-cto-tela-cheia .mapa-cto-mapa,
+.mapa-cto-moldura.mapa-cto-tela-cheia .mapa-cto-mapa.mapa-cto-mapa-ampliado {
+  height: 100%;
+  border-radius: 0;
+  border: none;
+}
+
+.mapa-cto-tela-cheia .mapa-cto-google {
+  top: calc(10px + env(safe-area-inset-top, 0px));
+}
+
+.mapa-cto-tela-cheia .mapa-cto-ampliar {
+  top: calc(52px + env(safe-area-inset-top, 0px));
+}

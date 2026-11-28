@@ -1,0 +1,76 @@
+.cartao-cto {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Tela cheia: por cima do mapa, logo acima da barra de baixo. */
+.cartao-cto-flutuante {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--altura-nav) + 12px);
+  z-index: 61;
+  margin: 0;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+
+.cartao-cto-topo {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.cartao-cto-topo > i {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  border-radius: 50%;
+  border: 3px solid #000000;
+}
+
+.cartao-cto-nome {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cartao-cto-nome strong {
+  font-size: 16px;
+}
+
+.cartao-cto-nome span {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.cartao-cto-pouca {
+  color: var(--cor-financeiro);
+}
+
+.cartao-cto-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cartao-cto-acoes > * {
+  flex: 1 1 0;
+  min-width: max-content;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.cartao-cto-nota {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}

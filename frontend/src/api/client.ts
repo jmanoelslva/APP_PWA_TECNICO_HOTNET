@@ -547,10 +547,47 @@ export interface DpDto {
   limite: number | null
   ativos: number | null
   setor: string | null
+  setor_pk?: number | null
 }
 
 export function listarDps(): Promise<{ success: boolean; results: DpDto[] }> {
   return get<{ success: boolean; results: DpDto[] }>('dp/lista')
+}
+
+export interface SetorDpDto {
+  pk: number
+  nome: string
+  // "FTTH-VSJ" → "VSJ"; null quando o nome não segue o padrão.
+  sigla: string | null
+}
+
+/** Setores para a CTO nova (e as cores/capacidades que o servidor aceita). */
+export function listarSetoresDp(): Promise<{ success: boolean; results: SetorDpDto[]; capacidades: number[] }> {
+  return get('dp/setores')
+}
+
+/**
+ * Posição, cor e capacidade da CTO. Depende da ACL do técnico no Controllr
+ * (403 com mensagem quando não tem).
+ */
+export function editarDp(
+  dpPk: number,
+  dados: { lat?: number; lng?: number; precisao_m?: number; cor?: string; limite?: number },
+): Promise<{ success: boolean }> {
+  return post(`dp/${dpPk}/editar`, dados)
+}
+
+export function criarDp(dados: {
+  setor_pk: number
+  hub: number
+  numero: number
+  limite: number
+  cor: string
+  lat: number
+  lng: number
+  precisao_m?: number
+}): Promise<{ success: boolean; nome: string }> {
+  return post('dp/criar', dados)
 }
 
 // Projeto da rede (KMZ do servidor, backend/app/routers/mapa.py) — só o

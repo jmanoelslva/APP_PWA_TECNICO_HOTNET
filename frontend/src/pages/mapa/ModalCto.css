@@ -1,0 +1,131 @@
+.modal-cto-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-cto {
+  width: 100%;
+  max-width: 480px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 12px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
+  background: var(--cor-superficie);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-cto > * {
+  flex-shrink: 0;
+}
+
+.modal-cto-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.modal-cto-topo h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-cto-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.modal-cto-par {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.modal-cto-rotulo {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+}
+
+.modal-cto-nome {
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.modal-cto-nota {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--cor-texto-secundario);
+}
+
+.modal-cto-alerta {
+  color: var(--cor-erro);
+  font-weight: 600;
+}
+
+.modal-cto-cores {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.modal-cto-cor {
+  min-height: 48px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 12px;
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.modal-cto-cor[aria-checked='true'] {
+  border-color: var(--cor-conexao);
+  box-shadow: 0 0 0 1px var(--cor-conexao);
+}
+
+.modal-cto-cor i {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+/* Fundo escuro (azul, preto, violeta, marrom): check branco. */
+.modal-cto-cor i[data-escura='true'] {
+  color: #ffffff;
+}
+
+.modal-cto-salvar {
+  margin-top: 6px;
+}

@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { LuExternalLink, LuLocateFixed, LuMaximize2, LuMinimize2 } from 'react-icons/lu'
 import { ApiError, buscarProjetoRede, type DpDto, type ItemProjetoDto } from '../../api/client'
 import { distanciaMetros, formatarDistancia } from './localizacao'
+import { COR_OCUPACAO, corMaisProxima, ocupacaoDaCto } from '../../utils/coresFibra'
 
 export interface Ponto {
   lat: number
@@ -75,6 +76,8 @@ export default function MapaCto({
   conectados = null,
   onSelecionar,
   onSemLocalizacao,
+  telaCheia = false,
+  aoAmpliar,
 }: {
   centro: Ponto
   dps: DpDto[]
@@ -89,6 +92,10 @@ export default function MapaCto({
   onSelecionar: (dp: DpDto) => void
   // Botão "minha localização" tocado antes de o GPS responder.
   onSemLocalizacao: () => void
+  // Mapa de CTOs: ampliar ocupa a tela inteira (a tela desenha o cartão da
+  // CTO por cima). Na Conexão, ampliar só aumenta a altura.
+  telaCheia?: boolean
+  aoAmpliar?: (ampliado: boolean) => void
 }) {
   const divRef = useRef<HTMLDivElement>(null)
   const mapaRef = useRef<L.Map | null>(null)
@@ -145,6 +152,8 @@ export default function MapaCto({
 
   useEffect(() => {
     mapaRef.current?.invalidateSize()
+    aoAmpliar?.(ampliado)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ampliado])
 
   // CTOs do Controllr
@@ -157,12 +166,16 @@ export default function MapaCto({
     for (const dp of dps) {
       if (dp.lat == null || dp.lng == null) continue
       const eSelecionada = dp.pk === selecionadaPk
+      // Preenchimento pela ocupação (verde livre, amarelo 1–2 livres,
+      // vermelho lotada); contorno na cor da fibra da CTO (ABNT).
+      const ocupacaoDp = ocupacaoDaCto(dp)
+      const corFibra = corMaisProxima(dp.cor)?.hex ?? COR_PADRAO_CTO
       const marcador = L.circleMarker([dp.lat, dp.lng], {
         renderer,
-        radius: eSelecionada ? 10 : 7,
-        color: eSelecionada ? '#ffffff' : '#000000',
-        weight: eSelecionada ? 3 : 1,
-        fillColor: dp.cor || COR_PADRAO_CTO,
+        radius: eSelecionada ? 11 : 8,
+        color: eSelecionada ? '#ffffff' : corFibra,
+        weight: eSelecionada ? 4 : 3,
+        fillColor: COR_OCUPACAO[ocupacaoDp],
         fillOpacity: 0.95,
       })
       marcador.bindTooltip(texto(`${dp.name}${ocupacao(dp)}`), {
@@ -356,7 +369,7 @@ export default function MapaCto({
 
   return (
     <div className="mapa-cto">
-      <div className="mapa-cto-moldura">
+      <div className={`mapa-cto-moldura${telaCheia && ampliado ? ' mapa-cto-tela-cheia' : ''}`}>
         <div ref={divRef} className={`mapa-cto-mapa${ampliado ? ' mapa-cto-mapa-ampliado' : ''}`} />
         <button
           type="button"
@@ -392,6 +405,15 @@ export default function MapaCto({
         {/* Legenda dentro do mapa, no canto inferior esquerdo (como no
             Google Maps); cada item com o marcador e o nome juntos. */}
         <div className="mapa-cto-legenda">
+          <span>
+            <i style={{ background: COR_OCUPACAO.livre }} /> Livre
+          </span>
+          <span>
+            <i style={{ background: COR_OCUPACAO.pouca }} /> 1–2 livres
+          </span>
+          <span>
+            <i style={{ background: COR_OCUPACAO.lotada }} /> Lotada
+          </span>
           <span>
             <i style={{ background: '#1a73e8' }} /> Você
           </span>

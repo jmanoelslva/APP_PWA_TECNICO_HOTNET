@@ -56,6 +56,8 @@ const ACOES: { valor: string; rotulo: string; icone: IconType; cor: string }[] =
   { valor: 'cpe.localizacao', rotulo: 'Alterou localização do equipamento', icone: LuLocateFixed, cor: CORES.endereco },
   { valor: 'cpe.editar_cto', rotulo: 'Alterou CTO da conexão', icone: LuNetwork, cor: CORES.conexao },
   { valor: 'cpe.editar_observacao', rotulo: 'Alterou observação da conexão', icone: LuStickyNote, cor: CORES.conexao },
+  { valor: 'cto.criar', rotulo: 'Cadastrou CTO', icone: LuMapPinPlus, cor: CORES.conexao },
+  { valor: 'cto.editar', rotulo: 'Editou CTO', icone: LuNetwork, cor: CORES.conexao },
   { valor: 'endereco.criar', rotulo: 'Criou endereço', icone: LuMapPinPlus, cor: CORES.endereco },
   { valor: 'endereco.editar', rotulo: 'Editou endereço', icone: LuMapPin, cor: CORES.endereco },
   { valor: 'endereco.excluir', rotulo: 'Excluiu endereço', icone: LuMapPinOff, cor: CORES.erro },
@@ -100,6 +102,14 @@ const GRUPOS_ACAO: { grupo: string; opcoes: { valor: string; rotulo: string }[] 
       { valor: 'cpe.localizacao', rotulo: 'Localização' },
       { valor: 'cpe.editar_cto', rotulo: 'CTO e porta' },
       { valor: 'cpe.editar_observacao', rotulo: 'Observação' },
+    ],
+  },
+  {
+    grupo: 'CTO',
+    opcoes: [
+      { valor: 'cto.', rotulo: 'Tudo da CTO' },
+      { valor: 'cto.criar', rotulo: 'Cadastros' },
+      { valor: 'cto.editar', rotulo: 'Edições (posição, cor, capacidade)' },
     ],
   },
   {

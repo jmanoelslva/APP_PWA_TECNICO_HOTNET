@@ -97,7 +97,7 @@ def _limpar_antigos(mes_atual: str) -> None:
 # Ações de campo: levam a localização do técnico (cabeçalho X-Localizacao,
 # "lat;lng;precisão_m;idade_s", enviado pelo app com a última leitura do
 # GPS). Login, financeiro e telefone ficam sem localização.
-PREFIXOS_ACAO_CAMPO = ("os.", "cpe.", "onu.", "endereco.")
+PREFIXOS_ACAO_CAMPO = ("os.", "cpe.", "onu.", "endereco.", "cto.")
 
 
 def ler_localizacao(request: Request) -> dict[str, Any] | None:

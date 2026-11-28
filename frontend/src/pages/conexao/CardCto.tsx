@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { LuLocateFixed, LuSave, LuX } from 'react-icons/lu'
 import { ApiError, atualizarDetalhesCpe, type CpeDto, type DpDto } from '../../api/client'
 import { useToast } from '../../components/Toast/useToast'
@@ -45,6 +46,24 @@ export default function CardCto({
   const [dpListaAberta, setDpListaAberta] = useState(false)
   // Porta 0 no Controllr = sem porta: mostra o campo vazio.
   const [dpPorta, setDpPorta] = useState(cpe.dp_port ? String(cpe.dp_port) : '')
+
+  // Vindo do Mapa de CTOs ("Usar esta CTO"): ?dp=<pk>&porta=<n> já escolhe
+  // a CTO e a porta no formulário. Não grava: o técnico confere e salva.
+  const [params] = useSearchParams()
+  const dpDaUrl = params.get('dp')
+  const portaDaUrl = params.get('porta')
+  const aplicouDaUrl = useRef(false)
+  useEffect(() => {
+    if (aplicouDaUrl.current || !dpDaUrl || dps.length === 0) return
+    const sugerida = dps.find((dp) => String(dp.pk) === dpDaUrl)
+    if (!sugerida) return
+    aplicouDaUrl.current = true
+    setDpPk(String(sugerida.pk))
+    setDpBusca(sugerida.name)
+    if (portaDaUrl && /^\d+$/.test(portaDaUrl)) setDpPorta(portaDaUrl)
+    toast(`${sugerida.name}${portaDaUrl ? `, porta ${portaDaUrl},` : ''} escolhida no mapa. Confira e toque em Salvar CTO.`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dpDaUrl, portaDaUrl, dps])
   const [salvando, setSalvando] = useState(false)
   // Localização do técnico (botão "Usar minha localização") — usada só
   // para sugerir/ordenar a CTO mais próxima por distância, nunca para
